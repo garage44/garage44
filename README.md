@@ -48,7 +48,7 @@ The opensource community edition of Expressio exists of multiple packages.
 * [Bunchy](./packages/bunchy/README.md) ([MIT](./packages/bunchy/LICENSE.md))
 * [Common](./packages/common/README.md) ([MIT](./packages/bunchy/LICENSE.md))
 * [Enola](./packages/enola/README.md) ([MIT](./LICENSE.md))
-* Expressio [AGPLv3](./packages/expressio/LICENSE.md)
+* Expressio ([AGPLv3](./packages/expressio/LICENSE.md))
 
 Interested in the upcoming professional edition of Expressio or related services?
 [Contact us!](mailto:info@expressio.tech)
