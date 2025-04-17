@@ -1,0 +1,6 @@
+bun.lock
+service.js
+public
+src/i18next.json
+node_modules
+expressio.log

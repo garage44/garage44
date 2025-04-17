@@ -1,0 +1,82 @@
+@use "variables" as *;
+
+.c-translations {
+    padding: $spacer-3;
+    width: 100%;
+
+    .workspace-info {
+        align-items: center;
+        background: $info-2;
+        border-bottom: 1px solid $info-2;
+        display: flex;
+        gap: $spacer-1;
+
+        .c-icon {
+            color: $info-6 !important;
+        }
+
+        &.disabled {
+
+            .c-icon {
+                color: $info-2;
+            }
+        }
+
+        .history-actions {
+            background: $info-1;
+        }
+    }
+
+    > .c-translation-group {
+        border: 0;
+        box-shadow: none;
+        flex-direction: column;
+        margin: 0;
+        padding: 0;
+
+        .field {
+            // Translation fields differ from the default field styles
+            margin-bottom: unset;
+        }
+
+        > .group-id {
+            /** The root group should take less space */
+            align-items: center;
+            display: flex;
+            flex: unset;
+            margin: $spacer-1 0;
+            min-height: unset;
+            min-width: unset;
+            width: unset;
+
+            .actions {
+                flex-direction: unset;
+
+                .group-tag-actions,
+                .group-actions {
+                    align-items: flex-end;
+                    flex-direction: row;
+                    height: unset;
+                    justify-content: center;
+                    padding: $spacer-1;
+                    position: unset;
+                    width: 100%;
+                }
+            }
+        }
+
+        > .group-value {
+
+            .c-translation  {
+                padding-inline-end: 0;
+            }
+
+            > .c-translation-group {
+                margin-inline-start: 0;
+            }
+        }
+
+
+    }
+
+}

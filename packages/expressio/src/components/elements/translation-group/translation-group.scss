@@ -1,0 +1,168 @@
+@use "variables" as *;
+
+.c-translation-group {
+    display: flex;
+    margin-bottom: 0;
+    margin-inline-start: $spacer-1;
+
+    > .group-id {
+        color: $info-1;
+        font-size: $font-l;
+        max-width: 250px;
+        min-height: 152px;
+        width: 100%;
+    }
+
+    .group-id {
+        display: flex;
+        position: relative;
+
+        .group-field {
+
+            input {
+                background: hsla(var(--info-h) var(--s-3) var(--l-1) / 40%);
+                border: none;
+                color: $info-5;
+                font-style: italic;
+                font-weight: 500;
+                height: 100%;
+                padding: 0 $spacer-1;
+                text-align: center;
+                transition: all 0.3s ease;
+                width: 100%;
+            }
+        }
+    }
+
+    &.has-redundant {
+
+        > .group-id {
+
+            &::before {
+                background: $danger-5;
+                content:'';
+                height: 100%;
+                left: 0;
+                position: absolute;
+                width: $spacer-025;
+
+            }
+        }
+
+            .actions .group-actions {
+                position: relative;
+
+                .c-icon {
+                    color: $danger-6;
+                }
+        }
+    }
+
+    &.has-soft {
+
+        > .group-id {
+
+            .actions {
+
+                &::before {
+                    background: $success-5;
+                    content:'';
+                    height: 100%;
+                    left: -1 * $spacer-1;
+                    position: absolute;
+                    width: $spacer-1;
+                }
+
+                .group-actions {
+                    position: relative;
+
+                    .c-icon {
+                        color: $success-5;
+                    }
+
+
+                }
+            }
+        }
+    }
+
+    &.has-soft.has-redundant {
+
+        > .group-id {
+
+            .actions .group-actions {
+
+                .c-icon {
+                    color: $warning-5;
+                }
+
+                &::before {
+                    background: $warning-1;
+                }
+            }
+        }
+    }
+
+    .group-value {
+        display: flex;
+        flex-direction: column;
+        gap: $spacer-1;
+        width: 100%;
+    }
+
+    &.tag-updated {
+
+        .group-id {
+
+            .group-field input {
+                background: $surface-4;
+                color: $surface-5;
+            }
+
+            .group-tag-actions {
+
+                .c-icon {
+                    color: $surface-5;
+                }
+            }
+        }
+    }
+
+
+    &.collapsed {
+        box-shadow: none;
+
+        > .group-id {
+            box-shadow: none;
+            min-height: unset;
+
+            .actions {
+                flex-direction: row;
+
+                .group-tag-actions {
+                    display: none
+                }
+
+                .group-actions {
+                    flex-direction: row;
+                }
+            }
+        }
+
+        > .group-value {
+
+            > .group-id {
+
+                .actions {
+                    // display: none;
+                }
+            }
+
+            > .c-translation {
+                display: none;
+            }
+
+            // display: none;
+        }
+    }
+}

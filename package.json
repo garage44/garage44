@@ -1,0 +1,21 @@
+{
+  "name": "@garage44/workspace",
+  "description": "Garage44 development workspace",
+  "author": "Garage44",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "clear": "rm -rf ~/.bun/install/cache && find . -name 'bun.lock' -type f -delete && find . -name 'node_modules' -type d -exec rm -rf {} +",
+    "commit": "bun run packages/ayay/ayay.js",
+    "deinit": "git submodule deinit --all",
+    "lint:ts": "bun run --filter \"./packages/*\" lint:ts",
+    "init": "git submodule foreach 'git checkout main'",
+    "pull": "git submodule update --remote --merge",
+    "test": "bun run --cwd packages/* test"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "@garage44/bunchy",
+  "version": "2.1.0",
+  "author": "Garage44",
+  "main": "index.ts",
+  "dependencies": {
+    "@garage44/common": "workspace:^",
+    "archy": "^1.0.0",
+    "fs-extra": "^11.3.0",
+    "glob": "^11.0.1",
+    "lodash.template": "^4.5.0",
+    "node-notifier": "^10.0.1",
+    "picocolors": "^1.1.1",
+    "sass": "^1.83.4",
+    "tildify": "^3.0.0",
+    "ws": "^8.18.1"
+  },
+  "description": "Bunchy is a blazingly fast frontend development tool for Bun.",
+  "files": [
+    "README.md",
+    "client.ts",
+    "index.ts",
+    "task.ts",
+    "tasks.ts",
+    "tsconfig.json",
+    "utils.ts"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "lint:ts": "oxlint **/*.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

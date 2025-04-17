@@ -1,0 +1,40 @@
+@use "variables" as *;
+
+.field {
+    margin-bottom: $spacer-2;
+
+    .label {
+        color: $info-6;
+        padding-bottom: $spacer-025;
+
+        .indicator {
+            font-size: $font-xxs;
+            font-weight: 600;
+            padding-left: 2px;
+            position: absolute;
+        }
+    }
+
+    &.is-invalid {
+
+        .label .indicator {
+            color: $danger-5;
+        }
+    }
+
+
+    .help,
+    .validation {
+        font-size: $font-s;
+        padding-top: $spacer-025;
+    }
+
+    .help {
+        color: $info-5;
+
+    }
+
+    .validation {
+        color: $danger-6;
+    }
+}

@@ -1,0 +1,56 @@
+@use "variables" as *;
+
+.c-group-actions {
+    background: $info-1;
+    display: flex;
+    height: 100%;
+    justify-content: space-between;
+
+    .collapse-toggle {
+        align-items: center;
+        background: $info-3;
+        display: flex;
+        height: $spacer-4;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .group-actions {
+        align-items: center;
+        display: flex;
+        gap: $spacer-025;
+        justify-content: space-between;
+
+        .c-icon {
+            transition: all 0.3s ease;
+        }
+    }
+
+    &.vertical {
+        flex-direction: column;
+
+        .group-actions {
+            flex-direction: column;
+            gap: $spacer-05;
+            margin-bottom: $spacer-1;
+            width: $spacer-4;
+        }
+
+        .collapse-toggle {
+            margin-bottom: $spacer-1;
+        }
+    }
+
+    &.horizontal {
+        flex-direction: row;
+
+        .collapse-toggle {
+            margin-inline-end: $spacer-1;
+            width: $spacer-4;
+        }
+
+        .group-actions {
+            margin-inline-end: $spacer-1;
+        }
+    }
+}

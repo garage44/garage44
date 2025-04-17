@@ -1,0 +1,29 @@
+{
+  "name": "@garage44/enola",
+  "version": "3.1.0",
+  "description": "A wrapper around translation services like Deepl, exposing a common interface for translation software to use.",
+  "files": [
+    "README.md",
+    "./engines/anthropic.ts",
+    "./engines/deepl.ts",
+    "index.ts",
+    "iso-codes.ts",
+    "languages.ts",
+    "tsconfig.json",
+    "types.ts"
+  ],
+  "main": "index.ts",
+  "scripts": {
+    "lint:ts": "oxlint **/*.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Garage44",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@garage44/common": "workspace:^",
+    "html-entities": "^2.5.3"
+  }
+}

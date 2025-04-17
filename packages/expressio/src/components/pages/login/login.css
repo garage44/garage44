@@ -1,0 +1,17 @@
+.c-login {
+    animation: fadeIn 0.5s ease-in forwards;
+    opacity: 0;
+}
+
+@keyframes fadeIn {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Ensure this gets added to your existing login styles */

@@ -1,0 +1,20 @@
+@use "variables" as *;
+
+.c-field-select {
+    display: flex;
+    flex-direction: column;
+    max-width: 250px;
+    min-width: 120px;
+
+    select {
+        background: $info-4;
+        border: none;
+        color: $info-8;
+        height: $input-height;
+
+        &:disabled {
+            background: $surface-4;
+            color: $surface-5
+        }
+    }
+}

@@ -1,0 +1,30 @@
+@use "variables" as *;
+
+.c-config {
+    padding: $spacer-3;
+
+    .field {
+        margin-bottom: $spacer-1;
+        max-width: 500px;
+    }
+
+    .translators {
+        background-color: $info-1;
+        display: flex;
+        flex-direction: column;
+        gap: $spacer-1;
+        margin-bottom: $spacer-2;
+        max-width: 500px;
+        padding: $spacer-1;
+
+        .section {
+            background: $info-2;
+            border: 1px solid $info-3;
+            padding: $spacer-1 $spacer-1;
+
+            .field:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+}

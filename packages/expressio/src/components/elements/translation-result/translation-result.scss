@@ -1,0 +1,51 @@
+@use "variables" as *;
+
+.c-translation-result {
+    background: $info-2;
+    color: $info-3;
+    flex-direction: column;
+    font-size: $font-s;
+    gap: $spacer-1;
+    max-height: 500px;
+    opacity: 1;
+    overflow: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease, max-height 0.3s ease;
+
+    &.collapsed {
+        max-height: 0;
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: $spacer-05;
+        padding: $spacer-1;
+
+        .result {
+            align-items: center;
+            color: $info-6;
+            display: flex;
+            gap: $spacer-1;
+            overflow: hidden;
+
+            .id {
+                background: $info-4;
+                color: $info-8;
+                padding: $spacer-05;
+                text-align: center;
+                width: $spacer-6;
+            }
+
+            .value {
+                background: $info-3;
+                color: $info-7;
+                font-style: italic;
+                padding: $spacer-05;
+            }
+        }
+    }
+
+
+}

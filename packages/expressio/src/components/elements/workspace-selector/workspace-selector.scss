@@ -1,0 +1,73 @@
+@use "variables" as *;
+
+.c-workspace-selector {
+    max-width: 700px;
+
+    .field {
+
+        .label {
+            align-items: center;
+            display: flex;
+            gap: $spacer-1;
+        }
+
+        .wrapper {
+            background: $info-1;
+            border: 1px solid $info-3;
+            display: flex;
+
+            .options {
+                border: 1px solid $info-3;
+                display: flex;
+                flex: 1;
+                flex-direction: column;
+                gap: $spacer-05;
+                max-height: $spacer-4 * 10 + $spacer-1;
+                overflow-y: scroll;
+                padding: $spacer-025;
+
+                .option {
+                    align-items: center;
+                    background: $info-2;
+                    border: 1px solid $info-4;
+                    display: flex;
+                    gap: $spacer-2;
+                    height: $input-height;
+
+                    .c-field-text {
+                        margin: 0;
+
+                        input {
+                            background: none;
+                            border: none;
+                            color: $surface-5;
+                            outline: none;
+                            padding: 0;
+                        }
+                    }
+
+                    &.existing {
+                        background: $info-2;
+                        border: 1px dashed $info-5;
+                        color: $success-5;
+                    }
+
+                    &.new {
+                        background: $surface-3;
+                        border: 1px dashed $surface-5;
+                        color: $surface-5 !important;
+                    }
+
+                    .c-field-checkbox {
+                        flex: 1;
+                    }
+                }
+            }
+
+            .c-directory-browser {
+                flex: 1.15;
+            }
+
+        }
+    }
+}

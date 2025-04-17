@@ -1,0 +1,106 @@
+@use "variables" as *;
+
+.c-translation {
+    cursor: pointer;
+    width: 100%;
+
+    .c-field-text {
+        align-items: center;
+        flex-direction: row;
+
+        label {
+            align-items: center;
+            background: $info-5;
+            display: flex;
+            height: 100%;
+            min-width: 150px;
+            padding-inline-end: $spacer-1;
+        }
+
+        input {
+            border: none;
+        }
+    }
+
+    .source {
+        display: flex;
+        height: $spacer-4;
+
+        .tag-actions {
+            align-items: center;
+            background: $info-1;
+            display: flex;
+            gap: $spacer-05;
+            height: 100%;
+            padding: 0 $spacer-1;
+            transition: background 0.3s ease;
+        }
+
+        .id-field {
+            flex: 1;
+            margin-inline-end: $spacer-1;
+            max-width: 150px + $spacer-2 + 1px;
+            width: 100%;
+
+            input {
+                background: $info-2;
+                color: $info-6;
+                flex: 1;
+                max-width: 100%;
+                transition: background 0.3s ease;
+            }
+        }
+
+        .src-field {
+            max-width: unset;
+            width: 100%;
+
+            input {
+                background-color: $info-3;
+                color: $info-7;
+                transition: background 0.3s ease;
+                width: 100%;
+            }
+        }
+    }
+
+    &.tag-updated {
+
+        .source {
+
+            .tag-actions {
+                background: $surface-3;
+            }
+
+            .id-field input {
+                background: $surface-4;
+            }
+
+            .src-field input {
+                background: $surface-8;
+            }
+        }
+    }
+
+    &.redundant {
+
+        .src-field {
+            position: relative;
+
+            &::before {
+                background: $danger-5;
+                content:'';
+                height: 100%;
+                left: -1 * $spacer-025;
+                position: absolute;
+                width: $spacer-025;
+            }
+        }
+
+    }
+
+    &.soft {
+        background: $success-5;
+        opacity: 0.7;
+    }
+}

@@ -1,0 +1,57 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle - flat, no bevel -->
+  <circle cx="256" cy="256" r="220" fill="hsl(205, 50%, 30%)" />
+
+  <!-- Left bubble (source) - slightly refined corners -->
+  <path d="M106 146
+           a20 20 0 0 1 20 -20
+           h140
+           a20 20 0 0 1 20 20
+           v120
+           a20 20 0 0 1 -20 20
+           h-80
+           l-30 40
+           l-30 -40
+           h-20
+           a20 20 0 0 1 -20 -20
+           z"
+        fill="hsl(205, 50%, 87%)"
+        opacity="0.8"/>
+
+  <!-- Right bubble (translation) -->
+  <path d="M246 186
+           a20 20 0 0 1 20 -20
+           h140
+           a20 20 0 0 1 20 20
+           v120
+           a20 20 0 0 1 -20 20
+           h-20
+           l-30 40
+           l-30 -40
+           h-80
+           a20 20 0 0 1 -20 -20
+           z"
+        fill="hsl(205, 50%, 87%)"/>
+
+  <!-- E symbol -->
+  <path d="M156 186
+           h70
+           m-70 40
+           h50
+           m-50 40
+           h70"
+        stroke="hsl(205, 50%, 30%)"
+        stroke-width="12"
+        stroke-linecap="round"/>
+
+  <!-- Translation symbol -->
+  <path d="M296 226
+           h70
+           m-70 40
+           h50
+           m-50 40
+           h70"
+        stroke="hsl(205, 50%, 30%)"
+        stroke-width="12"
+        stroke-linecap="round"/>
+</svg>

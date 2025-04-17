@@ -1,0 +1,55 @@
+import {CSSTransition, TransitionGroup} from 'preact-transitioning'
+import {Icon, Progress} from '@/components'
+import {Notification} from '@/lib/notifier'
+import {classes} from '@/lib/utils'
+
+export function Notifications({notifications}) {
+    return <div class="c-notifications">
+        <TransitionGroup>
+            {notifications.map((notification:Notification) => {
+                return <CSSTransition
+                    key={notification.id}
+                    classNames={classes('notification', `type-${notification.type}`, 'fade')}
+                >
+                    <div>
+                        <Icon
+                            class="icon icon-d"
+                            name={notification.icon ? notification.icon : 'info_outline'}
+                            type={notification.type}
+                        />
+                        <div class="text-wrapper">
+                            {notification.progress && <Progress
+                                boundaries={notification.progress.boundaries}
+                                percentage={notification.progress.percentage}
+                            />}
+
+                            <div class="message-text">
+                                <span>{notification.message}</span>
+                                {notification.link && (
+                                    <span class="cf link" onClick={() => {
+                                        window.open(notification.link.url, '_blank')
+                                    }}>
+                                        {notification.link.text}
+                                    </span>
+                                )}
+                                {notification.list && <ul class="message-list">
+                                    {notification.list.map((item) => <li>{item}</li>)}
+                                </ul>}
+                            </div>
+                        </div>
+
+                        <Icon
+                            class="icon btn-close"
+                            name="close"
+                            onClick={() => {
+                                notifications.splice(notifications.findIndex(i => i.id === notification.id), 1)
+                            }}
+                            type={notification.type}
+                        />
+                    </div>
+                </CSSTransition>
+            })}
+        </TransitionGroup>
+
+    </div>
+}

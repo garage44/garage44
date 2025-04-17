@@ -1,0 +1,53 @@
+{
+  "name": "@garage44/common",
+  "version": "1.3.0",
+  "description": "Component library for Garage44 projects",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "app.ts",
+    "components/**",
+    "components.ts",
+    "lib/**",
+    "scss/**/*",
+    "tsconfig.json",
+    "types.ts"
+  ],
+  "scripts": {
+    "lint:scss": "stylelint **/*.scss",
+    "lint:ts": "oxlint **/*.{ts,tsx}",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "author": "Garage44",
+  "license": "MIT",
+  "dependencies": {
+    "@preact/signals": "^2.0.2",
+    "bufferutil": "^4.0.9",
+    "classnames": "^2.5.1",
+    "cookie-parser": "^1.4.7",
+    "deepsignal": "^1.6.0",
+    "eventemitter3": "^5.0.1",
+    "express": "5",
+    "express-session": "^1.18.1",
+    "express-winston": "^4.2.0",
+    "i18next": "^24.2.2",
+    "path-to-regexp": "^8.2.0",
+    "preact": "10.26.5",
+    "preact-router": "^4.1.2",
+    "preact-transitioning": "^1.5.2",
+    "tippy.js": "^6.3.7",
+    "winston": "^3.17.0",
+    "ws": "^8.18.1",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "@types/ws": "^8.5.10",
+    "bun-types": "^1.2.7",
+    "oxlint": "^0.16.6",
+    "stylelint": "^16.17.0"
+  }
+}
