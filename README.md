@@ -19,7 +19,7 @@ bunx @garage44/expressio start
 
 ## Editions
 
-- **Community Edition** (this package): Free and open-source core translation features
+- **Community Edition** (this project): Free and open-source core translation features
     - 🚀 Instant machine translation
     - 🔄 Automatic sync of all translations when source text changes
     - 🌍 Support for extensive language coverage (ISO 639-1 and ISO 639-2)
@@ -34,7 +34,21 @@ bunx @garage44/expressio start
 
 ## Development
 
-Checkout the [workspace repo](https://github.com/garage44/workspace) for the development setup.
+```bash
+git checkout git@github.com:garage44/expressio.git
+cd expressio
+bun i
+cd packages/expressio
+bun run dev
+```
 
 ## License
-[AGPLv3](LICENSE.md)
+The opensource community edition of Expressio exists of multiple packages.
+
+* [Bunchy](./packages/bunchy/README.md) ([MIT](./packages/bunchy/LICENSE.md))
+* [Common](./packages/common/README.md) ([MIT](./packages/bunchy/LICENSE.md))
+* [Enola](./packages/enola/README.md) ([MIT](./LICENSE.md))
+* Expressio [AGPLv3](./packages/expressio/LICENSE.md)
+
+Interested in the upcoming professional edition of Expressio or related services?
+[Contact us!](mailto:info@expressio.tech)
