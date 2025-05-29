@@ -220,7 +220,7 @@ cli.usage('Usage: $0 [task]')
             workspaces.init(config.workspaces),
         ])
 
-        const server = initWebSocketServer(app, config, logger)
+        const server = initWebSocketServer(app, config)
         initMiddleware(app, bunchyConfig)
 
         if (BUN_ENV === 'development') {

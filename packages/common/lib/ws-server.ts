@@ -161,15 +161,6 @@ export function createWebSocketServer(options: {
         server: options.server,
     })
 
-
-    // options.server.on('upgrade', function upgrade(request, socket, head) {
-    //     const { pathname } = new URL(request.url, 'wss://base.url')
-    //     wss.handleUpgrade(request, socket, head, function done(ws) {
-    //         wss.emit('connection', ws, request)
-    //     })
-
-    // })
-
     const connectionHandler = (ws: WebSocket, req: http.IncomingMessage) => {
         // If using auth and no session or we're not bypassing security
         if (options.authOptions && !req.session &&
