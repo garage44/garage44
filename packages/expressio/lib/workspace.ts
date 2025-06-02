@@ -229,6 +229,9 @@ export class Workspace {
                 // Strip all temporary state keys, before saving.
                 delete sourceRef._id
                 delete sourceRef._collapsed
+                if ('target' in sourceRef) {
+                    delete sourceRef.target._collapsed
+                }
                 delete sourceRef._redundant
             }
         })

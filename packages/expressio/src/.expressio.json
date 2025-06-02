@@ -34,7 +34,7 @@
                 }
             ]
         },
-        "source_file": "/home/deck/code/garage44/packages/expressio/src/.expressio.json",
+        "source_file": "/home/deck/code/expressio/packages/expressio/src/.expressio.json",
         "sync": {
             "dir": "${workspaceFolder}/**/*.{ts,tsx}",
             "enabled": true
@@ -48,7 +48,6 @@
                     "cache": "3c69d6c70e1ae53f",
                     "source": "Url to Anthropic's API",
                     "target": {
-                        "_collapsed": true,
                         "ara": "الرابط إلى واجهة برمجة تطبيقات أنثروبيك",
                         "deu": "Url zur API von Anthropic",
                         "eng-gbr": "Url to Anthropic's API",
@@ -60,7 +59,6 @@
                     "cache": "b13c1012cc858ac2",
                     "source": "The API key for the Anthropic service",
                     "target": {
-                        "_collapsed": true,
                         "ara": "مفتاح API لخدمة أنثروبيك",
                         "deu": "Der API-Schlüssel für den Anthropic-Dienst",
                         "eng-gbr": "The API key for the Anthropic service",
@@ -72,7 +70,6 @@
                     "cache": "fb3b653982592955",
                     "source": "Paid and Free <i>Deepl</i> API endpoints differ",
                     "target": {
-                        "_collapsed": true,
                         "ara": "تختلف نقاط نهاية واجهة برمجة التطبيقات Deepl المدفوعة والمجانية ",
                         "deu": "Kostenpflichtige und kostenlose Deepl API-Endpunkte unterscheiden sich",
                         "eng-gbr": "Paid and Free Deepl API endpoints differ",
@@ -84,7 +81,6 @@
                     "cache": "3baa1c11b8375429",
                     "source": "The API key for the <i>Deepl</i> service",
                     "target": {
-                        "_collapsed": true,
                         "ara": "مفتاح API لخدمة Deepl ",
                         "deu": "Der API-Schlüssel für den Dienst Deepl ",
                         "eng-gbr": "The API key for the Deepl service",
@@ -96,7 +92,6 @@
                     "cache": "f6d0269db49be6c1",
                     "source": "Change the <i>Expressio</i> UI language",
                     "target": {
-                        "_collapsed": true,
                         "ara": "تغيير لغة واجهة المستخدم Expressio ",
                         "deu": "Ändern Sie die Sprache der Benutzeroberfläche Expressio ",
                         "eng-gbr": "Change the Expressio UI language",
@@ -110,7 +105,6 @@
                     "cache": "939a0457c30d6ba3",
                     "source": "<i>Anthropic</i> API url",
                     "target": {
-                        "_collapsed": true,
                         "ara": "Anthropic رابط واجهة برمجة التطبيقات (API)",
                         "deu": "Anthropic API-Url",
                         "eng-gbr": "Anthropic API url",
@@ -122,7 +116,6 @@
                     "cache": "7ea941dba568cad3",
                     "source": "<i>Anthropic</i> API key",
                     "target": {
-                        "_collapsed": true,
                         "ara": "Anthropic مفتاح واجهة برمجة التطبيقات",
                         "deu": "Anthropic API-Schlüssel",
                         "eng-gbr": "Anthropic API key",
@@ -134,7 +127,6 @@
                     "cache": "d5c5f0cb5de73893",
                     "source": "<i>Deepl</i> API url",
                     "target": {
-                        "_collapsed": true,
                         "ara": "Deepl رابط واجهة برمجة التطبيقات (API)",
                         "deu": "Deepl API-Url",
                         "eng-gbr": "Deepl API url",
@@ -146,7 +138,6 @@
                     "cache": "d91219672a218ba3",
                     "source": "<i>Deepl</i> API key",
                     "target": {
-                        "_collapsed": true,
                         "ara": "Deepl مفتاح واجهة برمجة التطبيقات",
                         "deu": "Deepl API-Schlüssel",
                         "eng-gbr": "Deepl API key",
@@ -158,7 +149,6 @@
                     "cache": "bd1e03811268aa91",
                     "source": "UI Language",
                     "target": {
-                        "_collapsed": true,
                         "ara": "لغة واجهة المستخدم",
                         "deu": "UI Sprache",
                         "eng-gbr": "UI Language",
@@ -170,7 +160,6 @@
                     "cache": "563732341a48d32c",
                     "source": "Update Config",
                     "target": {
-                        "_collapsed": true,
                         "ara": "تحديث التكوين",
                         "deu": "Konfiguration aktualisieren",
                         "eng-gbr": "Update Config",
@@ -184,7 +173,6 @@
                     "cache": "34ccbaff665f32d3",
                     "source": "UI Language...",
                     "target": {
-                        "_collapsed": true,
                         "ara": "لغة واجهة المستخدم...",
                         "deu": "UI Sprache...",
                         "eng-gbr": "UI Language...",
@@ -198,7 +186,6 @@
             "cache": "ec1dd635e890e231",
             "source": "ltr",
             "target": {
-                "_collapsed": true,
                 "ara": "لتر",
                 "deu": "ltr",
                 "eng-gbr": "ltr",
@@ -206,83 +193,11 @@
                 "nld": "ltr"
             }
         },
-        "group_2cyqb5p9": {
-            "tag_5fs08jq5": {
-                "source": "tag_5fs08jq5",
-                "target": {
-                    "_collapsed": false,
-                    "ara": "tag_5fs08jq5",
-                    "deu": "tag_5fs08jq5",
-                    "eng-gbr": "tag_5fs08jq5",
-                    "fra": "tag_5fs08jq5",
-                    "nld": "tag_5fs08jq5",
-                    "zho-hans": "tag_5fs08jq5"
-                }
-            },
-            "tag_6ujo7hv2": {
-                "source": "tag_6ujo7hv2",
-                "target": {
-                    "ara": "tag_6ujo7hv2",
-                    "deu": "tag_6ujo7hv2",
-                    "eng-gbr": "tag_6ujo7hv2",
-                    "fra": "tag_6ujo7hv2",
-                    "nld": "tag_6ujo7hv2",
-                    "zho-hans": "tag_6ujo7hv2"
-                }
-            },
-            "tag_c7ifduxi": {
-                "source": "tag_c7ifduxi",
-                "target": {
-                    "_collapsed": false,
-                    "ara": "tag_c7ifduxi",
-                    "deu": "tag_c7ifduxi",
-                    "eng-gbr": "tag_c7ifduxi",
-                    "fra": "tag_c7ifduxi",
-                    "nld": "tag_c7ifduxi",
-                    "zho-hans": "tag_c7ifduxi"
-                }
-            },
-            "tag_irl8ns3a": {
-                "source": "tag_irl8ns3a",
-                "target": {
-                    "ara": "tag_irl8ns3a",
-                    "deu": "tag_irl8ns3a",
-                    "eng-gbr": "tag_irl8ns3a",
-                    "fra": "tag_irl8ns3a",
-                    "nld": "tag_irl8ns3a",
-                    "zho-hans": "tag_irl8ns3a"
-                }
-            },
-            "tag_jjnz2sxk": {
-                "source": "tag_jjnz2sxk",
-                "target": {
-                    "_collapsed": false,
-                    "ara": "tag_jjnz2sxk",
-                    "deu": "tag_jjnz2sxk",
-                    "eng-gbr": "tag_jjnz2sxk",
-                    "fra": "tag_jjnz2sxk",
-                    "nld": "tag_jjnz2sxk",
-                    "zho-hans": "tag_jjnz2sxk"
-                }
-            },
-            "tag_n5oyqatf": {
-                "source": "tag_n5oyqatf",
-                "target": {
-                    "ara": "tag_n5oyqatf",
-                    "deu": "tag_n5oyqatf",
-                    "eng-gbr": "tag_n5oyqatf",
-                    "fra": "tag_n5oyqatf",
-                    "nld": "tag_n5oyqatf",
-                    "zho-hans": "tag_n5oyqatf"
-                }
-            }
-        },
         "menu": {
             "logout": {
                 "cache": "252654fe1c2ba232",
                 "source": "Failed to login; please check your credentials",
                 "target": {
-                    "_collapsed": true,
                     "ara": "فشل تسجيل الدخول؛ يرجى التحقق من بيانات الاعتماد الخاصة بك",
                     "deu": "Anmeldung fehlgeschlagen; bitte überprüfen Sie Ihre Anmeldedaten",
                     "eng-gbr": "Failed to login; please check your credentials",
@@ -294,7 +209,6 @@
                 "cache": "26c8b06ab480059a",
                 "source": "Settings",
                 "target": {
-                    "_collapsed": true,
                     "ara": "الإعدادات",
                     "deu": "Einstellungen",
                     "eng-gbr": "Settings",
@@ -306,7 +220,6 @@
                 "cache": "a6015515a7c35e31",
                 "source": "Consumption ({{engine}})",
                 "target": {
-                    "_collapsed": true,
                     "ara": "الاستهلاك ({{engine}})",
                     "deu": "Verbrauch ({{engine}})",
                     "eng-gbr": "Consumption ({{engine}})",
@@ -319,7 +232,6 @@
                     "cache": "93b10e1a8141779e",
                     "source": "Workspace",
                     "target": {
-                        "_collapsed": true,
                         "ara": "مساحة العمل",
                         "deu": "Arbeitsbereich",
                         "eng-gbr": "Workspace",
@@ -331,7 +243,6 @@
                     "cache": "e19e1df7404101ff",
                     "source": "Translations",
                     "target": {
-                        "_collapsed": true,
                         "ara": "الترجمات",
                         "deu": "Übersetzungen",
                         "eng-gbr": "Translations",
@@ -345,7 +256,6 @@
                     "cache": "8658b2c750354df7",
                     "source": "Change your workspace here",
                     "target": {
-                        "_collapsed": true,
                         "ara": "تغيير مساحة العمل هنا",
                         "deu": "Ändern Sie hier Ihren Arbeitsbereich",
                         "eng-gbr": "Change your workspace here",
@@ -357,12 +267,23 @@
                     "cache": "b3c99799950460f1",
                     "source": "Workspaces",
                     "target": {
-                        "_collapsed": true,
                         "ara": "مساحات العمل",
                         "deu": "Arbeitsbereiche",
                         "eng-gbr": "Workspaces",
                         "fra": "Espaces de travail",
                         "nld": "Werkplekken"
+                    }
+                },
+                "placeholder": {
+                    "cache": "1124574951186a6d",
+                    "source": "Choose workspace...",
+                    "target": {
+                        "ara": "اختر مساحة العمل...",
+                        "deu": "Arbeitsbereich auswählen...",
+                        "eng-gbr": "Choose workspace...",
+                        "fra": "Choisis un espace de travail...",
+                        "nld": "Werkruimte kiezen...",
+                        "zho-hans": ""
                     }
                 }
             }
@@ -372,7 +293,6 @@
                 "cache": "5be0c3400368110c",
                 "source": "Config updated",
                 "target": {
-                    "_collapsed": true,
                     "ara": "تم تحديث التكوين",
                     "deu": "Konfig aktualisiert",
                     "eng-gbr": "Config updated",
@@ -384,7 +304,6 @@
                 "cache": "11ab93331cc681a7",
                 "source": "You're logged in succesfully",
                 "target": {
-                    "_collapsed": true,
                     "ara": "تم تسجيل دخولك بنجاح",
                     "deu": "Sie sind erfolgreich eingeloggt",
                     "eng-gbr": "You're logged in succesfully",
@@ -396,7 +315,6 @@
                 "cache": "252654fe1c2ba232",
                 "source": "Failed to login; please check your credentials",
                 "target": {
-                    "_collapsed": true,
                     "ara": "فشل تسجيل الدخول؛ يرجى التحقق من بيانات الاعتماد الخاصة بك",
                     "deu": "Anmeldung fehlgeschlagen; bitte überprüfen Sie Ihre Anmeldedaten",
                     "eng-gbr": "Failed to login; please check your credentials",
@@ -408,7 +326,6 @@
                 "cache": "704ef96f27ee23f3",
                 "source": "Settings updated",
                 "target": {
-                    "_collapsed": true,
                     "ara": "تم تحديث الإعدادات",
                     "deu": "Einstellungen aktualisiert",
                     "eng-gbr": "Settings updated",
@@ -420,7 +337,6 @@
                 "cache": "d0a857ec40cd4b24",
                 "source": "Skipped {{count}} cached translations",
                 "target": {
-                    "_collapsed": true,
                     "ara": "تم تخطي {{count}} الترجمات المخبأة ",
                     "deu": "Übersprungene {{count}} zwischengespeicherte Übersetzungen",
                     "eng-gbr": "Skipped {{count}} cached translations",
@@ -432,7 +348,6 @@
                 "cache": "a07da6edbfef3495",
                 "source": "Failed to translate group; {{count}} translations failed",
                 "target": {
-                    "_collapsed": true,
                     "ara": "فشل في ترجمة المجموعة؛ {{count}} فشلت الترجمات ",
                     "deu": "Gruppe konnte nicht übersetzt werden; {{count}} Übersetzungen fehlgeschlagen",
                     "eng-gbr": "Failed to translate group; {{count}} translations failed",
@@ -444,7 +359,6 @@
                 "cache": "8ac9239bbb52a363",
                 "source": "{{count}} translations were processed",
                 "target": {
-                    "_collapsed": true,
                     "ara": "{{count}} تمت معالجة الترجمات",
                     "deu": "{{count}} Übersetzungen wurden bearbeitet",
                     "eng-gbr": "{{count}} translations were processed",
@@ -456,7 +370,6 @@
                 "cache": "275ca2ef1df3a82f",
                 "source": "Validation errors",
                 "target": {
-                    "_collapsed": true,
                     "ara": "أخطاء التحقق من الصحة",
                     "deu": "Validierungsfehler",
                     "eng-gbr": "Validation errors",
@@ -471,7 +384,6 @@
                     "cache": "961e622396f3d41f",
                     "source": "Use your native language to translate",
                     "target": {
-                        "_collapsed": true,
                         "ara": "استخدم لغتك الأم للترجمة",
                         "deu": "Verwenden Sie Ihre Muttersprache zum Übersetzen",
                         "eng-gbr": "Use your native language to translate",
@@ -483,7 +395,6 @@
                     "cache": "c61af450299f0b38",
                     "source": "A file pattern (glob) to use for files containing $t tags",
                     "target": {
-                        "_collapsed": true,
                         "ara": "نمط ملف (جلوب) لاستخدامه للملفات التي تحتوي على علامات $t",
                         "deu": "Ein Dateimuster (glob), das für Dateien verwendet wird, die $t-Tags enthalten",
                         "eng-gbr": "A file pattern (glob) to use for files containing $t tags",
@@ -495,7 +406,6 @@
                     "cache": "d043ef79396c9fe5",
                     "source": "Scan workspace and mark new & redundant i18n tags",
                     "target": {
-                        "_collapsed": true,
                         "ara": "مسح مساحة العمل وتمييز علامات i18n الجديدة والزائدة عن الحاجة",
                         "deu": "Arbeitsbereich scannen und neue und redundante i18n-Tags markieren",
                         "eng-gbr": "Scan workspace and mark new & redundant i18n tags",
@@ -507,7 +417,6 @@
                     "cache": "f50bf2f15c4914b5",
                     "source": "The languages to translate to. Removing, adding or changing a language (e.g. formality) will retranslate all tags for that language.",
                     "target": {
-                        "_collapsed": true,
                         "ara": "اللغات المراد الترجمة إليها. ستؤدي إزالة لغة أو إضافتها أو تغييرها (على سبيل المثال لغة رسمية) إلى إعادة ترجمة جميع العلامات لتلك اللغة.",
                         "deu": "Die Sprachen, in die übersetzt werden soll. Das Entfernen, Hinzufügen oder Ändern einer Sprache (z. B. Formalität) führt zu einer Neuübersetzung aller Tags für diese Sprache.",
                         "eng-gbr": "The languages to translate to. Removing, adding or changing a language (e.g. formality) will retranslate all tags for that language.",
@@ -519,7 +428,6 @@
                     "cache": "c465bd3545915135",
                     "source": "Here you can add new and existing Expressio workspaces",
                     "target": {
-                        "_collapsed": true,
                         "ara": "هنا يمكنك إضافة مساحات عمل Expressio الجديدة والحالية",
                         "deu": "Hier können Sie neue und bestehende Expressio Arbeitsbereiche hinzufügen",
                         "eng-gbr": "Here you can add new and existing Expressio workspaces",
@@ -533,7 +441,6 @@
                     "cache": "64e8c2d0a425dc18",
                     "source": "Formality",
                     "target": {
-                        "_collapsed": true,
                         "ara": "الشكليات",
                         "deu": "Formalität",
                         "eng-gbr": "Formality",
@@ -545,7 +452,6 @@
                     "cache": "beb7ee20705c04a8",
                     "source": "Source Language",
                     "target": {
-                        "_collapsed": true,
                         "ara": "لغة المصدر",
                         "deu": "Quelle Sprache",
                         "eng-gbr": "Source Language",
@@ -557,7 +463,6 @@
                     "cache": "a938a45f65f8b71f",
                     "source": "Workspace files",
                     "target": {
-                        "_collapsed": true,
                         "ara": "ملفات مساحة العمل",
                         "deu": "Arbeitsbereich-Dateien",
                         "eng-gbr": "Workspace files",
@@ -569,7 +474,6 @@
                     "cache": "d77b54bce87829c0",
                     "source": "Sync Workspace tags",
                     "target": {
-                        "_collapsed": true,
                         "ara": "علامات مزامنة مساحة العمل",
                         "deu": "Arbeitsbereich-Tags synchronisieren",
                         "eng-gbr": "Sync Workspace tags",
@@ -581,7 +485,6 @@
                     "cache": "5de8d4afc341352b",
                     "source": "Target Languages",
                     "target": {
-                        "_collapsed": true,
                         "ara": "اللغات المستهدفة",
                         "deu": "Zielsprachen",
                         "eng-gbr": "Target Languages",
@@ -593,7 +496,6 @@
                     "cache": "66f579dbe08d90eb",
                     "source": "Update Settings",
                     "target": {
-                        "_collapsed": true,
                         "ara": "تحديث الإعدادات",
                         "deu": "Einstellungen aktualisieren",
                         "eng-gbr": "Update Settings",
@@ -605,7 +507,6 @@
                     "cache": "b3c99799950460f1",
                     "source": "Workspaces",
                     "target": {
-                        "_collapsed": true,
                         "ara": "مساحات العمل",
                         "deu": "Arbeitsbereiche",
                         "eng-gbr": "Workspaces",
@@ -619,7 +520,6 @@
                     "cache": "6438733efd8e2c06",
                     "source": "Formality...",
                     "target": {
-                        "_collapsed": true,
                         "ara": "الشكليات...",
                         "deu": "Förmlichkeit...",
                         "eng-gbr": "Formality...",
@@ -631,7 +531,6 @@
                     "cache": "beb7ee20705c04a8",
                     "source": "Source Language",
                     "target": {
-                        "_collapsed": true,
                         "ara": "لغة المصدر",
                         "deu": "Quelle Sprache",
                         "eng-gbr": "Source Language",
@@ -643,7 +542,6 @@
                     "cache": "7106721731d96917",
                     "source": "Select Translator...",
                     "target": {
-                        "_collapsed": true,
                         "ara": "اختر المترجم...",
                         "deu": "Übersetzer auswählen...",
                         "eng-gbr": "Select Translator...",
@@ -657,7 +555,6 @@
                     "cache": "9c671f4b37a7386f",
                     "source": "Existing workspace at: {{path}}",
                     "target": {
-                        "_collapsed": true,
                         "ara": "مساحة العمل الحالية في: {{path}}",
                         "deu": "Vorhandener Arbeitsbereich bei: {{path}}",
                         "eng-gbr": "Existing workspace at: {{path}}",
@@ -669,7 +566,6 @@
                     "cache": "7f0c00e40def6e68",
                     "source": "New workspace at: {{path}}",
                     "target": {
-                        "_collapsed": true,
                         "ara": "مساحة عمل جديدة في: {{path}}",
                         "deu": "Neuer Arbeitsbereich bei: {{path}}",
                         "eng-gbr": "New workspace at: {{path}}",
@@ -679,26 +575,12 @@
                 }
             }
         },
-        "translating": {
-            "cache": "446626f1cd78c705",
-            "source": "translate me again",
-            "target": {
-                "_collapsed": true,
-                "ara": "ترجم لي مرة أخرى",
-                "deu": "Übersetze mich noch einmal",
-                "eng-gbr": "translate me again",
-                "fra": "Traduis-moi encore",
-                "nld": "vertaal me opnieuw",
-                "zho-hans": ""
-            }
-        },
         "translation": {
             "placeholder": {
                 "translate": {
                     "cache": "fdbb80e87a78423c",
                     "source": "Ctrl+Enter to translate",
                     "target": {
-                        "_collapsed": true,
                         "ara": "Ctrl+إنتر للترجمة",
                         "deu": "Strg+Eingabe zum Übersetzen",
                         "eng-gbr": "Ctrl+Enter to translate",
@@ -712,7 +594,6 @@
                     "cache": "3df9c9bdfda8bb4d",
                     "source": "Remove this tag",
                     "target": {
-                        "_collapsed": true,
                         "ara": "قم بإزالة هذه العلامة",
                         "deu": "Dieses Tag entfernen",
                         "eng-gbr": "Remove this tag",
@@ -724,7 +605,6 @@
                     "cache": "925b233dca689d45",
                     "source": "Translate this tag",
                     "target": {
-                        "_collapsed": true,
                         "ara": "ترجمة هذه العلامة",
                         "deu": "Übersetzen Sie dieses Tag",
                         "eng-gbr": "Translate this tag",
@@ -736,7 +616,6 @@
                     "cache": "72eb0a0fbf138817",
                     "source": "Translate whole group",
                     "target": {
-                        "_collapsed": true,
                         "ara": "ترجمة المجموعة بأكملها",
                         "deu": "Ganze Gruppe übersetzen",
                         "eng-gbr": "Translate whole group",
@@ -748,7 +627,6 @@
                     "cache": "6e74a21a5c41b02a",
                     "source": "Translate whole group (ignore cache)",
                     "target": {
-                        "_collapsed": true,
                         "ara": "ترجمة المجموعة بأكملها (تجاهل ذاكرة التخزين المؤقت)",
                         "deu": "Ganze Gruppe übersetzen (Cache ignorieren)",
                         "eng-gbr": "Translate whole group (ignore cache)",
@@ -760,7 +638,6 @@
                     "cache": "9e456c154a3bcad9",
                     "source": "Hide nested translation groups",
                     "target": {
-                        "_collapsed": true,
                         "ara": "إخفاء مجموعات الترجمة المتداخلة",
                         "deu": "Verschachtelte Übersetzungsgruppen ausblenden",
                         "eng-gbr": "Hide nested translation groups",
@@ -772,7 +649,6 @@
                     "cache": "7ff6c561643cc0c9",
                     "source": "Show nested translation groups (Ctrl+click & Alt+key forrces uncollapse; Ctrl+click uncollapses translation results as well)",
                     "target": {
-                        "_collapsed": true,
                         "ara": "إظهار مجموعات الترجمة المتداخلة (يؤدي الضغط على زر Ctrl+click و Alt+key لإلغاء الطي، ويؤدي الضغط على زر Ctrl+click إلى إلغاء طيّ نتائج الترجمة أيضًا)",
                         "deu": "Verschachtelte Übersetzungsgruppen anzeigen (Strg+Klick & Alt+Taste zum Ausklappen; Strg+Klick klappt auch die Übersetzungsergebnisse aus)",
                         "eng-gbr": "Show nested translation groups (Ctrl+click & Alt+key forrces uncollapse; Ctrl+click uncollapses translation results as well)",
@@ -788,7 +664,6 @@
                     "cache": "2bad262ea2e721da",
                     "source": "Add a new tag group",
                     "target": {
-                        "_collapsed": true,
                         "ara": "إضافة مجموعة علامات جديدة",
                         "deu": "Eine neue Tag-Gruppe hinzufügen",
                         "eng-gbr": "Add a new tag group",
@@ -800,7 +675,6 @@
                     "cache": "b54abbba204412fe",
                     "source": "Add a new translation tag",
                     "target": {
-                        "_collapsed": true,
                         "ara": "إضافة علامة ترجمة جديدة",
                         "deu": "Ein neues Übersetzungs-Tag hinzufügen",
                         "eng-gbr": "Add a new translation tag",
@@ -812,7 +686,6 @@
                     "cache": "434be92219ba808a",
                     "source": "Remove this tag group",
                     "target": {
-                        "_collapsed": true,
                         "ara": "إزالة مجموعة العلامات هذه",
                         "deu": "Diese Tag-Gruppe entfernen",
                         "eng-gbr": "Remove this tag group",
@@ -827,7 +700,6 @@
                 "cache": "17333f3bb279b6ef",
                 "source": "Login to Expressio",
                 "target": {
-                    "_collapsed": true,
                     "ara": "تسجيل الدخول إلى إكسبريسيو",
                     "deu": "Anmeldung bei Expressio",
                     "eng-gbr": "Login to Expressio",
@@ -842,12 +714,12 @@
                     "cache": "a322ea09145ad271",
                     "source": "Workspace not found",
                     "target": {
-                        "_collapsed": true,
                         "ara": "لم يتم العثور على مساحة العمل",
                         "deu": "Arbeitsbereich nicht gefunden",
                         "eng-gbr": "Workspace not found",
                         "fra": "L'espace de travail n'a pas été trouvé",
-                        "nld": "Werkruimte niet gevonden"
+                        "nld": "Werkruimte niet gevonden",
+                        "zho-hans": ""
                     }
                 }
             }

@@ -112,6 +112,7 @@ export const Main = () => {
                             route(newRoute)
                         }}
                         options={$s.workspaces.map((i) => ({id: i.workspace_id, name: i.workspace_id}))}
+                        placeholder={$t('menu.workspaces.placeholder')}
                     />
 
                     <Link
