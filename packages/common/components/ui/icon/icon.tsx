@@ -64,21 +64,21 @@ export function Icon({className = '', disabled = false, name, onClick = null, si
         }
     }, [tip])
 
-    // return <svg
-    //     className={classes(
-    //         'c-icon',
-    //         `icon-${size ? size : 'd'}`,
-    //         `type-${type ? type : 'default'}`, {
-    //             click: !!onClick,
-    //             disabled: disabled ? disabled : false,
-    //         }, className,
-    //     )}
-    //     height="40"
-    //     onClick={onClick}
-    //     ref={iconRef}
-    //     viewBox="0 0 24 24"
-    //     width="40"
-    // >
-    //     <path d={svg[name]} />
-    // </svg>
+    return <svg
+        className={classes(
+            'c-icon',
+            `icon-${size ? size : 'd'}`,
+            `type-${type ? type : 'default'}`, {
+                click: !!onClick,
+                disabled: disabled ? disabled : false,
+            }, className,
+        )}
+        height="40"
+        onClick={onClick}
+        ref={iconRef}
+        viewBox="0 0 24 24"
+        width="40"
+    >
+        <path d={svg[name]} />
+    </svg>
 }
