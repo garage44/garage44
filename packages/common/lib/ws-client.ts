@@ -188,8 +188,6 @@ export class WebSocketClient extends EventEmitter {
         }, delay)
     }
 
-
-
     removeEventListener(type: string, listener: EventListener) {
         if (type === 'message') {
             this.messageListeners = this.messageListeners.filter(l => l !== listener)
@@ -206,9 +204,11 @@ export class WebSocketClient extends EventEmitter {
     }
 
     private processMessageQueue() {
+        logger.debug(`[websocket] processing message queue, ${this.messageQueue.length} messages`)
         while (this.messageQueue.length > 0) {
             const message = this.messageQueue.shift()
             if (message) {
+                logger.debug(`[websocket] processing queued message: ${message.id}`)
                 if (message.method) {
                     // Don't create a new request, just send the queued message with its existing ID
                     const wsMessage = constructMessage(message.url, message.data, message.id, message.method)
@@ -216,16 +216,20 @@ export class WebSocketClient extends EventEmitter {
                         this.ws.send(JSON.stringify(wsMessage))
                     }
                 } else {
+                    logger.debug(`[websocket] sending queued non-request message`)
                     this.send(message.url, message.data)
                 }
             }
         }
+        logger.debug(`[websocket] finished processing message queue`)
     }
 
     private handleResponse(message: WebSocketMessage) {
-        if (!message.id) return false
+        if (!message.id) {
+            logger.debug(`[websocket] message has no id, not a response`)
+            return false
+        }
 
-        logger.debug(`[websocket] received message with id: ${message.id}`)
         const pending = this.pendingRequests.get(message.id)
         if (!pending) {
             logger.debug(`[websocket] no pending request found for id: ${message.id}`)
@@ -245,10 +249,11 @@ export class WebSocketClient extends EventEmitter {
                 logger.debug('[websocket] connection not open, queuing request')
                 // Instead of resolving null immediately, queue both the message and its promise handlers
                 const id = Math.random().toString(36).substring(2, 15)
-                logger.debug('[websocket] generated request id for queue:', id)
+                logger.debug(`[websocket] generated request id for queue: ${id}`)
                 this.messageQueue.push({data, id, method, url})
 
                 const timeout = setTimeout(() => {
+                    logger.debug(`[websocket] timeout triggered for queued request: ${id}`)
                     this.pendingRequests.delete(id)
                     reject(new Error('Request timeout while waiting for connection'))
                 }, this.requestTimeout)
@@ -258,6 +263,7 @@ export class WebSocketClient extends EventEmitter {
                     resolve,
                     timeout,
                 })
+                logger.debug(`[websocket] stored pending request with id: ${id}`)
                 return
             }
 

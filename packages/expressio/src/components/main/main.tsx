@@ -52,7 +52,7 @@ export const Main = () => {
 
         const match = url.match(/\/workspaces\/([^/]+)/)
         if (match && (!$s.workspace || match[1] !== $s.workspace.config.workspace_id)) {
-            const result = await api.get(`/api/workspaces/${match[1]}`)
+            const result = await ws.get(`/api/workspaces/${match[1]}`)
 
             if (!result.error) {
                 state.workspace_id = match[1]
@@ -94,7 +94,7 @@ export const Main = () => {
                         label={$t('menu.workspaces.label')}
                         model={state.$workspace_id}
                         onChange={async(workspace_id) => {
-                            $s.workspace = (await api.get(`/api/workspaces/${workspace_id}`))
+                            $s.workspace = (await ws.get(`/api/workspaces/${workspace_id}`))
                             // Check if current route is valid for the new workspace
                             const currentPath = getCurrentUrl()
                             const isValidRoute = currentPath.endsWith('/settings') || currentPath.endsWith('/translations')

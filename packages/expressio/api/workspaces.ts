@@ -86,15 +86,15 @@ export default async function(app) {
         }
     }, [requireAdmin])
 
-    app.get('/api/workspaces/:workspace_id', async(req, res) => {
+    api.get('/api/workspaces/:workspace_id', async(context, req) => {
         const workspace = workspaces.get(req.params.workspace_id)
         if (!workspace) {
-            return res.status(404).json({error: 'Workspace not found'})
+            return {error: 'Workspace not found'}
         }
-        return res.json({
+        return {
             config: workspace.config,
             i18n: workspace.i18n,
-        })
+        }
     })
 
     app.post('/api/workspaces/:workspace_id', async(req, res) => {
