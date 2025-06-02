@@ -1,10 +1,9 @@
 # Expressio
-
-<img src="https://raw.githubusercontent.com/garage44/expressio/refs/heads/main/.github/screenshot-0.png" width="350" title="Screenshot 0" />
-
-<img src="https://raw.githubusercontent.com/garage44/expressio/refs/heads/main/.github/screenshot-1.png" width="350" title="Screenshot 1" />
-
-<img src="https://raw.githubusercontent.com/garage44/expressio/refs/heads/main/.github/screenshot-2.png" width="350" title="Screenshot 2" />
+<p align="center">
+    <img src="https://raw.githubusercontent.com/garage44/expressio/refs/heads/main/.github/screenshot-0.png" width="350" title="Screenshot 0" />
+    <img src="https://raw.githubusercontent.com/garage44/expressio/refs/heads/main/.github/screenshot-1.png" width="350" title="Screenshot 1" />
+    <img src="https://raw.githubusercontent.com/garage44/expressio/refs/heads/main/.github/screenshot-2.png" width="350" title="Screenshot 2" />
+</p>
 
 Expressio is a tool that combines AI translation with i18n workflow automation.
 It leverages a translation service wrapper called [Enola](https://github.com/garage44/packages/enola)
