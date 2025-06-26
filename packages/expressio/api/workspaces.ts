@@ -21,13 +21,44 @@ const requireAdmin = async(ctx, next) => {
 export function registerWorkspacesWebSocketApiRoutes() {
     // WebSocket API routes (unchanged) - these are for real-time features
     api.get('/api/workspaces/browse', async(context, request) => {
-        // Only return serializable fields
-        const workspacesList = workspaces.workspaces.map(ws => ({
-            id: ws.config.workspace_id,
-            config: ws.config,
-            i18n: ws.i18n ? JSON.parse(JSON.stringify(ws.i18n)) : undefined,
-        }))
-        return workspacesList
+        // Determine the path to browse
+        const reqPath = request.data?.path || process.cwd()
+        const absPath = path.isAbsolute(reqPath) ? reqPath : path.resolve(process.cwd(), reqPath)
+
+        // List directories
+        let entries: any[] = []
+        try {
+            const dirents = await fs.readdir(absPath, { withFileTypes: true })
+            entries = await Promise.all(dirents.filter(d => d.isDirectory()).map(async (dirent) => {
+                const dirPath = path.join(absPath, dirent.name)
+                // Check if this directory is a workspace root
+                const is_workspace = workspaces.workspaces.some(ws => path.dirname(ws.config.source_file) === dirPath)
+                return {
+                    name: dirent.name,
+                    path: dirPath,
+                    is_workspace,
+                }
+            }))
+        } catch (err) {
+            logger.error(`[api] Failed to list directory: ${absPath} - ${err}`)
+        }
+
+        // Find parent path
+        const parent = path.dirname(absPath)
+        // Find current workspace if any
+        const currentWorkspace = workspaces.workspaces.find(ws => path.dirname(ws.config.source_file) === absPath) || null
+
+        return {
+            current: {
+                path: absPath,
+                workspace: currentWorkspace ? {
+                    id: currentWorkspace.config.workspace_id,
+                    config: currentWorkspace.config,
+                } : null,
+            },
+            directories: entries,
+            parent,
+        }
     })
 
     api.get('/api/workspaces/:workspace_id', async(context, req) => {
