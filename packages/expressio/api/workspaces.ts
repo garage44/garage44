@@ -21,21 +21,27 @@ const requireAdmin = async(ctx, next) => {
 export function registerWorkspacesWebSocketApiRoutes() {
     // WebSocket API routes (unchanged) - these are for real-time features
     api.get('/api/workspaces/browse', async(context, request) => {
-        const workspacesList = Array.from(workspaces.values()).map(ws => ({
-            id: ws.id,
-            name: ws.name,
+        // Only return serializable fields
+        const workspacesList = workspaces.workspaces.map(ws => ({
+            id: ws.config.workspace_id,
             config: ws.config,
+            i18n: ws.i18n ? JSON.parse(JSON.stringify(ws.i18n)) : undefined,
         }))
         return workspacesList
     })
 
     api.get('/api/workspaces/:workspace_id', async(context, req) => {
         const workspaceId = req.params.workspace_id
-        const workspace = workspaces.get(workspaceId)
-        if (!workspace) {
+        const ws = workspaces.get(workspaceId)
+        if (!ws) {
             throw new Error(`Workspace not found: ${workspaceId}`)
         }
-        return workspace
+        // Only return serializable fields
+        return {
+            id: ws.config.workspace_id,
+            config: ws.config,
+            i18n: ws.i18n ? JSON.parse(JSON.stringify(ws.i18n)) : undefined,
+        }
     })
 }
 
