@@ -1,19 +1,13 @@
 import {pathCreate, pathDelete, pathMove, pathRef, pathToggle} from '@garage44/common/lib/paths.ts'
 import {translate_path, translate_tag} from '../lib/translate.ts'
-import {api} from '../lib/ws-server.ts'
+import {apiWs} from '../lib/ws-server.ts'
 import {i18nFormat} from '@garage44/common/lib/i18n.ts'
 import {logger} from '@garage44/common/app'
 import {workspaces} from '../service.ts'
 
-export default async function(app) {
-
-    /** Public HTTP endpoint to serve translations over the network. */
-    app.get('/api/workspaces/:workspace_id/translations', async(req, res) => {
-        const workspace = workspaces.get(req.params.workspace_id)
-        res.json(i18nFormat(workspace.i18n, workspace.config.languages.target))
-    })
-
-    api.post('/api/workspaces/:workspace_id/paths', async(context, request) => {
+export function registerI18nWebSocketApiRoutes() {
+    // WebSocket API routes (unchanged) - these are for real-time features
+    apiWs.post('/api/workspaces/:workspace_id/paths', async(context, request) => {
         const params = request.params
         const workspace = workspaces.get(params.workspace_id)
         const {path, value} = request.data
@@ -21,7 +15,7 @@ export default async function(app) {
         workspace.save()
     })
 
-    api.delete('/api/workspaces/:workspace_id/paths', async(context, request) => {
+    apiWs.delete('/api/workspaces/:workspace_id/paths', async(context, request) => {
         const params = request.params
         const workspace = workspaces.get(params.workspace_id)
         const path = request.data.path as string
@@ -29,7 +23,7 @@ export default async function(app) {
         workspace.save()
     })
 
-    api.put('/api/workspaces/:workspace_id/paths', async(context, request) => {
+    apiWs.put('/api/workspaces/:workspace_id/paths', async(context, request) => {
         const params = request.params
         const workspace = workspaces.get(params.workspace_id)
         const {old_path, new_path} = request.data
@@ -37,7 +31,7 @@ export default async function(app) {
         workspace.save()
     })
 
-    api.post('/api/workspaces/:workspace_id/collapse', async(context, request) => {
+    apiWs.post('/api/workspaces/:workspace_id/collapse', async(context, request) => {
         const params = request.params
         const {path, tag_modifier, value} = request.data
         const workspace = workspaces.get(params.workspace_id)
@@ -51,7 +45,7 @@ export default async function(app) {
         workspace.save()
     })
 
-    api.post('/api/workspaces/:workspace_id/tags', async(context, request) => {
+    apiWs.post('/api/workspaces/:workspace_id/tags', async(context, request) => {
         const params = request.params
         const workspace = workspaces.get(params.workspace_id)
         const {path, source} = request.data
@@ -60,7 +54,7 @@ export default async function(app) {
         workspace.save()
     })
 
-    api.post('/api/workspaces/:workspace_id/translate', async(context, request) => {
+    apiWs.post('/api/workspaces/:workspace_id/translate', async(context, request) => {
         const workspace = workspaces.get(request.params.workspace_id)
 
         const {path, value} = request.data
@@ -91,13 +85,25 @@ export default async function(app) {
         workspace.save()
     })
 
-    api.post('/api/workspaces/:workspace_id/undo', async(context, request) => {
+    apiWs.post('/api/workspaces/:workspace_id/undo', async(context, request) => {
         const workspace = workspaces.get(request.params.workspace_id)
         workspace.undo()
     })
 
-    api.post('/api/workspaces/:workspace_id/redo', async(context, request) => {
+    apiWs.post('/api/workspaces/:workspace_id/redo', async(context, request) => {
         const workspace = workspaces.get(request.params.workspace_id)
         workspace.redo()
+    })
+}
+
+// Default export for backward compatibility
+export default function(router: any) {
+    // HTTP API endpoints using familiar Express-like pattern
+    router.get('/api/workspaces/:workspace_id/translations', async (req: any, params: any) => {
+        const workspaceId = params.param0 // Extract workspace_id from path params
+        const workspace = workspaces.get(workspaceId)
+        return new Response(JSON.stringify(i18nFormat(workspace.i18n, workspace.config.languages.target)), {
+            headers: { 'Content-Type': 'application/json' }
+        })
     })
 }

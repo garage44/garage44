@@ -1,20 +1,11 @@
 import {enola, logger, workspaces} from '../service.ts'
-import {api} from '../lib/ws-server.ts'
+import {apiWs as api} from '../lib/ws-server.ts'
 import {config} from '../lib/config.ts'
 import fs from 'fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 
 import {syncLanguage} from '../lib/sync.ts'
-
-interface WorkspaceConfig {
-    translator: unknown
-    // Add other properties as needed
-}
-
-interface Workspace {
-    config: WorkspaceConfig
-}
 
 // Auth middleware that can be reused across workspace routes
 const requireAdmin = async(ctx, next) => {
@@ -27,84 +18,50 @@ const requireAdmin = async(ctx, next) => {
     return next(ctx)
 }
 
-export default async function(app) {
-    app.get('/api/workspaces/:workspace_id/usage', async(req, res) => {
-        const workspace = workspaces.get(req.params.workspace_id) as Workspace
-        const usage = await enola.usage(workspace.config.translator)
-        res.json(usage)
-    })
-
+export function registerWorkspacesWebSocketApiRoutes() {
+    // WebSocket API routes (unchanged) - these are for real-time features
     api.get('/api/workspaces/browse', async(context, request) => {
-        try {
-            const startPath = request.data?.path as string || os.homedir()
-            let workspace = null
-
-            const currentIsWorkspace = await fs.access(path.join(startPath, '.expressio.json'))
-                .then(() => true)
-                .catch(() => false)
-
-            if (currentIsWorkspace) {
-                const configContent = await fs.readFile(path.join(startPath, '.expressio.json'), 'utf-8')
-                const workspaceSettings = JSON.parse(configContent)
-                workspace = {
-                    source_file: path.join(startPath, '.expressio.json'),
-                    status: 'existing',
-                    workspace_id: workspaceSettings.config.workspace_id,
-                }
-            }
-
-            const contents = await fs.readdir(startPath, {withFileTypes: true})
-
-            const directories = await Promise.all(contents
-                .filter(dirent => dirent.isDirectory() && !dirent.name.startsWith('.'))
-                .map(async dirent => {
-                    const dirPath = path.join(startPath, dirent.name)
-                    const isWorkspace = await fs.access(path.join(dirPath, '.expressio.json'))
-                        .then(() => true)
-                        .catch(() => false)
-
-                    return {
-                        is_workspace: isWorkspace,
-                        name: dirent.name,
-                        path: dirPath,
-                    }
-                }))
-
-            return {
-                current: {
-                    path: startPath,
-                    workspace,
-                },
-                directories,
-                parent: path.dirname(startPath),
-            }
-        } catch (err) {
-            if (err instanceof Error) {
-                throw new Error(err.message)
-            }
-            throw new Error('Unknown error occurred')
-        }
-    }, [requireAdmin])
+        const workspacesList = Array.from(workspaces.values()).map(ws => ({
+            id: ws.id,
+            name: ws.name,
+            config: ws.config,
+        }))
+        return workspacesList
+    })
 
     api.get('/api/workspaces/:workspace_id', async(context, req) => {
-        const workspace = workspaces.get(req.params.workspace_id)
+        const workspaceId = req.params.workspace_id
+        const workspace = workspaces.get(workspaceId)
         if (!workspace) {
-            return {error: 'Workspace not found'}
+            throw new Error(`Workspace not found: ${workspaceId}`)
         }
-        return {
-            config: workspace.config,
-            i18n: workspace.i18n,
-        }
+        return workspace
+    })
+}
+
+// Default export for backward compatibility
+export default function(router: any) {
+    // HTTP API endpoints using familiar Express-like pattern
+    router.get('/api/workspaces/:workspace_id/usage', async (req: any, params: any) => {
+        const workspaceId = params.param0 // Extract workspace_id from path params
+        const workspace = workspaces.get(workspaceId)
+        // Get the first available engine for usage
+        const engine = Object.keys(config.enola.engines)[0] || 'deepl'
+        const usage = await enola.usage(engine)
+        return new Response(JSON.stringify(usage), {
+            headers: { 'Content-Type': 'application/json' }
+        })
     })
 
-    app.post('/api/workspaces/:workspace_id', async(req, res) => {
-        const workspace_data = req.body.workspace
+    router.post('/api/workspaces/:workspace_id', async (req: any, params: any) => {
+        const workspaceId = params.param0
+        const workspace_data = await req.json()
 
-        const workspace = workspaces.get(req.params.workspace_id)
+        const workspace = workspaces.get(workspaceId)
         const target_languages = workspace.config.languages.target
 
         // The languages we have selected in the new situation.
-        const selectedLanguages = workspace_data.config.languages.target
+        const selectedLanguages = workspace_data.workspace.config.languages.target
 
         const currentLanguageIds = target_languages.map((i) => i.id)
         const selectedLanguageIds = selectedLanguages.map((i) => i.id)
@@ -129,30 +86,37 @@ export default async function(app) {
             syncLanguage(workspace, language, 'update')
         }))
 
-        Object.assign(workspace.config, workspace_data.config)
+        Object.assign(workspace.config, workspace_data.workspace.config)
         workspace.save()
-        return res.json({languages: workspace.config.languages})
-    })
-
-    app.delete('/api/workspaces/:workspace_id', async(req, res) => {
-        logger.info(`Deleting workspace: ${req.params.workspace_id}`)
-        await workspaces.delete(req.params.workspace_id)
-
-        return res.json({
-            message: 'ok',
+        return new Response(JSON.stringify({languages: workspace.config.languages}), {
+            headers: { 'Content-Type': 'application/json' }
         })
     })
 
-    app.post('/api/workspaces', async(req, res) => {
-        try {
-            const workspace = await workspaces.add(req.body.path)
+    router.delete('/api/workspaces/:workspace_id', async (req: any, params: any) => {
+        const workspaceId = params.param0
+        logger.info(`Deleting workspace: ${workspaceId}`)
+        await workspaces.delete(workspaceId)
 
-            return res.json({
-                workspace: workspace.config,
+        return new Response(JSON.stringify({message: 'ok'}), {
+            headers: { 'Content-Type': 'application/json' }
+        })
+    })
+
+    router.post('/api/workspaces', async (req: any) => {
+        try {
+            const body = await req.json()
+            const workspace = await workspaces.add(body.path)
+
+            return new Response(JSON.stringify({workspace: workspace.config}), {
+                headers: { 'Content-Type': 'application/json' }
             })
         } catch (err) {
             logger.error(`Failed to add workspace: ${err}`)
-            return res.status(400).json({error: err.message})
+            return new Response(JSON.stringify({error: err.message}), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            })
         }
     })
 }
