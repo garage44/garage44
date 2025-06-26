@@ -23,6 +23,9 @@
   "type": "module",
   "author": "Garage44",
   "license": "MIT",
+  "browser": {
+    "./lib/logger.ts": "./lib/logger.browser.ts"
+  },
   "dependencies": {
     "@preact/signals": "^2.0.2",
     "bufferutil": "^4.0.9",

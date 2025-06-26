@@ -1,7 +1,7 @@
 import * as _i18n from '@/lib/i18n'
 import Api from '@/lib/api'
 import EventEmitter from 'eventemitter3'
-import Logger from '@/lib/logger'
+import { Logger } from '@garage44/common/lib/logger.ts'
 import Store from '@/lib/store'
 import env from '@/lib/env'
 export {notify} from '@/lib/notifier'

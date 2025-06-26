@@ -3,7 +3,7 @@ import {URL, fileURLToPath} from 'node:url'
 import {bunchyArgs, bunchyService} from '@garage44/bunchy'
 import {config, initConfig} from './lib/config.ts'
 import {keyMod, padLeft} from '@garage44/common/lib/utils.ts'
-import {loggerTransports, serviceLogger} from '@garage44/common/lib/service.ts'
+import {serviceLogger, loggerTransports} from '@garage44/common/lib/service.ts'
 import {Enola} from '@garage44/enola'
 import {Workspace} from './lib/workspace.ts'
 import {Workspaces} from './lib/workspaces.ts'
@@ -40,7 +40,7 @@ ${pc.blue(figlet.textSync("Expressio"))}\n
 // In case we start in development mode.
 let bunchyConfig
 
-export const logger = serviceLogger(config.logger)
+export let logger = loggerTransports(config.logger, 'service')
 export const enola = new Enola()
 export const workspaces = new Workspaces()
 
@@ -78,7 +78,7 @@ cli.usage('Usage: $0 [task]')
                 type: 'string',
             })
     }, async(argv) => {
-        loggerTransports(logger, config.logger, 'cli')
+        logger = loggerTransports(config.logger, 'cli')
         const workspace = new Workspace()
         await workspace.init({
             source_file: path.resolve(argv.workspace),
@@ -107,7 +107,7 @@ cli.usage('Usage: $0 [task]')
         logger.info(`Imported: ${createTags.length} tags`)
     })
     .command('export', 'Export target translations to i18next format', (yargs) => {
-        loggerTransports(logger, config.logger, 'cli')
+        logger = loggerTransports(config.logger, 'cli')
         return yargs
             .option('workspace', {
                 alias: 'w',
@@ -122,7 +122,7 @@ cli.usage('Usage: $0 [task]')
                 type: 'string',
             })
     }, async(argv) => {
-        loggerTransports(logger, config.logger, 'cli')
+        logger = loggerTransports(config.logger, 'cli')
         const workspace = new Workspace()
         await workspace.init({
             source_file: path.resolve(argv.workspace),
@@ -137,7 +137,7 @@ cli.usage('Usage: $0 [task]')
         )))
     })
     .command('lint', 'Lint translations', async(yargs) => {
-        loggerTransports(logger, config.logger, 'cli')
+        logger = loggerTransports(config.logger, 'cli')
         return yargs.option('workspace', {
             alias: 'w',
             default: './src/.expressio.json',
@@ -196,7 +196,7 @@ cli.usage('Usage: $0 [task]')
         // eslint-disable-next-line no-console
         console.log(welcomeBanner())
 
-        loggerTransports(logger, config.logger, 'service')
+        logger = loggerTransports(config.logger, 'service')
         return yargs
             .option('host', {
                 alias: 'h',
