@@ -193,6 +193,20 @@
                 "nld": "ltr"
             }
         },
+        "group_8713n6fo": {
+            "tag_t7f7s87c": {
+                "cache": "08b0bc574f2896bf",
+                "source": "translate me now",
+                "target": {
+                    "ara": "ترجم لي الآن",
+                    "deu": "Übersetze mich jetzt",
+                    "eng-gbr": "translate me now",
+                    "fra": "Traduis-moi maintenant",
+                    "nld": "vertaal me nu",
+                    "zho-hans": ""
+                }
+            }
+        },
         "menu": {
             "logout": {
                 "cache": "252654fe1c2ba232",
@@ -297,7 +311,8 @@
                     "deu": "Konfig aktualisiert",
                     "eng-gbr": "Config updated",
                     "fra": "Config mise à jour",
-                    "nld": "Config bijgewerkt"
+                    "nld": "Config bijgewerkt",
+                    "zho-hans": ""
                 }
             },
             "logged_in": {
