@@ -3,7 +3,7 @@ import {enola, logger, workspaces} from '../service.ts'
 
 export default async function(router) {
     // HTTP API endpoints using familiar Express-like pattern
-    router.get('/api/config', async (req) => {
+    router.get('/api/config', async (req, params, session) => {
         // For now, assume admin user since we don't have session context here
         // In a real implementation, you'd get the user from the session
         const user = config.users.find((i) => i.name === 'admin')
@@ -19,7 +19,7 @@ export default async function(router) {
         })
     })
 
-    router.post('/api/config', async (req) => {
+    router.post('/api/config', async (req, params, session) => {
         // For now, assume admin user since we don't have session context here
         const user = config.users.find((i) => i.name === 'admin')
         if (!user.admin) {

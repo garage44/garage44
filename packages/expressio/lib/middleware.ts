@@ -9,31 +9,31 @@ import path from 'node:path'
 
 // Simple HTTP router for Bun.serve that mimics Express pattern
 class Router {
-    routes: { method: string, path: RegExp, handler: (req: Request, params: Record<string, string>) => Promise<Response> }[] = [];
+    routes: { method: string, path: RegExp, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response> }[] = [];
 
-    get(path: string, handler: (req: Request, params: Record<string, string>) => Promise<Response>) {
+    get(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
         this.add('GET', path, handler);
     }
 
-    post(path: string, handler: (req: Request, params: Record<string, string>) => Promise<Response>) {
+    post(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
         this.add('POST', path, handler);
     }
 
-    put(path: string, handler: (req: Request, params: Record<string, string>) => Promise<Response>) {
+    put(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
         this.add('PUT', path, handler);
     }
 
-    delete(path: string, handler: (req: Request, params: Record<string, string>) => Promise<Response>) {
+    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
         this.add('DELETE', path, handler);
     }
 
-    private add(method: string, path: string, handler: (req: Request, params: Record<string, string>) => Promise<Response>) {
+    private add(method: string, path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
         // Convert path params (e.g. /api/workspaces/:id) to regex
         const regex = new RegExp('^' + path.replace(/:[^/]+/g, '([^/]+)') + '$');
         this.routes.push({ method, path: regex, handler });
     }
 
-    async route(req: Request): Promise<Response | null> {
+    async route(req: Request, session?: any): Promise<Response | null> {
         const url = new URL(req.url);
         const pathname = url.pathname;
         for (const { method, path, handler } of this.routes) {
@@ -44,11 +44,93 @@ class Router {
                 paramValues.forEach((val, idx) => {
                     params[`param${idx}`] = val;
                 });
-                return await handler(req, params);
+                return await handler(req, params, session);
             }
         }
         return null;
     }
+}
+
+// Session store for Bun.serve
+const sessions = new Map()
+
+// Parse cookies from request
+const parseCookies = (request: Request) => {
+    const cookieHeader = request.headers.get('cookie')
+    if (!cookieHeader) return {}
+
+    const cookies: Record<string, string> = {}
+    cookieHeader.split(';').forEach(cookie => {
+        const [name, value] = cookie.trim().split('=')
+        if (name && value) {
+            cookies[name] = decodeURIComponent(value)
+        }
+    })
+    return cookies
+}
+
+// Session middleware for Bun.serve
+const sessionMiddleware = (request: Request) => {
+    const cookies = parseCookies(request)
+    const sessionId = cookies['expressio-session']
+
+    if (!sessionId || !sessions.has(sessionId)) {
+        const newSessionId = crypto.randomUUID()
+        const session = { userid: null }
+        sessions.set(newSessionId, session)
+        return { session, sessionId: newSessionId }
+    }
+
+    return { session: sessions.get(sessionId), sessionId }
+}
+
+// Auth middleware for Bun.serve
+const authMiddleware = (request: Request, session: any) => {
+    const url = new URL(request.url)
+
+    if (!url.pathname.startsWith('/api')) {
+        return true
+    }
+
+    const endpointAllowList = [
+        '/api/context',
+        '/api/translations',
+        '/api/login',
+    ]
+
+    if (endpointAllowList.find((i) => url.pathname.includes(i))) {
+        return true
+    }
+
+    if (session.userid) {
+        const users = config.users
+        const user = users.find((i) => i.name === session.userid)
+        if (user) {
+            return true
+        }
+    }
+
+    if (process.env.GARAGE44_NO_SECURITY) {
+        // Find the first admin user and set their userid in the session
+        const adminUser = config.users.find(user => user.admin)
+        if (adminUser) {
+            session.userid = adminUser.name
+        }
+        return true
+    }
+
+    return false
+}
+
+// Helper to set session cookie in response
+const setSessionCookie = (response: Response, sessionId: string) => {
+    const headers = new Headers(response.headers)
+    headers.set('Set-Cookie', `expressio-session=${sessionId}; Path=/; HttpOnly; SameSite=Strict`)
+    return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers
+    })
 }
 
 export async function initMiddleware(bunchyConfig) {
@@ -79,6 +161,13 @@ export async function initMiddleware(bunchyConfig) {
             return new Response("WebSocket server not available", { status: 500 });
         }
 
+        // Handle session and auth
+        const { session, sessionId } = sessionMiddleware(request)
+
+        if (!authMiddleware(request, session)) {
+            return new Response('Unauthorized', { status: 401 })
+        }
+
         // Serve static files from public directory
         if (url.pathname.startsWith('/public/')) {
             const filePath = path.join(publicPath, url.pathname.replace('/public', ''))
@@ -95,10 +184,11 @@ export async function initMiddleware(bunchyConfig) {
         }
 
         // Try the router for HTTP API endpoints
-        const apiResponse = await router.route(request);
+        const apiResponse = await router.route(request, session);
         if (apiResponse) {
             console.log('[FETCH] API route matched', url.pathname)
-            return apiResponse;
+            // Set session cookie if this is a new session
+            return setSessionCookie(apiResponse, sessionId);
         }
 
         // Try the enhanced request handler (for WebSocket API, etc.)
@@ -106,7 +196,7 @@ export async function initMiddleware(bunchyConfig) {
             const response = await handleRequest(request)
             if (response) {
                 console.log('[FETCH] Enhanced handler matched', url.pathname)
-                return response
+                return setSessionCookie(response, sessionId);
             }
         } catch (error) {
             // Handler didn't match or failed, continue to SPA fallback
@@ -118,9 +208,10 @@ export async function initMiddleware(bunchyConfig) {
             const indexFile = Bun.file(path.join(publicPath, 'index.html'))
             if (await indexFile.exists()) {
                 console.log('[FETCH] SPA fallback for', url.pathname)
-                return new Response(indexFile, {
+                const response = new Response(indexFile, {
                     headers: { 'Content-Type': 'text/html' }
                 })
+                return setSessionCookie(response, sessionId);
             }
         } catch (error) {
             // index.html doesn't exist
@@ -129,7 +220,8 @@ export async function initMiddleware(bunchyConfig) {
 
         // Final fallback - 404
         console.log('[FETCH] 404 for', url.pathname)
-        return new Response('Not Found', { status: 404 })
+        const response = new Response('Not Found', { status: 404 })
+        return setSessionCookie(response, sessionId);
     }
 
     return {

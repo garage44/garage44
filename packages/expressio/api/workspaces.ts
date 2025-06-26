@@ -79,7 +79,7 @@ export function registerWorkspacesWebSocketApiRoutes() {
 // Default export for backward compatibility
 export default function(router: any) {
     // HTTP API endpoints using familiar Express-like pattern
-    router.get('/api/workspaces/:workspace_id/usage', async (req: any, params: any) => {
+    router.get('/api/workspaces/:workspace_id/usage', async (req: any, params: any, session: any) => {
         const workspaceId = params.param0 // Extract workspace_id from path params
         const workspace = workspaces.get(workspaceId)
         // Get the first available engine for usage
@@ -90,7 +90,7 @@ export default function(router: any) {
         })
     })
 
-    router.post('/api/workspaces/:workspace_id', async (req: any, params: any) => {
+    router.post('/api/workspaces/:workspace_id', async (req: any, params: any, session: any) => {
         const workspaceId = params.param0
         const workspace_data = await req.json()
 
@@ -130,7 +130,7 @@ export default function(router: any) {
         })
     })
 
-    router.delete('/api/workspaces/:workspace_id', async (req: any, params: any) => {
+    router.delete('/api/workspaces/:workspace_id', async (req: any, params: any, session: any) => {
         const workspaceId = params.param0
         logger.info(`Deleting workspace: ${workspaceId}`)
         await workspaces.delete(workspaceId)
@@ -140,7 +140,7 @@ export default function(router: any) {
         })
     })
 
-    router.post('/api/workspaces', async (req: any) => {
+    router.post('/api/workspaces', async (req: any, params: any, session: any) => {
         try {
             const body = await req.json()
             const workspace = await workspaces.add(body.path)
