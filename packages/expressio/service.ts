@@ -3,23 +3,24 @@ import {URL, fileURLToPath} from 'node:url'
 import {bunchyArgs, bunchyService} from '@garage44/bunchy'
 import {config, initConfig} from './lib/config.ts'
 import {keyMod, padLeft} from '@garage44/common/lib/utils.ts'
-import {loggerTransports, serviceLogger} from '@garage44/common/lib/service.ts'
+import {serviceLogger, loggerTransports} from '@garage44/common/lib/service.ts'
 import {Enola} from '@garage44/enola'
 import {Workspace} from './lib/workspace.ts'
 import {Workspaces} from './lib/workspaces.ts'
-import express from 'express'
 import figlet from 'figlet'
 import fs from 'fs-extra'
 import {hideBin} from 'yargs/helpers'
 import {i18nFormat} from '@garage44/common/lib//i18n.ts'
 import {initMiddleware} from './lib/middleware.ts'
-import {initWebSocketServer} from './lib/ws-server.ts'
+import {initDualWebSocketServer} from './lib/ws-server.ts'
 import {lintWorkspace} from './lib/lint.ts'
 import path from 'node:path'
 import {pathCreate} from '@garage44/common/lib/paths'
 import pc from 'picocolors'
 
 import yargs from 'yargs'
+import {registerI18nWebSocketApiRoutes} from './api/i18n.ts'
+import {registerWorkspacesWebSocketApiRoutes} from './api/workspaces.ts'
 
 const expressioDir = fileURLToPath(new URL('.', import.meta.url))
 
@@ -31,7 +32,7 @@ export const runtime = {
 function welcomeBanner() {
     return `
 ${pc.blue(figlet.textSync("Expressio"))}\n
- ${pc.white(pc.bold('AI-automated I18n'))}
+ ${pc.white(pc.bold('I18n for humans, by AI...'))}
  ${pc.gray(`v${runtime.version}`)}
 `
 }
@@ -39,8 +40,7 @@ ${pc.blue(figlet.textSync("Expressio"))}\n
 // In case we start in development mode.
 let bunchyConfig
 
-export const app = express()
-export const logger = serviceLogger(config.logger)
+export let logger = loggerTransports(config.logger, 'service')
 export const enola = new Enola()
 export const workspaces = new Workspaces()
 
@@ -78,7 +78,7 @@ cli.usage('Usage: $0 [task]')
                 type: 'string',
             })
     }, async(argv) => {
-        loggerTransports(logger, config.logger, 'cli')
+        logger = loggerTransports(config.logger, 'cli')
         const workspace = new Workspace()
         await workspace.init({
             source_file: path.resolve(argv.workspace),
@@ -107,7 +107,7 @@ cli.usage('Usage: $0 [task]')
         logger.info(`Imported: ${createTags.length} tags`)
     })
     .command('export', 'Export target translations to i18next format', (yargs) => {
-        loggerTransports(logger, config.logger, 'cli')
+        logger = loggerTransports(config.logger, 'cli')
         return yargs
             .option('workspace', {
                 alias: 'w',
@@ -122,7 +122,7 @@ cli.usage('Usage: $0 [task]')
                 type: 'string',
             })
     }, async(argv) => {
-        loggerTransports(logger, config.logger, 'cli')
+        logger = loggerTransports(config.logger, 'cli')
         const workspace = new Workspace()
         await workspace.init({
             source_file: path.resolve(argv.workspace),
@@ -137,7 +137,7 @@ cli.usage('Usage: $0 [task]')
         )))
     })
     .command('lint', 'Lint translations', async(yargs) => {
-        loggerTransports(logger, config.logger, 'cli')
+        logger = loggerTransports(config.logger, 'cli')
         return yargs.option('workspace', {
             alias: 'w',
             default: './src/.expressio.json',
@@ -196,7 +196,7 @@ cli.usage('Usage: $0 [task]')
         // eslint-disable-next-line no-console
         console.log(welcomeBanner())
 
-        loggerTransports(logger, config.logger, 'service')
+        logger = loggerTransports(config.logger, 'service')
         return yargs
             .option('host', {
                 alias: 'h',
@@ -212,25 +212,31 @@ cli.usage('Usage: $0 [task]')
             })
     }, async(argv) => {
 
-        app.use(express.json())
-
         await initConfig(config)
         await Promise.all([
             enola.init(config.enola, logger),
             workspaces.init(config.workspaces),
         ])
 
-        const server = initWebSocketServer(app, config)
-        initMiddleware(app, bunchyConfig)
+        // Initialize middleware and WebSocket server
+        const { handleRequest, handleWebSocket } = await initMiddleware(bunchyConfig)
+        const enhancedWebSocketHandler = initDualWebSocketServer(handleWebSocket, config)
+        registerI18nWebSocketApiRoutes()
+        registerWorkspacesWebSocketApiRoutes()
+
+        // Start Bun.serve server
+        const server = Bun.serve({
+            port: argv.port,
+            hostname: argv.host,
+            fetch: (req, server) => handleRequest(req, server),
+            websocket: enhancedWebSocketHandler,
+        })
 
         if (BUN_ENV === 'development') {
             await bunchyService(server, bunchyConfig)
         }
 
-        // Use the HTTP server to listen instead of Express app
-        server.listen(argv.port, argv.host, () => {
-            logger.info(`service: http://${argv.host}:${argv.port}`)
-        })
+        logger.info(`service: http://${argv.host}:${argv.port}`)
     })
     .demandCommand()
     .help('help')

@@ -154,7 +154,7 @@ export function createWebSocketServer(options: {
 }) {
     const manager = new WebSocketServerManager()
 
-    logger.info(`[websocket] creating server: ${options.path}`)
+    logger.info(`[WS] creating server: ${options.path}`)
     const wss = new WebSocketServer({
         // noServer: true,
         path: options.path,
@@ -165,19 +165,19 @@ export function createWebSocketServer(options: {
         // If using auth and no session or we're not bypassing security
         if (options.authOptions && !req.session &&
             !process.env[options.authOptions.noSecurityEnv || 'GARAGE44_NO_SECURITY']) {
-            logger.debug('[websocket] connection denied (unauthorized)')
+            logger.warn('[WS] connection denied (unauthorized)')
             ws.close(1008, 'Unauthorized')
             return
         }
 
         // For development/testing with auth bypassed
         if (options.authOptions && process.env[options.authOptions.noSecurityEnv || 'GARAGE44_NO_SECURITY']) {
-            logger.debug('[websocket] connection established (auth bypassed)')
+            logger.warn('[WS] connection established (auth bypassed)')
             manager.connections.add(ws)
         } else if (options.authOptions) {
             // Check if user is authenticated via session
             if (!req.session?.userid) {
-                logger.debug('[websocket] invalid session or missing userid')
+                logger.debug('[WS] invalid session or missing userid')
                 ws.close(1008, 'Unauthorized')
                 return
             }
@@ -186,13 +186,13 @@ export function createWebSocketServer(options: {
             if (options.authOptions.users && options.authOptions.users.length > 0) {
                 const user = options.authOptions.users.find(u => u.name === req.session.userid)
                 if (!user) {
-                    logger.debug('[websocket] user not found in config')
+                    logger.debug('[WS] user not found in config')
                     ws.close(1008, 'Unauthorized')
                     return
                 }
             }
 
-            logger.debug(`[websocket] connection established for user: ${req.session.userid}`)
+            logger.success(`[WS] connection established for user: ${req.session.userid}`)
             manager.connections.add(ws)
         } else {
             // No auth required, just add the connection

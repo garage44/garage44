@@ -1,17 +1,13 @@
 import {
     MessageData,
-    WebSocketServerManager,
-    createWebSocketServer,
 } from '@garage44/common/lib/ws-server'
 import {Scss, generateRandomId, showConfig} from './utils'
 import {URL, fileURLToPath} from 'node:url'
 import path from 'node:path'
 import {tasks} from './tasks.ts'
+import { logger } from '@garage44/common/lib/logger'
 
 const currentDir = fileURLToPath(new URL('.', import.meta.url))
-
-// Keep a reference to the server manager for Bunchy-specific functionality
-let serverManager: WebSocketServerManager | null = null
 
 interface Settings {
     buildId: string
@@ -57,14 +53,10 @@ async function applySettings(config) {
 export async function bunchyService(server, config) {
     applySettings(config)
 
-    // Create WebSocket server using the common implementation
-    const {manager} = createWebSocketServer({
-        path: '/bunchy',
-        server, // Handle both Bun and Node.js server objects
-    })
-
-    // Store reference to the manager
-    serverManager = manager
+    // For Bun.serve, we don't need to create a separate WebSocket server
+    // The WebSocket functionality is handled by the main server's websocket option
+    // Just log that bunchy is ready
+    logger.info('[bunchy] Development service ready')
 
     await tasks.dev.start({minify: false, sourcemap: true})
     return server
@@ -107,17 +99,16 @@ export function bunchyArgs(yargs, config) {
 
 // For backward compatibility, re-export connections from the manager
 export const connections = {
-    add: (ws) => serverManager?.connections.add(ws),
-    delete: (ws) => serverManager?.connections.delete(ws),
-    has: (ws) => serverManager?.connections.has(ws),
-    get size() { return serverManager?.connections.size || 0 },
+    add: (ws) => logger.info('[bunchy] WebSocket connection added'),
+    delete: (ws) => logger.info('[bunchy] WebSocket connection removed'),
+    has: (ws) => false,
+    get size() { return 0 },
     [Symbol.iterator]: function*() {
-        if (!serverManager) return
-        yield* serverManager.connections
+        // No connections in Bun.serve mode
     },
-} as Set<BunWebSocket>
+} as Set<WebSocket>
 
 // For backward compatibility, re-export broadcast from the manager
 export const broadcast = (url: string, data: MessageData, method = 'POST') => {
-    serverManager?.broadcast(url, data, method)
+    logger.debug('[bunchy] Broadcast:', url, data, method)
 }

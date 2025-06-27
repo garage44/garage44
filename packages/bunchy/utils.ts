@@ -4,6 +4,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import pc from 'picocolors'
 import tildify from 'tildify'
+import { logger } from '@garage44/common/lib/logger'
 
 export const showConfig = function(settings) {
     const tree = {
@@ -35,10 +36,8 @@ export const showConfig = function(settings) {
         ],
     }
 
-    // eslint-disable-next-line no-console
-    console.log('')
-    // eslint-disable-next-line no-console
-    archy(tree).split('\r').forEach((line) => console.log(line))
+    logger.info('')
+    archy(tree).split('\r').forEach((line) => logger.info(line))
 }
 
 export function generateRandomId() {

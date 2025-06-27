@@ -2,48 +2,54 @@ import {adminContext, deniedContext, userContext} from '@garage44/common/lib/pro
 import {config} from '../lib/config.ts'
 import {logger} from '../service.ts'
 
-export default async function(app) {
-
-    app.get('/api/context', async function(req, res) {
+export default async function(router) {
+    // HTTP API endpoints using familiar Express-like pattern
+    router.get('/api/context', async (req, params, session) => {
         let context
 
         if (process.env.GARAGE44_NO_SECURITY) {
             logger.warn('session security is disabled (GARAGE44_NO_SECURITY)')
             context = adminContext()
-            return res.end(JSON.stringify(context))
+            return new Response(JSON.stringify(context), {
+                headers: { 'Content-Type': 'application/json' }
+            })
         }
 
-        const session=req.session
-
-        if (session.userid) {
+        // Check session for user context
+        if (session?.userid) {
             const user = config.users.find((i) => i.name === session.userid)
-            if (!user) {
-                context = deniedContext()
-            } else {
-                if (adminContext) {
+            if (user) {
+                if (user.admin) {
                     context = adminContext()
                 } else {
                     context = userContext()
                 }
+            } else {
+                context = deniedContext()
             }
         } else {
             context = deniedContext()
         }
-        res.end(JSON.stringify(context))
+
+        return new Response(JSON.stringify(context), {
+            headers: { 'Content-Type': 'application/json' }
+        })
     })
 
-    app.post('/api/login', async(req, res) => {
+    router.post('/api/login', async (req, params, session) => {
         const users = config.users
-        const username = req.body.username
+        const body = await req.json()
+        const username = body.username
         let context
         const user = users.find((i) => i.name === username)
         if (!user) {
             context = deniedContext()
         } else {
-            const password = req.body.password
+            const password = body.password
             if (password === user.password) {
-                const session = req.session
-                session.userid = user.name
+                // Set the user in session
+                session.userid = username
+
                 if (user.admin) {
                     context = adminContext()
                 } else {
@@ -53,12 +59,20 @@ export default async function(app) {
                 context = deniedContext()
             }
         }
-        res.end(JSON.stringify(context))
+        return new Response(JSON.stringify(context), {
+            headers: { 'Content-Type': 'application/json' }
+        })
     })
 
-    app.get('/api/logout',async(req, res) => {
-        req.session.destroy()
+    router.get('/api/logout', async (req, params, session) => {
+        // Clear the session
+        if (session) {
+            session.userid = null
+        }
+
         const context = deniedContext()
-        res.end(JSON.stringify(context))
+        return new Response(JSON.stringify(context), {
+            headers: { 'Content-Type': 'application/json' }
+        })
     })
 }
