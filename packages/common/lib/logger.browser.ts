@@ -22,13 +22,14 @@ export class Logger {
   }
   log(level: LogLevel, msg: string, ...args: any[]) {
     if (!this.shouldLog(level)) return;
+    const prefix = `%c[${level.toUpperCase()}]%c`;
     const style = COLORS[level] || '';
     if (level === 'error') {
-      console.error(`%c[${level.toUpperCase()}] ${msg}`, style, ...args);
+      console.error(`${prefix} ${msg}`, style, '', ...args);
     } else if (level === 'warn') {
-      console.warn(`%c[${level.toUpperCase()}] ${msg}`, style, ...args);
+      console.warn(`${prefix} ${msg}`, style, '', ...args);
     } else {
-      console.log(`%c[${level.toUpperCase()}] ${msg}`, style, ...args);
+      console.log(`${prefix} ${msg}`, style, '', ...args);
     }
   }
   error(msg: string, ...args: any[]) { this.log('error', msg, ...args); }
