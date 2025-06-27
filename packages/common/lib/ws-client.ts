@@ -62,7 +62,7 @@ export class WebSocketClient extends EventEmitter {
     }
 
     close() {
-        logger.debug('[websocket] closing connection intentionally')
+        logger.debug('[WS] closing connection intentionally')
         this.intentionalClose = true
 
         if (this.reconnectTimeout) {
@@ -83,22 +83,22 @@ export class WebSocketClient extends EventEmitter {
                 this.ws.readyState === WebSocket.CONNECTING ||
                 this.ws.readyState === WebSocket.OPEN
             )) {
-            logger.debug('[websocket] already connected, skipping')
+            logger.debug('[WS] already connected, skipping')
             return
         }
 
         // Don't reconnect after authentication failures until explicitly told to
         if (this.authFailure) {
-            logger.debug('[websocket] Not reconnecting due to previous authentication failure')
+            logger.debug('[WS] Not reconnecting due to previous authentication failure')
             return
         }
 
-        logger.debug(`[websocket] connecting to ${this.url}`)
+        logger.debug(`[WS] connecting to ${this.url}`)
         this.intentionalClose = false
         this.ws = new WebSocket(this.url)
 
         this.ws.onopen = () => {
-            logger.debug('[websocket] connection established')
+            logger.success('[WS] connection established')
             this.reconnectAttempts = 0
             this.emit('open')
             this.processMessageQueue()
@@ -126,17 +126,17 @@ export class WebSocketClient extends EventEmitter {
                 // Pass to generic message listeners
                 this.messageListeners.forEach(listener => listener(event))
             } catch (error) {
-                logger.error('[websocket] failed to parse message', error)
+                logger.error('[WS] failed to parse message', error)
             }
         }
 
         this.ws.onclose = (event) => {
-            logger.debug(`[websocket] connection closed: code=${event.code}, reason=${event.reason}`)
+            logger.debug(`[WS] connection closed: code=${event.code}, reason=${event.reason}`)
             this.emit('close', event)
 
             // Don't reconnect if this was an authentication failure (1008)
             if (event.code === 1008) {
-                logger.debug('[websocket] authentication failed; not reconnecting')
+                logger.debug('[WS] authentication failed; not reconnecting')
                 this.authFailure = true
                 this.emit('unauthorized', event)
                 return // Don't reconnect - authentication required
@@ -144,7 +144,7 @@ export class WebSocketClient extends EventEmitter {
 
             // Don't reconnect if this was an intentional close
             if (this.intentionalClose) {
-                logger.debug('[websocket] connection closed intentionally; not reconnecting')
+                logger.debug('[WS] connection closed intentionally; not reconnecting')
                 return
             }
 
@@ -152,7 +152,7 @@ export class WebSocketClient extends EventEmitter {
         }
 
         this.ws.onerror = (error) => {
-            logger.error('[websocket] connection error', error)
+            logger.error('[WS] connection error', error)
             this.emit('error', error)
         }
     }
@@ -168,7 +168,7 @@ export class WebSocketClient extends EventEmitter {
         }
 
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-            logger.warn(`[websocket] max reconnection attempts (${this.maxReconnectAttempts}) reached; giving up`)
+            logger.warn(`[WS] max reconnection attempts (${this.maxReconnectAttempts}) reached; giving up`)
             this.emit('max_reconnect_attempts')
             return
         }
@@ -180,7 +180,7 @@ export class WebSocketClient extends EventEmitter {
         )
 
         this.reconnectAttempts++
-        logger.debug(`[websocket] reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`)
+        logger.debug(`[WS] reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`)
         this.emit('reconnecting', {attempt: this.reconnectAttempts, delay})
 
         this.reconnectTimeout = setTimeout(() => {
@@ -197,18 +197,18 @@ export class WebSocketClient extends EventEmitter {
     }
 
     resetAuthFailure() {
-        logger.debug('[websocket] resetting authentication failure state')
+        logger.debug('[WS] resetting authentication failure state')
         this.authFailure = false
         this.reconnectAttempts = 0
         this.connect()
     }
 
     private processMessageQueue() {
-        logger.debug(`[websocket] processing message queue, ${this.messageQueue.length} messages`)
+        logger.debug(`[WS] processing message queue, ${this.messageQueue.length} messages`)
         while (this.messageQueue.length > 0) {
             const message = this.messageQueue.shift()
             if (message) {
-                logger.debug(`[websocket] processing queued message: ${message.id}`)
+                logger.debug(`[WS] processing queued message: ${message.id}`)
                 if (message.method) {
                     // Don't create a new request, just send the queued message with its existing ID
                     const wsMessage = constructMessage(message.url, message.data, message.id, message.method)
@@ -216,27 +216,27 @@ export class WebSocketClient extends EventEmitter {
                         this.ws.send(JSON.stringify(wsMessage))
                     }
                 } else {
-                    logger.debug(`[websocket] sending queued non-request message`)
+                    logger.debug(`[WS] sending queued non-request message`)
                     this.send(message.url, message.data)
                 }
             }
         }
-        logger.debug(`[websocket] finished processing message queue`)
+        logger.debug(`[WS] finished processing message queue`)
     }
 
     private handleResponse(message: WebSocketMessage) {
         if (!message.id) {
-            logger.debug(`[websocket] message has no id, not a response`)
+            logger.debug(`[WS] message has no id, not a response`)
             return false
         }
 
         const pending = this.pendingRequests.get(message.id)
         if (!pending) {
-            logger.debug(`[websocket] no pending request found for id: ${message.id}`)
+            logger.debug(`[WS] no pending request found for id: ${message.id}`)
             return false
         }
 
-        logger.debug(`[websocket] resolving pending request: ${message.id}`)
+        logger.debug(`[WS] resolving pending request: ${message.id}`)
         clearTimeout(pending.timeout)
         this.pendingRequests.delete(message.id)
         pending.resolve(message.data || null)
@@ -246,14 +246,14 @@ export class WebSocketClient extends EventEmitter {
     private async request(method: string, url: string, data?: MessageData): Promise<MessageData | null> {
         return new Promise((resolve, reject) => {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-                logger.debug('[websocket] connection not open, queuing request')
+                logger.debug('[WS] connection not open, queuing request')
                 // Instead of resolving null immediately, queue both the message and its promise handlers
                 const id = Math.random().toString(36).substring(2, 15)
-                logger.debug(`[websocket] generated request id for queue: ${id}`)
+                logger.debug(`[WS] generated request id for queue: ${id}`)
                 this.messageQueue.push({data, id, method, url})
 
                 const timeout = setTimeout(() => {
-                    logger.debug(`[websocket] timeout triggered for queued request: ${id}`)
+                    logger.debug(`[WS] timeout triggered for queued request: ${id}`)
                     this.pendingRequests.delete(id)
                     reject(new Error('Request timeout while waiting for connection'))
                 }, this.requestTimeout)
@@ -263,12 +263,12 @@ export class WebSocketClient extends EventEmitter {
                     resolve,
                     timeout,
                 })
-                logger.debug(`[websocket] stored pending request with id: ${id}`)
+                logger.debug(`[WS] stored pending request with id: ${id}`)
                 return
             }
 
             const id = Math.random().toString(36).substring(2, 15)
-            logger.debug(`[websocket] sending request with id: ${id}`)
+            logger.debug(`[WS] sending request with id: ${id}`)
             const message = constructMessage(url, data, id, method)
 
             const timeout = setTimeout(() => {
@@ -305,7 +305,7 @@ export class WebSocketClient extends EventEmitter {
     // Original send method for non-request-response messages (like subscriptions)
     send(url: string, data?: MessageData) {
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-            logger.debug('[websocket] connection not open, queuing message')
+            logger.debug('[WS] connection not open, queuing message')
             this.messageQueue.push({data, url})
             return
         }

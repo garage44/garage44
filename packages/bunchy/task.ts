@@ -1,8 +1,16 @@
 import notifier from 'node-notifier'
 import pc from 'picocolors'
 import {performance} from 'perf_hooks'
+import {logger} from '@garage44/common/lib/logger'
 
 export class Task {
+    title: string
+    execute: (...args: any[]) => any
+    prefix: { error: string; ok: string }
+    startTime?: number
+    endTime?: number
+    spendTime?: string
+    size?: string
 
     constructor(title, execute) {
         this.title = title
@@ -15,8 +23,7 @@ export class Task {
     }
 
     log(...args) {
-        // eslint-disable-next-line no-console
-        console.log(...args)
+        logger.info(...args)
     }
 
     async start(...args) {
@@ -37,7 +44,7 @@ export class Task {
                 }
             }
         } catch (err) {
-            this.log(`${this.prefix.error}task failed\n${err}`)
+            logger.error(`${this.prefix.error}task failed\n${err}`)
             notifier.notify({
                 message: `${err}`,
                 title: `Task ${this.title} failed!`,
@@ -46,14 +53,13 @@ export class Task {
 
         this.endTime = performance.now()
         this.spendTime = `${Number(this.endTime - this.startTime).toFixed(1)}ms`
-
         let logComplete = `${this.prefix.ok}task completed`
 
         logComplete += ` (${pc.bold(this.spendTime)}`
         if (this.size) logComplete += `, ${pc.bold(this.size)}`
         logComplete += ')'
 
-        this.log(logComplete)
+        logger.info(logComplete)
 
         return result
     }

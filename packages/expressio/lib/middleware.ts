@@ -12,24 +12,24 @@ class Router {
     routes: { method: string, path: RegExp, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response> }[] = [];
 
     get(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
-        this.add('GET', path, handler);
+        this.add('GET', path, handler)
     }
 
     post(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
-        this.add('POST', path, handler);
+        this.add('POST', path, handler)
     }
 
     put(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
-        this.add('PUT', path, handler);
+        this.add('PUT', path, handler)
     }
 
     delete(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
-        this.add('DELETE', path, handler);
+        this.add('DELETE', path, handler)
     }
 
     private add(method: string, path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
         // Convert path params (e.g. /api/workspaces/:id) to regex
-        const regex = new RegExp('^' + path.replace(/:[^/]+/g, '([^/]+)') + '$');
+        const regex = new RegExp('^' + path.replace(/:[^/]+/g, '([^/]+)') + '$')
         this.routes.push({ method, path: regex, handler });
     }
 
@@ -39,15 +39,15 @@ class Router {
         for (const { method, path, handler } of this.routes) {
             if (req.method === method && path.test(pathname)) {
                 // Extract params
-                const paramValues = pathname.match(path)?.slice(1) || [];
-                const params: Record<string, string> = {};
+                const paramValues = pathname.match(path)?.slice(1) || []
+                const params: Record<string, string> = {}
                 paramValues.forEach((val, idx) => {
-                    params[`param${idx}`] = val;
-                });
-                return await handler(req, params, session);
+                    params[`param${idx}`] = val
+                })
+                return await handler(req, params, session)
             }
         }
-        return null;
+        return null
     }
 }
 
@@ -148,17 +148,18 @@ export async function initMiddleware(bunchyConfig) {
     // Add static file serving and SPA fallback to the request handler
     const finalHandleRequest = async (request: Request, server?: any): Promise<Response | undefined> => {
         const url = new URL(request.url)
-        console.log('[FETCH]', url.pathname)
 
         // Handle WebSocket upgrade requests
         if (url.pathname === '/ws' || url.pathname === '/bunchy') {
-            console.log(`[FETCH] ${url.pathname} hit, attempting Bun WebSocket upgrade`);
+            logger.info(`[HTTP] ${url.pathname} hit, attempting Bun WebSocket upgrade`)
             if (server && typeof server.upgrade === 'function') {
-                const success = server.upgrade(request, { data: { endpoint: url.pathname } });
-                if (success) return;
-                return new Response("WebSocket upgrade failed", { status: 400 });
+                const success = server.upgrade(request, { data: { endpoint: url.pathname } })
+                if (success) return
+                return new Response("WebSocket upgrade failed", { status: 400 })
             }
-            return new Response("WebSocket server not available", { status: 500 });
+            return new Response("WebSocket server not available", { status: 500 })
+        } else {
+            logger.info(`[HTTP] ${url.pathname} miss`)
         }
 
         // Handle session and auth
@@ -174,19 +175,19 @@ export async function initMiddleware(bunchyConfig) {
             try {
                 const file = Bun.file(filePath)
                 if (await file.exists()) {
-                    console.log('[FETCH] Serving static file', filePath)
+                    logger.info('[HTTP] Serving static file', filePath)
                     return new Response(file)
                 }
             } catch (error) {
                 // File doesn't exist, continue to next handler
-                console.log('[FETCH] Static file not found', filePath)
+                logger.debug('[HTTP] Static file not found', filePath)
             }
         }
 
         // Try the router for HTTP API endpoints
         const apiResponse = await router.route(request, session);
         if (apiResponse) {
-            console.log('[FETCH] API route matched', url.pathname)
+            logger.info('[HTTP] API route matched', url.pathname)
             // Set session cookie if this is a new session
             return setSessionCookie(apiResponse, sessionId);
         }
@@ -195,19 +196,19 @@ export async function initMiddleware(bunchyConfig) {
         try {
             const response = await handleRequest(request)
             if (response) {
-                console.log('[FETCH] Enhanced handler matched', url.pathname)
-                return setSessionCookie(response, sessionId);
+                logger.info('[HTTP] Enhanced handler matched', url.pathname)
+                return setSessionCookie(response, sessionId)
             }
         } catch (error) {
             // Handler didn't match or failed, continue to SPA fallback
-            console.log('[FETCH] Enhanced handler error', error)
+            logger.debug('[HTTP] Enhanced handler error', error)
         }
 
         // SPA fallback - serve index.html for all other routes
         try {
             const indexFile = Bun.file(path.join(publicPath, 'index.html'))
             if (await indexFile.exists()) {
-                console.log('[FETCH] SPA fallback for', url.pathname)
+                logger.info('[HTTP] SPA fallback for', url.pathname)
                 const response = new Response(indexFile, {
                     headers: { 'Content-Type': 'text/html' }
                 })
@@ -215,11 +216,11 @@ export async function initMiddleware(bunchyConfig) {
             }
         } catch (error) {
             // index.html doesn't exist
-            console.log('[FETCH] SPA fallback index.html not found')
+            logger.debug('[HTTP] SPA fallback index.html not found')
         }
 
         // Final fallback - 404
-        console.log('[FETCH] 404 for', url.pathname)
+        logger.info('[HTTP] 404 for', url.pathname)
         const response = new Response('Not Found', { status: 404 })
         return setSessionCookie(response, sessionId);
     }

@@ -139,13 +139,13 @@ export class WebSocketServerManager extends EventEmitter {
 
     // Instance method for handling open
     open(ws: any) {
-        logger.debug('[websocket] connection established')
+        logger.success('[WS] connection established')
         this.connections.add(ws)
     }
 
     // Instance method for handling close
     close(ws: any) {
-        logger.debug('[websocket] connection closed')
+        logger.debug('[WS] connection closed')
         this.connections.delete(ws)
     }
 
@@ -227,30 +227,30 @@ export const initDualWebSocketServer = (handleWebSocket: any, config: any) => {
             const endpoint = ws.data?.endpoint
             if (endpoint === '/ws') {
                 if (wsManager) wsManager.open(ws)
-                else logger.error('[websocket] wsManager not initialized')
+                else logger.error('[WS] wsManager not initialized')
             } else if (endpoint === '/bunchy') {
                 if (bunchyManager) bunchyManager.open(ws)
-                else logger.error('[websocket] bunchyManager not initialized')
+                else logger.error('[WS] bunchyManager not initialized')
             }
         },
         close: (ws: any) => {
             const endpoint = ws.data?.endpoint
             if (endpoint === '/ws') {
                 if (wsManager) wsManager.close(ws)
-                else logger.error('[websocket] wsManager not initialized')
+                else logger.error('[WS] wsManager not initialized')
             } else if (endpoint === '/bunchy') {
                 if (bunchyManager) bunchyManager.close(ws)
-                else logger.error('[websocket] bunchyManager not initialized')
+                else logger.error('[WS] bunchyManager not initialized')
             }
         },
         message: (ws: any, message: string) => {
             const endpoint = ws.data?.endpoint
             if (endpoint === '/ws') {
                 if (wsManager) wsManager.message(ws, message)
-                else logger.error('[websocket] wsManager not initialized')
+                else logger.error('[WS] wsManager not initialized')
             } else if (endpoint === '/bunchy') {
                 if (bunchyManager) bunchyManager.message(ws, message)
-                else logger.error('[websocket] bunchyManager not initialized')
+                else logger.error('[WS] bunchyManager not initialized')
             }
         },
     }

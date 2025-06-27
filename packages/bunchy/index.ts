@@ -5,6 +5,7 @@ import {Scss, generateRandomId, showConfig} from './utils'
 import {URL, fileURLToPath} from 'node:url'
 import path from 'node:path'
 import {tasks} from './tasks.ts'
+import { logger } from '@garage44/common/lib/logger'
 
 const currentDir = fileURLToPath(new URL('.', import.meta.url))
 
@@ -55,7 +56,7 @@ export async function bunchyService(server, config) {
     // For Bun.serve, we don't need to create a separate WebSocket server
     // The WebSocket functionality is handled by the main server's websocket option
     // Just log that bunchy is ready
-    console.log('[bunchy] Development service ready')
+    logger.info('[bunchy] Development service ready')
 
     await tasks.dev.start({minify: false, sourcemap: true})
     return server
@@ -98,8 +99,8 @@ export function bunchyArgs(yargs, config) {
 
 // For backward compatibility, re-export connections from the manager
 export const connections = {
-    add: (ws) => console.log('[bunchy] WebSocket connection added'),
-    delete: (ws) => console.log('[bunchy] WebSocket connection removed'),
+    add: (ws) => logger.info('[bunchy] WebSocket connection added'),
+    delete: (ws) => logger.info('[bunchy] WebSocket connection removed'),
     has: (ws) => false,
     get size() { return 0 },
     [Symbol.iterator]: function*() {
@@ -109,5 +110,5 @@ export const connections = {
 
 // For backward compatibility, re-export broadcast from the manager
 export const broadcast = (url: string, data: MessageData, method = 'POST') => {
-    console.log('[bunchy] Broadcast:', url, data, method)
+    logger.debug('[bunchy] Broadcast:', url, data, method)
 }
