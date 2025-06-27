@@ -10,6 +10,11 @@
     "packages/*"
   ],
   "scripts": {
-    "lint:ts": "bun run --filter \"./packages/*\" lint:ts"
+    "build": "bun run --filter './packages/**' build",
+    "clean": "bun run --filter './packages/**' clean",
+    "lint:ts": "bun run --filter './packages/**' lint:ts",
+    "prepublishOnly": "bun run lint:ts && bun run build",
+    "publish": "bun run build;bunx zx-bulk-release",
+    "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
