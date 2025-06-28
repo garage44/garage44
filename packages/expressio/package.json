@@ -1,7 +1,7 @@
 {
   "name": "@garage44/expressio",
   "description": "Community edition of Expressio - Automated i18n tooling for software projects",
-  "version": "2.1.8",
+  "version": "2.1.11",
   "author": "Garage44",
   "main": "service.ts",
   "bin": {

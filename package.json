@@ -14,7 +14,7 @@
     "clean": "bun run --filter './packages/**' clean",
     "lint:ts": "bun run --filter './packages/**' lint:ts",
     "prepublishOnly": "bun run lint:ts && bun run build",
-    "publish": "bun run build;bunx zx-bulk-release",
+    "publish": "bun scripts/publish.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
