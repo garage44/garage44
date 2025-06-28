@@ -25,6 +25,9 @@ Each ADR follows this structure:
 | [ADR-004](./ADR-004-preact-websocket-architecture.md) | Preact + WebSocket Real-time Architecture | Accepted | 2025-04-17 |
 | [ADR-005](./ADR-005-centralized-ci-cd.md) | Centralized CI/CD at Monorepo Root | Accepted | 2025-04-17 |
 | [ADR-006](./ADR-006-rest-to-websocket-migration.md) | REST to WebSocket Migration for Workspaces API | Accepted | 2025-06-02 |
+| [ADR-007](./ADR-007-bun-serve-migration.md) | Migration to Bun.serve for Development Server | Accepted | 2025-06-02 |
+| [ADR-008](./ADR-008-isomorphic-logger.md) | Isomorphic Logger Implementation | Accepted | 2025-06-02 |
+| [ADR-009](./ADR-009-llm-optimized-project-structure.md) | LLM-Optimized Project Structure for Strategic Reasoning | Accepted | 2025-01-27 |
 
 ## Architectural Principles
 
@@ -50,6 +53,12 @@ Based on these decisions, Expressio follows these core principles:
 - Enable community growth with MIT utilities
 - Build extensible foundations for future commercial features
 
+### 5. **LLM-Optimized Strategic Reasoning**
+- Structure documentation to support AI-assisted decision making
+- Maintain clear traceability between technical and business decisions
+- Centralize strategic context for improved reasoning capabilities
+- Enable automated analysis of project evolution and market fit
+
 ## Adding New ADRs
 
 When making significant architectural decisions:
@@ -68,3 +77,4 @@ As Expressio evolves, watch for decisions that might need ADRs:
 - Security and authentication approaches
 - Scaling and deployment architectures
 - API versioning strategies
+- Strategic market positioning and community building approaches
