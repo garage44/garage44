@@ -48,10 +48,14 @@ packages/
 
 ### Frontend (Preact)
 - Use Preact with JSX (`jsx: "react-jsx"`, `jsxImportSource: "preact"`)
+- Use components from the common library where possible
 - Component structure: elements/, pages/, main/
-- State management through custom store system, instead of useState
+- State management is done through the use of DeepSignal (Signal Proxy); not useState
 - WebSocket client for real-time communication
-- SCSS for styling with organized directory structure; do NOT use inline styles
+
+### Frontend (Styling)
+- SCSS for styling with organized directory structure; do NOT use inline style
+- Use existing SCSS variables and units; e.g. $spacer-1 instead of x REM
 
 ### Backend (Express)
 - RESTful API design in api/ directory

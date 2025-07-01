@@ -7,6 +7,9 @@ import path from 'node:path'
 import {tasks} from './tasks.ts'
 import { logger } from '@garage44/common/lib/logger'
 
+// Import the real broadcast function - will be set during bunchyService initialization
+let broadcastFn: ((url: string, data: MessageData, method?: string) => void) | null = null
+
 const currentDir = fileURLToPath(new URL('.', import.meta.url))
 
 interface Settings {
@@ -52,6 +55,15 @@ async function applySettings(config) {
 
 export async function bunchyService(server, config) {
     applySettings(config)
+
+    // Import the real broadcast function from the WebSocket server
+    try {
+        const { broadcast: realBroadcast } = await import('@garage44/expressio/lib/ws-server')
+        broadcastFn = realBroadcast
+        logger.info('[bunchy] Connected to WebSocket broadcast system')
+    } catch (error) {
+        logger.error('[bunchy] Failed to connect to WebSocket broadcast system:', error)
+    }
 
     // For Bun.serve, we don't need to create a separate WebSocket server
     // The WebSocket functionality is handled by the main server's websocket option
@@ -110,5 +122,10 @@ export const connections = {
 
 // For backward compatibility, re-export broadcast from the manager
 export const broadcast = (url: string, data: MessageData, method = 'POST') => {
-    logger.debug('[bunchy] Broadcast:', url, data, method)
+    if (broadcastFn) {
+        broadcastFn(url, data, method)
+        logger.debug('[bunchy] Broadcast sent:', url, data, method)
+    } else {
+        logger.warn('[bunchy] Broadcast attempted but WebSocket not connected:', url, data, method)
+    }
 }

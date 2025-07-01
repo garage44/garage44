@@ -6,13 +6,19 @@ import {Icon} from '@garage44/common/components/ui/icon/icon'
 import {TranslationGroup} from '@/components/elements'
 import {classes} from '@garage44/common/lib/utils'
 import {events} from '@garage44/common/app'
-import {useEffect, useState} from 'preact/hooks'
+import {useEffect} from 'preact/hooks'
+import {deepSignal} from 'deepsignal'
 
 // Define interface for the tag object
 interface TagData {
     path: string[];
     value: EnolaTag;
 }
+
+const localState = deepSignal({
+    filter: '',
+    sort: 'asc' as 'asc' | 'desc'
+})
 
 interface TranslationGroupType {
     _id?: string // Make optional to support I18n root
@@ -23,6 +29,11 @@ interface TranslationGroupType {
 export function WorkspaceTranslations() {
     // Component is not rendered while the workspace is not set
     if (!$s.workspace) return null
+
+    // Local deepSignal state for filter and sort
+
+    const filter = localState.filter
+    const sort = localState.sort
 
     // Add keyboard event handler for undo/redo
     useEffect(() => {
@@ -61,59 +72,53 @@ export function WorkspaceTranslations() {
         }
     }, []) // Empty dependency array means this runs once on mount
 
-    // --- Filtering and sorting state only ---
-    const [filter, setFilter] = useState('');
-    const [sort, setSort] = useState<'asc' | 'desc'>('asc');
-
-    return (
-        <div class="c-translations view">
-            <div className={classes('workspace-info', {disabled: !$s.workspace})}>
-                <GroupActions className="horizontal" group={$s.workspace.i18n} path={[]}/>
-                <div className="history-actions">
-                    <Icon
-                        name="chevron_left"
-                        onClick={async() => {
-                            ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/undo`, {})
-                        }}
-                        tip={'History'}
-                        type="info"
-                    />
-                    <Icon
-                        name="history"
-                        tip={'History'}
-                        type="info"
-                    />
-                    <Icon
-                        name="chevron_right"
-                        onClick={async() => {
-                            ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/redo`, {})
-                        }}
-                        tip={'History'}
-                        type="info"
-                    />
-                </div>
+    return <div class="c-translations view">
+        <div className={classes('workspace-info', {disabled: !$s.workspace})}>
+            <GroupActions className="horizontal" group={$s.workspace.i18n} path={[]}/>
+            <div className="history-actions">
+                <Icon
+                    name="chevron_left"
+                    onClick={async() => {
+                        ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/undo`, {})
+                    }}
+                    tip={'History'}
+                    type="info"
+                />
+                <Icon
+                    name="history"
+                    tip={'History'}
+                    type="info"
+                />
+                <Icon
+                    name="chevron_right"
+                    onClick={async() => {
+                        ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/redo`, {})
+                    }}
+                    tip={'History'}
+                    type="info"
+                />
             </div>
-            <div className="translation-controls" style={{display: 'flex', gap: '1rem', alignItems: 'center', margin: '1rem 0'}}>
+            <div className="translation-controls">
                 <input
                     class="filter-input"
                     type="text"
                     placeholder={'Filter...'}
                     value={filter}
-                    onInput={e => setFilter((e.target as HTMLInputElement).value)}
-                    style={{flex: 1}}
+                    onInput={e => localState.filter = (e.target as HTMLInputElement).value}
                 />
-                <button onClick={() => setSort(sort === 'asc' ? 'desc' : 'asc')}>
+                <button onClick={() => localState.sort = (sort === 'asc' ? 'desc' : 'asc')}>
                     Sort: {sort === 'asc' ? 'A-Z' : 'Z-A'}
                 </button>
             </div>
-            <TranslationGroup
-                group={{ _id: 'root', ...$s.workspace.i18n }}
-                path={[]}
-                filter={filter}
-                sort={sort}
-            />
         </div>
-    )
+
+        <TranslationGroup
+            group={{ _id: 'root', ...$s.workspace.i18n }}
+            path={[]}
+            filter={filter}
+            sort={sort}
+        />
+    </div>
 }
 
 events.on('app:init', () => {
