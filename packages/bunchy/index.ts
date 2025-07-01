@@ -5,7 +5,9 @@ import {Scss, generateRandomId, showConfig} from './utils'
 import {URL, fileURLToPath} from 'node:url'
 import path from 'node:path'
 import {tasks} from './tasks.ts'
-import { logger } from '@garage44/common/lib/logger'
+import {Logger} from '@garage44/common/lib/logger'
+
+export const logger = new Logger()
 
 // Import the real broadcast function - will be set during bunchyService initialization
 let broadcastFn: ((url: string, data: MessageData, method?: string) => void) | null = null
