@@ -6,12 +6,18 @@ import {Icon} from '@garage44/common/components/ui/icon/icon'
 import {TranslationGroup} from '@/components/elements'
 import {classes} from '@garage44/common/lib/utils'
 import {events} from '@garage44/common/app'
-import {useEffect} from 'preact/hooks'
+import {useEffect, useState} from 'preact/hooks'
 
 // Define interface for the tag object
 interface TagData {
     path: string[];
     value: EnolaTag;
+}
+
+interface TranslationGroupType {
+    _id?: string // Make optional to support I18n root
+    source?: string
+    [key: string]: unknown
 }
 
 export function WorkspaceTranslations() {
@@ -55,6 +61,10 @@ export function WorkspaceTranslations() {
         }
     }, []) // Empty dependency array means this runs once on mount
 
+    // --- Filtering and sorting state only ---
+    const [filter, setFilter] = useState('');
+    const [sort, setSort] = useState<'asc' | 'desc'>('asc');
+
     return (
         <div class="c-translations view">
             <div className={classes('workspace-info', {disabled: !$s.workspace})}>
@@ -70,7 +80,6 @@ export function WorkspaceTranslations() {
                     />
                     <Icon
                         name="history"
-
                         tip={'History'}
                         type="info"
                     />
@@ -83,11 +92,25 @@ export function WorkspaceTranslations() {
                         type="info"
                     />
                 </div>
-
+            </div>
+            <div className="translation-controls" style={{display: 'flex', gap: '1rem', alignItems: 'center', margin: '1rem 0'}}>
+                <input
+                    class="filter-input"
+                    type="text"
+                    placeholder={'Filter...'}
+                    value={filter}
+                    onInput={e => setFilter((e.target as HTMLInputElement).value)}
+                    style={{flex: 1}}
+                />
+                <button onClick={() => setSort(sort === 'asc' ? 'desc' : 'asc')}>
+                    Sort: {sort === 'asc' ? 'A-Z' : 'Z-A'}
+                </button>
             </div>
             <TranslationGroup
-                group={$s.workspace.i18n}
+                group={{ _id: 'root', ...$s.workspace.i18n }}
                 path={[]}
+                filter={filter}
+                sort={sort}
             />
         </div>
     )
@@ -120,9 +143,11 @@ events.on('app:init', () => {
 
         // Check if this update is newer than our current state
         // This prevents race conditions if messages arrive out of order
-        if (!$s.workspace.lastStateUpdateTime || timestamp > $s.workspace.lastStateUpdateTime) {
+        // @ts-ignore: lastStateUpdateTime is attached dynamically
+        if (!$s.workspace.lastStateUpdateTime || timestamp > ($s.workspace.lastStateUpdateTime ?? 0)) {
             // Apply the update
             $s.workspace.i18n = i18n
+            // @ts-ignore: lastStateUpdateTime is attached dynamically
             $s.workspace.lastStateUpdateTime = timestamp
         }
     })
