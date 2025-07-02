@@ -159,9 +159,14 @@ async function publish(): Promise<void> {
 
       await $`git commit -m "chore: bump versions - ${versionChanges}"`
       console.log('✅ Version changes committed to git')
+
+      // Push changes to remote
+      console.log('🚀 Pushing changes to remote repository...')
+      await $`git push`
+      console.log('✅ Changes pushed to remote repository')
     } catch (error: any) {
-      console.warn('⚠️ Could not commit to git:', error.message)
-      console.warn('📝 Please manually commit the version changes')
+      console.warn('⚠️ Could not commit/push to git:', error.message)
+      console.warn('📝 Please manually commit and push the version changes')
     }
 
   } catch (error: any) {
