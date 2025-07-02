@@ -1,18 +1,14 @@
-import {WebSocket, WebSocketServer} from 'ws'
 import {EventEmitter} from 'node:events'
-import http from 'node:http'
 import {constructMessage} from './ws-client'
-import {logger} from '@garage44/common/app'
+import {logger} from '../app'
 import {match} from 'path-to-regexp'
-
 
 // Core types for the middleware system
 export type MessageData = Record<string, unknown>
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
 export interface WebSocketContext {
-    ws: WebSocket
-    wss: WebSocketServer
+    ws: any // Bun WebSocket or standard WebSocket
     session?: {
         userid: string
         [key: string]: unknown
@@ -20,6 +16,8 @@ export interface WebSocketContext {
     method: HttpMethod
     url: string
     broadcast: (url: string, data: MessageData, method?: string) => void
+    subscribe?: (topic: string) => void
+    unsubscribe?: (topic: string) => void
 }
 
 export interface ApiRequest {
@@ -41,12 +39,25 @@ export interface RouteHandler {
     middlewares: Middleware[]
 }
 
-// Keep track of connections per server to avoid global state
+export interface WebSocketServerOptions {
+    endpoint: string
+    sessionMiddleware?: any
+    authOptions?: {
+        noSecurityEnv?: string
+        users?: Array<{name: string, [key: string]: unknown}>
+    }
+    globalMiddlewares?: Middleware[]
+}
+
+// WebSocket Server Manager - handles a single WebSocket endpoint
 export class WebSocketServerManager extends EventEmitter {
-    connections = new Set<WebSocket>()
+    connections = new Set<any>()
     routeHandlers: RouteHandler[] = []
-    subscriptions: Record<string, Set<WebSocket>> = {}
-    clientSubscriptions = new WeakMap<WebSocket, Set<string>>()
+    subscriptions: Record<string, Set<any>> = {}
+    clientSubscriptions = new WeakMap<any, Set<string>>()
+    endpoint: string
+    authOptions?: WebSocketServerOptions['authOptions']
+    sessionMiddleware?: any
 
     // Global middlewares that will be applied to all routes
     globalMiddlewares: Middleware[] = [
@@ -75,8 +86,17 @@ export class WebSocketServerManager extends EventEmitter {
         put: (route: string, handler: ApiHandler, middlewares?: Middleware[]) =>
             this.registerApi('PUT', route, handler, middlewares),
     }
-    constructor() {
+
+    constructor(options: WebSocketServerOptions) {
         super()
+        this.endpoint = options.endpoint
+        this.authOptions = options.authOptions
+        this.sessionMiddleware = options.sessionMiddleware
+
+        // Add custom global middlewares if provided
+        if (options.globalMiddlewares) {
+            this.globalMiddlewares.push(...options.globalMiddlewares)
+        }
     }
 
     // Middleware composition helper
@@ -92,7 +112,7 @@ export class WebSocketServerManager extends EventEmitter {
                     ((ctx) => handler(ctx, request)) :
                     middlewares[i]
 
-                return middleware(ctx, (ctx) => dispatch(i + 1))
+                return middleware(ctx, (_ctx) => dispatch(i + 1))
             }
 
             return dispatch(0)
@@ -104,164 +124,202 @@ export class WebSocketServerManager extends EventEmitter {
         const matchFn = match(route, {decode: decodeURIComponent})
         this.routeHandlers.push({
             handler: this.composeMiddleware([...this.globalMiddlewares, ...middlewares], handler),
-            matchFn,
+            matchFn: (path: string) => {
+                const result = matchFn(path)
+                if (result === false) return false
+                // Convert params to Record<string, string>
+                const params: Record<string, string> = {}
+                for (const [key, value] of Object.entries(result.params)) {
+                    params[key] = Array.isArray(value) ? value[0] : value
+                }
+                return { params }
+            },
             method,
             middlewares,
             route,
         })
     }
 
+    // Subscription management
+    subscribe(ws: any, topic: string) {
+        if (!this.subscriptions[topic]) {
+            this.subscriptions[topic] = new Set()
+        }
+        this.subscriptions[topic].add(ws)
+
+        if (!this.clientSubscriptions.has(ws)) {
+            this.clientSubscriptions.set(ws, new Set())
+        }
+        this.clientSubscriptions.get(ws)!.add(topic)
+    }
+
+    unsubscribe(ws: any, topic: string) {
+        this.subscriptions[topic]?.delete(ws)
+        this.clientSubscriptions.get(ws)?.delete(topic)
+    }
+
+    // Clean up subscriptions when connection closes
+    cleanupSubscriptions(ws: any) {
+        const topics = this.clientSubscriptions.get(ws)
+        if (topics) {
+            for (const topic of topics) {
+                this.subscriptions[topic]?.delete(ws)
+            }
+            this.clientSubscriptions.delete(ws)
+        }
+    }
+
     // Broadcast a message to all connections
     broadcast(url: string, data: MessageData, method = 'POST') {
         const message = constructMessage(url, data, undefined, method)
         for (const ws of this.connections) {
-            if (ws.readyState === WebSocket.OPEN) {
+            if (ws.readyState === 1) { // OPEN state for Bun WebSocket
                 ws.send(JSON.stringify(message))
             }
         }
     }
 
-    // Create a middleware enhancer for WebSocket connections
-    chainMiddleware(middleware: any, handler: any) {
-        return (ws: WebSocket, req: any) => {
-            middleware(req, {} as http.IncomingMessage, () => {
-                handler(ws, req)
-            })
+    // Emit event to subscribed connections
+    emitEvent(topic: string, data: unknown): void {
+        const message = constructMessage(topic, data as MessageData)
+        const subscribers = this.subscriptions[topic]
+        if (subscribers) {
+            for (const ws of subscribers) {
+                if (ws.readyState === 1) { // OPEN state
+                    ws.send(JSON.stringify(message))
+                }
+            }
         }
     }
-}
 
-// Add subscription-specific types
-export interface SubscriptionContext extends WebSocketContext {
-    subscribe: (topic: string) => void
-    unsubscribe: (topic: string) => void
-}
+    // Check authentication for a request
+    private checkAuth(request: any): boolean {
+        if (!this.authOptions) return true
 
-// Add route type constants for better organization
-export const RouteTypes = {
-    API: 'api',
-}
+        // Check if auth is bypassed via environment variable
+        if (process.env[this.authOptions.noSecurityEnv || 'GARAGE44_NO_SECURITY']) {
+            return true
+        }
 
-// Factory function to create a new WebSocket server
-export function createWebSocketServer(options: {
-    path: string,
-    server: http.Server,
-    sessionMiddleware?: any,
-    authOptions?: {
-        noSecurityEnv?: string,
-        users?: any[]
-    },
-}) {
-    const manager = new WebSocketServerManager()
+        // Check session
+        if (!request.session?.userid) {
+            return false
+        }
 
-    logger.info(`[WS] creating server: ${options.path}`)
-    const wss = new WebSocketServer({
-        // noServer: true,
-        path: options.path,
-        server: options.server,
-    })
+        // Verify user exists if users list is provided
+        if (this.authOptions.users && this.authOptions.users.length > 0) {
+            const user = this.authOptions.users.find(u => u.name === request.session.userid)
+            return !!user
+        }
 
-    const connectionHandler = (ws: WebSocket, req: http.IncomingMessage) => {
-        // If using auth and no session or we're not bypassing security
-        if (options.authOptions && !req.session &&
-            !process.env[options.authOptions.noSecurityEnv || 'GARAGE44_NO_SECURITY']) {
-            logger.warn('[WS] connection denied (unauthorized)')
+        return true
+    }
+
+    // Handle WebSocket connection open
+    open(ws: any, request?: any) {
+        // Check authentication if required
+        if (this.authOptions && !this.checkAuth(request)) {
+            logger.warn(`[WS] connection denied (unauthorized) on ${this.endpoint}`)
             ws.close(1008, 'Unauthorized')
             return
         }
 
-        // For development/testing with auth bypassed
-        if (options.authOptions && process.env[options.authOptions.noSecurityEnv || 'GARAGE44_NO_SECURITY']) {
-            logger.warn('[WS] connection established (auth bypassed)')
-            manager.connections.add(ws)
-        } else if (options.authOptions) {
-            // Check if user is authenticated via session
-            if (!req.session?.userid) {
-                logger.debug('[WS] invalid session or missing userid')
-                ws.close(1008, 'Unauthorized')
-                return
+        logger.success(`[WS] connection established: ${this.endpoint}`)
+        this.connections.add(ws)
+    }
+
+    // Handle WebSocket connection close
+    close(ws: any) {
+        logger.debug(`[WS] connection closed: ${this.endpoint}`)
+        this.connections.delete(ws)
+        this.cleanupSubscriptions(ws)
+    }
+
+    // Handle WebSocket message
+    async message(ws: any, message: string, request?: any) {
+        try {
+            const parsedMessage = JSON.parse(message)
+            const {url, data, id, method = 'GET'} = parsedMessage
+
+            // Create context for this request
+            const ctx: WebSocketContext = {
+                broadcast: this.broadcast.bind(this),
+                method: method as HttpMethod,
+                session: request?.session,
+                subscribe: (topic: string) => this.subscribe(ws, topic),
+                unsubscribe: (topic: string) => this.unsubscribe(ws, topic),
+                url,
+                ws,
             }
 
-            // Verify the user exists if users are provided
-            if (options.authOptions.users && options.authOptions.users.length > 0) {
-                const user = options.authOptions.users.find(u => u.name === req.session.userid)
-                if (!user) {
-                    logger.debug('[WS] user not found in config')
-                    ws.close(1008, 'Unauthorized')
-                    return
-                }
-            }
+            // Find matching route handler
+            for (const {matchFn, handler, method: handlerMethod} of this.routeHandlers) {
+                const matchResult = matchFn(url)
 
-            logger.success(`[WS] connection established for user: ${req.session.userid}`)
-            manager.connections.add(ws)
-        } else {
-            // No auth required, just add the connection
-            manager.connections.add(ws)
-        }
-
-        ws.on('message', async(messageData) => {
-            try {
-                const message = JSON.parse(messageData.toString())
-                const {url, data, id, method = 'GET'} = message
-
-                // Create context for this request
-                const ctx: WebSocketContext = {
-                    broadcast: manager.broadcast.bind(manager),
-                    method: method as HttpMethod,
-                    session: req.session,
-                    url,
-                    ws,
-                    wss,
-                }
-
-                // Find matching route handler
-                for (const {matchFn, handler, method: handlerMethod} of manager.routeHandlers) {
-                    const matchResult = matchFn(url)
-
-                    // Check both URL pattern match AND matching HTTP method
-                    if (matchResult !== false && handlerMethod === method) {
-                        try {
-                            const request: ApiRequest = {
-                                data,
-                                id,
-                                params: matchResult.params,
-                            }
-
-                            const result = await handler(ctx, request)
-                            // Always respond to messages with an ID
-                            if (id) {
-                                const response = constructMessage(url, (result as MessageData) || null, id)
-                                ws.send(JSON.stringify(response))
-                            }
-                        } catch (error) {
-                            const errorResponse = constructMessage(url, {
-                                error: error.message,
-                            }, id)
-                            ws.send(JSON.stringify(errorResponse))
-                            logger.error('Handler error:', error)
+                // Check both URL pattern match AND matching HTTP method
+                if (matchResult !== false && handlerMethod === method) {
+                    try {
+                        const request: ApiRequest = {
+                            data,
+                            id,
+                            params: matchResult.params,
                         }
-                        break
+
+                        const result = await handler(ctx, request)
+                        // Always respond to messages with an ID
+                        if (id) {
+                            const response = constructMessage(url, (result as MessageData) || null, id)
+                            ws.send(JSON.stringify(response))
+                        }
+                    } catch (error) {
+                        const errorResponse = constructMessage(url, {error: error.message}, id)
+                        ws.send(JSON.stringify(errorResponse))
+                        logger.error('handler error:', error)
                     }
+                    break
                 }
-            } catch (error) {
-                logger.error('Error processing WebSocket message:', error)
             }
-        })
-
-        ws.on('close', () => {
-            manager.connections.delete(ws)
-        })
-    }
-
-    // Handle the WebSocket connection with or without session middleware
-    if (options.sessionMiddleware) {
-        wss.on('connection', manager.chainMiddleware(options.sessionMiddleware, connectionHandler))
-    } else {
-        wss.on('connection', connectionHandler)
-    }
-
-    return {
-        manager,
-        wss,
+        } catch (error) {
+            logger.error('Error processing WebSocket message:', error)
+        }
     }
 }
+
+// Create Bun.serve compatible WebSocket handlers that dispatch to multiple managers
+export function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>) {
+    return {
+        open: (ws: any) => {
+            const endpoint = ws.data?.endpoint
+            const manager = managers.get(endpoint)
+            if (manager) {
+                manager.open(ws, ws.data)
+            } else {
+                logger.error(`[WS] no manager found for endpoint: ${endpoint}`)
+                ws.close(1011, 'Server Error')
+            }
+        },
+        close: (ws: any) => {
+            const endpoint = ws.data?.endpoint
+            const manager = managers.get(endpoint)
+            if (manager) {
+                manager.close(ws)
+            }
+        },
+        message: (ws: any, message: string) => {
+            const endpoint = ws.data?.endpoint
+            const manager = managers.get(endpoint)
+            if (manager) {
+                manager.message(ws, message, ws.data)
+            }
+        },
+    }
+}
+
+// Note: broadcast, emitEvent, and connections are now managed per WebSocketServerManager instance
+// Each package should use their own manager instances directly
+
+// Legacy exports for backward compatibility
+export type SubscriptionContext = WebSocketContext
+export const RouteTypes = {
+    API: 'api',
+} as const

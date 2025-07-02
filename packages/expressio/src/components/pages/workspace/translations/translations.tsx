@@ -7,6 +7,7 @@ import {TranslationGroup} from '@/components/elements'
 import {classes} from '@garage44/common/lib/utils'
 import {events} from '@garage44/common/app'
 import {useEffect} from 'preact/hooks'
+import {deepSignal} from 'deepsignal'
 
 // Define interface for the tag object
 interface TagData {
@@ -14,9 +15,25 @@ interface TagData {
     value: EnolaTag;
 }
 
+const localState = deepSignal({
+    filter: '',
+    sort: 'asc' as 'asc' | 'desc'
+})
+
+interface TranslationGroupType {
+    _id?: string // Make optional to support I18n root
+    source?: string
+    [key: string]: unknown
+}
+
 export function WorkspaceTranslations() {
     // Component is not rendered while the workspace is not set
     if (!$s.workspace) return null
+
+    // Local deepSignal state for filter and sort
+
+    const filter = localState.filter
+    const sort = localState.sort
 
     // Add keyboard event handler for undo/redo
     useEffect(() => {
@@ -55,42 +72,53 @@ export function WorkspaceTranslations() {
         }
     }, []) // Empty dependency array means this runs once on mount
 
-    return (
-        <div class="c-translations view">
-            <div className={classes('workspace-info', {disabled: !$s.workspace})}>
-                <GroupActions className="horizontal" group={$s.workspace.i18n} path={[]}/>
-                <div className="history-actions">
-                    <Icon
-                        name="chevron_left"
-                        onClick={async() => {
-                            ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/undo`, {})
-                        }}
-                        tip={'History'}
-                        type="info"
-                    />
-                    <Icon
-                        name="history"
-
-                        tip={'History'}
-                        type="info"
-                    />
-                    <Icon
-                        name="chevron_right"
-                        onClick={async() => {
-                            ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/redo`, {})
-                        }}
-                        tip={'History'}
-                        type="info"
-                    />
-                </div>
-
+    return <div class="c-translations view">
+        <div className={classes('workspace-info', {disabled: !$s.workspace})}>
+            <GroupActions className="horizontal" group={$s.workspace.i18n} path={[]}/>
+            <div className="history-actions">
+                <Icon
+                    name="chevron_left"
+                    onClick={async() => {
+                        ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/undo`, {})
+                    }}
+                    tip={'History'}
+                    type="info"
+                />
+                <Icon
+                    name="history"
+                    tip={'History'}
+                    type="info"
+                />
+                <Icon
+                    name="chevron_right"
+                    onClick={async() => {
+                        ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/redo`, {})
+                    }}
+                    tip={'History'}
+                    type="info"
+                />
             </div>
-            <TranslationGroup
-                group={$s.workspace.i18n}
-                path={[]}
-            />
+            <div className="translation-controls">
+                <input
+                    class="filter-input"
+                    type="text"
+                    placeholder={'Filter...'}
+                    value={filter}
+                    onInput={e => localState.filter = (e.target as HTMLInputElement).value}
+                />
+                <button onClick={() => localState.sort = (sort === 'asc' ? 'desc' : 'asc')}>
+                    Sort: {sort === 'asc' ? 'A-Z' : 'Z-A'}
+                </button>
+            </div>
         </div>
-    )
+
+        <TranslationGroup
+            group={{ _id: 'root', ...$s.workspace.i18n }}
+            path={[]}
+            filter={filter}
+            sort={sort}
+        />
+    </div>
 }
 
 events.on('app:init', () => {
@@ -120,9 +148,11 @@ events.on('app:init', () => {
 
         // Check if this update is newer than our current state
         // This prevents race conditions if messages arrive out of order
-        if (!$s.workspace.lastStateUpdateTime || timestamp > $s.workspace.lastStateUpdateTime) {
+        // @ts-ignore: lastStateUpdateTime is attached dynamically
+        if (!$s.workspace.lastStateUpdateTime || timestamp > ($s.workspace.lastStateUpdateTime ?? 0)) {
             // Apply the update
             $s.workspace.i18n = i18n
+            // @ts-ignore: lastStateUpdateTime is attached dynamically
             $s.workspace.lastStateUpdateTime = timestamp
         }
     })

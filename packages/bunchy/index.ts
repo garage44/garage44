@@ -5,7 +5,12 @@ import {Scss, generateRandomId, showConfig} from './utils'
 import {URL, fileURLToPath} from 'node:url'
 import path from 'node:path'
 import {tasks} from './tasks.ts'
-import { logger } from '@garage44/common/lib/logger'
+import {Logger} from '@garage44/common/lib/logger'
+
+export const logger = new Logger()
+
+// Import the real broadcast function - will be set during bunchyService initialization
+let broadcastFn: ((url: string, data: MessageData, method?: string) => void) | null = null
 
 const currentDir = fileURLToPath(new URL('.', import.meta.url))
 
@@ -50,12 +55,19 @@ async function applySettings(config) {
     showConfig(settings)
 }
 
-export async function bunchyService(server, config) {
+export async function bunchyService(server, config, wsManager?) {
     applySettings(config)
 
-    // For Bun.serve, we don't need to create a separate WebSocket server
-    // The WebSocket functionality is handled by the main server's websocket option
-    // Just log that bunchy is ready
+    // Set up broadcast function if WebSocket manager is provided
+    if (wsManager) {
+        broadcastFn = (url: string, data: MessageData, method = 'POST') => {
+            wsManager.broadcast(url, data, method)
+        }
+        logger.info('[bunchy] connected to WebSocket broadcast system')
+    } else {
+        logger.warn('[bunchy] no WebSocket manager provided - broadcasts will be disabled')
+    }
+
     logger.info('[bunchy] Development service ready')
 
     await tasks.dev.start({minify: false, sourcemap: true})
@@ -110,5 +122,10 @@ export const connections = {
 
 // For backward compatibility, re-export broadcast from the manager
 export const broadcast = (url: string, data: MessageData, method = 'POST') => {
-    logger.debug('[bunchy] Broadcast:', url, data, method)
+    if (broadcastFn) {
+        broadcastFn(url, data, method)
+        logger.debug('[bunchy] Broadcast sent:', url, data, method)
+    } else {
+        logger.warn('[bunchy] Broadcast attempted but WebSocket not connected:', url, data, method)
+    }
 }

@@ -35,16 +35,27 @@ const runner = {
     }, debounce.wait, debounce.options),
     styles: {
         app: throttle(async() => {
-            const [{filename, size}] = await Promise.all([
+            const [appResult, componentsResult] = await Promise.all([
                 tasks.stylesApp.start({minify: false, sourcemap: true}),
                 tasks.stylesComponents.start({minify: false, sourcemap: true}),
             ])
-            if (settings.reload_ignore.includes('/tasks/styles/app')) return
-            broadcast('/tasks/styles/app', {
-                filename,
-                publicPath: path.relative(settings.dir.workspace, settings.dir.public),
-                size,
-            }, 'POST')
+
+            // Broadcast both messages since both stylesheets were rebuilt
+            if (!settings.reload_ignore.includes('/tasks/styles/app')) {
+                broadcast('/tasks/styles/app', {
+                    filename: appResult.filename,
+                    publicPath: path.relative(settings.dir.workspace, settings.dir.public),
+                    size: appResult.size,
+                }, 'POST')
+            }
+
+            if (!settings.reload_ignore.includes('/tasks/styles/components')) {
+                broadcast('/tasks/styles/components', {
+                    filename: componentsResult.filename,
+                    publicPath: path.relative(settings.dir.workspace, settings.dir.public),
+                    size: componentsResult.size,
+                }, 'POST')
+            }
         }, debounce.wait, debounce.options),
         components: throttle(async() => {
             const {filename, size} = await tasks.stylesComponents.start({minify: false, sourcemap: true})
@@ -158,7 +169,17 @@ tasks.dev = new Task('dev', async function({minify = false, sourcemap = true} = 
         } else if (filename === 'index.html') {
             runner.html()
         } else if (extension === '.scss') {
-            runner.styles.app()
+            // Differentiate between app-level and component-level SCSS files
+            if (filename.startsWith('scss/')) {
+                // App-level styles (src/scss/*.scss)
+                runner.styles.app()
+            } else if (filename.startsWith('components/')) {
+                // Component styles (src/components/**/*.scss)
+                runner.styles.components()
+            } else {
+                // Default to app for other SCSS files
+                runner.styles.app()
+            }
         }
     })
 })

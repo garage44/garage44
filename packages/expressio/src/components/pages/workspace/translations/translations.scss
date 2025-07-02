@@ -75,8 +75,29 @@
                 margin-inline-start: 0;
             }
         }
-
-
     }
 
+    .translation-controls {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin: 1rem 0;
+
+    }
+    .filter-input {
+        flex: 1;
+    }
+    .translation-controls button {
+        min-width: 80px;
+        // padding: 0.5em 1em;
+        border: none;
+        background: $info-1;
+        color: $info-6;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s;
+        &:hover {
+            background: $info-2;
+        }
+    }
 }

@@ -61,6 +61,25 @@ export class WebSocketClient extends EventEmitter {
         this.activeSubscriptions.add(topic)
     }
 
+        // URL-based message routing method
+    onRoute(url: string, handler: (data: MessageData) => void) {
+        if (!this.eventHandlers[url]) {
+            this.eventHandlers[url] = []
+        }
+        this.eventHandlers[url].push(handler)
+    }
+
+    // Remove URL-based handler
+    offRoute(url: string, handler?: (data: MessageData) => void) {
+        if (!this.eventHandlers[url]) return
+
+        if (handler) {
+            this.eventHandlers[url] = this.eventHandlers[url].filter(h => h !== handler)
+        } else {
+            delete this.eventHandlers[url]
+        }
+    }
+
     close() {
         logger.debug('[WS] closing connection intentionally')
         this.intentionalClose = true
@@ -98,7 +117,7 @@ export class WebSocketClient extends EventEmitter {
         this.ws = new WebSocket(this.url)
 
         this.ws.onopen = () => {
-            logger.success('[WS] connection established')
+            logger.success(`[WS] connection established: ${this.url}`)
             this.reconnectAttempts = 0
             this.emit('open')
             this.processMessageQueue()

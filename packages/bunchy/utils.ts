@@ -4,7 +4,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import pc from 'picocolors'
 import tildify from 'tildify'
-import { logger } from '@garage44/common/lib/logger'
+import {logger} from './index.ts'
 
 export const showConfig = function(settings) {
     const tree = {

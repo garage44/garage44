@@ -175,12 +175,12 @@ export async function initMiddleware(bunchyConfig) {
             try {
                 const file = Bun.file(filePath)
                 if (await file.exists()) {
-                    logger.info('[HTTP] Serving static file', filePath)
+                    logger.debug('[HTTP] serving static file', filePath)
                     return new Response(file)
                 }
             } catch (error) {
                 // File doesn't exist, continue to next handler
-                logger.debug('[HTTP] Static file not found', filePath)
+                logger.debug('[HTTP] static file not found', filePath)
             }
         }
 
