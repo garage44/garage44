@@ -1,6 +1,6 @@
 {
   "name": "@garage44/enola",
-  "version": "3.1.5",
+  "version": "3.1.7",
   "description": "A wrapper around translation services like Deepl, exposing a common interface for translation software to use.",
   "files": [
     "README.md",

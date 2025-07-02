@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { $ } from 'bun'
-import {readFile, writeFile } from 'fs/promises'
+import {readFile, writeFile, copyFile, unlink } from 'fs/promises'
 import { join } from 'path'
 
 const packages = [
@@ -12,7 +12,7 @@ const packages = [
 ]
 
 // Dependency graph - packages that depend on each other
-const dependencies = {
+const dependencies: Record<string, string[]> = {
   '@garage44/common': [],
   '@garage44/bunchy': ['@garage44/common'],
   '@garage44/enola': ['@garage44/common'],
@@ -20,12 +20,12 @@ const dependencies = {
 }
 
 // Topological sort to determine publish order
-function topologicalSort(graph) {
-  const visited = new Set()
-  const temp = new Set()
-  const order = []
+function topologicalSort(graph: Record<string, string[]>): string[] {
+  const visited = new Set<string>()
+  const temp = new Set<string>()
+  const order: string[] = []
 
-  function visit(node) {
+  function visit(node: string): void {
     if (temp.has(node)) {
       throw new Error(`Circular dependency detected: ${node}`)
     }
@@ -50,19 +50,19 @@ function topologicalSort(graph) {
 }
 
 // Get current version from package.json
-async function getCurrentVersion(packagePath) {
+async function getCurrentVersion(packagePath: string): Promise<string> {
   const packageJson = JSON.parse(await readFile(join(packagePath, 'package.json'), 'utf8'))
   return packageJson.version
 }
 
 // Bump version (patch increment)
-function bumpVersion(version) {
+function bumpVersion(version: string): string {
   const [major, minor, patch] = version.split('.').map(Number)
   return `${major}.${minor}.${patch + 1}`
 }
 
 // Update package.json version
-async function updateVersion(packagePath, newVersion) {
+async function updateVersion(packagePath: string, newVersion: string): Promise<string> {
   const packageJsonPath = join(packagePath, 'package.json')
   const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'))
   packageJson.version = newVersion
@@ -71,7 +71,7 @@ async function updateVersion(packagePath, newVersion) {
 }
 
 // Main publish function
-async function publish() {
+async function publish(): Promise<void> {
   console.log('🚀 Starting monorepo publish...\n')
 
   try {
@@ -85,7 +85,7 @@ async function publish() {
     console.log('📋 Publish order:', publishOrder.join(' → '), '\n')
 
     // 3. Collect current versions and bump them
-    const packageVersions = {}
+    const packageVersions: Record<string, string> = {}
     for (const packageName of publishOrder) {
       const packageInfo = packages.find(p => p.name === packageName)
       if (!packageInfo) continue
@@ -105,16 +105,38 @@ async function publish() {
 
       console.log(`🚀 Publishing ${packageName}...`)
 
-      // Update version
-      await updateVersion(packageInfo.path, packageVersions[packageName])
+      // Special handling for expressio package - copy root README
+      let readmeCopied = false
+      if (packageName === '@garage44/expressio') {
+        try {
+          await copyFile('README.md', join(packageInfo.path, 'README.md'))
+          console.log('📄 Copied root README.md to expressio package')
+          readmeCopied = true
+        } catch (error: any) {
+          console.warn('⚠️ Could not copy README.md:', error.message)
+        }
+      }
 
-      // Publish
       try {
+        // Update version
+        await updateVersion(packageInfo.path, packageVersions[packageName])
+
+        // Publish
         await $`cd ${packageInfo.path} && bun publish`
         console.log(`✅ ${packageName} published successfully`)
-      } catch (error) {
+      } catch (error: any) {
         console.error(`❌ Failed to publish ${packageName}:`, error.message)
         throw error
+      } finally {
+        // Clean up copied README for expressio package
+        if (readmeCopied) {
+          try {
+            await unlink(join(packageInfo.path, 'README.md'))
+            console.log('🧹 Removed copied README.md from expressio package')
+          } catch (error: any) {
+            console.warn('⚠️ Could not remove copied README.md:', error.message)
+          }
+        }
       }
 
       console.log()
@@ -122,7 +144,7 @@ async function publish() {
 
     console.log('🎉 All packages published successfully!')
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Publish failed:', error.message)
     process.exit(1)
   }
