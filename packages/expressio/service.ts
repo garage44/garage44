@@ -32,7 +32,7 @@ export const runtime = {
 function welcomeBanner() {
     return `
 ${pc.blue(figlet.textSync("Expressio"))}\n
- ${pc.white(pc.bold('I18n for humans, by AI...'))}
+ ${pc.white(pc.bold('I18n for humans, through AI...'))}
  ${pc.gray(`v${runtime.version}`)}
 `
 }

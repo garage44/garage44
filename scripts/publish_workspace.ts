@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import { $ } from 'bun'
-import { readdir, readFile, writeFile } from 'fs/promises'
+import {readFile, writeFile } from 'fs/promises'
 import { join } from 'path'
 
 const packages = [
@@ -110,7 +110,7 @@ async function publish() {
 
       // Publish
       try {
-        await $`cd ${packageInfo.path} && npm publish`
+        await $`cd ${packageInfo.path} && bun publish`
         console.log(`✅ ${packageName} published successfully`)
       } catch (error) {
         console.error(`❌ Failed to publish ${packageName}:`, error.message)
