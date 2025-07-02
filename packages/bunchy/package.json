@@ -1,6 +1,6 @@
 {
   "name": "@garage44/bunchy",
-  "version": "2.1.9",
+  "version": "2.1.10",
   "author": "Garage44",
   "main": "index.ts",
   "dependencies": {
