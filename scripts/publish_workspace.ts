@@ -144,6 +144,26 @@ async function publish(): Promise<void> {
 
     console.log('🎉 All packages published successfully!')
 
+    // 5. Commit version changes to git
+    console.log('📦 Committing version changes to git...')
+    try {
+      // Add all modified package.json files
+      for (const packageInfo of packages) {
+        await $`git add ${packageInfo.path}/package.json`
+      }
+
+      // Create commit message with all version changes
+      const versionChanges = publishOrder
+        .map(name => `${name}@${packageVersions[name]}`)
+        .join(', ')
+
+      await $`git commit -m "chore: bump versions - ${versionChanges}"`
+      console.log('✅ Version changes committed to git')
+    } catch (error: any) {
+      console.warn('⚠️ Could not commit to git:', error.message)
+      console.warn('📝 Please manually commit the version changes')
+    }
+
   } catch (error: any) {
     console.error('❌ Publish failed:', error.message)
     process.exit(1)
