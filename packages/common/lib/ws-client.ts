@@ -117,7 +117,7 @@ export class WebSocketClient extends EventEmitter {
         this.ws = new WebSocket(this.url)
 
         this.ws.onopen = () => {
-            logger.success('[WS] connection established')
+            logger.success(`[WS] connection established: ${this.url}`)
             this.reconnectAttempts = 0
             this.emit('open')
             this.processMessageQueue()

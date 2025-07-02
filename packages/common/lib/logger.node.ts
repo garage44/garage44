@@ -8,7 +8,7 @@ const COLORS = {
     error: '\x1b[31m', // red
     warn: '\x1b[33m', // yellow
     info: '\x1b[34m', // blue
-    success: '\x1b[38;2;0;255;0m', // true color green
+    success: '\x1b[38;2;39;174;96m', // muted green (matches browser #27ae60)
     verbose: '\x1b[36m', // cyan
     debug: '\x1b[90m', // gray
     reset: '\x1b[0m',
@@ -37,6 +37,37 @@ export class Logger {
         const ts = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
         const color = COLORS[level] || ''
         const levelStr = level.toUpperCase()
+
+                if (level === 'debug') {
+            // Keep prefix color, but make timestamp and message text medium grey
+            const mediumGrey = '\x1b[38;5;244m' // medium gray
+            return `${color}[${levelStr[0]}]${COLORS.reset} ${mediumGrey}[${ts}] ${msg}${COLORS.reset}`
+        }
+
+        if (level === 'warn') {
+            // Keep prefix color, but make timestamp and message text light orange
+            const lightOrange = '\x1b[38;5;215m' // light orange pastel
+            return `${color}[${levelStr[0]}]${COLORS.reset} ${lightOrange}[${ts}] ${msg}${COLORS.reset}`
+        }
+
+        if (level === 'success') {
+            // Keep prefix color, but make timestamp and message text light green
+            const lightGreen = '\x1b[38;5;156m' // light green pastel
+            return `${color}[${levelStr[0]}]${COLORS.reset} ${lightGreen}[${ts}] ${msg}${COLORS.reset}`
+        }
+
+                if (level === 'info') {
+            // Keep prefix color, but make timestamp and message text pastel blue
+            const pastelBlue = '\x1b[38;5;153m' // pastel blue
+            return `${color}[${levelStr[0]}]${COLORS.reset} ${pastelBlue}[${ts}] ${msg}${COLORS.reset}`
+        }
+
+        if (level === 'error') {
+            // Keep prefix color, but make timestamp and message text pastel red
+            const pastelRed = '\x1b[38;5;210m' // pastel red
+            return `${color}[${levelStr[0]}]${COLORS.reset} ${pastelRed}[${ts}] ${msg}${COLORS.reset}`
+        }
+
         return `${color}[${levelStr[0]}]${COLORS.reset} [${ts}] ${msg}`
     }
 

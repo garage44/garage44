@@ -7,6 +7,7 @@ import env from '@/lib/env'
 export {notify} from '@/lib/notifier'
 
 export const logger = new Logger()
+logger.setLevel('debug')
 export const store = new Store()
 export const i18n = _i18n
 export const $s = store.state

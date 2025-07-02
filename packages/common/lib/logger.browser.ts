@@ -29,14 +29,38 @@ export class Logger {
         const now = new Date()
         const ts = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
         const levelStr = level.toUpperCase()
-        const prefix = `%c[${levelStr[0]}]%c [${ts}]`
         const style = COLORS[level] || ''
-        if (level === 'error') {
-            console.error(`${prefix} ${msg}`, style, '', ...args)
+
+        if (level === 'debug') {
+            // Keep prefix color, but make timestamp and message text medium grey
+            const mediumGreyStyle = 'color: #888888'
+            const prefix = `%c[${levelStr[0]}]%c [${ts}] ${msg}`
+            console.log(prefix, style, mediumGreyStyle, ...args)
         } else if (level === 'warn') {
-            console.warn(`${prefix} ${msg}`, style, '', ...args)
+            // Keep prefix color, but make timestamp and message text light orange
+            const lightOrangeStyle = 'color: #ffb366'
+            const prefix = `%c[${levelStr[0]}]%c [${ts}] ${msg}`
+            console.warn(prefix, style, lightOrangeStyle, ...args)
+        } else if (level === 'success') {
+            // Keep prefix color, but make timestamp and message text light green
+            const lightGreenStyle = 'color: #90ee90'
+            const prefix = `%c[${levelStr[0]}]%c [${ts}] ${msg}`
+            console.log(prefix, style, lightGreenStyle, ...args)
+        } else if (level === 'info') {
+            // Keep prefix color, but make timestamp and message text pastel blue
+            const pastelBlueStyle = 'color: #87ceeb'
+            const prefix = `%c[${levelStr[0]}]%c [${ts}] ${msg}`
+            console.log(prefix, style, pastelBlueStyle, ...args)
+        } else if (level === 'error') {
+            // Keep prefix color, but make timestamp and message text pastel red
+            const pastelRedStyle = 'color: #ff9999'
+            const prefix = `%c[${levelStr[0]}]%c [${ts}] ${msg}`
+            console.error(prefix, style, pastelRedStyle, ...args)
         } else {
-            console.log(`${prefix} ${msg}`, style, '', ...args)
+            const prefix = `%c[${levelStr[0]}]%c [${ts}]`
+            if (level === 'verbose') {
+                console.log(`${prefix} ${msg}`, style, '', ...args)
+            }
         }
     }
     error(msg: string, ...args: any[]) { this.log('error', msg, ...args); }

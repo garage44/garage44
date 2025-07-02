@@ -139,7 +139,7 @@ export class WebSocketServerManager extends EventEmitter {
 
     // Instance method for handling open
     open(ws: any) {
-        logger.success('[WS] connection established')
+        logger.success(`[WS] connection established: ${ws.data.endpoint}`)
         this.connections.add(ws)
     }
 
@@ -184,11 +184,9 @@ export class WebSocketServerManager extends EventEmitter {
                             ws.send(JSON.stringify(response))
                         }
                     } catch (error) {
-                        const errorResponse = constructMessage(url, {
-                            error: error.message,
-                        }, id)
+                        const errorResponse = constructMessage(url, {error: error.message}, id)
                         ws.send(JSON.stringify(errorResponse))
-                        logger.error('Handler error:', error)
+                        logger.error('handler error:', error)
                     }
                     break
                 }

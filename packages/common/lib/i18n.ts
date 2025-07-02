@@ -34,10 +34,10 @@ export async function init(translations = null) {
 
     if (!translations) {
         resources = await api.get('/api/translations')
-        logger.info(`loading languages from endpoint: ${Object.keys(resources).join(', ')}`)
+        logger.debug(`loading languages from endpoint: ${Object.keys(resources).join(', ')}`)
     } else {
         resources = translations
-        logger.info(`loading languages from bundle: ${Object.keys(resources).join(', ')}`)
+        logger.debug(`loading languages from bundle: ${Object.keys(resources).join(', ')}`)
     }
 
     for (const language_id of Object.keys(resources)) {
@@ -57,7 +57,7 @@ export async function init(translations = null) {
     effect(() => {
         const language = $s.language_ui.selection
         i18next.changeLanguage(language)
-        logger.info(`Language changed to: ${language}`)
+        logger.debug(`language changed to: ${language}`)
         store.save()
     })
 }

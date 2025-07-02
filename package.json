@@ -1,14 +1,10 @@
 {
   "name": "@garage44/expressio-workspace",
-  "description": "Expressio workspace",
+  "version": "1.0.0",
   "author": "Garage44",
+  "description": "Expressio workspace",
   "license": "MIT",
   "private": true,
-  "type": "module",
-  "version": "1.0.0",
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
     "build": "bun run --filter './packages/**' build",
     "clean": "bun run --filter './packages/**' clean",
@@ -16,5 +12,12 @@
     "prepublishOnly": "bun run lint:ts && bun run build",
     "publish": "bun scripts/publish.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/bun": "^1.2.17"
   }
 }

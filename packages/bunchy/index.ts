@@ -62,7 +62,7 @@ export async function bunchyService(server, config) {
     try {
         const { broadcast: realBroadcast } = await import('@garage44/expressio/lib/ws-server')
         broadcastFn = realBroadcast
-        logger.info('[bunchy] Connected to WebSocket broadcast system')
+        logger.info('[bunchy] connected to WebSocket broadcast system')
     } catch (error) {
         logger.error('[bunchy] Failed to connect to WebSocket broadcast system:', error)
     }
