@@ -55,21 +55,19 @@ async function applySettings(config) {
     showConfig(settings)
 }
 
-export async function bunchyService(server, config) {
+export async function bunchyService(server, config, wsManager?) {
     applySettings(config)
 
-    // Import the real broadcast function from the WebSocket server
-    try {
-        const { broadcast: realBroadcast } = await import('@garage44/expressio/lib/ws-server')
-        broadcastFn = realBroadcast
+    // Set up broadcast function if WebSocket manager is provided
+    if (wsManager) {
+        broadcastFn = (url: string, data: MessageData, method = 'POST') => {
+            wsManager.broadcast(url, data, method)
+        }
         logger.info('[bunchy] connected to WebSocket broadcast system')
-    } catch (error) {
-        logger.error('[bunchy] Failed to connect to WebSocket broadcast system:', error)
+    } else {
+        logger.warn('[bunchy] no WebSocket manager provided - broadcasts will be disabled')
     }
 
-    // For Bun.serve, we don't need to create a separate WebSocket server
-    // The WebSocket functionality is handled by the main server's websocket option
-    // Just log that bunchy is ready
     logger.info('[bunchy] Development service ready')
 
     await tasks.dev.start({minify: false, sourcemap: true})

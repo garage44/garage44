@@ -1,11 +1,17 @@
 import {Workspace} from './workspace'
 import {WorkspaceDescription} from '../src/types'
 import {logger} from '../service.ts'
+import {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import path from 'node:path'
 
 export class Workspaces {
+    private wsManager?: WebSocketServerManager
 
     workspaces: Workspace[] = []
+
+    setWebSocketManager(wsManager: WebSocketServerManager) {
+        this.wsManager = wsManager
+    }
 
     async init(workspaces: string[]) {
         if (workspaces.length) {
@@ -19,7 +25,7 @@ export class Workspaces {
         }
 
         const workspace = new Workspace()
-        await workspace.init(description)
+        await workspace.init(description, true, this.wsManager)
         this.workspaces.push(workspace)
 
         return workspace

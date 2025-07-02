@@ -12,7 +12,7 @@ import fs from 'fs-extra'
 import {hideBin} from 'yargs/helpers'
 import {i18nFormat} from '@garage44/common/lib//i18n.ts'
 import {initMiddleware} from './lib/middleware.ts'
-import {initDualWebSocketServer} from './lib/ws-server.ts'
+import {WebSocketServerManager, createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
 import {lintWorkspace} from './lib/lint.ts'
 import path from 'node:path'
 import {pathCreate} from '@garage44/common/lib/paths'
@@ -213,16 +213,39 @@ cli.usage('Usage: $0 [task]')
     }, async(argv) => {
 
         await initConfig(config)
-        await Promise.all([
-            enola.init(config.enola, logger),
-            workspaces.init(config.workspaces),
-        ])
+
+        // Initialize enola first
+        await enola.init(config.enola, logger)
 
         // Initialize middleware and WebSocket server
         const { handleRequest, handleWebSocket } = await initMiddleware(bunchyConfig)
-        const enhancedWebSocketHandler = initDualWebSocketServer(handleWebSocket, config)
-        registerI18nWebSocketApiRoutes()
-        registerWorkspacesWebSocketApiRoutes()
+
+        // Create WebSocket managers directly
+        const wsManager = new WebSocketServerManager({
+            endpoint: '/ws',
+            authOptions: config.authOptions,
+            sessionMiddleware: config.sessionMiddleware,
+        })
+
+        // Set the WebSocket manager for workspaces and then initialize
+        workspaces.setWebSocketManager(wsManager)
+        await workspaces.init(config.workspaces)
+
+        const bunchyManager = new WebSocketServerManager({
+            endpoint: '/bunchy',
+            authOptions: config.authOptions,
+            sessionMiddleware: config.sessionMiddleware,
+        })
+
+        // Map of endpoint to manager for the handler
+        const wsManagers = new Map([
+            ['/ws', wsManager],
+            ['/bunchy', bunchyManager],
+        ])
+
+        const enhancedWebSocketHandler = createBunWebSocketHandler(wsManagers)
+        registerI18nWebSocketApiRoutes(wsManager)
+        registerWorkspacesWebSocketApiRoutes(wsManager)
 
         // Start Bun.serve server
         const server = Bun.serve({
@@ -233,7 +256,7 @@ cli.usage('Usage: $0 [task]')
         })
 
         if (BUN_ENV === 'development') {
-            await bunchyService(server, bunchyConfig)
+            await bunchyService(server, bunchyConfig, bunchyManager)
         }
 
         logger.info(`service: http://${argv.host}:${argv.port}`)

@@ -1,5 +1,5 @@
 import {enola, logger, workspaces} from '../service.ts'
-import {apiWs as api} from '../lib/ws-server.ts'
+import {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import {config} from '../lib/config.ts'
 import fs from 'fs/promises'
 import os from 'node:os'
@@ -18,8 +18,9 @@ const requireAdmin = async(ctx, next) => {
     return next(ctx)
 }
 
-export function registerWorkspacesWebSocketApiRoutes() {
+export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // WebSocket API routes (unchanged) - these are for real-time features
+    const api = wsManager.api
     api.get('/api/workspaces/browse', async(context, request) => {
         // Determine the path to browse
         const reqPath = request.data?.path || process.cwd()

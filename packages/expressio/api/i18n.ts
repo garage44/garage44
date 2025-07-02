@@ -1,16 +1,17 @@
 import {pathCreate, pathDelete, pathMove, pathRef, pathToggle} from '@garage44/common/lib/paths.ts'
 import {translate_path, translate_tag} from '../lib/translate.ts'
-import {apiWs} from '../lib/ws-server.ts'
+import {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import {i18nFormat} from '@garage44/common/lib/i18n.ts'
 import {logger} from '@garage44/common/app'
 import {workspaces} from '../service.ts'
 
-export function registerI18nWebSocketApiRoutes() {
+export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // WebSocket API routes (unchanged) - these are for real-time features
+    const apiWs = wsManager.api
     apiWs.post('/api/workspaces/:workspace_id/paths', async(context, request) => {
         const params = request.params
         const workspace = workspaces.get(params.workspace_id)
-        const {path, value} = request.data
+        const {path, value} = request.data as {path: string[], value: any}
         pathCreate(workspace.i18n, path, value, workspace.config.languages.target)
         workspace.save()
     })
@@ -33,7 +34,7 @@ export function registerI18nWebSocketApiRoutes() {
 
     apiWs.post('/api/workspaces/:workspace_id/collapse', async(context, request) => {
         const params = request.params
-        const {path, tag_modifier, value} = request.data
+        const {path, tag_modifier, value} = request.data as {path: string[], tag_modifier?: boolean, value?: any}
         const workspace = workspaces.get(params.workspace_id)
 
         // Determine which mode to use based on the request

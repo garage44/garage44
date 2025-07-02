@@ -8,7 +8,7 @@ import {
     sortNestedObjectKeys,
 } from '@garage44/common/lib/utils.ts'
 import {WorkspaceDescription} from '../src/types.ts'
-import {broadcast} from './ws-server.ts'
+import {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import fs from 'fs-extra'
 import {glob} from 'glob'
 import {lintWorkspace} from './lint.ts'
@@ -16,6 +16,7 @@ import {logger} from '../service.ts'
 import path from 'node:path'
 
 export class Workspace {
+    private wsManager?: WebSocketServerManager
 
     config:WorkspaceConfig = {
         languages: {
@@ -160,7 +161,8 @@ export class Workspace {
         )
     }
 
-    async init(description: WorkspaceDescription, isService = true) {
+    async init(description: WorkspaceDescription, isService = true, wsManager?: WebSocketServerManager) {
+        this.wsManager = wsManager
         this.config.source_file = description.source_file
         const configExists = await fs.pathExists(this.config.source_file)
 
@@ -388,12 +390,14 @@ export class Workspace {
         })
 
         // Broadcast the i18n state to all clients
-        broadcast('/i18n/state', {
-            history_size: this.i18nHistory.length,
-            i18n: cleanI18n,
-            timestamp: Date.now(),
-            workspace_id: this.config.workspace_id,
-        })
+        if (this.wsManager) {
+            this.wsManager.broadcast('/i18n/state', {
+                history_size: this.i18nHistory.length,
+                i18n: cleanI18n,
+                timestamp: Date.now(),
+                workspace_id: this.config.workspace_id,
+            })
+        }
     }
 
     // Throttled version to use in place of direct calls for frequent operations
