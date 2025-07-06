@@ -28,6 +28,7 @@ Each ADR follows this structure:
 | [ADR-007](./ADR-007-bun-serve-migration.md) | Migration to Bun.serve for Development Server | Accepted | 2025-06-02 |
 | [ADR-008](./ADR-008-isomorphic-logger.md) | Isomorphic Logger Implementation | Accepted | 2025-06-02 |
 | [ADR-009](./ADR-009-llm-optimized-project-structure.md) | LLM-Optimized Project Structure for Strategic Reasoning | Accepted | 2025-01-27 |
+| [ADR-010](./ADR-010-oxlint-eslint-replacement.md) | OxLint as ESLint Replacement for Enhanced TypeScript/React Linting | Accepted | 2025-01-03 |
 
 ## Architectural Principles
 
@@ -47,6 +48,7 @@ Based on these decisions, Expressio follows these core principles:
 - Choose tools that optimize for fast iteration (Bun, TypeScript, hot reload)
 - Prefer modern standards over legacy compatibility (ES2023, ES modules)
 - Simplify toolchain complexity where possible
+- Adopt Rust-based tooling for performance gains (OxLint, Bun)
 
 ### 4. **Commercial/Community Balance**
 - Protect core business logic with AGPL
