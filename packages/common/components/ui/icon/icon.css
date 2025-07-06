@@ -1,0 +1,73 @@
+.c-icon {
+    fill: currentcolor;
+    outline: none;
+
+    &.disabled {
+        cursor: not-allowed;
+        opacity: 0.2;
+    }
+
+    &.type-success {
+        color: hsl(var(--success-h) var(--s-3) var(--l-6));
+    }
+
+    &.type-warning {
+        color: hsl(var(--warning-h) var(--s-3) var(--l-6));
+    }
+
+    &.error {
+        color: var(--error-4);
+    }
+
+    &.icon-xs {
+        height: calc(var(--spacer-1) * 1.75);
+        width: calc(var(--spacer-1) * 1.75);
+    }
+
+    &.icon-s {
+        height: calc(var(--spacer-1) * 2.5);
+        width: calc(var(--spacer-1) * 2.5);
+    }
+
+    &.icon-d {
+        height: calc(var(--spacer-1) * 3.5);
+        width: calc(var(--spacer-1) * 3.5);
+    }
+
+    &.icon-l {
+        height: 50px;
+        width: 50px;
+    }
+
+    &.icon-xxl {
+        height: 100px;
+        width: 100px;
+    }
+
+    &.type-default {
+        color: var(--surface-5);
+
+        &:not(.disabled):hover {
+            color: var(--info-7);
+            cursor: pointer;
+        }
+    }
+
+    &.type-danger {
+        color: var(--danger-5);
+
+        &.click:not(.disabled):hover {
+            color: var(--danger-7);
+            cursor: pointer;
+        }
+    }
+
+    &.type-info {
+        color: var(--info-5);
+
+        &.click:not(.disabled):hover {
+            color: var(--info-7);
+            cursor: pointer;
+        }
+    }
+}

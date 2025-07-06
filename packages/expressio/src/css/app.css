@@ -1,0 +1,45 @@
+@import "./_variables.css";
+@import "./_spacing.css";
+@import "../common/css/_tooltip.css";
+
+html, body {
+    font-family: Inter, sans-serif;
+    font-size: var(--font-d);
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.view {
+    min-height: 100vh;
+}
+
+::selection {
+    background: var(--info-5);
+    color: var(--info-8);
+}
+
+.rotate {
+    animation: rotate-animation 1s linear infinite;
+}
+
+@keyframes rotate-animation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+a {
+    &.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+}

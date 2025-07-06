@@ -1,4 +1,3 @@
-import * as sass from 'sass'
 import archy from 'archy'
 import fs from 'fs-extra'
 import path from 'path'
@@ -40,42 +39,42 @@ export const showConfig = function(settings) {
     archy(tree).split('\r').forEach((line) => logger.info(line))
 }
 
-export function generateRandomId() {
-    return Math.random().toString(36).substr(2, 9)
+export const generateRandomId = function() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 }
 
-export function Scss(settings) {
+export function CssBundler(settings) {
     return async function(options) {
-        const result = sass.compileString(options.data, {
-            loadPaths: [
-                settings.dir.src,
-                settings.dir.scss,
-                settings.dir.components,
-                path.join(settings.dir.common, 'scss'),
-            ],
-            sourceMap: options.sourceMap,
-            style: options.minify ? 'compressed' : 'expanded',
-            url: new URL(`file://${options.file}`),
-        })
-
-        const styles = result.css
-
-        if (result.sourceMap) {
-            const sourceMap = result.sourceMap
-            sourceMap.sources = sourceMap.sources.map(source => {
-                if (source.startsWith('file://')) {
-                    const filePath = new URL(source).pathname
-                    return path.relative(path.dirname(options.outFile), filePath)
-                }
-                return source
+        try {
+            const result = await Bun.build({
+                entrypoints: [options.entrypoint],
+                experimentalCss: true,
+                minify: options.minify,
+                outdir: path.dirname(options.outFile),
+                naming: `[name].[ext]`,
+                sourcemap: options.sourcemap ? 'inline' : 'none',
             })
 
-            await fs.writeFile(`${options.outFile}.map`, JSON.stringify(sourceMap), 'utf8')
-            await fs.writeFile(options.outFile, styles + `\n/*# sourceMappingURL=${path.basename(options.outFile)}.map */`, 'utf8')
-            return styles
-        }
+            if (!result.success) {
+                console.error('CSS bundling failed:', result.logs)
+                throw new Error('CSS bundling failed')
+            }
 
-        await fs.writeFile(options.outFile, styles, 'utf8')
-        return styles
+            // Read the generated CSS file
+            const cssFiles = result.outputs.filter(output => output.path.endsWith('.css'))
+            if (cssFiles.length === 0) {
+                throw new Error('No CSS output generated')
+            }
+
+            const cssContent = await fs.readFile(cssFiles[0].path, 'utf8')
+            
+            // Write to the desired output file
+            await fs.writeFile(options.outFile, cssContent, 'utf8')
+
+            return cssContent
+        } catch (error) {
+            console.error('CSS bundling error:', error)
+            throw error
+        }
     }
 }
