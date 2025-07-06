@@ -1,0 +1,6 @@
+/* Checkbox group styles - currently placeholder */
+.c-field-checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-1);
+}

@@ -1,4 +1,3 @@
-import * as sass from 'sass'
 import archy from 'archy'
 import fs from 'fs-extra'
 import path from 'path'
@@ -40,42 +39,63 @@ export const showConfig = function(settings) {
     archy(tree).split('\r').forEach((line) => logger.info(line))
 }
 
-export function generateRandomId() {
-    return Math.random().toString(36).substr(2, 9)
+export const generateRandomId = function() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 }
 
-export function Scss(settings) {
+export function CssBundler(settings) {
     return async function(options) {
-        const result = sass.compileString(options.data, {
-            loadPaths: [
-                settings.dir.src,
-                settings.dir.scss,
-                settings.dir.components,
-                path.join(settings.dir.common, 'scss'),
-            ],
-            sourceMap: options.sourceMap,
-            style: options.minify ? 'compressed' : 'expanded',
-            url: new URL(`file://${options.file}`),
-        })
+        try {
+            // Read the entry file and process CSS imports manually
+            const entryContent = await fs.readFile(options.entrypoint, 'utf8')
+            const entryDir = path.dirname(options.entrypoint)
 
-        const styles = result.css
+            // Extract @import statements and resolve them
+            const importRegex = /@import\s+['"](.*?)['"];/g
+            const imports = []
+            let match
 
-        if (result.sourceMap) {
-            const sourceMap = result.sourceMap
-            sourceMap.sources = sourceMap.sources.map(source => {
-                if (source.startsWith('file://')) {
-                    const filePath = new URL(source).pathname
-                    return path.relative(path.dirname(options.outFile), filePath)
+            while ((match = importRegex.exec(entryContent)) !== null) {
+                const importPath = match[1]
+                const resolvedPath = path.resolve(entryDir, importPath)
+                imports.push(resolvedPath)
+            }
+
+            // Initialize CSS contents array
+            let cssContents = []
+
+            // Variables should only be included in app.css, not in components.css
+            // This prevents duplication and improves performance
+
+            // Read all imported CSS files
+            const importedContents = await Promise.all(imports.map(async (importPath) => {
+                try {
+                    const content = await fs.readFile(importPath, 'utf8')
+                    return `/* ${path.relative(settings.dir.workspace, importPath)} */\n${content}`
+                } catch (error) {
+                    console.warn(`Warning: Could not read CSS file ${importPath}:`, error.message)
+                    return `/* Error loading ${importPath} */`
                 }
-                return source
-            })
+            }))
 
-            await fs.writeFile(`${options.outFile}.map`, JSON.stringify(sourceMap), 'utf8')
-            await fs.writeFile(options.outFile, styles + `\n/*# sourceMappingURL=${path.basename(options.outFile)}.map */`, 'utf8')
-            return styles
+            cssContents.push(...importedContents)
+
+            // Add the entry file's own CSS content (excluding @import statements)
+            const entryFileContent = entryContent.replace(/@import\s+['"](.*?)['"];/g, '').trim()
+            if (entryFileContent) {
+                cssContents.push(`/* ${path.relative(settings.dir.workspace, options.entrypoint)} */\n${entryFileContent}`)
+            }
+
+            // Combine all CSS content
+            const combinedCss = cssContents.join('\n\n')
+
+            // Write to the desired output file
+            await fs.writeFile(options.outFile, combinedCss, 'utf8')
+
+            return combinedCss
+        } catch (error) {
+            console.error('CSS bundling error:', error)
+            throw error
         }
-
-        await fs.writeFile(options.outFile, styles, 'utf8')
-        return styles
     }
 }

@@ -1,5 +1,3 @@
-@use "variables" as *;
-
 .c-icon {
     fill: currentcolor;
     outline: none;
@@ -22,18 +20,18 @@
     }
 
     &.icon-xs {
-        height: calc($spacer-1 * 1.75);
-        width: calc($spacer-1 * 1.75);
+        height: calc(var(--spacer-1) * 1.75);
+        width: calc(var(--spacer-1) * 1.75);
     }
 
     &.icon-s {
-        height: calc($spacer-1 * 2.5);
-        width: calc($spacer-1 * 2.5);
+        height: calc(var(--spacer-1) * 2.5);
+        width: calc(var(--spacer-1) * 2.5);
     }
 
     &.icon-d {
-        height: calc($spacer-1 * 3.5);
-        width: calc($spacer-1 * 3.5);
+        height: calc(var(--spacer-1) * 3.5);
+        width: calc(var(--spacer-1) * 3.5);
     }
 
     &.icon-l {
@@ -47,28 +45,28 @@
     }
 
     &.type-default {
-        color: $surface-5;
+        color: var(--surface-5);
 
         &:not(.disabled):hover {
-            color: $info-7;
+            color: var(--info-7);
             cursor: pointer;
         }
     }
 
     &.type-danger {
-        color: $danger-5;
+        color: var(--danger-5);
 
         &.click:not(.disabled):hover {
-            color: $danger-7;
+            color: var(--danger-7);
             cursor: pointer;
         }
     }
 
     &.type-info {
-        color: $info-5;
+        color: var(--info-5);
 
         &.click:not(.disabled):hover {
-            color: $info-7;
+            color: var(--info-7);
             cursor: pointer;
         }
     }

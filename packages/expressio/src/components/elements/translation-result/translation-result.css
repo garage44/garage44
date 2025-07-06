@@ -1,11 +1,9 @@
-@use "variables" as *;
-
 .c-translation-result {
-    background: $info-2;
-    color: $info-3;
+    background: var(--info-2);
+    color: var(--info-3);
     flex-direction: column;
-    font-size: $font-s;
-    gap: $spacer-1;
+    font-size: var(--font-s);
+    gap: var(--spacer-1);
     max-height: 500px;
     opacity: 1;
     overflow: hidden;
@@ -20,32 +18,30 @@
     .wrapper {
         display: flex;
         flex-direction: column;
-        gap: $spacer-05;
-        padding: $spacer-1;
+        gap: var(--spacer-05);
+        padding: var(--spacer-1);
 
         .result {
             align-items: center;
-            color: $info-6;
+            color: var(--info-6);
             display: flex;
-            gap: $spacer-1;
+            gap: var(--spacer-1);
             overflow: hidden;
 
             .id {
-                background: $info-4;
-                color: $info-8;
-                padding: $spacer-05;
+                background: var(--info-4);
+                color: var(--info-8);
+                padding: var(--spacer-05);
                 text-align: center;
-                width: $spacer-6;
+                width: var(--spacer-6);
             }
 
             .value {
-                background: $info-3;
-                color: $info-7;
+                background: var(--info-3);
+                color: var(--info-7);
                 font-style: italic;
-                padding: $spacer-05;
+                padding: var(--spacer-05);
             }
         }
     }
-
-
 }

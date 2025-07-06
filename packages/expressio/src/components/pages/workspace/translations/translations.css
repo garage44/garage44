@@ -1,29 +1,26 @@
-@use "variables" as *;
-
 .c-translations {
-    padding: $spacer-3;
+    padding: var(--spacer-3);
     width: 100%;
 
     .workspace-info {
         align-items: center;
-        background: $info-2;
-        border-bottom: 1px solid $info-2;
+        background: var(--info-2);
+        border-bottom: 1px solid var(--info-2);
         display: flex;
-        gap: $spacer-1;
+        gap: var(--spacer-1);
 
         .c-icon {
-            color: $info-6 !important;
+            color: var(--info-6) !important;
         }
 
         &.disabled {
-
             .c-icon {
-                color: $info-2;
+                color: var(--info-2);
             }
         }
 
         .history-actions {
-            background: $info-1;
+            background: var(--info-1);
         }
     }
 
@@ -35,16 +32,16 @@
         padding: 0;
 
         .field {
-            // Translation fields differ from the default field styles
+            /* Translation fields differ from the default field styles */
             margin-bottom: unset;
         }
 
         > .group-id {
-            /** The root group should take less space */
+            /* The root group should take less space */
             align-items: center;
             display: flex;
             flex: unset;
-            margin: $spacer-1 0;
+            margin: var(--spacer-1) 0;
             min-height: unset;
             min-width: unset;
             width: unset;
@@ -58,7 +55,7 @@
                     flex-direction: row;
                     height: unset;
                     justify-content: center;
-                    padding: $spacer-1;
+                    padding: var(--spacer-1);
                     position: unset;
                     width: 100%;
                 }
@@ -66,7 +63,6 @@
         }
 
         > .group-value {
-
             .c-translation  {
                 padding-inline-end: 0;
             }
@@ -82,22 +78,23 @@
         gap: 1rem;
         align-items: center;
         margin: 1rem 0;
-
     }
+
     .filter-input {
         flex: 1;
     }
+
     .translation-controls button {
         min-width: 80px;
-        // padding: 0.5em 1em;
         border: none;
-        background: $info-1;
-        color: $info-6;
+        background: var(--info-1);
+        color: var(--info-6);
         border-radius: 4px;
         cursor: pointer;
         transition: background 0.2s;
+
         &:hover {
-            background: $info-2;
+            background: var(--info-2);
         }
     }
 }

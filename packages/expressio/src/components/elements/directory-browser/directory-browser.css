@@ -1,15 +1,13 @@
-@use "variables" as *;
-
 .c-directory-browser {
     display: flex;
 
     .add-path {
         align-items: center;
-        background: $info-3;
-        color: $info-5;
+        background: var(--info-3);
+        color: var(--info-5);
         display: flex;
-        gap: $spacer-1;
-        padding: $spacer-025;
+        gap: var(--spacer-1);
+        padding: var(--spacer-025);
     }
 
     .wrapper {
@@ -18,35 +16,33 @@
         width: 100%;
 
         .current-path {
-            background: $info-0;
-            color: $info-6;
+            background: var(--info-0);
+            color: var(--info-6);
             font-style: italic;
-            padding: $spacer-1;
+            padding: var(--spacer-1);
         }
 
         .directory-list {
-            background: $info-1;
+            background: var(--info-1);
             display: flex;
             flex-direction: column;
             height: 200px;
             overflow-y: scroll;
 
             .directory {
-                color: $info-5;
+                color: var(--info-5);
                 cursor: pointer;
-                padding: $spacer-05 $spacer-1;
+                padding: var(--spacer-05) var(--spacer-1);
 
                 &.is-workspace {
-                    color: $success-5;
+                    color: var(--success-5);
                 }
 
                 &:hover {
-                    background: $info-2;
-                    color: $info-7;
+                    background: var(--info-2);
+                    color: var(--info-7);
                 }
             }
         }
     }
-
-
 }

@@ -1,5 +1,3 @@
-@use "variables" as *;
-
 .c-translation {
     cursor: pointer;
     width: 100%;
@@ -10,11 +8,11 @@
 
         label {
             align-items: center;
-            background: $info-5;
+            background: var(--info-5);
             display: flex;
             height: 100%;
             min-width: 150px;
-            padding-inline-end: $spacer-1;
+            padding-inline-end: var(--spacer-1);
         }
 
         input {
@@ -24,27 +22,27 @@
 
     .source {
         display: flex;
-        height: $spacer-4;
+        height: var(--spacer-4);
 
         .tag-actions {
             align-items: center;
-            background: $info-1;
+            background: var(--info-1);
             display: flex;
-            gap: $spacer-05;
+            gap: var(--spacer-05);
             height: 100%;
-            padding: 0 $spacer-1;
+            padding: 0 var(--spacer-1);
             transition: background 0.3s ease;
         }
 
         .id-field {
             flex: 1;
-            margin-inline-end: $spacer-1;
-            max-width: 150px + $spacer-2 + 1px;
+            margin-inline-end: var(--spacer-1);
+            max-width: calc(150px + var(--spacer-2) + 1px);
             width: 100%;
 
             input {
-                background: $info-2;
-                color: $info-6;
+                background: var(--info-2);
+                color: var(--info-6);
                 flex: 1;
                 max-width: 100%;
                 transition: background 0.3s ease;
@@ -56,8 +54,8 @@
             width: 100%;
 
             input {
-                background-color: $info-3;
-                color: $info-7;
+                background-color: var(--info-3);
+                color: var(--info-7);
                 transition: background 0.3s ease;
                 width: 100%;
             }
@@ -65,42 +63,38 @@
     }
 
     &.tag-updated {
-
         .source {
-
             .tag-actions {
-                background: $surface-3;
+                background: var(--surface-3);
             }
 
             .id-field input {
-                background: $surface-4;
+                background: var(--surface-4);
             }
 
             .src-field input {
-                background: $surface-8;
+                background: var(--surface-8);
             }
         }
     }
 
     &.redundant {
-
         .src-field {
             position: relative;
 
             &::before {
-                background: $danger-5;
+                background: var(--danger-5);
                 content:'';
                 height: 100%;
-                left: -1 * $spacer-025;
+                left: calc(-1 * var(--spacer-025));
                 position: absolute;
-                width: $spacer-025;
+                width: var(--spacer-025);
             }
         }
-
     }
 
     &.soft {
-        background: $success-5;
+        background: var(--success-5);
         opacity: 0.7;
     }
 }

@@ -1,10 +1,11 @@
-@use "spacing";
-@use "common/tooltip";
-
+@import "./_variables.css";
+@import "./_spacing.css";
+@import "./_typography.css";
+@import "../../../common/css/common/_tooltip.css";
 
 html, body {
     font-family: Inter, sans-serif;
-    font-size: $font-d;
+    font-size: var(--font-d);
     height: 100vh;
     margin: 0;
     padding: 0;
@@ -19,8 +20,8 @@ html, body {
 }
 
 ::selection {
-    background: $info-5;
-    color: $info-8;
+    background: var(--info-5);
+    color: var(--info-8);
 }
 
 .rotate {
@@ -28,7 +29,6 @@ html, body {
 }
 
 @keyframes rotate-animation {
-
     from {
         transform: rotate(0deg);
     }
@@ -39,7 +39,6 @@ html, body {
 }
 
 a {
-
     &.disabled {
         opacity: 0.5;
         pointer-events: none;
