@@ -1,0 +1,158 @@
+:root {
+    /* HSL component variables */
+    --s-0: 3%;
+    --s-1: 13%;
+    --s-2: 30%;
+    --s-3: 50%;
+    --l-0: 5%;
+    --l-1: 9.4%;
+    --l-2: 15%;
+    --l-3: 20%;
+    --l-4: 30%;
+    --l-5: 60%;
+    --l-6: 74%;
+    --l-7: 87%;
+    --l-8: 97%;
+    --info-h: 205deg;
+    --success-h: 100deg;
+    --danger-h: 5deg;
+    --warning-h: 25deg;
+    --surface-h: 54deg;
+
+    /* Spacing variables */
+    --spacer-1: 8px;
+    --spacer-025: calc(var(--spacer-1) * 0.25);
+    --spacer-05: calc(var(--spacer-1) * 0.5);
+    --spacer-2: calc(var(--spacer-1) * 2);
+    --spacer-3: calc(var(--spacer-1) * 3);
+    --spacer-4: calc(var(--spacer-1) * 4);
+    --spacer-5: calc(var(--spacer-1) * 5);
+    --spacer-6: calc(var(--spacer-1) * 6);
+    --spacer-7: calc(var(--spacer-1) * 7);
+    --spacer-8: calc(var(--spacer-1) * 8);
+
+    /* Font size variables */
+    --font-xxs: 0.61rem;
+    --font-xs: 0.74rem;
+    --font-s: 0.8rem;
+    --font-d: 0.9rem;
+    --font-l: 1.05rem;
+    --font-xl: 1.3rem;
+    --font-xxl: 3rem;
+
+    /* Icon size variables */
+    --icon-xs: calc(var(--spacer-1) * 1.75);
+    --icon-s: calc(var(--spacer-1) * 2);
+    --icon-d: var(--spacer-3);
+    --icon-l: var(--spacer-4);
+    --icon-xl: calc(var(--spacer-1) * 4.5);
+
+    /* Breakpoint variables */
+    --breakpoint-10: 500px;
+    --breakpoint-20: 750px;
+    --breakpoint-35: 1400px;
+    --breakpoint-40: 1550px;
+    --breakpoint-50: 1920px;
+
+    /* Basic colors */
+    --black: #000;
+    --white: #fff;
+
+    /* Surface colors */
+    --surface-0: hsl(var(--surface-h) var(--s-1) var(--l-0));
+    --surface-1: hsl(var(--surface-h) var(--s-1) var(--l-1));
+    --surface-2: hsl(var(--surface-h) var(--s-1) var(--l-2));
+    --surface-3: hsl(var(--surface-h) var(--s-1) var(--l-3));
+    --surface-4: hsl(var(--surface-h) var(--s-1) var(--l-4));
+    --surface-5: hsl(var(--surface-h) var(--s-1) var(--l-5));
+    --surface-6: hsl(var(--surface-h) var(--s-1) var(--l-6));
+    --surface-7: hsl(var(--surface-h) var(--s-1) var(--l-7));
+    --surface-8: hsl(var(--surface-h) var(--s-1) var(--l-8));
+
+    /* Info state colors */
+    --info-0: hsl(var(--info-h) var(--s-3) var(--l-0));
+    --info-1: hsl(var(--info-h) var(--s-3) var(--l-1));
+    --info-2: hsl(var(--info-h) var(--s-3) var(--l-2));
+    --info-3: hsl(var(--info-h) var(--s-3) var(--l-3));
+    --info-4: hsl(var(--info-h) var(--s-3) var(--l-4));
+    --info-5: hsl(var(--info-h) var(--s-3) var(--l-5));
+    --info-6: hsl(var(--info-h) var(--s-3) var(--l-6));
+    --info-7: hsl(var(--info-h) var(--s-3) var(--l-7));
+    --info-8: hsl(var(--info-h) var(--s-3) var(--l-8));
+
+    /* Success state colors */
+    --success-0: hsl(var(--success-h) var(--s-3) var(--l-0));
+    --success-1: hsl(var(--success-h) var(--s-2) var(--l-1));
+    --success-2: hsl(var(--success-h) var(--s-2) var(--l-2));
+    --success-3: hsl(var(--success-h) var(--s-2) var(--l-3));
+    --success-4: hsl(var(--success-h) var(--s-2) var(--l-4));
+    --success-5: hsl(var(--success-h) var(--s-2) var(--l-5));
+    --success-6: hsl(var(--success-h) var(--s-2) var(--l-6));
+    --success-7: hsl(var(--success-h) var(--s-2) var(--l-7));
+    --success-8: hsl(var(--success-h) var(--s-2) var(--l-8));
+
+    /* Danger state colors */
+    --danger-0: hsl(var(--danger-h) var(--s-3) var(--l-0));
+    --danger-1: hsl(var(--danger-h) var(--s-3) var(--l-1));
+    --danger-2: hsl(var(--danger-h) var(--s-3) var(--l-2));
+    --danger-3: hsl(var(--danger-h) var(--s-3) var(--l-3));
+    --danger-4: hsl(var(--danger-h) var(--s-3) var(--l-4));
+    --danger-5: hsl(var(--danger-h) var(--s-3) var(--l-5));
+    --danger-6: hsl(var(--danger-h) var(--s-3) var(--l-6));
+    --danger-7: hsl(var(--danger-h) var(--s-3) var(--l-7));
+    --danger-8: hsl(var(--danger-h) var(--s-3) var(--l-8));
+
+    /* Warning state colors */
+    --warning-0: hsl(var(--warning-h) var(--s-3) var(--l-0));
+    --warning-1: hsl(var(--warning-h) var(--s-3) var(--l-1));
+    --warning-2: hsl(var(--warning-h) var(--s-3) var(--l-2));
+    --warning-3: hsl(var(--warning-h) var(--s-3) var(--l-3));
+    --warning-4: hsl(var(--warning-h) var(--s-3) var(--l-4));
+    --warning-5: hsl(var(--warning-h) var(--s-3) var(--l-5));
+    --warning-6: hsl(var(--warning-h) var(--s-3) var(--l-6));
+    --warning-7: hsl(var(--warning-h) var(--s-3) var(--l-7));
+    --warning-8: hsl(var(--warning-h) var(--s-3) var(--l-8));
+
+    /* Shadow */
+    --shadow-d: 0 4px var(--spacer-1) hsl(var(--info-h) var(--s-3) var(--l-1) / 50%);
+
+    /* Form variables */
+    --input-height: var(--spacer-4);
+    --input-label-color: var(--surface-1);
+    --input-label-height: var(--spacer-3);
+    --input-bg: hsl(var(--surface-h) var(--s-1) 100%);
+    --input-margin: var(--spacer-3);
+    --validation-unset-border: 1px solid hsl(var(--surface-h) var(--s-1) var(--l-3));
+    --validation-valid-border: 1px solid hsl(var(--success-h) var(--s-1) var(--l-2));
+    --validation-invalid-border: 1px solid hsl(var(--danger-h) var(--s-1) var(--l-2));
+    --focus-outline: 1px solid hsl(var(--info-h) var(--s-2) var(--l-3));
+    --focus-outline-invalid: var(--danger-2);
+    --input-border-color: var(--surface-4);
+    --input-disabled-bg: var(--surface-5);
+    --input-disabled-color: hsl(var(--surface-h) var(--s-1) var(--l-2));
+    --input-disabled-border: var(--surface-4);
+    --input-color: hsl(var(--surface-h) var(--s-1) var(--l-1));
+    --input-placeholder-color: hsl(var(--surface-h) var(--s-1) var(--l-2));
+
+    /* Table variables */
+    --table-header-bg: var(--info-1);
+    --table-header-color: var(--info-4);
+    --table-header-height: var(--spacer-6);
+
+    /* Border variables */
+    --border-color: var(--surface-5);
+    --border-radius-xl: var(--spacer-2);
+    --border-radius-l: calc(var(--spacer-1) * 1.5);
+    --border-radius-d: var(--spacer-1);
+    --border-radius-s: var(--spacer-05);
+    --border-radius-xs: var(--spacer-05);
+
+    /* Outline variables */
+    --outline: 0 0 1px 2px;
+    --outline-inset: inset 0 0 0 1px;
+
+    /* Panel variables */
+    --panel-width: 450px;
+    --panel-context-width: 600px;
+    --panel-collapsed-width: calc(var(--spacer-6) + var(--spacer-05));
+}

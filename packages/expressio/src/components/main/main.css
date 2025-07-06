@@ -1,59 +1,46 @@
-@use "variables" as *;
-
 body {
     background: linear-gradient(to bottom, hsl(var(--info-h) var(--s-3) var(--l-3)), hsl(var(--info-h) var(--s-3) var(--l-0)));
     display: flex;
     height: 100%;
     width: 100%;
 
-    @keyframes fade-in {
-
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
-    }
-
     .panel {
         align-items: center;
         animation: fade-in 0.2s ease-in forwards;
         background: hsla(var(--info-h) var(--s-3) var(--l-1) / 80%);
-        border-right: 1px solid $info-2;
-        box-shadow: 0 0 $spacer-2 $spacer-1 hsla(var(--info-h) var(--s-3) var(--l-0) / 40%);
+        border-right: 1px solid var(--info-2);
+        box-shadow: 0 0 var(--spacer-2) var(--spacer-1) hsla(var(--info-h) var(--s-3) var(--l-0) / 40%);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-            opacity: 0;
+        opacity: 0;
         width: 200px;
 
         .top-bar {
-            background: $info-1;
+            background: var(--info-1);
             flex: 1;
             height: 100%;
             width: 100%;
 
             .c-field-select {
-                margin: $spacer-05;
+                margin: var(--spacer-05);
             }
 
             .logo {
                 align-items: center;
-                background: $info-1;
+                background: var(--info-1);
                 display: flex;
-                gap: $spacer-1;
+                gap: var(--spacer-1);
                 justify-content: flex-start;
-                padding: $spacer-05 $spacer-1;
+                padding: var(--spacer-05) var(--spacer-1);
 
                 img {
-                    height: $spacer-6;
+                    height: var(--spacer-6);
                     width: auto;
                 }
 
                 .logo-text {
-                    color: $info-8;
+                    color: var(--info-8);
                     font-size: 1.125rem;
                     font-weight: 500;
                     letter-spacing: 0.01em;
@@ -62,52 +49,52 @@ body {
 
             a {
                 align-items: center;
-                color: $info-6;
+                color: var(--info-6);
                 display: flex;
-                gap: $spacer-1;
+                gap: var(--spacer-1);
                 justify-content: flex-start;
-                padding: $spacer-1;
+                padding: var(--spacer-1);
                 text-decoration: none;
                 transition: all 0.3s ease;
                 width: 100%;
 
                 &.active {
-                    background: $info-3;
-                    color: $info-8;
+                    background: var(--info-3);
+                    color: var(--info-8);
                 }
             }
         }
 
         .actions {
             display: flex;
-            padding: $spacer-1;
+            padding: var(--spacer-1);
             width: 100%;
 
             .c-icon {
-                background: $info-3;
-                border: 1px solid $info-4;
+                background: var(--info-3);
+                border: 1px solid var(--info-4);
                 border-radius: 50%;
                 cursor: pointer;
-                height: $icon-xl;
+                height: var(--icon-xl);
                 padding: 6px;
                 transition: all 0.3s ease;
-                width: $icon-xl;
+                width: var(--icon-xl);
 
                 &:hover {
-                    background: $info-4;
+                    background: var(--info-4);
                 }
             }
         }
 
         .engines {
-            padding: $spacer-1;
+            padding: var(--spacer-1);
             width: 100%;
 
             .usage {
-                color: $info-6;
+                color: var(--info-6);
                 display: flex;
                 flex-direction: column;
-                margin-bottom: $spacer-2;
+                margin-bottom: var(--spacer-2);
                 width: 100%;
             }
         }
@@ -118,9 +105,8 @@ body {
     }
 
     .menu-group {
-        margin-top: $spacer-2;
+        margin-top: var(--spacer-2);
     }
-
 
     .view-layout {
         animation: fade-in 0.2s ease-in forwards;

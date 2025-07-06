@@ -1,23 +1,21 @@
-@use "variables" as *;
-
 .c-progress {
-    background: $info-2;
+    background: var(--info-2);
     position: relative;
     width: 100%;
 
     .bar {
-        background: $info-5;
-        height: $spacer-3;
+        background: var(--info-5);
+        height: var(--spacer-3);
 
         .percentage {
             align-items: center;
-            color: $info-8;
+            color: var(--info-8);
             display: flex;
-            font-size: $font-s;
+            font-size: var(--font-s);
             font-weight: 600;
-            height: $spacer-3;
+            height: var(--spacer-3);
             justify-content: space-between;
-            padding: 0 $spacer-1;
+            padding: 0 var(--spacer-1);
             position: absolute;
             top: 0;
             width: 100%;
@@ -25,11 +23,11 @@
     }
 
     .boundaries {
-        background: $info-0;
-        color: $info-7;
+        background: var(--info-0);
+        color: var(--info-7);
         display: flex;
-        font-size: $font-xxs;
-        padding: $spacer-025;
+        font-size: var(--font-xxs);
+        padding: var(--spacer-025);
         width: 100%;
     }
 }

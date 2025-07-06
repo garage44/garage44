@@ -1,0 +1,38 @@
+.c-button {
+    border-radius: var(--spacer-3);
+    cursor: pointer;
+    font-size: var(--font-s);
+    font-weight: 800;
+    padding: calc(var(--spacer-1) * 1.5) var(--spacer-2);
+    transition: all 0.1s ease;
+
+    &.type-info {
+        background: var(--info-4);
+        border: none;
+        color: var(--info-7);
+
+        &:hover {
+            background: var(--info-3);
+        }
+    }
+
+    &.type-success {
+        background: var(--success-4);
+        border: none;
+        color: var(--success-7);
+        font-weight: 600;
+
+        &:hover {
+            background: var(--success-3);
+        }
+    }
+
+    &.disabled {
+        opacity: 0.5;
+
+        &:hover {
+            background: var(--info-4);
+            cursor: not-allowed;
+        }
+    }
+}

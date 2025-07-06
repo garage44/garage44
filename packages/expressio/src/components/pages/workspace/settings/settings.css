@@ -1,20 +1,18 @@
-@use "variables" as *;
-
 .c-workspace-settings {
-    padding: $spacer-3;
+    padding: var(--spacer-3);
 
     .languages {
-        margin-bottom: $spacer-1;
+        margin-bottom: var(--spacer-1);
         max-width: 500px;
 
         .options {
-            background: $info-0;
-            border: 1px solid $info-3;
+            background: var(--info-0);
+            border: 1px solid var(--info-3);
             display: grid;
-            gap: $spacer-1;
-            max-height: $spacer-4 * 10 + $spacer-1;
+            gap: var(--spacer-1);
+            max-height: calc(var(--spacer-4) * 10 + var(--spacer-1));
             overflow-y: scroll;
-            padding: $spacer-1;
+            padding: var(--spacer-1);
 
             .field {
                 margin-bottom: 0;
@@ -22,24 +20,24 @@
 
             .option {
                 align-items: flex-start;
-                background: $info-1;
+                background: var(--info-1);
                 display: flex;
                 flex-direction: column;
-                padding: $spacer-05;
+                padding: var(--spacer-05);
 
                 .field-wrapper {
                     align-items: center;
                     display: flex;
-                    gap: $spacer-1;
+                    gap: var(--spacer-1);
                     width: 100%;
                 }
 
                 .language-options {
-                    background: $info-2;
-                    color: $info-5;
-                    margin-top: $spacer-1;
+                    background: var(--info-2);
+                    color: var(--info-5);
+                    margin-top: var(--spacer-1);
                     overflow: auto;
-                    padding: $spacer-1;
+                    padding: var(--spacer-1);
                     width: 100%;
                 }
 
@@ -48,14 +46,14 @@
                 }
 
                 &.is-invalid {
-                    background: $danger-1;
-                    border-color: $danger-4;
+                    background: var(--danger-1);
+                    border-color: var(--danger-4);
                 }
             }
         }
 
         .help {
-            margin-top: $spacer-05;
+            margin-top: var(--spacer-05);
         }
     }
 }

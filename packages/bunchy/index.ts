@@ -1,7 +1,7 @@
 import {
     MessageData,
 } from '@garage44/common/lib/ws-server'
-import {Scss, generateRandomId, showConfig} from './utils'
+import {CssBundler, generateRandomId, showConfig} from './utils'
 import {URL, fileURLToPath} from 'node:url'
 import path from 'node:path'
 import {tasks} from './tasks.ts'
@@ -22,7 +22,7 @@ interface Settings {
         common: string
         components: string
         public: string
-        scss: string
+        css: string
         src: string
         workspace: string
     }
@@ -30,7 +30,7 @@ interface Settings {
 }
 
 export const settings = {} as Settings
-export const tooling = {} as {scss: unknown}
+export const tooling = {} as {scss: (options: {entrypoint: string, minify?: boolean, outFile: string, sourcemap?: boolean}) => Promise<string>}
 
 async function applySettings(config) {
     Object.assign(settings, {
@@ -41,7 +41,7 @@ async function applySettings(config) {
             common: config.common,
             components: path.resolve(path.join(config.workspace, 'src', 'components')),
             public: path.resolve(path.join(config.workspace, `public`)),
-            scss: path.resolve(path.join(config.workspace, 'src', 'scss')),
+            css: path.resolve(path.join(config.workspace, 'src', 'css')),
             src: path.resolve(path.join(config.workspace, 'src')),
             workspace: config.workspace,
         },
@@ -50,7 +50,7 @@ async function applySettings(config) {
         sourcemap: config.sourcemap,
         version: config.version,
     })
-    tooling.scss = Scss(settings)
+    tooling.scss = CssBundler(settings)
 
     showConfig(settings)
 }

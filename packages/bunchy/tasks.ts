@@ -154,7 +154,7 @@ tasks.dev = new Task('dev', async function({minify = false, sourcemap = true} = 
 
         if (extension === '.ts' || extension === '.tsx') {
             runner.code_frontend()
-        } else if (extension === '.scss') {
+        } else if (extension === '.css') {
             runner.styles.components()
         }
     })
@@ -168,16 +168,16 @@ tasks.dev = new Task('dev', async function({minify = false, sourcemap = true} = 
             runner.code_frontend()
         } else if (filename === 'index.html') {
             runner.html()
-        } else if (extension === '.scss') {
-            // Differentiate between app-level and component-level SCSS files
-            if (filename.startsWith('scss/')) {
-                // App-level styles (src/scss/*.scss)
+                } else if (extension === '.css') {
+            // Differentiate between app-level and component-level CSS files
+            if (filename.startsWith('css/')) {
+                // App-level styles (src/css/*.css)
                 runner.styles.app()
             } else if (filename.startsWith('components/')) {
-                // Component styles (src/components/**/*.scss)
+                // Component styles (src/components/**/*.css)
                 runner.styles.components()
             } else {
-                // Default to app for other SCSS files
+                // Default to app for other CSS files
                 runner.styles.app()
             }
         }
@@ -203,16 +203,10 @@ tasks.styles = new Task('styles', async function({minify = false, sourcemap = fa
 })
 
 tasks.stylesApp = new Task('styles:app', async function({minify, sourcemap}) {
-    let data = `
-    @use "sass:color";
-    @use "sass:math";
-    @use "variables" as *;
-    `
-    data += await fs.readFile(path.join(settings.dir.src, 'scss', 'app.scss'), 'utf8')
-    const filename =`app.${settings.buildId}.css`
+    const appCssPath = path.join(settings.dir.src, 'css', 'app.css')
+    const filename = `app.${settings.buildId}.css`
     const styles = await tooling.scss({
-        data,
-        file: 'scss/app.scss',
+        entrypoint: appCssPath,
         minify,
         outFile: path.join(settings.dir.public, filename),
         sourcemap,
@@ -222,33 +216,40 @@ tasks.stylesApp = new Task('styles:app', async function({minify, sourcemap}) {
 })
 
 tasks.stylesComponents = new Task('styles:components', async function({minify, sourcemap}) {
-    let data = `
-    @use "sass:color";
-    @use "sass:math";
-    @use "variables" as *;
-    `
+    // Create a temporary components entry file that imports all component CSS files
     const imports = await glob([
-        path.join(settings.dir.common, '**', '*.scss'),
-        path.join(settings.dir.components, '**', '*.scss'),
+        path.join(settings.dir.common, '**', '*.css'),
+        path.join(settings.dir.components, '**', '*.css'),
     ])
 
     const allImports = imports.flat()
 
+    // Create the components entry file content
     const componentImports = allImports.map((f) => {
-        const scssImport = f.replace(`${settings.dir.components}${path.sep}`, '').replace('.scss', '')
-        const namespace = scssImport.replace(/\//g, '-').replace(/\./g, '-').replace('@', '')
-        return `@use "${scssImport}" as ${namespace};`
+        // Use the absolute path directly since we're creating the entry file in public/
+        // This avoids path resolution issues
+        return `@import "${f}";`
     })
 
-    data += componentImports.join('\n')
+    const entryContent = componentImports.join('\n')
+    const entryFile = path.join(settings.dir.public, 'temp-components.css')
+
+    // Ensure the public directory exists
+    await fs.ensureDir(path.dirname(entryFile))
+
+    // Write the temporary entry file to public dir (not src)
+    await fs.writeFile(entryFile, entryContent, 'utf8')
+
     const filename = `components.${settings.buildId}.css`
     const styles = await tooling.scss({
-        data,
-        file: 'src/scss/components.scss',
+        entrypoint: entryFile,
         minify,
         outFile: path.join(settings.dir.public, filename),
         sourcemap,
     })
+
+    // Clean up temporary entry file
+    await fs.rm(entryFile, {force: true})
 
     return {filename, size: styles.length}
 })

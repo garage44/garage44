@@ -1,6 +1,3 @@
-@use "variables" as *;
-
-
 .tippy-box[data-animation="fade"][data-state="hidden"] {
     opacity: 0
 }
@@ -10,9 +7,9 @@
 }
 
 .tippy-box {
-    background-color: $info-6;
+    background-color: var(--info-6);
     border-radius: 4px;
-    color: $info-2;
+    color: var(--info-2);
     font-size: 14px;
     line-height: 1.4;
     outline: 0;
@@ -72,7 +69,7 @@
 }
 
 .tippy-arrow {
-    color: $info-6;
+    color: var(--info-6);
     height: 16px;
     width: 16px;
 }

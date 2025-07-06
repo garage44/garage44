@@ -1,0 +1,35 @@
+.field {
+    margin-bottom: var(--spacer-2);
+
+    .label {
+        color: var(--info-6);
+        padding-bottom: var(--spacer-025);
+
+        .indicator {
+            font-size: var(--font-xxs);
+            font-weight: 600;
+            padding-left: 2px;
+            position: absolute;
+        }
+    }
+
+    &.is-invalid {
+        .label .indicator {
+            color: var(--danger-5);
+        }
+    }
+
+    .help,
+    .validation {
+        font-size: var(--font-s);
+        padding-top: var(--spacer-025);
+    }
+
+    .help {
+        color: var(--info-5);
+    }
+
+    .validation {
+        color: var(--danger-6);
+    }
+}
