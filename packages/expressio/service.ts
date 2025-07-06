@@ -159,10 +159,10 @@ cli.usage('Usage: $0 [task]')
 
             for (const fileGroup of lintResult.create_tags) {
                 if (fileGroup.groups.length) {
-                    // eslint-disable-next-line no-console
+                    // oxlint-disable-next-line no-console
                     console.log(pc.underline(`\n${fileGroup.file}`))
                     for (const tag of fileGroup.groups) {
-                        // eslint-disable-next-line no-console
+                        // oxlint-disable-next-line no-console
                         console.log(
                             `${padLeft(`${tag.line}:${tag.column}`, maxPadding, ' ')} ${pc.red('error')} ${tag.match[0]} found in source code, but not in workspace`,
                         )
@@ -172,28 +172,28 @@ cli.usage('Usage: $0 [task]')
 
             if (lintResult.delete_tags.length) {
                 for (const {group, tags} of lintResult.delete_tags) {
-                    // eslint-disable-next-line no-console
+                    // oxlint-disable-next-line no-console
                     console.log(pc.underline(`\n${group}`))
                     for (const tag of tags) {
-                        // eslint-disable-next-line no-console
+                        // oxlint-disable-next-line no-console
                         console.log(`  ${pc.red('error')} ${tag.path.join('.')} in workspace, but not found in source code`)
                     }
                 }
             }
 
             const problems = lintResult.create_tags.length + lintResult.delete_tags.length
-            // eslint-disable-next-line no-console
+            // oxlint-disable-next-line no-console
             console.log(`\n✖ Found ${problems} issues`)
             process.exit(1)
         }
 
-        // eslint-disable-next-line no-console
+        // oxlint-disable-next-line no-console
         console.log(`\n✔ No issues found`)
         process.exit(0)
 
     })
     .command('start', 'Start the Expressio service', (yargs) => {
-        // eslint-disable-next-line no-console
+        // oxlint-disable-next-line no-console
         console.log(welcomeBanner())
 
         logger = loggerTransports(config.logger, 'service')
