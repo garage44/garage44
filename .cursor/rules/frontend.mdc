@@ -1,0 +1,487 @@
+---
+description: "Frontend development rules for Expressio - Preact, SCSS, and WebSocket client patterns"
+globs:
+  - "packages/expressio/src/**"
+  - "packages/common/components/**"
+  - "packages/common/scss/**"
+  - "**/*.scss"
+  - "**/*.tsx"
+alwaysApply: false
+---
+
+# Expressio Frontend Development Rules
+
+Frontend development guidelines for the Expressio AI-powered i18n tooling project.
+
+## Tech Stack
+
+- **Framework**: Preact with JSX (`jsx: "react-jsx"`, `jsxImportSource: "preact"`)
+- **Styling**: SCSS with organized structure - NO inline styles
+- **State**: DeepSignal (Proxy-based reactive objects) - NOT useState
+- **Icons**: Icon component from common library - NOT direct SVG/font icons
+- **Real-time**: WebSocket client for live updates
+- **Build**: Bun bundler with hot reload
+
+## Component Architecture
+
+### Component Structure
+```
+src/components/
+├── elements/     # Reusable UI components
+├── pages/        # Page-level components
+└── main/         # Layout and shell components
+```
+
+### Development Patterns
+
+**Preact Components:**
+```tsx
+// ✅ Proper component structure
+interface TranslationProps {
+  translations: Translation[];
+  onSelect?: (id: string) => void;
+}
+
+export const TranslationGroup = ({ translations, onSelect }: TranslationProps) => {
+  const selectedId = useSignal<string | null>(null);
+
+  return (
+    <div class="translation-group">
+      {translations.map(t => (
+        <div key={t.id} onClick={() => selectedId.value = t.id}>
+          {t.key}
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+**State Management with DeepSignal:**
+```tsx
+// ✅ Use DeepSignal - regular JavaScript objects that are reactive
+import {deepSignal} from 'deepsignal'
+
+// Component-level state (typical pattern)
+const localState = deepSignal({
+    filter: '',
+    sort: 'asc' as 'asc' | 'desc'
+})
+
+const MyComponent = () => {
+  const state = deepSignal({count: 0})
+  // No .value needed! Direct property access
+  return <div onClick={() => state.count++}>{state.count}</div>
+}
+
+// ✅ Real example from translations component
+const TranslationComponent = () => {
+  const localState = deepSignal({
+    filter: '',
+    sort: 'asc' as 'asc' | 'desc'
+  })
+
+  return <div>
+    <input
+      type="text"
+      placeholder="Filter..."
+      value={localState.filter}
+      onInput={e => localState.filter = (e.target as HTMLInputElement).value}
+    />
+    <button onClick={() => localState.sort = (localState.sort === 'asc' ? 'desc' : 'asc')}>
+      Sort: {localState.sort === 'asc' ? 'A-Z' : 'Z-A'}
+    </button>
+  </div>
+}
+
+// ❌ Don't use useState
+const BadComponent = () => {
+  const [count, setCount] = useState(0) // Wrong!
+}
+```
+
+### Advanced DeepSignal Patterns
+
+**Accessing Underlying Signals:**
+```tsx
+// ✅ Access underlying signal with $ prefix for performance
+const state = deepSignal({workspace_id: null})
+
+// Pass signal directly to form fields (prevents component re-renders)
+const WorkspaceSelector = () => (
+  <FieldSelect
+    model={state.$workspace_id}
+    onChange={async(workspace_id) => {
+      // Handle workspace change
+      $s.workspace = await ws.get(`/api/workspaces/${workspace_id}`)
+    }}
+    options={$s.workspaces.map(i => ({id: i.workspace_id, name: i.workspace_id}))}
+  />
+)
+```
+
+**Global State Access:**
+```tsx
+// ✅ Access global state with $s
+import {$s} from '@/app'
+
+const WorkspaceComponent = () => {
+  // Access global workspace state
+  if (!$s.workspace) return null
+
+  return <div>
+    <h1>{$s.workspace.config.workspace_id}</h1>
+    <p>Authenticated: {$s.user.authenticated}</p>
+  </div>
+}
+```
+
+**Store Pattern (Global State):**
+```tsx
+// ✅ Global store pattern from common/lib/store.ts
+import {deepSignal} from 'deepsignal'
+
+class Store {
+  state = deepSignal({})
+
+  load(persistantState, volatileState) {
+    this.persistantState = copyObject(persistantState)
+
+    let restoredState
+    try {
+      restoredState = JSON.parse(localStorage.getItem('store'))
+    } catch (err) {
+      restoredState = {}
+    }
+
+    Object.assign(this.state, mergeDeep(mergeDeep(persistantState, restoredState), volatileState))
+  }
+
+  save() {
+    localStorage.setItem('store', JSON.stringify(this.filterKeys(this.state, this.persistantState)))
+  }
+}
+```
+
+## SCSS Guidelines
+
+### Use Existing Variables
+```scss
+// ✅ Use predefined spacing
+.translation-item {
+  margin: $spacer-1;
+  padding: $spacer-2;
+  font-size: $font-size-base;
+}
+
+// ❌ Don't use arbitrary values
+.bad-item {
+  margin: 1rem;
+  padding: 2rem;
+}
+```
+
+### Component-Scoped Styles
+```scss
+// translation-group.scss
+.translation-group {
+  &__item {
+    // BEM methodology
+  }
+
+  &--expanded {
+    // Modifier styles
+  }
+}
+```
+
+### NO Inline Styles
+```tsx
+// ❌ Avoid inline styles
+<div style={{ margin: '1rem' }}>Bad</div>
+
+// ✅ Use CSS classes
+<div class="translation-item">Good</div>
+```
+
+## WebSocket Client Patterns
+
+**Real-time Translation Updates:**
+```tsx
+import {$s, ws} from '@/app'
+import {events} from '@garage44/common/app'
+import {pathCreate, pathDelete, pathUpdate} from '@garage44/common/lib/paths.ts'
+
+// ✅ Real WebSocket usage from translations component
+events.on('app:init', () => {
+  ws.on('/i18n/sync', ({create_tags, delete_tags, modify_tags}) => {
+    for (const tag of create_tags) {
+      const {path, value} = tag
+      pathCreate($s.workspace.i18n, path, value, $s.workspace.config.languages.target, value.target)
+    }
+    for (const tag of delete_tags) {
+      const {path} = tag
+      pathDelete($s.workspace.i18n, path)
+    }
+    for (const tag of modify_tags) {
+      const {path, value} = tag
+      pathUpdate($s.workspace.i18n, path, value)
+    }
+  })
+
+  // Handle full i18n state updates
+  ws.on('/i18n/state', ({workspace_id, i18n, timestamp}) => {
+    if (!$s.workspace || $s.workspace.config.workspace_id !== workspace_id) {
+      return
+    }
+
+    // Check if this update is newer (prevents race conditions)
+    if (!$s.workspace.lastStateUpdateTime || timestamp > ($s.workspace.lastStateUpdateTime ?? 0)) {
+      $s.workspace.i18n = i18n
+      $s.workspace.lastStateUpdateTime = timestamp
+    }
+  })
+})
+```
+
+**WebSocket API Calls:**
+```tsx
+// ✅ Direct WebSocket API usage
+const handleUndo = async () => {
+  ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/undo`, {})
+}
+
+const handleRedo = async () => {
+  ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/redo`, {})
+}
+
+// ✅ WebSocket connection management
+const Main = () => {
+  useEffect(() => {
+    (async() => {
+      const context = await api.get('/api/context')
+      if (context.authenticated) {
+        ws.connect() // Connect WebSocket when authenticated
+      }
+    })()
+  }, [])
+}
+```
+
+## Translation Interface Patterns
+
+### Translation Workflow UX
+1. **Translation Groups**: Organize related translations logically
+2. **Real-time Progress**: Show live translation status updates
+3. **Validation States**: Display errors/warnings clearly
+4. **Workspace Context**: Always show current workspace state
+
+### UI Components for i18n
+```tsx
+// Translation status indicator
+const TranslationStatus = ({ status }: { status: TranslationStatus }) => (
+  <span class={`translation-status translation-status--${status}`}>
+    {status === 'pending' && '⏳'}
+    {status === 'translated' && '✅'}
+    {status === 'reviewed' && '🔍'}
+  </span>
+);
+
+// Translation result display
+const TranslationResult = ({ original, translated, confidence }) => (
+  <div class="translation-result">
+    <div class="translation-result__original">{original}</div>
+    <div class="translation-result__translated">{translated}</div>
+    <div class="translation-result__confidence">
+      Confidence: {Math.round(confidence * 100)}%
+    </div>
+  </div>
+);
+```
+
+### Icon Component Usage
+```tsx
+// ✅ Use Icon component from common library
+import {Icon} from '@garage44/common/components'
+
+const TranslateButton = () => (
+  <button class="translate-button">
+    <Icon name="translate" />
+    Translate
+  </button>
+)
+
+// ✅ Real example from main component
+const Navigation = () => (
+  <div class="menu-group">
+    <Link activeClassName="active" href="/">
+      <Icon name="settings" type="info"/>
+      <span>{$t('menu.settings')}</span>
+    </Link>
+    <Link href={`/workspaces/${$s.workspace.config.workspace_id}/translations`}>
+      <Icon name="translate" type="info"/>
+      <span>{$t('menu.workspace.translations')}</span>
+    </Link>
+  </div>
+)
+
+// ✅ Icon with click handlers
+const HistoryActions = () => (
+  <div class="history-actions">
+    <Icon
+      name="chevron_left"
+      onClick={async() => {
+        ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/undo`, {})
+      }}
+      tip="Undo"
+      type="info"
+    />
+    <Icon
+      name="chevron_right"
+      onClick={async() => {
+        ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/redo`, {})
+      }}
+      tip="Redo"
+      type="info"
+    />
+  </div>
+)
+
+// ❌ Don't use direct SVG or font icons
+const BadComponent = () => (
+  <div>
+    <svg viewBox="0 0 24 24">...</svg> {/* Wrong! */}
+    <i class="fas fa-check"></i> {/* Wrong! */}
+    <span>🔍</span> {/* Wrong! Use Icon component */}
+  </div>
+)
+```
+
+## File Organization
+
+### Import Order
+```tsx
+// Global app imports
+import {$s, ws} from '@/app'
+import {$t, api, notify} from '@garage44/common/app'
+
+// External dependencies
+import {h} from 'preact'
+import {useEffect} from 'preact/hooks'
+import {Router, route} from 'preact-router'
+
+// Common package imports
+import {Icon, Notifications} from '@garage44/common/components'
+import {deepSignal} from 'deepsignal'
+import {classes} from '@garage44/common/lib/utils'
+
+// Component imports
+import {TranslationGroup} from '@/components/elements'
+
+// Relative imports
+import './translation-group.scss'
+```
+
+### File Naming Conventions
+- Components: `translation-group.tsx`
+- Styles: `translation-group.scss`
+- Barrel exports: `elements.ts`
+- Hooks: `useWebSocketSubscription.ts`
+
+## Performance Optimization
+
+### Translation Data Handling
+- Lazy load large translation sets
+- Virtualize translation lists with 100+ items
+- Debounce search/filter inputs (300ms)
+- Use signal batching for bulk updates
+
+### Re-render Optimization
+```tsx
+// ✅ Local state for component filtering
+import {deepSignal} from 'deepsignal'
+
+const TranslationComponent = () => {
+  const localState = deepSignal({
+    filter: '',
+    sort: 'asc' as 'asc' | 'desc'
+  })
+
+  // Filter translations directly - reactive to localState changes
+  const filteredTranslations = $s.workspace.i18n.filter(t =>
+    t.key.toLowerCase().includes(localState.filter.toLowerCase())
+  )
+
+  return <div>
+    <input
+      value={localState.filter}
+      onInput={e => localState.filter = (e.target as HTMLInputElement).value}
+    />
+    <TranslationGroup
+      group={{_id: 'root', ...$s.workspace.i18n}}
+      filter={localState.filter}
+      sort={localState.sort}
+    />
+  </div>
+}
+
+// ✅ Pass signals to form fields for performance
+const WorkspaceSelector = () => (
+  <FieldSelect
+    model={state.$workspace_id}  // Signal passed directly
+    onChange={async(workspace_id) => {
+      $s.workspace = await ws.get(`/api/workspaces/${workspace_id}`)
+    }}
+    options={$s.workspaces.map(i => ({id: i.workspace_id, name: i.workspace_id}))}
+  />
+)
+
+// ❌ Don't recreate objects in render
+const BadList = () => {
+  return translations.map(t => <Item data={{...t, extra: 'data'}} />) // Creates new objects
+}
+```
+
+## Accessibility for i18n
+
+- Use semantic HTML for translation content
+- Provide ARIA labels for translation status
+- Ensure keyboard navigation works for translation tables
+- Test with screen readers for multilingual content
+- Support high contrast mode for translation interfaces
+
+## Development Workflow
+
+### Hot Reload Behavior
+- `.tsx` changes: Component hot reload
+- `.scss` changes: Style injection without reload
+- Signal state: Preserved during development
+- WebSocket: Automatically reconnects
+
+### Debugging Frontend
+- Use Preact DevTools for component inspection
+- Monitor WebSocket messages in Network tab
+- Check signal updates in browser console
+- Validate translation data flow in real-time
+
+## Common Anti-patterns
+
+❌ **Don't do:**
+- Use useState instead of deepSignal for component state
+- Create inline styles - use SCSS classes
+- Use direct SVG/font icons - use Icon component
+- Mutate props directly
+- Block the UI during translation API calls
+- Forget to handle WebSocket disconnections
+- Use .value syntax with DeepSignal (it's not needed)
+- Forget to import global state with `{$s, ws} from '@/app'`
+
+✅ **Do:**
+- Use deepSignal for component-level reactive state
+- Access global state through $s object
+- Use existing SCSS variables ($spacer-1, $font-size-base)
+- Use Icon component from @garage44/common/components
+- Handle loading/error states gracefully
+- Access underlying signals with $ prefix for form fields
+- Use WebSocket events with `events.on('app:init', ...)` pattern
+- Test with multiple languages and character sets
