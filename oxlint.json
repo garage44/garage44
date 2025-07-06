@@ -1,0 +1,18 @@
+{
+  "rules": {
+    "typescript": "error",
+    "correctness": "error",
+    "performance": "error",
+    "style": "warn",
+    "nursery": "off"
+  },
+  "plugins": [],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2022": true
+  },
+  "globals": {
+    "Bun": "readonly"
+  }
+}

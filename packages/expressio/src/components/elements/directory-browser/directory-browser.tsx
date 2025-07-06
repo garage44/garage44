@@ -27,7 +27,7 @@ async function loadDirectory(path = null) {
             parentPath: response.parent,
         })
     } catch (err) {
-        // eslint-disable-next-line no-console
+        // oxlint-disable-next-line no-console
         console.error('Failed to load directory:', err)
     }
     state.loading = false

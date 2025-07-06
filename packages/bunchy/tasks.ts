@@ -131,11 +131,11 @@ tasks.code_frontend = new Task('code:frontend', async function({minify = false, 
             sourcemap: process.env.NODE_ENV === 'production' ? 'none' : 'inline',
         })
         if (!result.success) {
-            // eslint-disable-next-line no-console
+            // oxlint-disable-next-line no-console
             console.error(result.logs)
         }
     } catch (error) {
-        // eslint-disable-next-line no-console
+        // oxlint-disable-next-line no-console
         console.error(error)
     }
 

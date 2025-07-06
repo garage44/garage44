@@ -25,7 +25,7 @@ export class App {
         try {
             renderFn(hFn(Main, {}), document.body)
         } catch (error) {
-            // eslint-disable-next-line no-console
+            // oxlint-disable-next-line no-console
             console.error('Error rendering Main component:', error)
         }
         events.emit('app:init')
