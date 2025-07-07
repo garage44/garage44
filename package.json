@@ -21,5 +21,8 @@
   "devDependencies": {
     "@types/bun": "^1.2.17",
     "stylelint-order": "^7.0.0"
+  },
+  "dependencies": {
+    "oxlint": "^1.6.0"
   }
 }

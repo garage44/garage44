@@ -1,7 +1,7 @@
-import type {EnolaEngine, EnolaEngineConfig, EnolaLogger, EnolaTag, TargetLanguage} from './types.ts'
-import {toIso6391, toIso6392} from '../iso-codes.ts'
+import type {EnolaEngine, EnolaEngineConfig, EnolaLogger, EnolaTag, TargetLanguage} from '../types.ts'
+import {toIso6391} from '../iso-codes.ts'
 import {decode} from 'html-entities'
-import languages from '../languages.ts'
+
 
 const ignoreXTagRegex = /<x>[\w]*<\/x>/g
 const ignoreITagRegex = /<i>[\w]*<\/i>/g

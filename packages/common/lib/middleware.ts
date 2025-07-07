@@ -129,7 +129,7 @@ export async function commonMiddleware(logger, config, bunchyConfig) {
         logger.info(`${request.method} ${url.pathname}`)
 
         // Handle session and auth
-        const { session, sessionId } = sessionMiddleware(request)
+        const {session} = sessionMiddleware(request)
 
         if (!authMiddleware(request, session)) {
             return new Response('Unauthorized', { status: 401 })
@@ -145,6 +145,7 @@ export async function commonMiddleware(logger, config, bunchyConfig) {
                         return new Response(file)
                     }
                 } catch (error) {
+                    logger.debug(`[HTTP] static file not found: ${filePath} (${error})`)
                     // File doesn't exist, continue
                 }
             }

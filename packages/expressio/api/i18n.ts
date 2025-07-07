@@ -100,7 +100,7 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
 // Default export for backward compatibility
 export default function(router: any) {
     // HTTP API endpoints using familiar Express-like pattern
-    router.get('/api/workspaces/:workspace_id/translations', async (req: any, params: any, session: any) => {
+    router.get('/api/workspaces/:workspace_id/translations', async (req: any, params: any) => {
         const workspaceId = params.param0 // Extract workspace_id from path params
         const workspace = workspaces.get(workspaceId)
         return new Response(JSON.stringify(i18nFormat(workspace.i18n, workspace.config.languages.target)), {

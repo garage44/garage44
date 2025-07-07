@@ -2,21 +2,9 @@ import {enola, logger, workspaces} from '../service.ts'
 import {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import {config} from '../lib/config.ts'
 import fs from 'fs/promises'
-import os from 'node:os'
 import path from 'node:path'
 
 import {syncLanguage} from '../lib/sync.ts'
-
-// Auth middleware that can be reused across workspace routes
-const requireAdmin = async(ctx, next) => {
-    const user = config.users.find((i) => i.name === ctx.session?.userid)
-    if (!user?.admin) {
-        throw new Error('Unauthorized')
-    }
-    // Add user to context for handlers
-    ctx.user = user
-    return next(ctx)
-}
 
 export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // WebSocket API routes (unchanged) - these are for real-time features
@@ -80,9 +68,7 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
 // Default export for backward compatibility
 export default function(router: any) {
     // HTTP API endpoints using familiar Express-like pattern
-    router.get('/api/workspaces/:workspace_id/usage', async (req: any, params: any, session: any) => {
-        const workspaceId = params.param0 // Extract workspace_id from path params
-        const workspace = workspaces.get(workspaceId)
+    router.get('/api/workspaces/:workspace_id/usage', async () => {
         // Get the first available engine for usage
         const engine = Object.keys(config.enola.engines)[0] || 'deepl'
         const usage = await enola.usage(engine)
@@ -91,7 +77,7 @@ export default function(router: any) {
         })
     })
 
-    router.post('/api/workspaces/:workspace_id', async (req: any, params: any, session: any) => {
+    router.post('/api/workspaces/:workspace_id', async (req: any, params: any) => {
         const workspaceId = params.param0
         const workspace_data = await req.json()
 
@@ -131,7 +117,7 @@ export default function(router: any) {
         })
     })
 
-    router.delete('/api/workspaces/:workspace_id', async (req: any, params: any, session: any) => {
+    router.delete('/api/workspaces/:workspace_id', async (req: any, params: any) => {
         const workspaceId = params.param0
         logger.info(`Deleting workspace: ${workspaceId}`)
         await workspaces.delete(workspaceId)
@@ -141,7 +127,7 @@ export default function(router: any) {
         })
     })
 
-    router.post('/api/workspaces', async (req: any, params: any, session: any) => {
+    router.post('/api/workspaces', async (req: any) => {
         try {
             const body = await req.json()
             const workspace = await workspaces.add(body.path)

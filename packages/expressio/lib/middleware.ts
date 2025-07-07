@@ -122,6 +122,17 @@ const authMiddleware = (request: Request, session: any) => {
     return false
 }
 
+// Auth middleware that can be reused across workspace routes
+export const requireAdmin = async(ctx, next) => {
+    const user = config.users.find((i) => i.name === ctx.session?.userid)
+    if (!user?.admin) {
+        throw new Error('Unauthorized')
+    }
+    // Add user to context for handlers
+    ctx.user = user
+    return next(ctx)
+}
+
 // Helper to set session cookie in response
 const setSessionCookie = (response: Response, sessionId: string) => {
     const headers = new Headers(response.headers)
@@ -134,13 +145,13 @@ const setSessionCookie = (response: Response, sessionId: string) => {
 }
 
 export async function initMiddleware(bunchyConfig) {
-    const { handleRequest, handleWebSocket } = await commonMiddleware(logger, config, bunchyConfig)
+    const {handleRequest, handleWebSocket} = await commonMiddleware(logger, config, bunchyConfig)
     const router = new Router();
 
     // Register HTTP API endpoints using familiar Express-like pattern
-    await apiI18n(router);
-    await apiConfig(router);
-    await apiProfile(router);
+    await apiI18n(router)
+    await apiConfig(router)
+    await apiProfile(router)
     await apiWorkspaces(router);
 
     const publicPath = path.join(runtime.service_dir, 'public')
@@ -180,7 +191,7 @@ export async function initMiddleware(bunchyConfig) {
                 }
             } catch (error) {
                 // File doesn't exist, continue to next handler
-                logger.debug('[HTTP] static file not found', filePath)
+                logger.debug(`[HTTP] static file not found: ${filePath} (${error})`)
             }
         }
 
@@ -201,7 +212,7 @@ export async function initMiddleware(bunchyConfig) {
             }
         } catch (error) {
             // Handler didn't match or failed, continue to SPA fallback
-            logger.debug('[HTTP] Enhanced handler error', error)
+            logger.debug(`[HTTP] Enhanced handler error: ${error}`)
         }
 
         // SPA fallback - serve index.html for all other routes
@@ -216,7 +227,7 @@ export async function initMiddleware(bunchyConfig) {
             }
         } catch (error) {
             // index.html doesn't exist
-            logger.debug('[HTTP] SPA fallback index.html not found')
+            logger.debug(`[HTTP] SPA fallback index.html not found: ${error}`)
         }
 
         // Final fallback - 404
