@@ -1,203 +1,190 @@
 :root {
-    /* Modern Color System - Conservative UI-appropriate palette */
+    /* ===== OKLCH FOUNDATION ===== */
+    /* Systematic color construction - simplified but consistent */
 
-    /* OKLCH Component Variables - Systematic approach */
+            /* Lightness scale (0-1) - moderately brighter with good contrast */
+    --l-0: 0.12;   /* Dark text - ensures good contrast */
+    --l-1: 0.18;   /* Dark text/elements */
+    --l-2: 0.26;   /* Medium-dark text */
+    --l-3: 0.35;   /* Body text */
+    --l-4: 0.45;   /* Secondary text */
+    --l-5: 0.60;   /* Middle - balanced */
+    --l-6: 0.75;   /* Light elements */
+    --l-7: 0.85;   /* Light backgrounds */
+    --l-8: 0.95;   /* Lightest backgrounds */
 
-    /* Lightness scale (0-1) - Darker theme with more contrast */
-    --oklch-l-0: 0.08;   /* Darker blacks */
-    --oklch-l-1: 0.12;   /* Darker dark grays */
-    --oklch-l-2: 0.18;   /* Darker medium-dark */
-    --oklch-l-3: 0.25;   /* Darker medium */
-    --oklch-l-4: 0.35;   /* Darker medium-light */
-    --oklch-l-5: 0.55;   /* Darker light */
-    --oklch-l-6: 0.70;   /* More contrasted light */
-    --oklch-l-7: 0.82;   /* Higher contrast */
-    --oklch-l-8: 0.94;   /* Maintain bright whites */
+            /* Chroma scale (saturation) - moderately increased */
+    --c-0: 0.010;  /* Subtle increase for neutrals */
+    --c-1: 0.015;
+    --c-2: 0.020;
+    --c-3: 0.025;
+    --c-4: 0.030;
+    --c-5: 0.035;
+    --c-6: 0.055;  /* Moderate increase */
+    --c-7: 0.075;
+    --c-8: 0.095;
+    --c-9: 0.115;
+    --c-10: 0.135; /* Higher saturation for accents */
 
-    /* Chroma scale (saturation intensity) - Slightly increased for darker theme */
-    --oklch-c-0: 0.008;  /* Slight increase */
-    --oklch-c-1: 0.012;  /* Slight increase */
-    --oklch-c-2: 0.015;  /* Slight increase */
-    --oklch-c-3: 0.018;  /* Slight increase */
-    --oklch-c-4: 0.022;  /* Slight increase */
-    --oklch-c-5: 0.025;  /* Slight increase */
-    --oklch-c-6: 0.045;  /* Slight increase */
-    --oklch-c-7: 0.065;  /* Slight increase */
-    --oklch-c-8: 0.085;  /* Slight increase */
-    --oklch-c-9: 0.105;  /* Slight increase */
-    --oklch-c-10: 0.125; /* Slight increase */
+    /* Semantic hue values */
+    --h-surface: 240;  /* Neutral UI */
+    --h-primary: 230;  /* Brand/primary actions */
+    --h-success: 140;  /* Success states */
+    --h-danger: 15;    /* Error/danger states */
+    --h-warning: 60;   /* Warning states */
 
-    /* Hue values (degrees) */
-    --oklch-h-surface: 240;
-    --oklch-h-info: 230;
-    --oklch-h-success: 140;
-    --oklch-h-danger: 15;
-    --oklch-h-warning: 60;
+    /* ===== SEMANTIC COLOR SCALES ===== */
+    /* Consistent 0-8 scale for all semantic colors */
 
-    /* Base colors in OKLCH - optimized for UI/UX */
-    --primary-base: oklch(0.55 0.08 240);     /* Subtle blue */
-    --surface-base: oklch(0.30 0.01 240);     /* Neutral gray */
-    --info-base: oklch(0.60 0.06 230);        /* Muted blue */
-    --success-base: oklch(0.60 0.08 140);     /* Subtle green */
-    --danger-base: oklch(0.55 0.10 15);       /* Muted red */
-    --warning-base: oklch(0.70 0.08 60);      /* Soft amber */
+    /* Surface (neutral) - for backgrounds, text, borders */
+    --surface-0: oklch(var(--l-0) var(--c-0) var(--h-surface));
+    --surface-1: oklch(var(--l-1) var(--c-1) var(--h-surface));
+    --surface-2: oklch(var(--l-2) var(--c-2) var(--h-surface));
+    --surface-3: oklch(var(--l-3) var(--c-3) var(--h-surface));
+    --surface-4: oklch(var(--l-4) var(--c-4) var(--h-surface));
+    --surface-5: oklch(var(--l-5) var(--c-5) var(--h-surface));
+    --surface-6: oklch(var(--l-6) var(--c-4) var(--h-surface));
+    --surface-7: oklch(var(--l-7) var(--c-3) var(--h-surface));
+    --surface-8: oklch(var(--l-8) var(--c-1) var(--h-surface));
 
-    /* Pure colors for reference */
+    /* Primary (brand) - for main actions, links */
+    --primary-0: oklch(var(--l-0) var(--c-6) var(--h-primary));
+    --primary-1: oklch(var(--l-1) var(--c-6) var(--h-primary));
+    --primary-2: oklch(var(--l-2) var(--c-7) var(--h-primary));
+    --primary-3: oklch(var(--l-3) var(--c-7) var(--h-primary));
+    --primary-4: oklch(var(--l-4) var(--c-8) var(--h-primary));
+    --primary-5: oklch(var(--l-5) var(--c-7) var(--h-primary));
+    --primary-6: oklch(var(--l-6) var(--c-6) var(--h-primary));
+    --primary-7: oklch(var(--l-7) var(--c-6) var(--h-primary));
+    --primary-8: oklch(var(--l-8) var(--c-2) var(--h-primary));
+
+    /* Success - for positive states, confirmations */
+    --success-0: oklch(var(--l-0) var(--c-6) var(--h-success));
+    --success-1: oklch(var(--l-1) var(--c-7) var(--h-success));
+    --success-2: oklch(var(--l-2) var(--c-7) var(--h-success));
+    --success-3: oklch(var(--l-3) var(--c-8) var(--h-success));
+    --success-4: oklch(var(--l-4) var(--c-9) var(--h-success));
+    --success-5: oklch(var(--l-5) var(--c-7) var(--h-success));
+    --success-6: oklch(var(--l-6) var(--c-7) var(--h-success));
+    --success-7: oklch(var(--l-7) var(--c-6) var(--h-success));
+    --success-8: oklch(var(--l-8) var(--c-6) var(--h-success));
+
+    /* Danger - for errors, destructive actions */
+    --danger-0: oklch(var(--l-0) var(--c-8) var(--h-danger));
+    --danger-1: oklch(var(--l-1) var(--c-9) var(--h-danger));
+    --danger-2: oklch(var(--l-2) var(--c-9) var(--h-danger));
+    --danger-3: oklch(var(--l-3) var(--c-10) var(--h-danger));
+    --danger-4: oklch(var(--l-4) var(--c-10) var(--h-danger));
+    --danger-5: oklch(var(--l-5) var(--c-9) var(--h-danger));
+    --danger-6: oklch(var(--l-6) var(--c-7) var(--h-danger));
+    --danger-7: oklch(var(--l-7) var(--c-7) var(--h-danger));
+    --danger-8: oklch(var(--l-8) var(--c-6) var(--h-danger));
+
+    /* Warning - for cautions, important notices */
+    --warning-0: oklch(var(--l-0) var(--c-7) var(--h-warning));
+    --warning-1: oklch(var(--l-1) var(--c-7) var(--h-warning));
+    --warning-2: oklch(var(--l-2) var(--c-8) var(--h-warning));
+    --warning-3: oklch(var(--l-3) var(--c-9) var(--h-warning));
+    --warning-4: oklch(var(--l-4) var(--c-10) var(--h-warning));
+    --warning-5: oklch(var(--l-5) var(--c-8) var(--h-warning));
+    --warning-6: oklch(var(--l-6) var(--c-7) var(--h-warning));
+    --warning-7: oklch(var(--l-7) var(--c-6) var(--h-warning));
+    --warning-8: oklch(var(--l-8) var(--c-6) var(--h-warning));
+
+    /* Pure colors */
     --black: oklch(0 0 0);
     --white: oklch(1 0 0);
 
-    /* Surface color scale using systematic variables */
-    --surface-0: oklch(var(--oklch-l-0) var(--oklch-c-0) var(--oklch-h-surface));
-    --surface-1: oklch(var(--oklch-l-1) var(--oklch-c-1) var(--oklch-h-surface));
-    --surface-2: oklch(var(--oklch-l-2) var(--oklch-c-2) var(--oklch-h-surface));
-    --surface-3: oklch(var(--oklch-l-3) var(--oklch-c-3) var(--oklch-h-surface));
-    --surface-4: oklch(var(--oklch-l-4) var(--oklch-c-4) var(--oklch-h-surface));
-    --surface-5: oklch(var(--oklch-l-5) var(--oklch-c-5) var(--oklch-h-surface));
-    --surface-6: oklch(var(--oklch-l-6) var(--oklch-c-4) var(--oklch-h-surface));
-    --surface-7: oklch(var(--oklch-l-7) var(--oklch-c-3) var(--oklch-h-surface));
-    --surface-8: oklch(var(--oklch-l-8) var(--oklch-c-1) var(--oklch-h-surface));
+    /* ===== SPACING SCALE ===== */
+    /* Consistent mathematical progression */
+    --spacer-1: 8px;   /* Base unit */
+    --spacer-025: calc(var(--spacer-1) * 0.25);  /* 2px */
+    --spacer-05: calc(var(--spacer-1) * 0.5);    /* 4px */
+    --spacer-2: calc(var(--spacer-1) * 2);       /* 16px */
+    --spacer-3: calc(var(--spacer-1) * 3);       /* 24px */
+    --spacer-4: calc(var(--spacer-1) * 4);       /* 32px */
+    --spacer-5: calc(var(--spacer-1) * 5);       /* 40px */
+    --spacer-6: calc(var(--spacer-1) * 6);       /* 48px */
+    --spacer-7: calc(var(--spacer-1) * 7);       /* 56px */
+    --spacer-8: calc(var(--spacer-1) * 8);       /* 64px */
 
-    /* Info colors using systematic variables */
-    --info-0: oklch(0.20 var(--oklch-c-6) var(--oklch-h-info));
-    --info-1: oklch(0.25 var(--oklch-c-6) var(--oklch-h-info));
-    --info-2: oklch(0.35 var(--oklch-c-7) var(--oklch-h-info));
-    --info-3: oklch(0.45 var(--oklch-c-7) var(--oklch-h-info));
-    --info-4: oklch(0.55 var(--oklch-c-8) var(--oklch-h-info));
-    --info-5: oklch(var(--oklch-l-5) var(--oklch-c-7) var(--oklch-h-info));
-    --info-6: oklch(var(--oklch-l-6) var(--oklch-c-6) var(--oklch-h-info));
-    --info-7: oklch(0.85 var(--oklch-c-6) var(--oklch-h-info));
-    --info-8: oklch(0.92 var(--oklch-c-2) var(--oklch-h-info));
+    /* ===== TYPOGRAPHY SCALE ===== */
+    /* Consistent modular scale */
+    --font-xxs: 0.61rem;   /* 10px */
+    --font-xs: 0.74rem;    /* 12px */
+    --font-s: 0.8rem;      /* 13px */
+    --font-d: 0.9rem;      /* 14px */
+    --font-l: 1.05rem;     /* 17px */
+    --font-xl: 1.3rem;     /* 21px */
+    --font-xxl: 3rem;      /* 48px */
 
-    /* Success colors using systematic variables */
-    --success-0: oklch(0.20 var(--oklch-c-6) var(--oklch-h-success));
-    --success-1: oklch(0.25 var(--oklch-c-7) var(--oklch-h-success));
-    --success-2: oklch(0.35 var(--oklch-c-7) var(--oklch-h-success));
-    --success-3: oklch(0.45 var(--oklch-c-8) var(--oklch-h-success));
-    --success-4: oklch(0.55 var(--oklch-c-9) var(--oklch-h-success));
-    --success-5: oklch(var(--oklch-l-5) var(--oklch-c-7) var(--oklch-h-success));
-    --success-6: oklch(var(--oklch-l-6) var(--oklch-c-7) var(--oklch-h-success));
-    --success-7: oklch(0.85 var(--oklch-c-6) var(--oklch-h-success));
-    --success-8: oklch(0.92 var(--oklch-c-6) var(--oklch-h-success));
+    /* ===== COMPONENT SCALES ===== */
+    /* Icon sizes */
+    --icon-xs: calc(var(--spacer-1) * 1.75);   /* 14px */
+    --icon-s: calc(var(--spacer-1) * 2);       /* 16px */
+    --icon-d: var(--spacer-3);                 /* 24px */
+    --icon-l: var(--spacer-4);                 /* 32px */
+    --icon-xl: calc(var(--spacer-1) * 4.5);    /* 36px */
 
-    /* Danger colors using systematic variables */
-    --danger-0: oklch(0.22 var(--oklch-c-8) var(--oklch-h-danger));
-    --danger-1: oklch(0.28 var(--oklch-c-9) var(--oklch-h-danger));
-    --danger-2: oklch(0.38 var(--oklch-c-9) var(--oklch-h-danger));
-    --danger-3: oklch(0.48 var(--oklch-c-10) var(--oklch-h-danger));
-    --danger-4: oklch(0.58 var(--oklch-c-10) var(--oklch-h-danger));
-    --danger-5: oklch(0.68 var(--oklch-c-9) var(--oklch-h-danger));
-    --danger-6: oklch(var(--oklch-l-6) var(--oklch-c-7) var(--oklch-h-danger));
-    --danger-7: oklch(0.85 var(--oklch-c-7) var(--oklch-h-danger));
-    --danger-8: oklch(0.92 var(--oklch-c-6) var(--oklch-h-danger));
+    /* Border radius */
+    --border-radius-xs: var(--spacer-05);      /* 4px */
+    --border-radius-s: var(--spacer-05);       /* 4px */
+    --border-radius-d: var(--spacer-1);        /* 8px */
+    --border-radius-l: calc(var(--spacer-1) * 1.5);  /* 12px */
+    --border-radius-xl: var(--spacer-2);       /* 16px */
 
-    /* Warning colors using systematic variables */
-    --warning-0: oklch(0.25 var(--oklch-c-7) var(--oklch-h-warning));
-    --warning-1: oklch(0.32 var(--oklch-c-7) var(--oklch-h-warning));
-    --warning-2: oklch(0.42 var(--oklch-c-8) var(--oklch-h-warning));
-    --warning-3: oklch(0.52 var(--oklch-c-9) var(--oklch-h-warning));
-    --warning-4: oklch(0.62 var(--oklch-c-10) var(--oklch-h-warning));
-    --warning-5: oklch(0.72 var(--oklch-c-8) var(--oklch-h-warning));
-    --warning-6: oklch(0.80 var(--oklch-c-7) var(--oklch-h-warning));
-    --warning-7: oklch(0.87 var(--oklch-c-6) var(--oklch-h-warning));
-    --warning-8: oklch(0.93 var(--oklch-c-6) var(--oklch-h-warning));
+    /* Shadows - consistent with surface colors */
+    --shadow-soft: 0 2px var(--spacer-2) oklch(var(--l-1) var(--c-2) var(--h-surface) / 0.15);
+    --shadow-d: 0 4px var(--spacer-1) oklch(var(--l-0) var(--c-2) var(--h-surface) / 0.25);
+    --shadow-hard: 0 8px var(--spacer-3) oklch(var(--l-0) var(--c-2) var(--h-surface) / 0.35);
 
-    /* Legacy HSL compatibility (for gradual migration) */
-    --s-0: 3%;
-    --s-1: 13%;
-    --s-2: 30%;
-    --s-3: 50%;
-    --l-0: 5%;
-    --l-1: 9.4%;
-    --l-2: 15%;
-    --l-3: 20%;
-    --l-4: 30%;
-    --l-5: 60%;
-    --l-6: 74%;
-    --l-7: 87%;
-    --l-8: 97%;
-    --info-h: 205deg;
-    --success-h: 100deg;
-    --danger-h: 5deg;
-    --warning-h: 25deg;
-    --surface-h: 54deg;
-
-    /* Spacing variables */
-    --spacer-1: 8px;
-    --spacer-025: calc(var(--spacer-1) * 0.25);
-    --spacer-05: calc(var(--spacer-1) * 0.5);
-    --spacer-2: calc(var(--spacer-1) * 2);
-    --spacer-3: calc(var(--spacer-1) * 3);
-    --spacer-4: calc(var(--spacer-1) * 4);
-    --spacer-5: calc(var(--spacer-1) * 5);
-    --spacer-6: calc(var(--spacer-1) * 6);
-    --spacer-7: calc(var(--spacer-1) * 7);
-    --spacer-8: calc(var(--spacer-1) * 8);
-
-    /* Font size variables */
-    --font-xxs: 0.61rem;
-    --font-xs: 0.74rem;
-    --font-s: 0.8rem;
-    --font-d: 0.9rem;
-    --font-l: 1.05rem;
-    --font-xl: 1.3rem;
-    --font-xxl: 3rem;
-
-    /* Icon size variables */
-    --icon-xs: calc(var(--spacer-1) * 1.75);
-    --icon-s: calc(var(--spacer-1) * 2);
-    --icon-d: var(--spacer-3);
-    --icon-l: var(--spacer-4);
-    --icon-xl: calc(var(--spacer-1) * 4.5);
-
-    /* Breakpoint variables */
-    --breakpoint-10: 500px;
-    --breakpoint-20: 750px;
-    --breakpoint-35: 1400px;
-    --breakpoint-40: 1550px;
-    --breakpoint-50: 1920px;
-
-    /* Subtle shadows using systematic variables */
-    --shadow-d: 0 4px var(--spacer-1) oklch(var(--oklch-l-0) var(--oklch-c-2) var(--oklch-h-surface) / 0.25);
-    --shadow-soft: 0 2px var(--spacer-2) oklch(var(--oklch-l-1) var(--oklch-c-2) var(--oklch-h-surface) / 0.15);
-    --shadow-hard: 0 8px var(--spacer-3) oklch(var(--oklch-l-0) var(--oklch-c-2) var(--oklch-h-surface) / 0.35);
-
-    /* Form variables with improved contrast */
-    --input-height: var(--spacer-4);
-    --input-label-color: var(--surface-1);
-    --input-label-height: var(--spacer-3);
-    --input-bg: var(--white);
-    --input-margin: var(--spacer-3);
-    --validation-unset-border: 1px solid var(--surface-4);
-    --validation-valid-border: 1px solid var(--success-3);
-    --validation-invalid-border: 1px solid var(--danger-3);
-    --focus-outline: 1px solid var(--info-4);
-    --focus-outline-invalid: var(--danger-2);
-    --input-border-color: var(--surface-4);
-    --input-disabled-bg: var(--surface-7);
-    --input-disabled-color: var(--surface-2);
-    --input-disabled-border: var(--surface-5);
-    --input-color: var(--surface-1);
-    --input-placeholder-color: var(--surface-3);
-
-    /* Table variables */
-    --table-header-bg: var(--info-8);
-    --table-header-color: var(--info-2);
-    --table-header-height: var(--spacer-6);
-
-    /* Border variables */
-    --border-color: var(--surface-5);
-    --border-radius-xl: var(--spacer-2);
-    --border-radius-l: calc(var(--spacer-1) * 1.5);
-    --border-radius-d: var(--spacer-1);
-    --border-radius-s: var(--spacer-05);
-    --border-radius-xs: var(--spacer-05);
-
-    /* Outline variables */
-    --outline: 0 0 1px 2px;
-    --outline-inset: inset 0 0 0 1px;
-
-    /* Panel variables */
+    /* ===== LAYOUT CONSTANTS ===== */
     --panel-width: 450px;
     --panel-context-width: 600px;
     --panel-collapsed-width: calc(var(--spacer-6) + var(--spacer-05));
+
+    /* Breakpoints */
+    --breakpoint-sm: 500px;
+    --breakpoint-md: 750px;
+    --breakpoint-lg: 1400px;
+    --breakpoint-xl: 1550px;
+    --breakpoint-xxl: 1920px;
+
+    /* ===== SEMANTIC COMPONENT TOKENS ===== */
+    /* Use these in your components for semantic meaning */
+
+    /* Form controls */
+    --input-height: var(--spacer-4);
+    --input-bg: var(--white);
+    --input-border: var(--surface-4);
+    --input-text: var(--surface-1);
+    --input-placeholder: var(--surface-3);
+    --input-label: var(--surface-1);
+    --input-margin: var(--spacer-3);
+    --input-disabled-bg: var(--surface-7);
+    --input-disabled-text: var(--surface-2);
+    --input-disabled-border: var(--surface-5);
+
+    /* Validation states */
+    --validation-default: 1px solid var(--surface-4);
+    --validation-valid: 1px solid var(--success-3);
+    --validation-invalid: 1px solid var(--danger-3);
+    --focus-outline: 1px solid var(--primary-4);
+    --focus-outline-invalid: var(--danger-2);
+
+    /* Table components */
+    --table-header-bg: var(--primary-8);
+    --table-header-text: var(--primary-2);
+    --table-header-height: var(--spacer-6);
+
+    /* Legacy aliases for backward compatibility */
+    --info-0: var(--primary-0);
+    --info-1: var(--primary-1);
+    --info-2: var(--primary-2);
+    --info-3: var(--primary-3);
+    --info-4: var(--primary-4);
+    --info-5: var(--primary-5);
+    --info-6: var(--primary-6);
+    --info-7: var(--primary-7);
+    --info-8: var(--primary-8);
 }

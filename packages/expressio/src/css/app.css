@@ -29,6 +29,7 @@ html, body {
 }
 
 @keyframes rotate-animation {
+
     from {
         transform: rotate(0deg);
     }
@@ -39,6 +40,7 @@ html, body {
 }
 
 a {
+
     &.disabled {
         opacity: 0.5;
         pointer-events: none;

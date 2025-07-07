@@ -63,7 +63,9 @@
     }
 
     &.tag-updated {
+
         .source {
+
             .tag-actions {
                 background: var(--surface-3);
             }
@@ -79,6 +81,7 @@
     }
 
     &.redundant {
+
         .src-field {
             position: relative;
 

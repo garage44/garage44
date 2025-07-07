@@ -8,11 +8,11 @@
     }
 
     &.type-success {
-        color: hsl(var(--success-h) var(--s-3) var(--l-6));
+        color: var(--success-6);
     }
 
     &.type-warning {
-        color: hsl(var(--warning-h) var(--s-3) var(--l-6));
+        color: var(--warning-6);
     }
 
     &.error {
@@ -70,4 +70,48 @@
             cursor: pointer;
         }
     }
+}
+
+.icon {
+    display: inline-block;
+    fill: currentColor;
+    flex-shrink: 0;
+    height: var(--icon-d);
+    width: var(--icon-d);
+}
+
+.icon.success {
+    color: var(--success-6);
+}
+
+.icon.warning {
+    color: var(--warning-6);
+}
+
+.icon.danger {
+    color: var(--danger-6);
+}
+
+.icon.info {
+    color: var(--info-6);
+}
+
+.icon.xs {
+    height: var(--icon-xs);
+    width: var(--icon-xs);
+}
+
+.icon.s {
+    height: var(--icon-s);
+    width: var(--icon-s);
+}
+
+.icon.l {
+    height: var(--icon-l);
+    width: var(--icon-l);
+}
+
+.icon.xl {
+    height: var(--icon-xl);
+    width: var(--icon-xl);
 }

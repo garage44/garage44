@@ -1,8 +1,5 @@
 {
   "plugins": ["stylelint-order"],
-  "extends": [
-      "stylelint-config-standard-scss"
-  ],
   "rules": {
       "max-nesting-depth": 6,
       "property-no-vendor-prefix": true,

@@ -1,15 +1,31 @@
 body {
-    background: linear-gradient(to bottom, hsl(var(--info-h) var(--s-3) var(--l-3)), hsl(var(--info-h) var(--s-3) var(--l-0)));
+    background: linear-gradient(to bottom, var(--info-3), var(--info-0));
+    border-radius: var(--border-radius-d);
     display: flex;
     height: 100%;
+    overflow: hidden;
+    position: relative;
     width: 100%;
+    z-index: 1;
+
+    &::before {
+        background: var(--info-1);
+        bottom: 0;
+        box-shadow: 0 0 var(--spacer-2) var(--spacer-1) var(--info-0);
+        content: '';
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: -1;
+    }
 
     .panel {
         align-items: center;
         animation: fade-in 0.2s ease-in forwards;
-        background: hsla(var(--info-h) var(--s-3) var(--l-1) / 80%);
+        background: oklch(from var(--info-1) l c h / 0.8);
         border-right: 1px solid var(--info-2);
-        box-shadow: 0 0 var(--spacer-2) var(--spacer-1) hsla(var(--info-h) var(--s-3) var(--l-0) / 40%);
+        box-shadow: 0 0 var(--spacer-2) var(--spacer-1) oklch(from var(--info-0) l c h / 0.4);
         display: flex;
         flex-direction: column;
         justify-content: space-between;

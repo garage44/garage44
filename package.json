@@ -9,6 +9,7 @@
     "build": "bun run --filter './packages/**' build",
     "clean": "bun run --filter './packages/**' clean",
     "lint:ts": "bun run --filter './packages/**' lint:ts",
+    "lint:css": "bun run --filter './packages/**' lint:css",
     "prepublishOnly": "bun run lint:ts && bun run build",
     "publish": "bun scripts/publish_workspace.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,6 +19,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@types/bun": "^1.2.17"
+    "@types/bun": "^1.2.17",
+    "stylelint-order": "^7.0.0"
   }
 }
