@@ -1,26 +1,38 @@
 .c-translations {
-    padding: var(--spacer-3);
+    padding-top: 0;
+    position: relative;
     width: 100%;
 
     .workspace-info {
         align-items: center;
-        background: var(--info-2);
+        background: var(--info-0);
         border-bottom: 1px solid var(--info-2);
         display: flex;
         gap: var(--spacer-1);
+        position: sticky;
+
+        .history-actions,
+        .c-group-actions {
+            padding: var(--spacer-1);
+        }
 
         .c-icon {
-            color: var(--info-6) !important;
+            color: var(--info-6);
+            height: var(--spacer-4);
+            width: var(--spacer-4);
         }
 
         &.disabled {
+
             .c-icon {
                 color: var(--info-2);
             }
         }
 
         .history-actions {
+            align-items: center;
             background: var(--info-1);
+            display: flex;
         }
     }
 
@@ -30,6 +42,7 @@
         flex-direction: column;
         margin: 0;
         padding: 0;
+
 
         .field {
             /* Translation fields differ from the default field styles */
@@ -45,24 +58,13 @@
             min-height: unset;
             min-width: unset;
             width: unset;
-
-            .actions {
-                flex-direction: unset;
-
-                .group-tag-actions,
-                .group-actions {
-                    align-items: flex-end;
-                    flex-direction: row;
-                    height: unset;
-                    justify-content: center;
-                    padding: var(--spacer-1);
-                    position: unset;
-                    width: 100%;
-                }
-            }
         }
 
         > .group-value {
+            max-width: 1200px;
+            padding: var(--spacer-3);
+            padding-top: 0;
+
             .c-translation  {
                 padding-inline-end: 0;
             }
@@ -74,10 +76,22 @@
     }
 
     .translation-controls {
+        align-items: center;
         display: flex;
         gap: 1rem;
-        align-items: center;
-        margin: 1rem 0;
+        min-width: 300px;
+
+        input {
+            background: var(--info-1);
+            border: none;
+            color: var(--info-6);
+            height: var(--spacer-4);
+            padding: var(--spacer-1);
+        }
+
+        button {
+            height: var(--spacer-4);
+        }
     }
 
     .filter-input {
@@ -85,16 +99,16 @@
     }
 
     .translation-controls button {
-        min-width: 80px;
-        border: none;
         background: var(--info-1);
-        color: var(--info-6);
+        border: none;
         border-radius: 4px;
+        color: var(--info-6);
         cursor: pointer;
+        min-width: 80px;
         transition: background 0.2s;
 
         &:hover {
             background: var(--info-2);
         }
     }
-}
+}}
