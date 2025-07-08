@@ -203,16 +203,29 @@ tasks.styles = new Task('styles', async function({minify = false, sourcemap = fa
 })
 
 tasks.stylesApp = new Task('styles:app', async function({minify, sourcemap}) {
-    const appCssPath = path.join(settings.dir.src, 'css', 'app.css')
     const filename = `app.${settings.buildId}.css`
-    const styles = await tooling.scss({
-        entrypoint: appCssPath,
-        minify,
-        outFile: path.join(settings.dir.public, filename),
-        sourcemap,
-    })
+    try {
+        const result = await Bun.build({
+            entrypoints: [path.join(settings.dir.src, 'css', 'app.css')],
+            minify,
+            external: ["*.woff2"],
+            sourcemap: sourcemap ? 'inline' : 'none',
+          })
 
-    return {filename, size: styles.length}
+
+        let totalSize = 0
+        for (const res of result.outputs) {
+            await res.text()
+            new Response(res)
+            Bun.write(path.join(settings.dir.public, filename), res)
+            totalSize += res.size
+        }
+
+        return {filename, size: totalSize}
+
+    } catch (error) {
+        console.error(error)
+    }
 })
 
 tasks.stylesComponents = new Task('styles:components', async function({minify, sourcemap}) {
@@ -232,24 +245,36 @@ tasks.stylesComponents = new Task('styles:components', async function({minify, s
     })
 
     const entryContent = componentImports.join('\n')
-    const entryFile = path.join(settings.dir.public, 'temp-components.css')
+    const entryFile = path.join(settings.dir.public, 'components.css')
 
     // Ensure the public directory exists
     await fs.ensureDir(path.dirname(entryFile))
 
     // Write the temporary entry file to public dir (not src)
     await fs.writeFile(entryFile, entryContent, 'utf8')
-
     const filename = `components.${settings.buildId}.css`
-    const styles = await tooling.scss({
-        entrypoint: entryFile,
-        minify,
-        outFile: path.join(settings.dir.public, filename),
-        sourcemap,
-    })
 
-    // Clean up temporary entry file
-    await fs.rm(entryFile, {force: true})
+    try {
+        const result = await Bun.build({
+            entrypoints: [entryFile],
+            external: ["*.woff2"],
+            minify,
+            sourcemap: sourcemap ? 'inline' : 'none',
+        })
 
-    return {filename, size: styles.length}
+
+        let totalSize = 0
+        for (const res of result.outputs) {
+            await res.text()
+            new Response(res)
+            Bun.write(path.join(settings.dir.public, filename), res)
+            totalSize += res.size
+        }
+        // Clean up temporary entry file
+        await fs.rm(entryFile, {force: true})
+        return {filename, size: totalSize}
+
+    } catch (error) {
+        console.error(error)
+    }
 })

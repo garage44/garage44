@@ -90,25 +90,25 @@
         }
 
         button {
+            background: var(--info-1);
+            border: none;
+            border-radius: 4px;
+            color: var(--info-6);
+            cursor: pointer;
             height: var(--spacer-4);
+            min-width: 80px;
+            transition: background 0.2s;
+
+            &:hover {
+                background: var(--info-2);
+            }
         }
     }
+
 
     .filter-input {
         flex: 1;
     }
 
-    .translation-controls button {
-        background: var(--info-1);
-        border: none;
-        border-radius: 4px;
-        color: var(--info-6);
-        cursor: pointer;
-        min-width: 80px;
-        transition: background 0.2s;
 
-        &:hover {
-            background: var(--info-2);
-        }
-    }
-}}
+}

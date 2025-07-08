@@ -1,7 +1,7 @@
 import {
     MessageData,
 } from '@garage44/common/lib/ws-server'
-import {CssBundler, generateRandomId, showConfig} from './utils'
+import {generateRandomId, showConfig} from './utils'
 import {URL, fileURLToPath} from 'node:url'
 import path from 'node:path'
 import {tasks} from './tasks.ts'
@@ -30,7 +30,7 @@ interface Settings {
 }
 
 export const settings = {} as Settings
-export const tooling = {} as {scss: (options: {entrypoint: string, minify?: boolean, outFile: string, sourcemap?: boolean}) => Promise<string>}
+export const tooling = {} as {css: (options: {entrypoint: string, minify?: boolean, outFile: string, sourcemap?: boolean}) => Promise<string>}
 
 async function applySettings(config) {
     Object.assign(settings, {
@@ -50,7 +50,6 @@ async function applySettings(config) {
         sourcemap: config.sourcemap,
         version: config.version,
     })
-    tooling.scss = CssBundler(settings)
 
     showConfig(settings)
 }
