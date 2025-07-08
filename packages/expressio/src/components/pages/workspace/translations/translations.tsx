@@ -20,12 +20,6 @@ const localState = deepSignal({
     sort: 'asc' as 'asc' | 'desc'
 })
 
-interface TranslationGroupType {
-    _id?: string // Make optional to support I18n root
-    source?: string
-    [key: string]: unknown
-}
-
 export function WorkspaceTranslations() {
     // Component is not rendered while the workspace is not set
     if (!$s.workspace) return null
@@ -72,7 +66,7 @@ export function WorkspaceTranslations() {
         }
     }, []) // Empty dependency array means this runs once on mount
 
-    return <div class="c-translations view">
+    return <div class="c-translations">
         <div className={classes('workspace-info', {disabled: !$s.workspace})}>
             <GroupActions className="horizontal" group={$s.workspace.i18n} path={[]}/>
             <div className="history-actions">

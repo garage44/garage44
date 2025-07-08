@@ -59,11 +59,12 @@ export function GroupActions({className, group, path}: {className?: string, grou
                 tip={$t('translation_group.tip.add_group')}
                 type="info"
             />
-            {!group._collapsed && <Icon
+            {<Icon
                 name="tag_plus_outline"
                 onClick={async() => {
                     const id = `tag_${randomId()}`
                     const targetPath = [...path, id]
+                    group._collapsed = false
 
                     // Create a new tag
                     const {ref} = pathCreate($s.workspace.i18n, targetPath, {

@@ -67,9 +67,8 @@ export function TranslationGroup({group, level = 0, path, filter = '', sort = 'a
         'has-soft': pathHas($s.workspace.i18n, path, '_soft'),
         'tag-updated': $s.tags.updated === path.join('.')},
     )}>
-        <div class="group-id">
-            {level > 0 && <GroupActions className="vertical" group={group} path={path}/>}
-
+        {level > 0 && <div class="group-id">
+            <GroupActions className="vertical" group={group} path={path}/>
             {path.length > 0 && <FieldText
                 className="group-field"
                 model={group.$_id}
@@ -86,8 +85,7 @@ export function TranslationGroup({group, level = 0, path, filter = '', sort = 'a
                 }}
                 transform={(value) => value.toLocaleLowerCase().replaceAll(' ', '_')}
             />}
-
-        </div>
+        </div>}
         <div class="group-value">
             {entries.map(([id, subGroup]) => {
                 const typedSubGroup = subGroup as TranslationGroupType
