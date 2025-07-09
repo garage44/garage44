@@ -4,6 +4,7 @@
 @import "../../../common/css/common/_tooltip.css";
 
 html, body {
+    background: var(--info-1);
     font-family: Inter, sans-serif;
     font-size: var(--font-d);
     height: 100vh;
@@ -13,10 +14,6 @@ html, body {
 
 * {
     box-sizing: border-box;
-}
-
-.view {
-    /* min-height: 100vh; */
 }
 
 ::selection {

@@ -5,18 +5,6 @@ body {
     position: relative;
     width: 100%;
 
-    &::before {
-        background: var(--info-1);
-        bottom: 0;
-        box-shadow: 0 0 var(--spacer-2) var(--spacer-1) var(--info-0);
-        content: '';
-        left: 0;
-        position: absolute;
-        right: 0;
-        top: 0;
-        z-index: -1;
-    }
-
     .panel {
         align-items: center;
         animation: fade-in 0.2s ease-in forwards;

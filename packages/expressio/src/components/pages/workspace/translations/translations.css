@@ -30,6 +30,7 @@
 
         .collapse-toggle {
             height: 100%;
+            width: var(--spacer-6);
         }
 
         .c-group-actions {
@@ -37,6 +38,10 @@
             display: flex;
             gap: var(--spacer-05);
             justify-content: center;
+
+            .group-actions {
+                gap: var(--spacer-2);
+            }
         }
 
         .translation-controls {

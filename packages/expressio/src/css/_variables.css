@@ -3,7 +3,7 @@
     /* Systematic color construction - simplified but consistent */
 
             /* Lightness scale (0-1) - moderately brighter with good contrast */
-    --l-0: 0.12;   /* Dark text - ensures good contrast */
+    --l-0: 0.14;   /* Dark text - ensures good contrast */
     --l-1: 0.18;   /* Dark text/elements */
     --l-2: 0.26;   /* Medium-dark text */
     --l-3: 0.35;   /* Body text */
