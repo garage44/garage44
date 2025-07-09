@@ -3,6 +3,7 @@
 import { $ } from 'bun'
 import {readFile, writeFile, copyFile, unlink } from 'fs/promises'
 import { join } from 'path'
+import { takeScreenshots } from './take-screenshots'
 
 const packages = [
   { name: '@garage44/common', path: 'packages/common' },
@@ -75,16 +76,26 @@ async function publish(): Promise<void> {
   console.log('🚀 Starting monorepo publish...\n')
 
   try {
-    // 1. Build all packages
+    // 1. Take fresh screenshots for README
+    console.log('📸 Taking fresh screenshots...')
+    try {
+      await takeScreenshots()
+      console.log('✅ Screenshots updated\n')
+    } catch (error: any) {
+      console.warn('⚠️ Screenshot generation failed:', error.message)
+      console.warn('📸 Continuing with existing screenshots\n')
+    }
+
+    // 2. Build all packages
     console.log('📦 Building packages...')
     await $`bun run build`
     console.log('✅ Build completed\n')
 
-    // 2. Determine publish order
+    // 3. Determine publish order
     const publishOrder = topologicalSort(dependencies)
     console.log('📋 Publish order:', publishOrder.join(' → '), '\n')
 
-    // 3. Collect current versions and bump them
+    // 4. Collect current versions and bump them
     const packageVersions: Record<string, string> = {}
     for (const packageName of publishOrder) {
       const packageInfo = packages.find(p => p.name === packageName)
@@ -98,7 +109,7 @@ async function publish(): Promise<void> {
     }
     console.log()
 
-    // 4. Update versions and publish
+    // 5. Update versions and publish
     for (const packageName of publishOrder) {
       const packageInfo = packages.find(p => p.name === packageName)
       if (!packageInfo) continue
@@ -144,7 +155,7 @@ async function publish(): Promise<void> {
 
     console.log('🎉 All packages published successfully!')
 
-    // 5. Commit version changes to git
+    // 6. Commit version changes to git
     console.log('📦 Committing version changes to git...')
     try {
       // Add all modified package.json files
@@ -152,12 +163,15 @@ async function publish(): Promise<void> {
         await $`git add ${packageInfo.path}/package.json`
       }
 
+      // Add updated screenshots
+      await $`git add .github/screenshot-*.png`
+
       // Create commit message with all version changes
       const versionChanges = publishOrder
         .map(name => `${name}@${packageVersions[name]}`)
         .join(', ')
 
-      await $`git commit -m "chore: bump versions - ${versionChanges}"`
+      await $`git commit -m "chore: bump versions and update screenshots - ${versionChanges}"`
       console.log('✅ Version changes committed to git')
 
       // Push changes to remote
