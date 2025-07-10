@@ -1,8 +1,11 @@
 <div align="center">
+<img src="https://raw.githubusercontent.com/garage44/expressio/refs/heads/main/packages/expressio/src/assets/img/logo.svg" width="120" alt="Expressio" />
 
-# 🌍 Expressio
+## Expressio
 
-### *AI-Powered Translation & i18n Workflow Automation*
+*I18n for humans, through AI*
+
+AI-Powered Translation & i18n Workflow Automation
 
 **Transform your localization workflow with intelligent automation**
 
@@ -10,23 +13,49 @@
 [![Bun](https://img.shields.io/badge/Powered%20by-Bun-black.svg)](https://bun.sh/)
 [![DeepL](https://img.shields.io/badge/Supports-DeepL-0F2B46.svg)](https://www.deepl.com/)
 [![Claude](https://img.shields.io/badge/Supports-Claude-orange.svg)](https://www.anthropic.com/)
-
 </div>
 
-<br>
+<div align="center">
+
+**Built with** [Bun](https://bun.sh/) ⚡ **+** [I18Next](https://www.i18next.com/) 🌐 **+** [Preact](https://preactjs.com/) ⚛️
+
+<table>
+<tr>
+<td width="25%" align="center">
+<strong>🔧 <a href="./packages/bunchy/README.md">Bunchy</a></strong><br>
+<em>Task Runner</em><br>
+<a href="./packages/bunchy/LICENSE.md">MIT License</a>
+</td>
+<td width="25%" align="center">
+<strong>🔗 <a href="./packages/common/README.md">Common</a></strong><br>
+<em>Shared Components</em><br>
+<a href="./packages/common/LICENSE.md">MIT License</a>
+</td>
+<td width="25%" align="center">
+<strong>🌐 <a href="./packages/enola/README.md">Enola</a></strong><br>
+<em>Translation Engine</em><br>
+<a href="./packages/enola/LICENSE.md">MIT License</a>
+</td>
+<td width="25%" align="center">
+<strong>🎯 <a href="./packages/expressio/">Expressio</a></strong><br>
+<em>Main Application</em><br>
+<a href="./packages/expressio/LICENSE.md">AGPLv3 License</a>
+</td>
+</tr>
+</table>
+</div>
+
+
 
 ## 🚀 Quick Start
+
+**Get Started in 30 Seconds**
 
 ```bash
 bunx @garage44/expressio start
 # 🔑 Login: admin/admin (customize in ~/.expressiorc)
 ```
 
-<div align="center">
-
-**Built with** [Bun](https://bun.sh/) ⚡ **+** [I18Next](https://www.i18next.com/) 🌐 **+** [Preact](https://preactjs.com/) ⚛️
-
-</div>
 
 <br>
 
@@ -58,90 +87,32 @@ bunx @garage44/expressio start
 
 ## 🔥 Why Choose Expressio?
 
-<div align="center">
-
 **Revolutionize your i18n workflows** with cutting-edge AI translation and intelligent automation.
 Built on [Enola](https://github.com/garage44/packages/enola), seamlessly connecting with [DeepL](https://www.deepl.com/) and [Anthropic Claude](https://www.anthropic.com/).
 
-<br>
 
 <img src="https://raw.githubusercontent.com/garage44/expressio/refs/heads/main/.github/screenshot-workspace-config.png" width="700" alt="Advanced Workspace Configuration" />
 
-</div>
-
-<br>
-
-### 🎯 Why Developers Choose Expressio
-
-<div align="center">
-<table>
-<tr>
-<td align="center" width="50%">
-<h4>🚀 Developer Experience</h4>
-<ul align="left">
-<li>⚡ <strong>Zero-config startup</strong> - Works out of the box</li>
-<li>🔄 <strong>Hot-reload workflow</strong> - See changes instantly</li>
-<li>🎯 <strong>Smart caching</strong> - Optimized performance by default</li>
-<li>📱 <strong>Responsive design</strong> - Works on any device</li>
-</ul>
-</td>
-<td align="center" width="50%">
-<h4>🌍 Technical Capabilities</h4>
-<ul align="left">
-<li>📡 <strong>Extensive language support</strong> including rare ones</li>
-<li>🔗 <strong>Provider-agnostic</strong> - Switch between DeepL, Claude, etc.</li>
-<li>💾 <strong>WebSocket real-time</strong> - Collaborative editing</li>
-<li>🔧 <strong>API-first</strong> - Integrate with existing tools</li>
-</ul>
-</td>
-</tr>
-</table>
-</div>
-
-<br>
-
-## 📦 What's Included
-
-<div align="center">
-
-### 🆓 Free & Open Source
+<br/>
 
 **Complete i18n automation toolkit with enterprise-grade features**
 
-• **Instant machine translation** with multiple provider support
-• **Automatic sync** when source text changes
-• **Extensive language coverage** (ISO 639-1 & 639-2)
-• **Rare language support** often missing from other tools
-• **Service-agnostic design** with extensible backends
-• **Modern SPA interface** with real-time collaboration
+* **Instant machine translation** - source-text oriented workflow
+* **Zero-config startup** - works out of the box
+* **Smart caching** - optimized for performance & low translation provider costs
+* **Service-agnostic design** - switch between LLM providers like Deepl, Claude, etc.
+* **Extensive language coverage** - ISO 639-2, including languages other tools are missing
+* **Hot-reload workflow** - see changes when they happen
+* **Modern SPA interface** - real-time collaboration using Websockets
+* **API-first** - integrate with existing tools like [I18next](https://www.i18next.com/)
 
-</div>
-
-<br>
-
-<div align="center">
-
-**🚀 Get Started in 30 Seconds**
-
-```bash
-bunx @garage44/expressio start
-```
 
 *Enterprise features? [Contact us](mailto:info@expressio.tech) for custom solutions.*
 
-</div>
-
-<br>
-
 ## 🛠️ Development
-
-<div align="center">
 
 **Ready to contribute? Get started locally:**
 
-<br>
-
-</div>
 
 ```bash
 # 📥 Clone the repository
@@ -154,57 +125,7 @@ bun install
 # 🚀 Start development server
 cd packages/expressio
 bun run dev
+
+# 🚀 Or to skip memory session authorization between reloads:
+GARAGE44_NO_SECURITY=1 bun run dev
 ```
-
-<div align="center">
-
-### 🎯 Development Tools
-
-**⚡ Hot reload** • **🧪 Automated testing** • **📸 Visual regression** • **🔧 Monorepo architecture**
-
-</div>
-
-<br>
-
-## 📄 License & Packages
-
-<div align="center">
-
-### Open Source Monorepo
-
-<table>
-<tr>
-<td width="25%" align="center">
-<strong>🔧 <a href="./packages/bunchy/README.md">Bunchy</a></strong><br>
-<em>Task Runner</em><br>
-<a href="./packages/bunchy/LICENSE.md">MIT License</a>
-</td>
-<td width="25%" align="center">
-<strong>🔗 <a href="./packages/common/README.md">Common</a></strong><br>
-<em>Shared Components</em><br>
-<a href="./packages/common/LICENSE.md">MIT License</a>
-</td>
-<td width="25%" align="center">
-<strong>🌐 <a href="./packages/enola/README.md">Enola</a></strong><br>
-<em>Translation Engine</em><br>
-<a href="./packages/enola/LICENSE.md">MIT License</a>
-</td>
-<td width="25%" align="center">
-<strong>🎯 <a href="./packages/expressio/">Expressio</a></strong><br>
-<em>Main Application</em><br>
-<a href="./packages/expressio/LICENSE.md">AGPLv3 License</a>
-</td>
-</tr>
-</table>
-
-<br>
-
----
-
-### 💼 Enterprise Edition
-
-**Advanced features • Team collaboration • Priority support**
-
-**[📧 Contact us](mailto:info@expressio.tech)** • **[🌐 Learn more](https://expressio.tech)**
-
-</div>
