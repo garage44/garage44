@@ -2,12 +2,11 @@ import {$s, ws} from '@/app'
 import {pathCreate, pathDelete, pathUpdate} from '@garage44/common/lib/paths.ts'
 import type {EnolaTag} from '@garage44/enola/types.ts'
 import {GroupActions} from '@/components/elements/group-actions/group-actions'
-import {Icon} from '@garage44/common/components/ui/icon/icon'
+import {Button, FieldText, Icon} from '@garage44/common/components'
 import {TranslationGroup} from '@/components/elements'
 import {classes} from '@garage44/common/lib/utils'
 import {events} from '@garage44/common/app'
 import {useEffect} from 'preact/hooks'
-import {deepSignal} from 'deepsignal'
 
 // Define interface for the tag object
 interface TagData {
@@ -15,19 +14,9 @@ interface TagData {
     value: EnolaTag;
 }
 
-const localState = deepSignal({
-    filter: '',
-    sort: 'asc' as 'asc' | 'desc'
-})
-
 export function WorkspaceTranslations() {
     // Component is not rendered while the workspace is not set
     if (!$s.workspace) return null
-
-    // Local deepSignal state for filter and sort
-
-    const filter = localState.filter
-    const sort = localState.sort
 
     // Add keyboard event handler for undo/redo
     useEffect(() => {
@@ -59,7 +48,6 @@ export function WorkspaceTranslations() {
 
         // Add event listener
         window.addEventListener('keydown', handleKeyDown)
-
         // Clean up event listener when component unmounts
         return () => {
             window.removeEventListener('keydown', handleKeyDown)
@@ -93,24 +81,24 @@ export function WorkspaceTranslations() {
                 />
             </div>
             <div className="translation-controls">
-                <input
-                    class="filter-input"
-                    type="text"
-                    placeholder={'Filter...'}
-                    value={filter}
-                    onInput={e => localState.filter = (e.target as HTMLInputElement).value}
+                <FieldText
+                    model={$s.$filter}
+                    placeholder={'Filter tag, translation or group...'}
                 />
-                <button onClick={() => localState.sort = (sort === 'asc' ? 'desc' : 'asc')}>
-                    Sort: {sort === 'asc' ? 'A-Z' : 'Z-A'}
-                </button>
+                <Button
+                    icon={$s.sort === 'asc' ? 'arrow_up_circle_ouline' : 'arrow_down_circle_outline'}
+                    onClick={() => $s.sort = ($s.sort === 'asc' ? 'desc' : 'asc')}
+                    type="info"
+                    label={`Sort: ${$s.sort === 'asc' ? 'A-Z' : 'Z-A'}`}
+                />
             </div>
         </div>
 
         <TranslationGroup
             group={{ _id: 'root', ...$s.workspace.i18n }}
             path={[]}
-            filter={filter}
-            sort={sort}
+            filter={$s.filter}
+            sort={$s.sort}
         />
     </div>
 }

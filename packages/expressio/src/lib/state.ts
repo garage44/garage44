@@ -8,8 +8,10 @@ import {EnolaConfig} from '@garage44/enola/types'
 import {mergeDeep} from '@garage44/common/lib/utils'
 import type {DeepSignal} from 'deepsignal'
 
-export interface ExpressioState extends CommonState {
+export interface ExpressioStateBase extends CommonState {
     enola: EnolaConfig
+    filter: string
+    sort: 'asc' | 'desc'
     /** Keeps track which tags have been updated for visual feedback */
     tags: {
         updated: string
@@ -17,6 +19,8 @@ export interface ExpressioState extends CommonState {
     workspace: Workspace
     workspaces: DeepSignal<[WorkspaceDescription]>
 }
+
+export type ExpressioState = DeepSignal<ExpressioStateBase>
 
 // Use const assertions for the state objects
 export const persistantState = mergeDeep({}, commonPersistantState)
@@ -29,6 +33,8 @@ export const volatileState = mergeDeep({
             target: [],
         },
     },
+    filter: '',
+    sort: 'asc' as 'asc' | 'desc',
     tags: {
         updated: false,
     },

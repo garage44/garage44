@@ -16,6 +16,7 @@ export function GroupActions({className, group, path}: {className?: string, grou
     return <div class={classes('c-group-actions', className)}>
         <div className="collapse-toggle">
             <Icon
+                disabled={$s.filter.length > 0}
                 name={(() => {
                     if ($s.env.ctrlKey) {
                         return 'plus_collaped'
