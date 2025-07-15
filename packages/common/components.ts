@@ -7,5 +7,5 @@ export {FieldUpload} from './components/field/upload/upload.tsx'
 // UI
 export {Button} from './components/ui/button/button.tsx'
 export {Icon} from './components/ui/icon/icon.tsx'
-export {Progress} from './components/ui/progress/progress.tsx'
+export {Progress, TranslationProgress} from './components/ui/progress/progress.tsx'
 export {Notifications} from './components/ui/notifications/notifications.tsx'

@@ -11,11 +11,13 @@
     "@garage44/bunchy": "workspace:^",
     "@garage44/common": "workspace:^",
     "@garage44/enola": "workspace:^",
+    "chokidar": "^4.0.3",
     "figlet": "^1.8.0",
     "preact": "^10.26.5",
     "preact-router": "^4.1.2",
     "rc": "^1.2.8",
-    "ws": "^8.18.1"
+    "ws": "^8.18.1",
+    "yargs": "^18.0.0"
   },
   "files": [
     "api/*",

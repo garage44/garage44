@@ -408,4 +408,30 @@ export class Workspace {
             this.lastBroadcastTime = now
         }
     }
+
+    // Broadcast translation progress updates
+    broadcastTranslationProgress(progressData: {
+        type: 'tag' | 'batch'
+        path: string[]
+        total: number
+        processed: number
+        status: 'started' | 'processing' | 'completed' | 'error' | 'retrying'
+        message: string
+        currentLanguage?: string
+        batchInfo?: {
+            totalTags: number
+            totalLanguages: number
+            processedTags: number
+            processedLanguages: number
+        }
+    }): void {
+        if (this.wsManager) {
+            this.wsManager.broadcast('/translation/progress', {
+                workspace_id: this.config.workspace_id,
+                timestamp: Date.now(),
+                ...progressData,
+                percentage: progressData.total > 0 ? (progressData.processed / progressData.total) * 100 : 0
+            })
+        }
+    }
 }

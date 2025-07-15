@@ -2,7 +2,7 @@ import {$s, ws} from '@/app'
 import {pathCreate, pathDelete, pathUpdate} from '@garage44/common/lib/paths.ts'
 import type {EnolaTag} from '@garage44/enola/types.ts'
 import {GroupActions} from '@/components/elements/group-actions/group-actions'
-import {Button, FieldText, Icon} from '@garage44/common/components'
+import {Button, FieldText, Icon, TranslationProgress} from '@garage44/common/components'
 import {TranslationGroup} from '@/components/elements'
 import {classes} from '@garage44/common/lib/utils'
 import {events} from '@garage44/common/app'
@@ -94,6 +94,16 @@ export function WorkspaceTranslations() {
             </div>
         </div>
 
+        <TranslationProgress
+            active={$s.translation.progress.active}
+            type={$s.translation.progress.type}
+            percentage={$s.translation.progress.percentage}
+            message={$s.translation.progress.message}
+            currentLanguage={$s.translation.progress.currentLanguage}
+            batchInfo={$s.translation.progress.batchInfo}
+            status={$s.translation.progress.status}
+        />
+
         <TranslationGroup
             group={{ _id: 'root', ...$s.workspace.i18n }}
             path={[]}
@@ -143,6 +153,37 @@ events.on('app:init', () => {
     ws.on('/i18n/history', ({success}) => {
         if (success) {
             // The state update will come through the /i18n/state handler
+        }
+    })
+
+    // Add handler for translation progress updates
+    ws.on('/translation/progress', ({workspace_id, type, path, total, processed, percentage, status, message, currentLanguage, batchInfo}) => {
+        // Only apply updates for the current workspace
+        if (!$s.workspace || $s.workspace.config.workspace_id !== workspace_id) {
+            return
+        }
+
+        // Update the translation progress state
+        $s.translation.progress = {
+            active: status !== 'completed',
+            type,
+            path,
+            total,
+            processed,
+            percentage,
+            status,
+            message,
+            currentLanguage,
+            batchInfo
+        }
+
+        // Auto-hide the progress after completion
+        if (status === 'completed' || status === 'error') {
+            setTimeout(() => {
+                if ($s.translation.progress.status === status) {
+                    $s.translation.progress.active = false
+                }
+            }, 3000) // Hide after 3 seconds
         }
     })
 })

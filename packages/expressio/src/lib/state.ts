@@ -16,6 +16,26 @@ export interface ExpressioStateBase extends CommonState {
     tags: {
         updated: string
     }
+    /** Translation progress state */
+    translation: {
+        progress: {
+            active: boolean
+            type: 'tag' | 'batch' | null
+            path: string[]
+            total: number
+            processed: number
+            percentage: number
+            status: 'started' | 'processing' | 'completed' | 'error' | 'retrying'
+            message: string
+            currentLanguage?: string
+            batchInfo?: {
+                totalTags: number
+                totalLanguages: number
+                processedTags: number
+                processedLanguages: number
+            }
+        }
+    }
     workspace: Workspace
     workspaces: DeepSignal<[WorkspaceDescription]>
 }
@@ -37,6 +57,20 @@ export const volatileState = mergeDeep({
     sort: 'asc' as 'asc' | 'desc',
     tags: {
         updated: false,
+    },
+    translation: {
+        progress: {
+            active: false,
+            type: null,
+            path: [],
+            total: 0,
+            processed: 0,
+            percentage: 0,
+            status: 'started',
+            message: '',
+            currentLanguage: undefined,
+            batchInfo: undefined
+        }
     },
     workspace: null,
     workspaces: [],
