@@ -76,8 +76,8 @@
                 gap: var(--spacer-1);
                 
                 .notification-title {
-                    font-weight: 600;
                     font-size: var(--font-s);
+                    font-weight: 600;
                 }
             }
             
@@ -93,9 +93,9 @@
             }
             
             .notification-batch-info {
+                font-family: var(--font-mono);
                 font-size: var(--font-xxs);
                 opacity: 0.7;
-                font-family: var(--font-mono);
             }
         }
     }
