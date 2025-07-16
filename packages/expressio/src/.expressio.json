@@ -52,7 +52,8 @@
                         "deu": "Url zur API von Anthropic",
                         "eng-gbr": "Url to Anthropic's API",
                         "fra": "Url vers l'API d'Anthropic",
-                        "nld": "Url naar Anthropic's API"
+                        "nld": "Url naar Anthropic's API",
+                        "zho-hans": ""
                     }
                 },
                 "anthropic_key": {
@@ -84,7 +85,7 @@
                         "ara": "مفتاح API لخدمة Deepl ",
                         "deu": "Der API-Schlüssel für den Dienst Deepl ",
                         "eng-gbr": "The API key for the Deepl service",
-                        "fra": "La clé API du service Deepl ",
+                        "fra": "La clé API pour le service Deepl ",
                         "nld": "De API-sleutel voor de Deepl service"
                     }
                 },
@@ -93,7 +94,7 @@
                     "source": "Change the <i>Expressio</i> UI language",
                     "target": {
                         "ara": "تغيير لغة واجهة المستخدم Expressio ",
-                        "deu": "Ändern Sie die Sprache der Benutzeroberfläche Expressio ",
+                        "deu": "Ändere die Sprache der Benutzeroberfläche Expressio ",
                         "eng-gbr": "Change the Expressio UI language",
                         "fra": "Change la langue de l'interface utilisateur de Expressio ",
                         "nld": "De UI-taal van Expressio wijzigen"
