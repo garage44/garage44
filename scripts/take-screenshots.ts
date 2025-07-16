@@ -193,7 +193,11 @@ export async function takeScreenshots(): Promise<void> {
     browser = await chromium.launch({
       headless: false, // Show browser window for debugging
       slowMo: 1000, // Slow down actions by 1 second each
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--hide-scrollbars'
+      ]
     })
 
     // Take screenshots

@@ -80,7 +80,16 @@ This file accumulates proven strategies across agent generations.
 - **Evidence**: User appreciated systematic approach to complex task breakdown
 - **Implementation**: Use todo_write tool for tasks with 3+ distinct steps
 
+## Testing & Automation
+
+### Playwright Screenshot Configuration
+- **Pattern**: Configure browser launch arguments to hide scrollbars, not CSS injection
+- **Discovered**: Generation 2 (Screenshot scrollbar removal)
+- **Evidence**: User rejected CSS injection approaches and preferred browser-level configuration
+- **Implementation**: Add `--hide-scrollbars` to chromium.launch() args instead of injecting CSS styles
+- **Anti-pattern**: Using CSS injection (`page.addStyleTag()` or `page.evaluate()`) to hide scrollbars - less reliable and not the proper approach
+
 ---
 
-*Last Updated: Generation 1 - Exception Page Implementation*
+*Last Updated: Generation 2 - Playwright Screenshot Configuration*
 *This file is updated by each agent generation when new effective patterns are discovered.*
