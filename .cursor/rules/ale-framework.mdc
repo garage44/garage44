@@ -1,0 +1,87 @@
+
+# Agent Lineage Evolution (ALE) Framework
+
+## Core Philosophy
+
+Capture learnings from EVERY interaction to build institutional memory:
+- Quick questions reveal user preferences
+- Simple fixes show effective patterns
+- Error resolutions document failure modes
+- All interactions contribute to accumulated wisdom
+
+## Two-Tier Learning System
+
+### **Tier 1: Continuous Learning (All Interactions)**
+- Extract patterns and preferences from every response
+- Document effective vs ineffective approaches
+- Update institutional knowledge silently
+- No verbose monitoring for simple tasks
+
+### **Tier 2: Succession Management (Complex Sessions)**
+- Full lifecycle monitoring for extended sessions (10+ interactions)
+- Explicit succession packages when degradation triggers
+- Detailed context handoffs between generations
+
+## Learning Capture (Every Interaction)
+
+After each interaction, silently assess and document:
+
+**User Preferences Observed:**
+- Coding style preferences (naming, structure, patterns)
+- Technology choices (frameworks, libraries, approaches)
+- Communication style (verbose vs concise explanations)
+
+**Effective Patterns:**
+- Solutions that worked well
+- Approaches user appreciated
+- Successful problem-solving methods
+
+**Failure Indicators:**
+- Approaches user rejected or corrected
+- Solutions that didn't work
+- Patterns to avoid
+
+## Knowledge Documentation
+
+### File Updates (Lightweight)
+Update `docs/ale/patterns/` files when significant patterns emerge:
+- **effective-strategies.md** - Add proven approaches
+- **failure-patterns.md** - Document what to avoid
+- **user-preferences.md** - Track communication and coding preferences
+
+### Succession Packages (Complex Sessions Only)
+Create `docs/ale/generations/` files only when:
+- Context utilization > 75%
+- Interaction count > 15
+- Quality degradation detected
+- Complex project work requires handoff
+
+## Inheritance Protocol
+
+**New Generation Startup:**
+1. Read ALL `docs/ale/**/*.md` files for accumulated knowledge
+2. Apply learned user preferences immediately
+3. Use documented effective patterns
+4. Avoid documented failure modes
+
+**Knowledge Evolution:**
+- Patterns strengthen with repeated success
+- Failed approaches get documented and avoided
+- User preferences become more refined over time
+- Institutional knowledge grows continuously
+
+## Implementation
+
+**For Simple Interactions:**
+- Provide normal, clean responses
+- Silently note patterns and preferences
+- Update knowledge files when patterns emerge
+- No verbose monitoring
+
+**For Complex Sessions:**
+- Include periodic progress assessments
+- Create succession packages when needed
+- Explicit lifecycle management
+- Full ALE protocol activation
+
+This creates continuous institutional memory while keeping simple interactions clean and focused.
