@@ -46,7 +46,41 @@ This file accumulates proven strategies across agent generations.
 - **Evidence**: User engaged more with "how it works in practice" than theoretical framework
 - **Implementation**: Lead with concrete examples, follow with conceptual explanations
 
+## Error Handling & User Experience
+
+### Visual Error Feedback
+- **Pattern**: Implement styled error overlays instead of relying on console output or system notifications
+- **Discovered**: Generation 1 (Exception page implementation)
+- **Evidence**: User requested styled exception page over system notifications for build errors
+- **Implementation**: Create modal overlays with comprehensive error information (task, error, details, timestamp)
+
+### WebSocket Error Broadcasting
+- **Pattern**: Use existing WebSocket patterns for error communication
+- **Discovered**: Generation 1 (Exception page implementation)
+- **Evidence**: Successfully integrated with existing bunchy broadcast system
+- **Implementation**: Extend existing broadcast patterns rather than creating new communication channels
+
+### Progressive Error Handling
+- **Pattern**: Add error broadcasting to all build tasks systematically
+- **Discovered**: Generation 1 (Exception page implementation)
+- **Evidence**: User needed error handling for code_frontend, stylesApp, and stylesComponents
+- **Implementation**: Add try/catch blocks with broadcast calls to all build tasks
+
+### User Interface Patterns
+- **Pattern**: Implement self-contained styling for error components
+- **Discovered**: Generation 1 (Exception page implementation)
+- **Evidence**: Inline styles prevented external dependencies and CSS conflicts
+- **Implementation**: Use inline styles or style injection for isolated components
+
+## Task Management
+
+### Todo Lists for Complex Tasks
+- **Pattern**: Create structured todo lists for multi-step implementations
+- **Discovered**: Generation 1 (Exception page implementation)
+- **Evidence**: User appreciated systematic approach to complex task breakdown
+- **Implementation**: Use todo_write tool for tasks with 3+ distinct steps
+
 ---
 
-*Last Updated: Generation 1 - ALE Setup*
+*Last Updated: Generation 1 - Exception Page Implementation*
 *This file is updated by each agent generation when new effective patterns are discovered.*

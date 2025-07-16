@@ -26,6 +26,15 @@ This file documents patterns that have failed and should be avoided by future ge
 - **Evidence**: TBD
 - **Avoidance**: Extend `ws-client.ts` patterns rather than replacing them
 
+## Function Implementation
+
+### Referencing Undefined Functions
+- **Anti-pattern**: Adding function calls before defining the function
+- **Discovered**: Generation 1 (Exception page implementation)
+- **Evidence**: Linter error when calling `showExceptionPage` before it was defined
+- **Avoidance**: Define functions before referencing them, or plan function structure before implementation
+
 ---
 
+*Last Updated: Generation 1 - Exception Page Implementation*
 *This file is updated by each agent generation when failure patterns are identified.*

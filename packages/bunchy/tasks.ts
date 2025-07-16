@@ -133,10 +133,26 @@ tasks.code_frontend = new Task('code:frontend', async function({minify = false, 
         if (!result.success) {
             // oxlint-disable-next-line no-console
             console.error(result.logs)
+            // Broadcast error to client
+            broadcast('/tasks/error', {
+                task: 'code:frontend',
+                error: 'Build failed',
+                details: result.logs,
+                timestamp: new Date().toISOString(),
+            }, 'POST')
+            return
         }
     } catch (error) {
         // oxlint-disable-next-line no-console
         console.error(error)
+        // Broadcast error to client
+        broadcast('/tasks/error', {
+            task: 'code:frontend',
+            error: error.message || 'Unknown build error',
+            details: error.stack || error.toString(),
+            timestamp: new Date().toISOString(),
+        }, 'POST')
+        return
     }
 
     const filename = `app.${settings.buildId}.js`
@@ -225,6 +241,14 @@ tasks.stylesApp = new Task('styles:app', async function({minify, sourcemap}) {
 
     } catch (error) {
         console.error(error)
+        // Broadcast error to client
+        broadcast('/tasks/error', {
+            task: 'styles:app',
+            error: error.message || 'CSS build failed',
+            details: error.stack || error.toString(),
+            timestamp: new Date().toISOString(),
+        }, 'POST')
+        return
     }
 })
 
@@ -276,5 +300,15 @@ tasks.stylesComponents = new Task('styles:components', async function({minify, s
 
     } catch (error) {
         console.error(error)
+        // Broadcast error to client
+        broadcast('/tasks/error', {
+            task: 'styles:components',
+            error: error.message || 'Component CSS build failed',
+            details: error.stack || error.toString(),
+            timestamp: new Date().toISOString(),
+        }, 'POST')
+        // Clean up temporary entry file on error
+        await fs.rm(entryFile, {force: true})
+        return
     }
 })
