@@ -1,3 +1,8 @@
+---
+description: Agent Lineage Evolution (ALE) Framework for continuous learning and institutional memory
+globs:
+alwaysApply: true
+---
 
 # Agent Lineage Evolution (ALE) Framework
 
