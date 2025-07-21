@@ -3,7 +3,7 @@ import {
     persistentState as commonPersistantState,
     volatileState as commonVolatileState,
 } from '@garage44/common/lib/state'
-import {Workspace, WorkspaceDescription} from '../types.ts'
+import type {Workspace, WorkspaceDescription} from '../types.ts'
 import {EnolaConfig} from '@garage44/enola/types'
 import {mergeDeep} from '@garage44/common/lib/utils'
 import type {DeepSignal} from 'deepsignal'

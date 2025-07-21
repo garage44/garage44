@@ -1,6 +1,6 @@
 import type {DeepSignal} from 'deepsignal'
 
-export interface CommonState {
+interface CommonState {
     env: {
         ctrlKey: boolean
         isFirefox: boolean
@@ -22,7 +22,7 @@ export interface CommonState {
     }>
 }
 
-export const persistentState = {
+const persistentState = {
     language_ui: {
         selection: 'eng-gbr',
     },
@@ -31,7 +31,7 @@ export const persistentState = {
     },
 } as const
 
-export const volatileState = {
+const volatileState = {
     env: {
         layout: 'desktop',
     },
@@ -54,4 +54,10 @@ export const volatileState = {
         password: '',
         username: '',
     },
+}
+
+export {
+    CommonState,
+    persistentState,
+    volatileState,
 }

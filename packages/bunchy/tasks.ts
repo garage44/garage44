@@ -1,4 +1,4 @@
-import {broadcast, settings, tooling} from './index.ts'
+import {broadcast, settings} from './index.ts'
 import {Task} from './task.ts'
 import fs from 'fs-extra'
 import {glob} from 'glob'
@@ -12,12 +12,16 @@ const debounce = {options: {trailing: true}, wait: 1000}
 const runner = {
     assets: throttle(async() => {
         const result = await tasks.assets.start()
-        if (settings.reload_ignore.includes('/tasks/assets')) return
+        if (settings.reload_ignore.includes('/tasks/assets')) {
+            return
+        }
         broadcast('/tasks/assets', result || {}, 'POST')
     }, debounce.wait, debounce.options),
     code_frontend: throttle(async() => {
         const {filename, size} = await tasks.code_frontend.start({minify: false, sourcemap: true})
-        if (settings.reload_ignore.includes('/tasks/code_frontend')) return
+        if (settings.reload_ignore.includes('/tasks/code_frontend')) {
+            return
+        }
         broadcast('/tasks/code_frontend', {
             filename,
             publicPath: path.relative(settings.dir.workspace, settings.dir.public),
@@ -26,7 +30,9 @@ const runner = {
     }, debounce.wait, debounce.options),
     html: throttle(async() => {
         const {filename, size} = await tasks.html.start({minify: false})
-        if (settings.reload_ignore.includes('/tasks/html')) return
+        if (settings.reload_ignore.includes('/tasks/html')) {
+            return
+        }
         broadcast('/tasks/html', {
             filename,
             publicPath: path.relative(settings.dir.workspace, settings.dir.public),
@@ -59,7 +65,9 @@ const runner = {
         }, debounce.wait, debounce.options),
         components: throttle(async() => {
             const {filename, size} = await tasks.stylesComponents.start({minify: false, sourcemap: true})
-            if (settings.reload_ignore.includes('/tasks/styles/components')) return
+            if (settings.reload_ignore.includes('/tasks/styles/components')) {
+                return
+            }
             broadcast('/tasks/styles/components', {
                 filename,
                 publicPath: path.relative(settings.dir.workspace, settings.dir.public),
@@ -84,9 +92,10 @@ interface Tasks {
 }
 
 // Update the tasks declaration
-export const tasks: Tasks = {} as Tasks
+const tasks: Tasks = {} as Tasks
 
-tasks.assets = new Task('assets', async function() {
+
+tasks.assets = new Task('assets', async function taskAssets() {
     await fs.ensureDir(path.join(settings.dir.public, 'fonts'))
 
     const actions = [
@@ -97,7 +106,8 @@ tasks.assets = new Task('assets', async function() {
     await Promise.all(actions)
 })
 
-tasks.build = new Task('build', async function({minify = false, sourcemap = false} = {}) {
+
+tasks.build = new Task('build', async function taskBuild({minify = false, sourcemap = false} = {}) {
     await tasks.clean.start()
     await Promise.all([
         tasks.assets.start(),
@@ -107,13 +117,15 @@ tasks.build = new Task('build', async function({minify = false, sourcemap = fals
     ])
 })
 
-tasks.clean = new Task('clean', async function() {
+
+tasks.clean = new Task('clean', async function taskClean() {
     await fs.rm(path.join(settings.dir.workspace, 'app.js'), {force: true})
     await fs.rm(settings.dir.public, {force: true, recursive: true})
     await fs.mkdirp(settings.dir.public)
 })
 
-tasks.code_frontend = new Task('code:frontend', async function({minify = false, sourcemap = false} = {}) {
+
+tasks.code_frontend = new Task('code:frontend', async function taskCodeFrontend({minify = false, sourcemap = false} = {}) {
     try {
         const result = await Bun.build({
             define: {
@@ -135,9 +147,9 @@ tasks.code_frontend = new Task('code:frontend', async function({minify = false, 
             console.error(result.logs)
             // Broadcast error to client
             broadcast('/tasks/error', {
-                task: 'code:frontend',
-                error: 'Build failed',
                 details: result.logs,
+                error: 'Build failed',
+                task: 'code:frontend',
                 timestamp: new Date().toISOString(),
             }, 'POST')
             return
@@ -147,9 +159,9 @@ tasks.code_frontend = new Task('code:frontend', async function({minify = false, 
         console.error(error)
         // Broadcast error to client
         broadcast('/tasks/error', {
-            task: 'code:frontend',
-            error: error.message || 'Unknown build error',
             details: error.stack || error.toString(),
+            error: error.message || 'Unknown build error',
+            task: 'code:frontend',
             timestamp: new Date().toISOString(),
         }, 'POST')
         return
@@ -162,7 +174,8 @@ tasks.code_frontend = new Task('code:frontend', async function({minify = false, 
     }
 })
 
-tasks.dev = new Task('dev', async function({minify = false, sourcemap = true} = {}) {
+
+tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = true} = {}) {
     await tasks.build.start({minify, sourcemap})
 
     watch(settings.dir.common, {recursive: true}, (event, filename) => {
@@ -200,7 +213,8 @@ tasks.dev = new Task('dev', async function({minify = false, sourcemap = true} = 
     })
 })
 
-tasks.html = new Task('html', async function() {
+
+tasks.html = new Task('html', async function taskHtml() {
     const indexFile = await fs.readFile(path.join(settings.dir.src, 'index.html'))
     const html = template(indexFile)({settings})
     const filename = 'index.html'
@@ -208,7 +222,8 @@ tasks.html = new Task('html', async function() {
     return {filename, size: html.length}
 })
 
-tasks.styles = new Task('styles', async function({minify = false, sourcemap = false} = {}) {
+
+tasks.styles = new Task('styles', async function taskStyles({minify = false, sourcemap = false} = {}) {
     const actions = [
         tasks.stylesApp.start({minify, sourcemap}),
         tasks.stylesComponents.start({minify, sourcemap}),
@@ -218,13 +233,14 @@ tasks.styles = new Task('styles', async function({minify = false, sourcemap = fa
     return {size: res.reduce((total, result) => total + result.size, 0)}
 })
 
-tasks.stylesApp = new Task('styles:app', async function({minify, sourcemap}) {
+
+tasks.stylesApp = new Task('styles:app', async function taskStylesApp({minify, sourcemap}) {
     const filename = `app.${settings.buildId}.css`
     try {
         const result = await Bun.build({
             entrypoints: [path.join(settings.dir.src, 'css', 'app.css')],
-            minify,
             external: ["*.woff2"],
+            minify,
             sourcemap: sourcemap ? 'inline' : 'none',
           })
 
@@ -243,16 +259,17 @@ tasks.stylesApp = new Task('styles:app', async function({minify, sourcemap}) {
         console.error(error)
         // Broadcast error to client
         broadcast('/tasks/error', {
-            task: 'styles:app',
-            error: error.message || 'CSS build failed',
             details: error.stack || error.toString(),
+            error: error.message || 'CSS build failed',
+            task: 'styles:app',
             timestamp: new Date().toISOString(),
         }, 'POST')
         return
     }
 })
 
-tasks.stylesComponents = new Task('styles:components', async function({minify, sourcemap}) {
+
+tasks.stylesComponents = new Task('styles:components', async function taskStylesComponents({minify, sourcemap}) {
     // Create a temporary components entry file that imports all component CSS files
     const imports = await glob([
         path.join(settings.dir.common, '**', '*.css'),
@@ -262,11 +279,9 @@ tasks.stylesComponents = new Task('styles:components', async function({minify, s
     const allImports = imports.flat()
 
     // Create the components entry file content
-    const componentImports = allImports.map((f) => {
-        // Use the absolute path directly since we're creating the entry file in public/
-        // This avoids path resolution issues
-        return `@import "${f}";`
-    })
+    // Use the absolute path directly since we're creating the entry file in public/
+    // This avoids path resolution issues
+    const componentImports = allImports.map((importFile) => `@import "${importFile}";`)
 
     const entryContent = componentImports.join('\n')
     const entryFile = path.join(settings.dir.public, 'components.css')
@@ -302,9 +317,9 @@ tasks.stylesComponents = new Task('styles:components', async function({minify, s
         console.error(error)
         // Broadcast error to client
         broadcast('/tasks/error', {
-            task: 'styles:components',
-            error: error.message || 'Component CSS build failed',
             details: error.stack || error.toString(),
+            error: error.message || 'Component CSS build failed',
+            task: 'styles:components',
             timestamp: new Date().toISOString(),
         }, 'POST')
         // Clean up temporary entry file on error
@@ -312,3 +327,5 @@ tasks.stylesComponents = new Task('styles:components', async function({minify, s
         return
     }
 })
+
+export {tasks}

@@ -5,18 +5,18 @@ const LEVELS: Record<LogLevel, number> = {
 }
 
 const COLORS = {
+    debug: '\x1b[90m', // gray
     error: '\x1b[31m', // red
-    warn: '\x1b[33m', // yellow
     info: '\x1b[34m', // blue
+    reset: '\x1b[0m',
     success: '\x1b[38;2;39;174;96m', // muted green (matches browser #27ae60)
     verbose: '\x1b[36m', // cyan
-    debug: '\x1b[90m', // gray
-    reset: '\x1b[0m',
-};
+    warn: '\x1b[33m', // yellow
+}
 
 export class Logger {
-    private level: LogLevel;
-    private fileStream?: any;
+    private level: LogLevel
+    private fileStream?: any
 
     constructor({ level = 'info', file }: { level?: LogLevel; file?: string } = {}) {
         this.level = level
@@ -76,11 +76,18 @@ export class Logger {
     }
 
     log(level: LogLevel, msg: string, ...args: any[]) {
-        if (!this.shouldLog(level)) return
+        if (!this.shouldLog(level)) {
+            return
+        }
         const formatted = this.format(level, msg)
-        if (level === 'error') console.error(formatted, ...args)
-        else if (level === 'warn') console.warn(formatted, ...args)
-        else console.log(formatted, ...args)
+        if (level === 'error') {
+            console.error(formatted, ...args)
+        }
+        else if (level === 'warn') {
+            console.warn(formatted, ...args)
+        } else {
+            console.log(formatted, ...args)
+        }
         this.logToFile(formatted.replace(/\x1b\[[0-9;]*m/g, ''))
     }
 

@@ -1,11 +1,9 @@
 import archy from 'archy'
-import fs from 'fs-extra'
-import path from 'path'
+import {logger} from './index.ts'
 import pc from 'picocolors'
 import tildify from 'tildify'
-import {logger} from './index.ts'
 
-export const showConfig = function(settings) {
+function showConfig(settings) {
     const tree = {
         label: 'Bunchy Config:',
         nodes: [
@@ -39,6 +37,8 @@ export const showConfig = function(settings) {
     archy(tree).split('\r').forEach((line) => logger.info(line))
 }
 
-export const generateRandomId = function() {
+function generateRandomId() {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 }
+
+export {generateRandomId, showConfig}

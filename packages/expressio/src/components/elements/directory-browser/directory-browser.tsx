@@ -1,7 +1,6 @@
+import {classes, mergeDeep} from '@garage44/common/lib/utils'
 import {Icon} from '@garage44/common/components'
-import {classes} from '@garage44/common/lib/utils'
 import {deepSignal} from 'deepsignal'
-import {mergeDeep} from '@garage44/common/lib/utils'
 import {useEffect} from 'preact/hooks'
 import {ws} from '@/app'
 const state = deepSignal({
@@ -26,9 +25,9 @@ async function loadDirectory(path = null) {
             directories: response.directories,
             parentPath: response.parent,
         })
-    } catch (err) {
+    } catch (error) {
         // oxlint-disable-next-line no-console
-        console.error('Failed to load directory:', err)
+        console.error('Failed to load directory:', error)
     }
     state.loading = false
 }

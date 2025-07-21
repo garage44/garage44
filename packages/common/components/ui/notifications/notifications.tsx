@@ -1,13 +1,13 @@
 import {CSSTransition, TransitionGroup} from 'preact-transitioning'
 import {Icon, Progress} from '@/components'
-import {Notification} from '@/lib/notifier'
+import type {Notification} from '@/lib/notifier'
 import {classes} from '@/lib/utils'
 
 export function Notifications({notifications}) {
     return <div class="c-notifications">
         <TransitionGroup>
-            {notifications.map((notification:Notification) => {
-                return <CSSTransition
+            {notifications.map((notification:Notification) =>
+                <CSSTransition
                     key={notification.id}
                     classNames={classes('notification', `type-${notification.type}`, 'fade')}
                 >
@@ -48,7 +48,7 @@ export function Notifications({notifications}) {
                         />
                     </div>
                 </CSSTransition>
-            })}
+            )}
         </TransitionGroup>
 
     </div>

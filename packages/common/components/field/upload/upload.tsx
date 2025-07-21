@@ -6,8 +6,8 @@ interface FieldUploadProps {
     label?: string
     help?: string
     model: [any, string]
-    onBlur?: (e: Event) => void
-    onClick?: (e: Event) => void
+    onBlur?: (event: Event) => void
+    onClick?: (event: Event) => void
     accept?: string
     placeholder?: string
     transform?: (value: string) => string
@@ -31,14 +31,18 @@ export function FieldUpload({
             <div class="upload-wrapper">
                 <input
                     disabled={disabled}
-                    onClick={(e) => {
-                        if (onClick) onClick(e)
+                    onClick={(event) => {
+                        if (onClick) {
+                            onClick(event)
+                        }
                     }}
-                    onBlur={(e) => {
-                        if (onBlur) onBlur(e)
+                    onBlur={(event) => {
+                        if (onBlur) {
+                            onBlur(event)
+                        }
                     }}
-                    onChange={(e) => {
-                        const target = e.target as HTMLInputElement
+                    onChange={(event) => {
+                        const target = event.target as HTMLInputElement
                         if (target.files && target.files.length > 0) {
                             let value = target.files[0].path
                             if (transform) {

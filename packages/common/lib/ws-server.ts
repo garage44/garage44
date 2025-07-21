@@ -4,10 +4,10 @@ import {logger} from '../app'
 import {match} from 'path-to-regexp'
 
 // Core types for the middleware system
-export type MessageData = Record<string, unknown>
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
+type MessageData = Record<string, unknown>
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
-export interface WebSocketContext {
+interface WebSocketContext {
     ws: any // Bun WebSocket or standard WebSocket
     session?: {
         userid: string
@@ -20,18 +20,18 @@ export interface WebSocketContext {
     unsubscribe?: (topic: string) => void
 }
 
-export interface ApiRequest {
+interface ApiRequest {
     params: Record<string, string>
     query?: Record<string, unknown>
     data?: MessageData
     id?: string
 }
 
-export type Next = (ctx: WebSocketContext) => Promise<unknown>
-export type Middleware = (ctx: WebSocketContext, next: Next) => Promise<unknown>
-export type ApiHandler = (ctx: WebSocketContext, request: ApiRequest) => Promise<unknown>
+type Next = (ctx: WebSocketContext) => Promise<unknown>
+type Middleware = (ctx: WebSocketContext, next: Next) => Promise<unknown>
+type ApiHandler = (ctx: WebSocketContext, request: ApiRequest) => Promise<unknown>
 
-export interface RouteHandler {
+interface RouteHandler {
     route: string
     method: HttpMethod
     matchFn: (path: string) => false | { params: Record<string, string> }
@@ -39,7 +39,7 @@ export interface RouteHandler {
     middlewares: Middleware[]
 }
 
-export interface WebSocketServerOptions {
+interface WebSocketServerOptions {
     endpoint: string
     sessionMiddleware?: any
     authOptions?: {
@@ -50,7 +50,7 @@ export interface WebSocketServerOptions {
 }
 
 // WebSocket Server Manager - handles a single WebSocket endpoint
-export class WebSocketServerManager extends EventEmitter {
+class WebSocketServerManager extends EventEmitter {
     connections = new Set<any>()
     routeHandlers: RouteHandler[] = []
     subscriptions: Record<string, Set<any>> = {}
@@ -101,18 +101,20 @@ export class WebSocketServerManager extends EventEmitter {
 
     // Middleware composition helper
     composeMiddleware(middlewares: Middleware[], handler: ApiHandler): ApiHandler {
-        return async(ctx, request) => {
+        return (ctx, request) => {
             let index = -1
 
-            const dispatch = async(i: number): Promise<unknown> => {
-                if (i <= index) throw new Error('next() called multiple times')
-                index = i
+            const dispatch = (_index: number) => {
+                if (_index <= index) {
+                    throw new Error('next() called multiple times')
+                }
+                index = _index
 
-                const middleware = i === middlewares.length ?
+                const middleware = _index === middlewares.length ?
                     ((ctx) => handler(ctx, request)) :
-                    middlewares[i]
+                    middlewares[_index]
 
-                return middleware(ctx, (_ctx) => dispatch(i + 1))
+                return middleware(ctx, (_ctx) => dispatch(_index + 1))
             }
 
             return dispatch(0)
@@ -126,7 +128,9 @@ export class WebSocketServerManager extends EventEmitter {
             handler: this.composeMiddleware([...this.globalMiddlewares, ...middlewares], handler),
             matchFn: (path: string) => {
                 const result = matchFn(path)
-                if (result === false) return false
+                if (result === false) {
+                    return false
+                }
                 // Convert params to Record<string, string>
                 const params: Record<string, string> = {}
                 for (const [key, value] of Object.entries(result.params)) {
@@ -194,7 +198,9 @@ export class WebSocketServerManager extends EventEmitter {
 
     // Check authentication for a request
     private checkAuth(request: any): boolean {
-        if (!this.authOptions) return true
+        if (!this.authOptions) {
+            return true
+        }
 
         // Check if auth is bypassed via environment variable
         if (process.env[this.authOptions.noSecurityEnv || 'GARAGE44_NO_SECURITY']) {
@@ -286,18 +292,8 @@ export class WebSocketServerManager extends EventEmitter {
 }
 
 // Create Bun.serve compatible WebSocket handlers that dispatch to multiple managers
-export function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>) {
+function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>) {
     return {
-        open: (ws: any) => {
-            const endpoint = ws.data?.endpoint
-            const manager = managers.get(endpoint)
-            if (manager) {
-                manager.open(ws, ws.data)
-            } else {
-                logger.error(`[WS] no manager found for endpoint: ${endpoint}`)
-                ws.close(1011, 'Server Error')
-            }
-        },
         close: (ws: any) => {
             const endpoint = ws.data?.endpoint
             const manager = managers.get(endpoint)
@@ -312,6 +308,16 @@ export function createBunWebSocketHandler(managers: Map<string, WebSocketServerM
                 manager.message(ws, message, ws.data)
             }
         },
+        open: (ws: any) => {
+            const endpoint = ws.data?.endpoint
+            const manager = managers.get(endpoint)
+            if (manager) {
+                manager.open(ws, ws.data)
+            } else {
+                logger.error(`[WS] no manager found for endpoint: ${endpoint}`)
+                ws.close(1011, 'Server Error')
+            }
+        },
     }
 }
 
@@ -319,7 +325,21 @@ export function createBunWebSocketHandler(managers: Map<string, WebSocketServerM
 // Each package should use their own manager instances directly
 
 // Legacy exports for backward compatibility
-export type SubscriptionContext = WebSocketContext
-export const RouteTypes = {
-    API: 'api',
-} as const
+type SubscriptionContext = WebSocketContext
+const RouteTypes = {API: 'api'} as const
+
+export {
+    createBunWebSocketHandler,
+    RouteTypes,
+    SubscriptionContext,
+    WebSocketServerManager,
+    type ApiRequest,
+    type ApiHandler,
+    type HttpMethod,
+    type MessageData,
+    type Middleware,
+    type Next,
+    type RouteHandler,
+    type WebSocketContext,
+    type WebSocketServerOptions,
+}

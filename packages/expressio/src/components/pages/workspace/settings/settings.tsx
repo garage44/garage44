@@ -20,7 +20,7 @@ export function WorkspaceSettings() {
         return null
     }
     // Updated validator usage
-    const {validation, isValid, errors: errors} = createValidator({
+    const {validation, isValid, errors} = createValidator({
         source: [
             $s.workspace.config.languages.$source,
             required('Source language is required'),

@@ -1,5 +1,5 @@
 import {enola, logger, workspaces} from '../service.ts'
-import {WebSocketServerManager} from '@garage44/common/lib/ws-server'
+import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import {config} from '../lib/config.ts'
 import fs from 'fs/promises'
 import path from 'node:path'
@@ -11,25 +11,25 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
     const api = wsManager.api
     api.get('/api/workspaces/browse', async(context, request) => {
         // Determine the path to browse
-        const reqPath = request.data?.path || process.cwd()
+        const reqPath = request.data?.path || process.cwd() as any
         const absPath = path.isAbsolute(reqPath) ? reqPath : path.resolve(process.cwd(), reqPath)
 
         // List directories
         let entries: any[] = []
         try {
             const dirents = await fs.readdir(absPath, { withFileTypes: true })
-            entries = await Promise.all(dirents.filter(d => d.isDirectory()).map(async (dirent) => {
+            entries = await Promise.all(dirents.filter(d => d.isDirectory()).map((dirent) => {
                 const dirPath = path.join(absPath, dirent.name)
                 // Check if this directory is a workspace root
                 const is_workspace = workspaces.workspaces.some(ws => path.dirname(ws.config.source_file) === dirPath)
                 return {
+                    is_workspace,
                     name: dirent.name,
                     path: dirPath,
-                    is_workspace,
                 }
             }))
-        } catch (err) {
-            logger.error(`[api] Failed to list directory: ${absPath} - ${err}`)
+        } catch (error) {
+            logger.error(`[api] Failed to list directory: ${absPath} - ${error}`)
         }
 
         // Find parent path
@@ -41,8 +41,8 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
             current: {
                 path: absPath,
                 workspace: currentWorkspace ? {
-                    id: currentWorkspace.config.workspace_id,
                     config: currentWorkspace.config,
+                    id: currentWorkspace.config.workspace_id,
                 } : null,
             },
             directories: entries,
@@ -50,7 +50,7 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
         }
     })
 
-    api.get('/api/workspaces/:workspace_id', async(context, req) => {
+    api.get('/api/workspaces/:workspace_id', (context, req) => {
         const workspaceId = req.params.workspace_id
         const ws = workspaces.get(workspaceId)
         if (!ws) {
@@ -58,15 +58,16 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
         }
         // Only return serializable fields
         return {
-            id: ws.config.workspace_id,
             config: ws.config,
+            // oxlint-disable-next-line prefer-structured-clone
             i18n: ws.i18n ? JSON.parse(JSON.stringify(ws.i18n)) : undefined,
+            id: ws.config.workspace_id,
         }
     })
 }
 
 // Default export for backward compatibility
-export default function(router: any) {
+export default function apiWorkspaces(router: any) {
     // HTTP API endpoints using familiar Express-like pattern
     router.get('/api/workspaces/:workspace_id/usage', async () => {
         // Get the first available engine for usage
@@ -87,19 +88,18 @@ export default function(router: any) {
         // The languages we have selected in the new situation.
         const selectedLanguages = workspace_data.workspace.config.languages.target
 
-        const currentLanguageIds = target_languages.map((i) => i.id)
-        const selectedLanguageIds = selectedLanguages.map((i) => i.id)
+        const currentLanguageIds = target_languages.map((language) => language.id)
+        const selectedLanguageIds = selectedLanguages.map((language) => language.id)
         // The languages not yet in our settings
-        const addLanguages = selectedLanguages.filter((i) => !currentLanguageIds.includes(i.id))
-
+        const addLanguages = selectedLanguages.filter((language) => !currentLanguageIds.includes(language.id))
         const updateLanguages = selectedLanguages
-            .filter((i) => currentLanguageIds.includes(i.id))
-            .filter((i) => {
-                const currentLanguage = target_languages.find((j) => j.id === i.id)
-                return currentLanguage.formality !== i.formality
+            .filter((language) => currentLanguageIds.includes(language.id))
+            .filter((language) => {
+                const currentLanguage = target_languages.find((targetLang) => targetLang.id === language.id)
+                return currentLanguage.formality !== language.formality
             })
 
-        const removeLanguages = target_languages.filter((i) => !selectedLanguageIds.includes(i.id))
+        const removeLanguages = target_languages.filter((language) => !selectedLanguageIds.includes(language.id))
         for (const language of removeLanguages) {
             logger.info(`sync: remove language ${language.id}`)
             await syncLanguage(workspace, language, 'remove')
@@ -107,7 +107,7 @@ export default function(router: any) {
 
         await Promise.all([...updateLanguages, ...addLanguages].map((language) => {
             logger.info(`sync: (re)translate language ${language.id}`)
-            syncLanguage(workspace, language, 'update')
+            return syncLanguage(workspace, language, 'update')
         }))
 
         Object.assign(workspace.config, workspace_data.workspace.config)
@@ -135,11 +135,11 @@ export default function(router: any) {
             return new Response(JSON.stringify({workspace: workspace.config}), {
                 headers: { 'Content-Type': 'application/json' }
             })
-        } catch (err) {
-            logger.error(`Failed to add workspace: ${err}`)
-            return new Response(JSON.stringify({error: err.message}), {
+        } catch (error) {
+            logger.error(`Failed to add workspace: ${error}`)
+            return new Response(JSON.stringify({error: error.message}), {
+                headers: {'Content-Type': 'application/json'},
                 status: 400,
-                headers: { 'Content-Type': 'application/json' }
             })
         }
     })

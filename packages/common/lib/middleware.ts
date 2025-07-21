@@ -11,7 +11,7 @@ const endpointAllowList = [
 let sessionInstance = null
 
 // Singleton factory that ensures the same instance is returned
-export const getSession = (config) => {
+const getSession = (config) => {
     if (!sessionInstance && config) {
         // For now, return a simple session store
         sessionInstance = {
@@ -21,8 +21,8 @@ export const getSession = (config) => {
     return sessionInstance
 }
 
-export function authMiddleware(config) {
-    return async function authMiddleware(req, res, next) {
+function authMiddleware(config) {
+    return function authMiddleware(req, res, next) {
         if (!req.url.startsWith('/api')) {
             next()
             return
@@ -30,11 +30,11 @@ export function authMiddleware(config) {
 
         const session = req.session
 
-        if (endpointAllowList.find((i) => req.originalUrl.includes(i))) {
+        if (endpointAllowList.some((endpoint) => req.originalUrl.includes(endpoint))) {
             next()
         } else if (session.userid) {
             const users = config.users
-            const user = users.find((i) => i.name === session.userid)
+            const user = users.find((user) => user.name === session.userid)
             if (user) {
                 next()
             } else {
@@ -55,14 +55,16 @@ export function authMiddleware(config) {
     }
 }
 
-export async function commonMiddleware(logger, config, bunchyConfig) {
+function commonMiddleware(logger, config, bunchyConfig) {
     // Create a simple session store for Bun.serve
     const sessions = new Map()
 
     // Parse cookies from request
     const parseCookies = (request: Request) => {
         const cookieHeader = request.headers.get('cookie')
-        if (!cookieHeader) return {}
+        if (!cookieHeader) {
+            return {}
+        }
 
         const cookies: Record<string, string> = {}
         cookieHeader.split(';').forEach(cookie => {
@@ -97,7 +99,7 @@ export async function commonMiddleware(logger, config, bunchyConfig) {
             return true
         }
 
-        if (endpointAllowList.find((i) => url.pathname.includes(i))) {
+        if (endpointAllowList.some((endpoint) => url.pathname.includes(endpoint))) {
             return true
         }
 
@@ -157,7 +159,7 @@ export async function commonMiddleware(logger, config, bunchyConfig) {
                     if (await file.exists()) {
                         return new Response(file)
                     }
-                } catch (error) {
+                } catch {
                     // File doesn't exist, continue
                 }
             }
@@ -177,4 +179,10 @@ export async function commonMiddleware(logger, config, bunchyConfig) {
         handleRequest,
         handleWebSocket
     }
+}
+
+export {
+    authMiddleware,
+    commonMiddleware,
+    getSession,
 }

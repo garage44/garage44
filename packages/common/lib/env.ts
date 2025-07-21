@@ -21,9 +21,15 @@ export default function env(env) {
     })
 
     document.addEventListener('keydown', (e) => {
-        if (e.altKey) env.altKey = true
-        if (e.ctrlKey) env.ctrlKey = true
-        if (e.shiftKey) env.shiftKey = true
+        if (e.altKey) {
+            env.altKey = true
+        }
+        if (e.ctrlKey) {
+            env.ctrlKey = true
+        }
+        if (e.shiftKey) {
+            env.shiftKey = true
+        }
     })
     document.addEventListener('keyup', (e) => {
         if (!e.altKey) env.altKey = false

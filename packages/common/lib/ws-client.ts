@@ -10,15 +10,15 @@ interface WebSocketMessage {
     url: string
 }
 
-export function constructMessage(url: string, data?: MessageData, id?: string, method?: string): WebSocketMessage {
+function constructMessage(url: string, data?: MessageData, id?: string, method?: string): WebSocketMessage {
     return {data, id, method, url}
 }
 
-export function parseMessage(message: string): WebSocketMessage {
+function parseMessage(message: string): WebSocketMessage {
     return JSON.parse(message)
 }
 
-export class WebSocketClient extends EventEmitter {
+class WebSocketClient extends EventEmitter {
     private ws: WebSocket | null = null
 
     private activeSubscriptions = new Set<string>()
@@ -334,11 +334,18 @@ export class WebSocketClient extends EventEmitter {
     }
 }
 
-export const WebSocketEvents = {
+const WebSocketEvents = {
     CONNECTED: 'connected',
     DISCONNECTED: 'disconnected',
     MESSAGE: 'message',
     OPEN: 'open',
     RECONNECTING: 'reconnecting',
     UNAUTHORIZED: 'unauthorized',
+}
+
+export {
+    constructMessage,
+    parseMessage,
+    WebSocketClient,
+    WebSocketEvents,
 }

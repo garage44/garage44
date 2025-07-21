@@ -1,6 +1,6 @@
 import {pathCreate, pathDelete, pathMove, pathRef, pathToggle} from '@garage44/common/lib/paths.ts'
 import {translate_path, translate_tag} from '../lib/translate.ts'
-import {WebSocketServerManager} from '@garage44/common/lib/ws-server'
+import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import {i18nFormat} from '@garage44/common/lib/i18n.ts'
 import {logger} from '@garage44/common/app'
 import {workspaces} from '../service.ts'
@@ -86,12 +86,12 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
         workspace.save()
     })
 
-    apiWs.post('/api/workspaces/:workspace_id/undo', async(context, request) => {
+    apiWs.post('/api/workspaces/:workspace_id/undo', (context, request) => {
         const workspace = workspaces.get(request.params.workspace_id)
         workspace.undo()
     })
 
-    apiWs.post('/api/workspaces/:workspace_id/redo', async(context, request) => {
+    apiWs.post('/api/workspaces/:workspace_id/redo', (context, request) => {
         const workspace = workspaces.get(request.params.workspace_id)
         workspace.redo()
     })

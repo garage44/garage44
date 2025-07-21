@@ -1,14 +1,12 @@
 import {$s, ws} from '@/app'
 import {$t, api, notify} from '@garage44/common/app'
 import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
-import {Icon, Notifications, Progress} from '@garage44/common/components'
+import {FieldSelect, Icon, Notifications, Progress} from '@garage44/common/components'
 import {Router, getCurrentUrl, route} from 'preact-router'
-import {FieldSelect} from '@garage44/common/components'
+import {classes, mergeDeep} from '@garage44/common/lib/utils'
 import {Link} from 'preact-router/match'
 import {Login} from '@/components/pages/login/login'
-import {classes} from '@garage44/common/lib/utils'
 import {deepSignal} from 'deepsignal'
-import {mergeDeep} from '@garage44/common/lib/utils'
 import {toIso6391} from '@garage44/enola/iso-codes'
 import {useEffect} from 'preact/hooks'
 
@@ -39,7 +37,9 @@ export const Main = () => {
 
     if ($s.user.authenticated === null) {
         return null
-    } else if ($s.user.authenticated === false) {
+    }
+
+    if ($s.user.authenticated === false) {
         return <Login />
     }
     const handleRoute = async({url}: {url: string}) => {
@@ -54,15 +54,15 @@ export const Main = () => {
         if (match && (!$s.workspace || match[1] !== $s.workspace.config.workspace_id)) {
             const result = await ws.get(`/api/workspaces/${match[1]}`)
 
-            if (!result.error) {
-                state.workspace_id = match[1]
-                $s.workspace = result
-            } else {
+            if (result.error) {
                 // Replace console.log with proper error handling
                 notify({message: $t('workspace.error.not_found'), type: 'error'})
 
                 // Use route with replace option to avoid adding to history
                 route('/', true)
+            } else {
+                state.workspace_id = match[1]
+                $s.workspace = result
             }
         }
     }
@@ -101,12 +101,12 @@ export const Main = () => {
 
                             // If we're not on a valid workspace route, default to settings
                             let newRoute
-                            if (!isValidRoute) {
-                                newRoute = `/workspaces/${workspace_id}/settings`
-                            } else {
+                            if (isValidRoute) {
                                 // Keep the same page type (settings/translations) but update workspace
                                 const routeSuffix = currentPath.endsWith('/settings') ? 'settings' : 'translations'
                                 newRoute = `/workspaces/${workspace_id}/${routeSuffix}`
+                            } else {
+                                newRoute = `/workspaces/${workspace_id}/settings`
                             }
 
                             route(newRoute)
@@ -148,24 +148,24 @@ export const Main = () => {
             </div>
 
             {!!Object.values($s.enola.engines).length && <div className="engines">
-                {Object.values($s.enola.engines).filter((i) => i.active).map((engine) => {
-                    return <div className="usage">
-                        {$t('menu.usage', {engine: engine.name})}
-                        <Progress
-                            boundaries={[engine.usage.count, engine.usage.limit]}
-                            loading={engine.usage.loading}
-                            percentage={engine.usage.count / engine.usage.limit}
-                            iso6391={toIso6391($s.language_ui.selection)}
-                        />
-                    </div>})}
+                {Object.values($s.enola.engines).filter((i) => i.active).map((engine) =>
+                <div className="usage">
+                    {$t('menu.usage', {engine: engine.name})}
+                    <Progress
+                        boundaries={[engine.usage.count, engine.usage.limit]}
+                        loading={engine.usage.loading}
+                        percentage={engine.usage.count / engine.usage.limit}
+                        iso6391={toIso6391($s.language_ui.selection)}
+                    />
+                </div>)}
             </div>}
         </div>
         <div class="view-layout fade-in">
             <div class="view">
                 <Router onChange={handleRoute}>
                     {$s.user.admin && <Config path="/" />}
-                    {<WorkspaceSettings path="/workspaces/:workspace/settings" />}
-                    {<WorkspaceTranslations path="/workspaces/:workspace/translations" />}
+                    <WorkspaceSettings path="/workspaces/:workspace/settings" />
+                    <WorkspaceTranslations path="/workspaces/:workspace/translations" />
                 </Router>
             </div>
         </div>

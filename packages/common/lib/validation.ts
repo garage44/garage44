@@ -1,21 +1,21 @@
 import {Signal, batch, computed, signal} from '@preact/signals'
 
-export interface ValidationRule<T = unknown> {
+interface ValidationRule<Tpl = unknown> {
     message: string
-    test: (value: T) => boolean
+    test: (value: Tpl) => boolean
 }
 
 // The ModelRef should handle Signal<T> only now
-export type ModelRef<T = unknown> = Signal<T>
+type ModelRef<Tpl = unknown> = Signal<Tpl>
 
 // Simplified: just modelRef and rules, no nested array
-export type ValidationEntry = [ModelRef, ...ValidationRule[]]
+type ValidationEntry = [ModelRef, ...ValidationRule[]]
 
 // Store touched state globally
 const touchedModelRefs = new Map<ModelRef, Signal<boolean>>()
 
 // Global function to mark a model as touched
-export function setTouched(modelRef: ModelRef, touched = true) {
+function setTouched(modelRef: ModelRef, touched = true) {
     let touchedSignal = touchedModelRefs.get(modelRef)
     if (!touchedSignal) {
         // Create a new signal if one doesn't exist
@@ -26,7 +26,7 @@ export function setTouched(modelRef: ModelRef, touched = true) {
 }
 
 // Combine multiple validation rules into one
-export const and = (...rules: ValidationRule[]): ValidationRule => ({
+const and = (...rules: ValidationRule[]): ValidationRule => ({
     // Use first failing message, or empty string if all pass
     message: rules.find(r => !r.test)?.message || '',
     // All rules must pass
@@ -34,7 +34,7 @@ export const and = (...rules: ValidationRule[]): ValidationRule => ({
 })
 
 // Add a new interface for validation result
-export interface ValidationResult {
+interface ValidationResult {
     isValid: boolean
     errors: string[]
     isDirty: boolean
@@ -42,7 +42,7 @@ export interface ValidationResult {
 }
 
 // Add this helper function to aggregate validation errors
-export function getValidationErrors(validation: Record<string, ValidationResult>) {
+function getValidationErrors(validation: Record<string, ValidationResult>) {
     const errors: string[] = []
     for (const field in validation) {
         const fieldErrors = validation[field].errors
@@ -54,7 +54,7 @@ export function getValidationErrors(validation: Record<string, ValidationResult>
     return errors.join('<br/>')
 }
 
-export function createValidator<T extends Record<string, ValidationEntry>>(validations: T) {
+function createValidator<T extends Record<string, ValidationEntry>>(validations: T) {
     // Track initial values to determine if fields are dirty
     const initialValues = new Map<ModelRef, unknown>()
 
@@ -98,21 +98,23 @@ export function createValidator<T extends Record<string, ValidationEntry>>(valid
         return result
     })
 
-    const isValid = computed(() => Object.values(validationState.value).every(v => v.isValid))
+    const isValid = computed(() => Object.values(validationState.value).every(validator => validator.isValid))
     const errors = computed(() => {
         // Only compute errors when form is invalid
-        if (isValid.value) return 'Form is valid...'
+        if (isValid.value) {
+            return 'Form is valid...'
+        }
         return getValidationErrors(validationState.value)
     })
 
     // Check if any field is marked as dirty
     const isDirty = computed(() =>
-        Object.values(validationState.value).some(v => v.isDirty),
+        Object.values(validationState.value).some(validator => validator.isDirty),
     )
 
     // Check if any field has been touched
     const isTouched = computed(() =>
-        Object.values(validationState.value).some(v => v.isTouched),
+        Object.values(validationState.value).some(validator => validator.isTouched),
     )
 
     // Function to reset the initial values and mark form as clean
@@ -162,17 +164,31 @@ export function createValidator<T extends Record<string, ValidationEntry>>(valid
 }
 
 // Validation rule helpers
-export const required = (message: string): ValidationRule => ({
+const required = (message: string): ValidationRule => ({
     message,
-    test: (v: unknown) => v != null && v !== '',
+    test: (value: unknown) => value !== null && value !== '',
 })
 
-export const minLength = (length: number, message: string): ValidationRule => ({
+const minLength = (length: number, message: string): ValidationRule => ({
     message,
-    test: (v: string) => typeof v === 'string' && v.length >= length,
+    test: (value: string) => typeof value === 'string' && value.length >= length,
 })
 
-export const email = (message: string): ValidationRule => ({
+const email = (message: string): ValidationRule => ({
     message,
-    test: (v: string) => typeof v === 'string' && /^[^@]+@[^@]+\.[^@]+$/.test(v),
+    test: (value: string) => typeof value === 'string' && /^[^@]+@[^@]+\.[^@]+$/.test(value),
 })
+
+export {
+    and,
+    createValidator,
+    email,
+    getValidationErrors,
+    minLength,
+    required,
+    setTouched,
+    type ValidationEntry,
+    type ValidationResult,
+    type ValidationRule,
+    type ModelRef,
+}

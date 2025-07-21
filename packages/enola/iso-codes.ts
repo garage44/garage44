@@ -13,7 +13,7 @@
  * Example:
  * German: 'deu' (terminological, from "Deutsch") maps to 'de' (ISO 639-1)
  */
-export const ISO_639_2_TO_1: Record<string, string> = {
+const ISO_639_2_TO_1: Record<string, string> = {
     aar: 'aa', // Afar
     abk: 'ab', // Abkhazian
     afr: 'af', // Afrikaans
@@ -201,7 +201,7 @@ export const ISO_639_2_TO_1: Record<string, string> = {
  * @param iso6391Code - Two-letter ISO 639-1 language code
  * @returns Three-letter ISO 639-2 language code or null if not found
  */
-export function iso6391ToIso6392(iso6391Code: string): string | null {
+function iso6391ToIso6392(iso6391Code: string): string | null {
     const code = iso6391Code.toLowerCase()
 
     return null
@@ -211,7 +211,7 @@ export function iso6391ToIso6392(iso6391Code: string): string | null {
  * Extended language codes mapping for variants
  * Maps from provider-specific codes to ISO language codes
  */
-export const EXTENDED_LANGUAGE_CODES = {
+const EXTENDED_LANGUAGE_CODES = {
     'en-gb': 'eng-gbr', // British English
     'en-us': 'eng-usa', // American English
     'pt-br': 'por-bra', // Brazilian Portuguese
@@ -220,7 +220,7 @@ export const EXTENDED_LANGUAGE_CODES = {
     'zh-hans': 'zho-hans', // Simplified Chinese (Han Simplified)
 }
 
-export function toIso6391(iso6392Code: string): string | null {
+function toIso6391(iso6392Code: string): string | null {
     const code = iso6392Code.toLowerCase()
     if (code.includes('-')) {
         // For codes like 'eng-gbr', convert to 'en-gb'
@@ -239,7 +239,7 @@ export function toIso6391(iso6392Code: string): string | null {
  * @param code - Extended language code (e.g., 'en-US', 'pt-BR')
  * @returns The ISO 639-2 code with optional region (e.g., 'eng-GBR', 'por-BRA')
  */
-export function toIso6392(iso6391Code: string): string | null {
+function toIso6392(iso6391Code: string): string | null {
     const code = iso6391Code.toLowerCase()
     if (iso6391Code.includes('-')) {
         const extendedCode = EXTENDED_LANGUAGE_CODES[iso6391Code.toLowerCase()]
@@ -263,7 +263,16 @@ export function toIso6392(iso6391Code: string): string | null {
  * @param code - ISO 639-2 code with optional region (e.g., 'eng-GB', 'por-BR')
  * @returns The region code or null if not found
  */
-export function getRegionCode(code: string): string | null {
+function getRegionCode(code: string): string | null {
     const parts = code.split('-')
     return parts.length > 1 ? parts[1] : null
+}
+
+export {
+    EXTENDED_LANGUAGE_CODES,
+    ISO_639_2_TO_1,
+    getRegionCode,
+    iso6391ToIso6392,
+    toIso6391,
+    toIso6392,
 }

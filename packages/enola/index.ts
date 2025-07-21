@@ -1,9 +1,8 @@
-import {EnolaConfig, EnolaEngine, EnolaLogger, EnolaTag, TargetLanguage} from './types.ts'
+import type {EnolaConfig, EnolaEngine, EnolaLogger, EnolaTag, TargetLanguage} from './types.ts'
+import {copyObject, keyMod} from '@garage44/common/lib/utils.ts'
 import {source, target} from './languages.ts'
 import Anthropic from './engines/anthropic.ts'
 import Deepl from './engines/deepl.ts'
-import {copyObject} from '@garage44/common/lib/utils.ts'
-import {keyMod} from '@garage44/common/lib/utils.ts'
 
 /**
  * Enola is a wrapper around translation services like Deepl and Claude;

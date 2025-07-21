@@ -2,10 +2,10 @@ import {adminContext, deniedContext, userContext} from '@garage44/common/lib/pro
 import {config} from '../lib/config.ts'
 import {logger} from '../service.ts'
 
-export default async function(router) {
+export default function apiProfile(router:any) {
     // HTTP API endpoints using familiar Express-like pattern
-    router.get('/api/context', async (req, params, session) => {
-        let context
+    router.get('/api/context', (req, params, session) => {
+        let context = null
 
         if (process.env.GARAGE44_NO_SECURITY) {
             logger.warn('session security is disabled (GARAGE44_NO_SECURITY)')
@@ -17,7 +17,7 @@ export default async function(router) {
 
         // Check session for user context
         if (session?.userid) {
-            const user = config.users.find((i) => i.name === session.userid)
+            const user = config.users.find((user) => user.name === session.userid)
             if (user) {
                 if (user.admin) {
                     context = adminContext()
@@ -40,11 +40,9 @@ export default async function(router) {
         const users = config.users
         const body = await req.json()
         const username = body.username
-        let context
-        const user = users.find((i) => i.name === username)
-        if (!user) {
-            context = deniedContext()
-        } else {
+        let context = deniedContext()
+        const user = users.find((user) => user.name === username)
+        if (user) {
             const password = body.password
             if (password === user.password) {
                 // Set the user in session
@@ -64,7 +62,7 @@ export default async function(router) {
         })
     })
 
-    router.get('/api/logout', async (req, params, session) => {
+    router.get('/api/logout', (req, params, session) => {
         // Clear the session
         if (session) {
             session.userid = null

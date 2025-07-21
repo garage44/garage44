@@ -1,7 +1,7 @@
+import {logger} from './index.ts'
 import notifier from 'node-notifier'
 import pc from 'picocolors'
 import {performance} from 'perf_hooks'
-import {logger} from './index.ts'
 
 export class Task {
     title: string

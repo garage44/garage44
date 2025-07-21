@@ -1,5 +1,6 @@
-import {Signal} from '@preact/signals'
-import {ValidationResult, setTouched} from '@garage44/common/lib/validation'
+// oxlint-disable-next-line consistent-type-specifier-style
+import {type ValidationResult, setTouched} from '@garage44/common/lib/validation'
+import type {Signal} from '@preact/signals'
 import {classes} from '@garage44/common/lib/utils'
 
 interface FieldSelectProps {
@@ -24,8 +25,8 @@ export const FieldSelect = ({
     options,
     placeholder = '',
     validation,
-}:FieldSelectProps) => {
-    return <div class={classes('c-field-select', 'field', className, {
+}:FieldSelectProps) =>
+    <div class={classes('c-field-select', 'field', className, {
         'is-invalid': validation?.isValid === false,
         'is-touched': validation?.isTouched,
         validation,
@@ -37,8 +38,8 @@ export const FieldSelect = ({
         <select
             disabled={disabled}
             value={model.value}
-            onChange={(e: Event) => {
-                const target = e.target as HTMLSelectElement
+            onChange={(event: Event) => {
+                const target = event.target as HTMLSelectElement
                 const oldValue = model.value
                 model.value = target.value
                 setTouched(model, true)
@@ -56,8 +57,8 @@ export const FieldSelect = ({
         </select>
         {(() => {
             if (validation && validation.errors.length > 0 && validation.isTouched) {
-                return validation?.errors.map((error, i) => (
-                    <div key={i} class="validation">{error}</div>
+                return validation?.errors.map((error, index) => (
+                    <div key={index} class="validation">{error}</div>
                 ))
             }
             if (help) {
@@ -65,4 +66,3 @@ export const FieldSelect = ({
             }
         })()}
     </div>
-}

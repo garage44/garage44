@@ -1,5 +1,5 @@
 import * as chokidar from 'chokidar'
-import {I18n, WorkspaceConfig} from '../src/types.ts'
+import type {I18n, WorkspaceConfig, WorkspaceDescription} from '../src/types.ts'
 import {
     copyObject,
     keyMod,
@@ -7,8 +7,7 @@ import {
     mergeDeep,
     sortNestedObjectKeys,
 } from '@garage44/common/lib/utils.ts'
-import {WorkspaceDescription} from '../src/types.ts'
-import {WebSocketServerManager} from '@garage44/common/lib/ws-server'
+import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import fs from 'fs-extra'
 import {glob} from 'glob'
 import {lintWorkspace} from './lint.ts'
@@ -25,6 +24,7 @@ export class Workspace {
         },
         source_file: '',
         sync: {
+            // oxlint-disable-next-line no-template-curly-in-string
             dir: '${workspaceFolder}/src/**/*.{ts,tsx}',
             enabled: false,
         },
@@ -104,7 +104,9 @@ export class Workspace {
     // Track operations that happen close together as a single action
     private trackOperation(onChange: () => void): void {
         // If we're in a batch update, don't trigger onChange yet
-        if (this.batchUpdateInProgress) return
+        if (this.batchUpdateInProgress) {
+            return
+        }
 
         const now = Date.now()
 
@@ -202,8 +204,8 @@ export class Workspace {
 
             if (typeof sourceRef === 'object') {
                 // The _id field is a copy of the key, used to buffer a key rename.
-                sourceRef._id = key ? key : 'root'
-                sourceRef._collapsed = key ? true : false
+                sourceRef._id = key || 'root'
+                sourceRef._collapsed = !!key
             }
         })
 
@@ -250,6 +252,7 @@ export class Workspace {
     }
 
     async watch() {
+        // oxlint-disable-next-line no-template-curly-in-string
         const scan_target = this.config.sync.dir.replace('${workspaceFolder}', path.dirname(this.config.source_file))
         logger.info(`[workspace-${this.config.workspace_id}] watch ${scan_target}`)
         const files = await glob(scan_target)

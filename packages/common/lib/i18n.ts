@@ -3,7 +3,7 @@ import {copyObject, keyMod, keyPath} from './utils.ts'
 import {effect} from '@preact/signals'
 import i18next from 'i18next'
 
-export function i18nFormat(i18n, targetLanguages) {
+function i18nFormat(i18n, targetLanguages) {
     const _i18n = copyObject(i18n)
     const i18nextFormatted = {}
     for (const language of targetLanguages) {
@@ -13,15 +13,13 @@ export function i18nFormat(i18n, targetLanguages) {
     keyMod(_i18n, (_srcRef, _id, refPath) => {
         const _i18nObject = keyPath(_i18n, refPath)
 
-        if (typeof _i18nObject === 'object') {
-            if ('target' in _i18nObject) {
-                for (const [language_id] of Object.entries(_i18nObject.target)) {
-                    if (!i18nextFormatted[language_id]) {
-                        i18nextFormatted[language_id] = {translation: {}}
-                    }
-                    const _18nextObject = keyPath(i18nextFormatted[language_id].translation, refPath.slice(0, -1), true)
-                    _18nextObject[refPath[refPath.length - 1]] = _i18nObject.target[language_id]
+        if (typeof _i18nObject === 'object' && 'target' in _i18nObject) {
+            for (const [language_id] of Object.entries(_i18nObject.target)) {
+                if (!i18nextFormatted[language_id]) {
+                    i18nextFormatted[language_id] = {translation: {}}
                 }
+                const _18nextObject = keyPath(i18nextFormatted[language_id].translation, refPath.slice(0, -1), true)
+                _18nextObject[refPath[refPath.length - 1]] = _i18nObject.target[language_id]
             }
         }
     })
@@ -29,15 +27,15 @@ export function i18nFormat(i18n, targetLanguages) {
     return i18nextFormatted
 }
 
-export async function init(translations = null) {
-    let resources
+async function init(translations = null) {
+    let resources = null
 
-    if (!translations) {
-        resources = await api.get('/api/translations')
-        logger.debug(`loading languages from endpoint: ${Object.keys(resources).join(', ')}`)
-    } else {
+    if (translations) {
         resources = translations
         logger.debug(`loading languages from bundle: ${Object.keys(resources).join(', ')}`)
+    } else {
+        resources = await api.get('/api/translations')
+        logger.debug(`loading languages from endpoint: ${Object.keys(resources).join(', ')}`)
     }
 
     for (const language_id of Object.keys(resources)) {
@@ -68,7 +66,7 @@ export async function init(translations = null) {
  * @param key Translation key
  * @param context Translation context
  */
-export const $t = (key: string, context = null): string => {
+const $t = (key: string, context = null): string => {
     if (!$s.language_ui.i18n[$s.language_ui.selection]) {
         $s.language_ui.i18n[$s.language_ui.selection] = {}
     }
@@ -80,4 +78,10 @@ export const $t = (key: string, context = null): string => {
         $s.language_ui.i18n[$s.language_ui.selection][cacheKey] = i18next.t(key, context)
     }
     return $s.language_ui.i18n[$s.language_ui.selection][cacheKey]
+}
+
+export {
+    $t,
+    i18nFormat,
+    init,
 }

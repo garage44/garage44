@@ -30,21 +30,27 @@ export function FieldText({
             <input
                 autofocus={autofocus}
                 disabled={disabled}
-                onClick={(e) => {
-                    if (onClick) onClick(e)
+                onClick={(event) => {
+                    if (onClick) {
+                        onClick(event)
+                    }
                 }}
-                onBlur={(e) => {
+                onBlur={(event) => {
                     if (model) {
                         setTouched(model, true)
                     }
 
-                    if (onBlur) onBlur(e)
+                    if (onBlur) {
+                        onBlur(event)
+                    }
                 }}
-                onKeyDown={(e) => {
-                    if (onKeyDown) onKeyDown(e)
+                onKeyDown={(event) => {
+                    if (onKeyDown) {
+                        onKeyDown(event)
+                    }
                 }}
-                onInput={(e) => {
-                    let value = (e.target as HTMLInputElement).value
+                onInput={(event) => {
+                    let value = (event.target as HTMLInputElement).value
                     if (transform) {
                         value = transform(value)
                     }
@@ -65,8 +71,8 @@ export function FieldText({
         </div>
         {(() => {
             if (validation && validation.errors.length > 0 && validation.isTouched) {
-                return validation?.errors.map((error, i) => (
-                    <div key={i} class="validation">{error}</div>
+                return validation?.errors.map((error, index) => (
+                    <div key={index} class="validation">{error}</div>
                 ))
             }
             if (help) {

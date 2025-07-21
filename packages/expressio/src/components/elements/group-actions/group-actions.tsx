@@ -20,21 +20,28 @@ export function GroupActions({className, group, path}: {className?: string, grou
                 name={(() => {
                     if ($s.env.ctrlKey) {
                         return 'plus_collaped'
-                    } else if ($s.env.shiftKey) {
-                        return 'plus_extra'
-                    } else if (group._collapsed) {
-                        return 'plus'
-                    } else {
-                        return 'minus'
                     }
+                    if ($s.env.shiftKey) {
+                        return 'plus_extra'
+                    }
+                    if (group._collapsed) {
+                        return 'plus'
+                    }
+                    return 'minus'
+
                 })()}
-                onClick={(e) => {
+                onClick={(event: MouseEvent) => {
                 // Force uncollapse on Ctrl or Alt click. Ctrl-click will also
                 // make the source tags uncollapse.
-                    const forceUncollapse = e.ctrlKey || e.shiftKey
+                    const forceUncollapse = event.ctrlKey || event.shiftKey
                     const newCollapsedState = forceUncollapse ? false : !group._collapsed
                     // Ctrl-click will uncollapse everything, Alt-click or collapsed state will collapse source tags
-                    const tagModifier = e.ctrlKey ? {_collapsed: false} : e.shiftKey || newCollapsedState? {_collapsed: true} : null
+                    let tagModifier = null
+                    if (event.ctrlKey) {
+                        tagModifier = {_collapsed: false}
+                    } else if (event.shiftKey || newCollapsedState) {
+                        tagModifier = {_collapsed: true}
+                    }
                     ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/collapse`, {
                         path,
                         tag_modifier: tagModifier,
@@ -51,7 +58,7 @@ export function GroupActions({className, group, path}: {className?: string, grou
             <Icon
                 name="folder_plus_outline"
                 onClick={async() => {
-                    ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
+                    await ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
                         path: [...path, `group_${randomId()}`],
                         value: {},
                     })
@@ -60,7 +67,7 @@ export function GroupActions({className, group, path}: {className?: string, grou
                 tip={$t('translation_group.tip.add_group')}
                 type="info"
             />
-            {<Icon
+            <Icon
                 name="tag_plus_outline"
                 onClick={async() => {
                     const id = `tag_${randomId()}`
@@ -75,7 +82,7 @@ export function GroupActions({className, group, path}: {className?: string, grou
 
                     tag_updated(targetPath.join('.'))
 
-                    ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
+                    await ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
                         path: targetPath,
                         value: ref[id],
                     })
@@ -83,7 +90,7 @@ export function GroupActions({className, group, path}: {className?: string, grou
                 size="s"
                 tip={$t('translation_group.tip.add_tag')}
                 type="info"
-            />}
+            />
 
             <Icon
                 name="translate"
@@ -102,7 +109,7 @@ export function GroupActions({className, group, path}: {className?: string, grou
             {path.length > 0 && <Icon
                 name="trash"
                 onClick={async() => {
-                    ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
+                    await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
                         path,
                     })
                 }}

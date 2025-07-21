@@ -1,4 +1,4 @@
-export const source = [
+const source = [
     {
         engines: ['anthropic', 'deepl'],
         id: 'ara',
@@ -139,7 +139,7 @@ export const source = [
     },
 ]
 
-export const target = [
+const target = [
     {
         engines: ['anthropic', 'deepl'],
         formality: ['anthropic'],
@@ -324,4 +324,8 @@ export const target = [
     },
 ]
 
-export default {source, target}
+
+export {
+    source,
+    target,
+}

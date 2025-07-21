@@ -1,19 +1,24 @@
 type LogLevel = 'error' | 'warn' | 'info' | 'success' | 'verbose' | 'debug'
 
 const LEVELS: Record<LogLevel, number> = {
-    error: 0, warn: 1, info: 2, success: 3, verbose: 4, debug: 5,
+    debug: 0,
+    error: 1,
+    info: 2,
+    success: 3,
+    verbose: 4,
+    warn: 5,
 }
 
 const COLORS = {
+    debug: 'color: #7f8c8d',
     error: 'color: #e74c3c',
-    warn: 'color: #f1c40f',
     info: 'color: #3498db',
     success: 'color: #27ae60',
     verbose: 'color: #1abc9c',
-    debug: 'color: #7f8c8d',
+    warn: 'color: #f1c40f',
 };
 
-export class Logger {
+class Logger {
     private level: LogLevel
 
     constructor({ level = 'info' }: { level?: LogLevel } = {}) {
@@ -25,7 +30,9 @@ export class Logger {
     }
 
     log(level: LogLevel, msg: string, ...args: any[]) {
-        if (!this.shouldLog(level)) return;
+        if (!this.shouldLog(level)) {
+            return
+        }
         const now = new Date()
         const ts = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
         const levelStr = level.toUpperCase()
@@ -73,4 +80,9 @@ export class Logger {
     close() {}
 }
 
-export const logger = new Logger();
+const logger = new Logger()
+
+export {
+    logger,
+    Logger,
+}

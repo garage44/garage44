@@ -9,14 +9,13 @@ export function TranslationResult({group}) {
             'tag-updated': $s.tags.updated === null,
         })}>
             <div class="wrapper">
-                {$s.workspace.config.languages.target.map((language) => {
-                    return <div class="result">
-                        <div class="id">{language.id}</div>
-                        <div class="value">
-                            {(group.target[language.id]) ? group.target[language.id] : '-'}
-                        </div>
+                {$s.workspace.config.languages.target.map((language) =>
+                <div class="result" key={language.id}>
+                    <div class="id">{language.id}</div>
+                    <div class="value">
+                        {group.target[language.id] || '-'}
                     </div>
-                })}
+                </div>)}
             </div>
         </div>
     )

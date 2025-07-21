@@ -1,13 +1,11 @@
-import {
-    MessageData,
-} from '@garage44/common/lib/ws-server'
-import {generateRandomId, showConfig} from './utils'
 import {URL, fileURLToPath} from 'node:url'
+import {generateRandomId, showConfig} from './utils'
+import {Logger} from '@garage44/common/lib/logger'
+import type {MessageData} from '@garage44/common/lib/ws-server'
 import path from 'node:path'
 import {tasks} from './tasks.ts'
-import {Logger} from '@garage44/common/lib/logger'
 
-export const logger = new Logger()
+const logger = new Logger()
 
 // Import the real broadcast function - will be set during bunchyService initialization
 let broadcastFn: ((url: string, data: MessageData, method?: string) => void) | null = null
@@ -29,10 +27,10 @@ interface Settings {
     reload_ignore: string[]
 }
 
-export const settings = {} as Settings
-export const tooling = {} as {css: (options: {entrypoint: string, minify?: boolean, outFile: string, sourcemap?: boolean}) => Promise<string>}
+const settings = {} as Settings
+const tooling = {} as {css: (options: {entrypoint: string, minify?: boolean, outFile: string, sourcemap?: boolean}) => Promise<string>}
 
-async function applySettings(config) {
+function applySettings(config) {
     Object.assign(settings, {
         buildId: generateRandomId(),
         dir: {
@@ -40,8 +38,8 @@ async function applySettings(config) {
             bunchy: currentDir,
             common: config.common,
             components: path.resolve(path.join(config.workspace, 'src', 'components')),
-            public: path.resolve(path.join(config.workspace, `public`)),
             css: path.resolve(path.join(config.workspace, 'src', 'css')),
+            public: path.resolve(path.join(config.workspace, `public`)),
             src: path.resolve(path.join(config.workspace, 'src')),
             workspace: config.workspace,
         },
@@ -54,7 +52,7 @@ async function applySettings(config) {
     showConfig(settings)
 }
 
-export async function bunchyService(server, config, wsManager?) {
+async function bunchyService(server, config, wsManager?) {
     applySettings(config)
 
     // Set up broadcast function if WebSocket manager is provided
@@ -73,7 +71,7 @@ export async function bunchyService(server, config, wsManager?) {
     return server
 }
 
-export function bunchyArgs(yargs, config) {
+function bunchyArgs(yargs, config) {
     applySettings(config)
 
     yargs.option('minify', {
@@ -88,7 +86,7 @@ export function bunchyArgs(yargs, config) {
         default: '',
         describe: '[Bunchy] Directory to build to',
         type: 'string',
-    }).command('build', '[Bunchy] build application', async(yargs) => {
+    }).command('build', '[Bunchy] build application', (yargs) => {
         applySettings({...config, minify: yargs.argv.minify, sourcemap: yargs.argv.sourcemap})
         tasks.build.start({minify: true, sourcemap: true})
     }).command('code_backend', '[Bunchy] bundle backend javascript', (yargs) => {
@@ -109,22 +107,29 @@ export function bunchyArgs(yargs, config) {
 }
 
 // For backward compatibility, re-export connections from the manager
-export const connections = {
+const connections = {
     add: (ws) => logger.info('[bunchy] WebSocket connection added'),
     delete: (ws) => logger.info('[bunchy] WebSocket connection removed'),
     has: (ws) => false,
     get size() { return 0 },
-    [Symbol.iterator]: function*() {
-        // No connections in Bun.serve mode
-    },
 } as Set<WebSocket>
 
 // For backward compatibility, re-export broadcast from the manager
-export const broadcast = (url: string, data: MessageData, method = 'POST') => {
+const broadcast = (url: string, data: MessageData, method = 'POST') => {
     if (broadcastFn) {
         broadcastFn(url, data, method)
         logger.debug('[bunchy] Broadcast sent:', url, data, method)
     } else {
         logger.warn('[bunchy] Broadcast attempted but WebSocket not connected:', url, data, method)
     }
+}
+
+export {
+    bunchyArgs,
+    bunchyService,
+    broadcast,
+    connections,
+    logger,
+    settings,
+    tooling,
 }

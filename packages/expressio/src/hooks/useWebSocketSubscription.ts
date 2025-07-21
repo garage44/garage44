@@ -3,6 +3,12 @@ import {WebSocketEvents} from '@garage44/common/lib/ws-client'
 import {events} from '@garage44/common/app'
 import {ws} from '../app'
 
+/**
+ * NOTE: Currently not used anywhere, but could be useful in the future.
+ * @param topic
+ * @param handler
+ * @returns
+ */
 export function useWebSocketSubscription(topic: string, handler: (data: unknown) => void) {
     // Track connection status
     const [isConnected, setIsConnected] = useState(ws.isConnected())

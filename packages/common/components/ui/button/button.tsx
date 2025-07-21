@@ -51,12 +51,12 @@ export function Button({
             disabled,
         })}
         disabled={disabled}
-        onClick={(e) => {
+        onClick={(event) => {
             if (disabled) {
                 return
             }
             if (onClick) {
-                onClick(e)
+                onClick(event)
             }
         }}
     >

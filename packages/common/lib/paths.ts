@@ -1,10 +1,8 @@
-import {keyMod, keyPath, mergeDeep} from '@garage44/common/lib/utils'
-import {EnolaTag} from '@garage44/enola/types.ts'
-import {TargetLanguage} from '@garage44/common/types.ts'
-import {hash} from '@garage44/common/lib/utils.ts'
+import type {EnolaTag, TargetLanguage} from '@garage44/enola/types.ts'
+import {hash, keyMod, keyPath, mergeDeep} from '@garage44/common/lib/utils'
 import {logger} from '@garage44/common/app'
 
-export function collectSource(source, path, ignore_cache = false) {
+function collectSource(source, path, ignore_cache = false) {
     const cachedValues = []
     const sourceValues = []
 
@@ -16,12 +14,10 @@ export function collectSource(source, path, ignore_cache = false) {
         if ('source' in current && typeof current.source === 'string') {
             if (ignore_cache) {
                 sourceValues.push([current, path])
+            } else if (current.cache === hash(current.source)) {
+                cachedValues.push(current)
             } else {
-                if (current.cache === hash(current.source)) {
-                    cachedValues.push(current)
-                } else {
-                    sourceValues.push([current, path])
-                }
+                sourceValues.push([current, path])
             }
         }
 
@@ -46,7 +42,7 @@ export function collectSource(source, path, ignore_cache = false) {
  * @param targetLanguages
  * @returns
  */
-export function pathCreate(sourceObject:Record<string, unknown>, tagPath:string[], value:EnolaTag, targetLanguages:TargetLanguage[], translations?:Record<string, string>) {
+function pathCreate(sourceObject:Record<string, unknown>, tagPath:string[], value:EnolaTag, targetLanguages:TargetLanguage[], translations?:Record<string, string>) {
     const {id, ref} = pathRef(sourceObject, tagPath, true)
     ref[id] = value
 
@@ -55,14 +51,18 @@ export function pathCreate(sourceObject:Record<string, unknown>, tagPath:string[
     ref[id]._collapsed = true
 
     // Set _id and _collapsed for each intermediate path object
-    for (let i = 0; i < tagPath.length - 1; i++) {
-        const partialPath = tagPath.slice(0, i + 1)
+    for (let index = 0; index < tagPath.length - 1; index++) {
+        const partialPath = tagPath.slice(0, index + 1)
         const {id: segmentId, ref: segmentRef} = pathRef(sourceObject, partialPath)
 
         // Set properties directly on the object
         if (segmentRef[segmentId] && typeof segmentRef[segmentId] === 'object') {
-            if (!('_id' in segmentRef[segmentId])) segmentRef[segmentId]._id = segmentId
-            if (!('_collapsed' in segmentRef[segmentId])) segmentRef[segmentId]._collapsed = false
+            if (!('_id' in segmentRef[segmentId])) {
+                segmentRef[segmentId]._id = segmentId
+            }
+            if (!('_collapsed' in segmentRef[segmentId])) {
+                segmentRef[segmentId]._collapsed = false
+            }
         }
     }
 
@@ -74,7 +74,7 @@ export function pathCreate(sourceObject:Record<string, unknown>, tagPath:string[
             ref[id]._soft = value._soft
         }
         logger.info(`create path tag: ${tag} ${'_soft' in value ? '(soft create)' : ''}`)
-        targetLanguages.map(async(language) => {
+        targetLanguages.forEach((language) => {
             if (translations && translations[language.id]) {
                 ref[id].target[language.id] = translations[language.id]
             } else {
@@ -88,13 +88,13 @@ export function pathCreate(sourceObject:Record<string, unknown>, tagPath:string[
     return {id, ref}
 }
 
-export function pathDelete(source, path) {
+function pathDelete(source, path) {
     const {id, ref} = pathRef(source, path)
     delete ref[id]
     logger.info(`delete path: ${path}`)
 }
 
-export function pathHas(source, path, key) {
+function pathHas(source, path, key) {
     const {id, ref} = pathRef(source, path)
     let has_key = false
     if (ref[id]) {
@@ -102,7 +102,7 @@ export function pathHas(source, path, key) {
             if (key in sourceRef) {
                 has_key = true
             }
-        })
+       })
     }
 
     return has_key
@@ -115,8 +115,10 @@ export function pathHas(source, path, key) {
  * @param {Object} modifier - Modifications to apply (typically {_collapsed: boolean})
  * @param {string} mode - How to apply the change: 'self' (target only), 'groups' (target+nested groups), 'all' (target+all nested)
  */
-export function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'all' = 'groups') {
-    if (!modifier) return
+function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'all' = 'groups') {
+    if (!modifier) {
+        return
+    }
 
     // Handle empty path (root level)
     if (!path || path.length === 0) {
@@ -126,7 +128,9 @@ export function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'al
         // Recursively apply changes based on mode
         if (mode !== 'self') {
             function applyRecursively(obj) {
-                if (!obj || typeof obj !== 'object') return
+                if (!obj || typeof obj !== 'object') {
+                    return
+                }
 
                 for (const key in obj) {
                     const value = obj[key]
@@ -152,7 +156,9 @@ export function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'al
 
     // Non-root path handling
     const {id, ref} = pathRef(source, path)
-    if (!ref[id]) return
+    if (!ref[id]) {
+        return
+    }
 
     // Apply to target node
     mergeDeep(ref[id], modifier)
@@ -160,7 +166,9 @@ export function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'al
     // Apply to nested nodes based on mode
     if (mode !== 'self') {
         function applyToChildren(obj) {
-            if (!obj || typeof obj !== 'object') return
+            if (!obj || typeof obj !== 'object') {
+                return
+            }
 
             for (const key in obj) {
                 const value = obj[key]
@@ -182,7 +190,7 @@ export function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'al
     }
 }
 
-export function pathUpdate(source, path, value) {
+function pathUpdate(source, path, value) {
     const {id, ref} = pathRef(source, path)
 
     for (const key in ref[id]) {
@@ -203,7 +211,7 @@ export function pathUpdate(source, path, value) {
  * @param {*} oldPath
  * @param {*} newPath
  */
-export function pathMove(source, oldPath, newPath) {
+function pathMove(source, oldPath, newPath) {
     logger.info(`move path: ${oldPath} - ${newPath}`)
     const oldId = oldPath.at(-1)
     const oldRefPath = oldPath.slice(0, -1)
@@ -219,7 +227,7 @@ export function pathMove(source, oldPath, newPath) {
     delete oldSourceRef[oldId]
 }
 
-export function pathRef(source, path, create = false) {
+function pathRef(source, path, create = false) {
     if (!path.length) {
         return {id: null, ref: source}
     }
@@ -230,4 +238,15 @@ export function pathRef(source, path, create = false) {
         path: refPath,
         ref: keyPath(source, refPath, create),
     }
+}
+
+export {
+    collectSource,
+    pathCreate,
+    pathDelete,
+    pathHas,
+    pathMove,
+    pathRef,
+    pathToggle,
+    pathUpdate,
 }

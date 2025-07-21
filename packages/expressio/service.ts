@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
 import {URL, fileURLToPath} from 'node:url'
+import {WebSocketServerManager, createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
 import {bunchyArgs, bunchyService} from '@garage44/bunchy'
 import {config, initConfig} from './lib/config.ts'
 import {keyMod, padLeft} from '@garage44/common/lib/utils.ts'
-import {loggerTransports} from '@garage44/common/lib/service.ts'
 import {Enola} from '@garage44/enola'
 import {Workspace} from './lib/workspace.ts'
 import {Workspaces} from './lib/workspaces.ts'
@@ -12,19 +12,18 @@ import fs from 'fs-extra'
 import {hideBin} from 'yargs/helpers'
 import {i18nFormat} from '@garage44/common/lib//i18n.ts'
 import {initMiddleware} from './lib/middleware.ts'
-import {WebSocketServerManager, createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
 import {lintWorkspace} from './lib/lint.ts'
+import {loggerTransports} from '@garage44/common/lib/service.ts'
 import path from 'node:path'
 import {pathCreate} from '@garage44/common/lib/paths'
 import pc from 'picocolors'
-
-import yargs from 'yargs'
 import {registerI18nWebSocketApiRoutes} from './api/i18n.ts'
 import {registerWorkspacesWebSocketApiRoutes} from './api/workspaces.ts'
+import yargs from 'yargs'
 
 const expressioDir = fileURLToPath(new URL('.', import.meta.url))
 
-export const runtime = {
+const runtime = {
     service_dir: expressioDir,
     version: JSON.parse((await fs.readFile(path.join(expressioDir, 'package.json'), 'utf8'))).version,
 }
@@ -38,11 +37,11 @@ ${pc.blue(figlet.textSync("Expressio"))}\n
 }
 
 // In case we start in development mode.
-let bunchyConfig
+let bunchyConfig = null
 
-export let logger = loggerTransports(config.logger, 'service')
-export const enola = new Enola()
-export const workspaces = new Workspaces()
+const logger = loggerTransports(config.logger, 'service')
+const enola = new Enola()
+const workspaces = new Workspaces()
 
 const BUN_ENV = process.env.BUN_ENV || 'production'
 
@@ -63,8 +62,8 @@ if (BUN_ENV === 'development') {
 
 cli.usage('Usage: $0 [task]')
     .detectLocale(false)
-    .command('import', 'Import source translations from i18next file', (yargs) => {
-        return yargs
+    .command('import', 'Import source translations from i18next file', (yargs) =>
+        yargs
             .option('workspace', {
                 alias: 'w',
                 default: './src/.expressio.json',
@@ -77,8 +76,7 @@ cli.usage('Usage: $0 [task]')
                 describe: 'I18next file for input',
                 type: 'string',
             })
-    }, async(argv) => {
-        logger = loggerTransports(config.logger, 'cli')
+    , async(argv) => {
         const workspace = new Workspace()
         await workspace.init({
             source_file: path.resolve(argv.workspace),
@@ -106,9 +104,8 @@ cli.usage('Usage: $0 [task]')
         await workspace.save()
         logger.info(`Imported: ${createTags.length} tags`)
     })
-    .command('export', 'Export target translations to i18next format', (yargs) => {
-        logger = loggerTransports(config.logger, 'cli')
-        return yargs
+    .command('export', 'Export target translations to i18next format', (yargs) =>
+        yargs
             .option('workspace', {
                 alias: 'w',
                 default: './src/.expressio.json',
@@ -121,8 +118,7 @@ cli.usage('Usage: $0 [task]')
                 describe: 'I18next file for output',
                 type: 'string',
             })
-    }, async(argv) => {
-        logger = loggerTransports(config.logger, 'cli')
+    , async(argv) => {
         const workspace = new Workspace()
         await workspace.init({
             source_file: path.resolve(argv.workspace),
@@ -136,9 +132,8 @@ cli.usage('Usage: $0 [task]')
             workspace.config.languages.target,
         )))
     })
-    .command('lint', 'Lint translations', async(yargs) => {
-        logger = loggerTransports(config.logger, 'cli')
-        return yargs.option('workspace', {
+    .command('lint', 'Lint translations', (yargs) => {
+        yargs.option('workspace', {
             alias: 'w',
             default: './src/.expressio.json',
             describe: 'Workspace file to use',
@@ -190,13 +185,10 @@ cli.usage('Usage: $0 [task]')
         // oxlint-disable-next-line no-console
         console.log(`\n✔ No issues found`)
         process.exit(0)
-
     })
     .command('start', 'Start the Expressio service', (yargs) => {
         // oxlint-disable-next-line no-console
         console.log(welcomeBanner())
-
-        logger = loggerTransports(config.logger, 'service')
         return yargs
             .option('host', {
                 alias: 'h',
@@ -211,19 +203,17 @@ cli.usage('Usage: $0 [task]')
                 type: 'number',
             })
     }, async(argv) => {
-
         await initConfig(config)
-
         // Initialize enola first
         await enola.init(config.enola, logger)
 
         // Initialize middleware and WebSocket server
-        const { handleRequest, handleWebSocket } = await initMiddleware(bunchyConfig)
+        const {handleRequest} = await initMiddleware(bunchyConfig)
 
         // Create WebSocket managers directly
         const wsManager = new WebSocketServerManager({
-            endpoint: '/ws',
             authOptions: config.authOptions,
+            endpoint: '/ws',
             sessionMiddleware: config.sessionMiddleware,
         })
 
@@ -232,8 +222,8 @@ cli.usage('Usage: $0 [task]')
         await workspaces.init(config.workspaces)
 
         const bunchyManager = new WebSocketServerManager({
-            endpoint: '/bunchy',
             authOptions: config.authOptions,
+            endpoint: '/bunchy',
             sessionMiddleware: config.sessionMiddleware,
         })
 
@@ -249,9 +239,9 @@ cli.usage('Usage: $0 [task]')
 
         // Start Bun.serve server
         const server = Bun.serve({
-            port: argv.port,
-            hostname: argv.host,
             fetch: (req, server) => handleRequest(req, server),
+            hostname: argv.host,
+            port: argv.port,
             websocket: enhancedWebSocketHandler,
         })
 
@@ -265,3 +255,10 @@ cli.usage('Usage: $0 [task]')
     .help('help')
     .showHelpOnFail(true)
     .argv
+
+export {
+    enola,
+    logger,
+    runtime,
+    workspaces,
+}

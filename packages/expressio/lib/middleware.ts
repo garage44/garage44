@@ -29,8 +29,12 @@ class Router {
 
     private add(method: string, path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
         // Convert path params (e.g. /api/workspaces/:id) to regex
-        const regex = new RegExp('^' + path.replace(/:[^/]+/g, '([^/]+)') + '$')
-        this.routes.push({ method, path: regex, handler });
+        const regex = new RegExp('^' + path.replaceAll(/:[^/]+/g, '([^/]+)') + '$')
+        this.routes.push({
+            handler,
+            method,
+            path: regex,
+        });
     }
 
     async route(req: Request, session?: any): Promise<Response | null> {
@@ -57,7 +61,9 @@ const sessions = new Map()
 // Parse cookies from request
 const parseCookies = (request: Request) => {
     const cookieHeader = request.headers.get('cookie')
-    if (!cookieHeader) return {}
+    if (!cookieHeader) {
+        return {}
+    }
 
     const cookies: Record<string, string> = {}
     cookieHeader.split(';').forEach(cookie => {
@@ -122,8 +128,20 @@ const authMiddleware = (request: Request, session: any) => {
     return false
 }
 
+
+// Helper to set session cookie in response
+const setSessionCookie = (response: Response, sessionId: string) => {
+    const headers = new Headers(response.headers)
+    headers.set('Set-Cookie', `expressio-session=${sessionId}; Path=/; HttpOnly; SameSite=Strict`)
+    return new Response(response.body, {
+        headers,
+        status: response.status,
+        statusText: response.statusText,
+    })
+}
+
 // Auth middleware that can be reused across workspace routes
-export const requireAdmin = async(ctx, next) => {
+const requireAdmin = (ctx, next) => {
     const user = config.users.find((i) => i.name === ctx.session?.userid)
     if (!user?.admin) {
         throw new Error('Unauthorized')
@@ -133,18 +151,8 @@ export const requireAdmin = async(ctx, next) => {
     return next(ctx)
 }
 
-// Helper to set session cookie in response
-const setSessionCookie = (response: Response, sessionId: string) => {
-    const headers = new Headers(response.headers)
-    headers.set('Set-Cookie', `expressio-session=${sessionId}; Path=/; HttpOnly; SameSite=Strict`)
-    return new Response(response.body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers
-    })
-}
 
-export async function initMiddleware(bunchyConfig) {
+async function initMiddleware(bunchyConfig) {
     const {handleRequest, handleWebSocket} = await commonMiddleware(logger, config, bunchyConfig)
     const router = new Router();
 
@@ -165,7 +173,9 @@ export async function initMiddleware(bunchyConfig) {
             logger.info(`[HTTP] ${url.pathname} hit, attempting Bun WebSocket upgrade`)
             if (server && typeof server.upgrade === 'function') {
                 const success = server.upgrade(request, { data: { endpoint: url.pathname } })
-                if (success) return
+                if (success) {
+                    return
+                }
                 return new Response("WebSocket upgrade failed", { status: 400 })
             }
             return new Response("WebSocket server not available", { status: 500 })
@@ -240,4 +250,9 @@ export async function initMiddleware(bunchyConfig) {
         handleRequest: finalHandleRequest,
         handleWebSocket
     }
+}
+
+export {
+    initMiddleware,
+    requireAdmin,
 }

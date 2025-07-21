@@ -6,6 +6,12 @@ export const FieldCheckbox = ({
     label,
     model,
     onInput,
+}: {
+    className?: string
+    help?: string
+    label: string
+    model: boolean
+    onInput?: (value: boolean) => void
 }) => {
     const id = randomId()
 

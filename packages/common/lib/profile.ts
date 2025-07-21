@@ -1,11 +1,17 @@
-export function adminContext() {
+function adminContext() {
     return {admin: true, authenticated: true}
 }
 
-export function deniedContext() {
+function deniedContext() {
     return {authenticated: false, permission: false}
 }
 
-export function userContext() {
+function userContext() {
     return {admin: false, authenticated: true}
+}
+
+export {
+    adminContext,
+    deniedContext,
+    userContext,
 }

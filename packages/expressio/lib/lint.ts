@@ -7,6 +7,7 @@ import path from 'node:path'
 import {translate_tag} from './translate.ts'
 
 export async function lintWorkspace(workspace, lintMode: 'sync' | 'lint') {
+    // oxlint-disable-next-line no-template-curly-in-string
     const scan_target = workspace.config.sync.dir.replace('${workspaceFolder}', path.dirname(workspace.config.source_file))
     const files = await glob(scan_target)
 
@@ -34,41 +35,39 @@ export async function lintWorkspace(workspace, lintMode: 'sync' | 'lint') {
 
             const ref = parentRef && lastKey in parentRef ? parentRef[lastKey] : undefined
 
-            if (!ref) {
-                if (lintMode === 'sync') {
-                    let sourceText
-                    if ('anthropic' in enola.engines) {
-                        // Guess the source text from the context.
-                        sourceText = await enola.suggestion('anthropic', workspace.i18n, tagPath, match[0])
-                    } else {
-                        // Fallback to a random ID if no LLM is available.
-                        sourceText = `tag_${randomId()}`
-                    }
-
-                    let {ref, id} = pathCreate(workspace.i18n, tagPath, {
-                        _id: lastKey,
-                        _soft: true,
-                        source: sourceText,
-                    }, workspace.config.languages.target);
-
-                    ({id, ref} = await translate_tag(workspace, tagPath, sourceText, false))
-                    createTags.push({path: tagPath, value: ref[id]})
-                } else if (lintMode === 'lint') {
-                    const file = path.relative(path.dirname(workspace.config.source_file), files[i])
-                    const beforeMatch = content.slice(0, match.index)
-                    const line = content.slice(0, match.index).split('\n').length
-                    const lastNewline = beforeMatch.lastIndexOf('\n')
-                    const column = lastNewline === -1 ? match.index : match.index - lastNewline - 1
-                    createTags.push({column, file, line, match, path: tagPath})
-                }
-
-            } else {
+            if (ref) {
                 // Remove all found tags from the set.
                 if ('_redundant' in ref) {
                     delete ref._redundant
                     modifyTags.push({path: tagPath, value: ref})
                 }
+            } else if (lintMode === 'sync') {
+                let sourceText = ''
+                if ('anthropic' in enola.engines) {
+                    // Guess the source text from the context.
+                    sourceText = await enola.suggestion('anthropic', workspace.i18n, tagPath, match[0])
+                } else {
+                    // Fallback to a random ID if no LLM is available.
+                    sourceText = `tag_${randomId()}`
+                }
+
+                let {ref, id} = pathCreate(workspace.i18n, tagPath, {
+                    _id: lastKey,
+                    _soft: true,
+                    source: sourceText,
+                }, workspace.config.languages.target);
+
+                ({id, ref} = await translate_tag(workspace, tagPath, sourceText, false))
+                createTags.push({path: tagPath, value: ref[id]})
+            } else if (lintMode === 'lint') {
+                const file = path.relative(path.dirname(workspace.config.source_file), files[i])
+                const beforeMatch = content.slice(0, match.index)
+                const line = content.slice(0, match.index).split('\n').length
+                const lastNewline = beforeMatch.lastIndexOf('\n')
+                const column = lastNewline === -1 ? match.index : match.index - lastNewline - 1
+                createTags.push({column, file, line, match, path: tagPath})
             }
+
 
             redundantTags.delete(tag)
         }
@@ -86,14 +85,12 @@ export async function lintWorkspace(workspace, lintMode: 'sync' | 'lint') {
                 } else {
                     deleteTags.push({file: filePath, match, path: tagPath})
                 }
-            } else {
-                if (lintMode === 'sync') {
-                    // A persistant tag is marked as redundant instead.
-                    ref._redundant = true
-                    modifyTags.push({path: tagPath, value: ref})
-                } else if (lintMode === 'lint') {
-                    deleteTags.push({path: tagPath})
-                }
+            } else if (lintMode === 'sync') {
+                // A persistant tag is marked as redundant instead.
+                ref._redundant = true
+                modifyTags.push({path: tagPath, value: ref})
+            } else if (lintMode === 'lint') {
+                deleteTags.push({path: tagPath})
             }
         }
     }
@@ -126,24 +123,26 @@ export async function lintWorkspace(workspace, lintMode: 'sync' | 'lint') {
                 commonPath = pathParts.slice(0, -1).join('.')
             }
 
-            if (!acc[commonPath]) acc[commonPath] = []
+            if (!acc[commonPath]) {
+                acc[commonPath] = []
+            }
             acc[commonPath].push(tag)
             return acc
         }, {})
 
         if (lintMode === 'lint') {
             return {
-                create_tags: Array.from(fileGroups.entries()).map(([file, groups]) => ({file, groups})),
+                create_tags: [...fileGroups.entries()].map(([file, groups]) => ({file, groups})),
                 delete_tags: Object.entries(groupedDeleteTags)
-                    .sort(([a], [b]) => a.split('.').length - b.split('.').length)
+                    .sort(([first], [second]) => first.split('.').length - second.split('.').length)
                     .map(([group, tags]) => ({group, tags})),
             }
-        } else  {
-            return {
-                create_tags: createTags,
-                delete_tags: deleteTags,
-                modify_tags: modifyTags,
-            }
+        }
+
+        return {
+            create_tags: createTags,
+            delete_tags: deleteTags,
+            modify_tags: modifyTags,
         }
 
     }

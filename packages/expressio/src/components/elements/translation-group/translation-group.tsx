@@ -15,13 +15,19 @@ interface TranslationGroupType {
 function groupMatchesFilter(group: TranslationGroupType, id: string, filter: string): boolean {
     const filterLower = filter.toLowerCase()
     // Match id
-    if (id.toLowerCase().includes(filterLower)) return true
+    if (id.toLowerCase().includes(filterLower)) {
+        return true
+    }
     // Match source
-    if (typeof group.source === 'string' && group.source.toLowerCase().includes(filterLower)) return true
+    if (typeof group.source === 'string' && group.source.toLowerCase().includes(filterLower)) {
+        return true
+    }
     // Match any translation value
     if (group.target && typeof group.target === 'object') {
         for (const val of Object.values(group.target)) {
-            if (typeof val === 'string' && val.toLowerCase().includes(filterLower)) return true
+            if (typeof val === 'string' && val.toLowerCase().includes(filterLower)) {
+                return true
+            }
         }
     }
     // Recursively check subgroups
@@ -46,16 +52,20 @@ export function TranslationGroup({group, level = 0, path, filter = '', sort = 'a
     // At each level, only show entries that match or have matching descendants
     let entries: [string, unknown][] = Object.entries(group)
         .filter(([id, subGroup]) => {
-            if (id.startsWith('_')) return false
-            if (!filter) return true
+            if (id.startsWith('_')) {
+                return false
+            }
+            if (!filter) {
+                return true
+            }
             // If this group matches, show all its children
-            if (groupItselfMatches && level > 0) return true
+            if (groupItselfMatches && level > 0) {
+                return true
+            }
             // Otherwise, only show entries that match or have matching descendants
             return groupMatchesFilter(subGroup as TranslationGroupType, id, filter)
         })
-        .sort(([idA], [idB]) => {
-            return sort === 'asc' ? idA.localeCompare(idB) : idB.localeCompare(idA)
-        })
+        .sort(([idA], [idB]) => sort === 'asc' ? idA.localeCompare(idB) : idB.localeCompare(idA))
 
     // If filter is active, auto-expand groups with matches
     const autoExpand = !!filter
@@ -76,7 +86,7 @@ export function TranslationGroup({group, level = 0, path, filter = '', sort = 'a
                     const oldPath = path
                     const newPath = [...path.slice(0, -1), group._id]
                     if (oldPath.join('.') !== newPath.join('.')) {
-                        ws.put(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
+                        await ws.put(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
                             new_path: newPath,
                             old_path: oldPath,
                         })
@@ -91,12 +101,14 @@ export function TranslationGroup({group, level = 0, path, filter = '', sort = 'a
                 const typedSubGroup = subGroup as TranslationGroupType
                 if ('source' in typedSubGroup) {
                     return <Translation
+                        key={id}
                         group={typedSubGroup}
                         path={[...path, id]}
                     />
                 }
 
                 return <TranslationGroup
+                    key={id}
                     level={level + 1}
                     group={typedSubGroup}
                     path={[...path, id]}

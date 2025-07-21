@@ -1,4 +1,4 @@
-import {TargetLanguage} from '@garage44/common/types.ts'
+import type {TargetLanguage} from '@garage44/common/types.ts'
 
 type TranslationTarget = Record<string, string>
 

@@ -2,81 +2,31 @@
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/src/options.json",
   "categories": {
     "correctness": "error",
-    "performance": "warn",
-    "suspicious": "warn",
-    "pedantic": "warn",
-    "style": "warn",
+    "suspicious": "error",
+    "pedantic": "error",
+    "style": "error",
     "restriction": "off",
     "nursery": "off"
   },
   "plugins": ["react", "jsx-a11y", "typescript", "unicorn", "import"],
   "rules": {
-    // Performance improvements (highly recommended for this project)
-    "perf/no-accumulating-spread": "error",
-    "react-perf/jsx-no-new-array-as-prop": "error",
-    "react-perf/jsx-no-new-function-as-prop": "error",
-    "react-perf/jsx-no-new-object-as-prop": "error",
-    "react-perf/jsx-no-jsx-as-prop": "warn",
-    "unicorn/prefer-set-has": "warn",
-    "unicorn/prefer-array-find": "warn",
-
-    // React/Preact specific (essential for this project)
-    "react/exhaustive-deps": "error",
-    "react/jsx-key": "error",
-    "react/jsx-no-target-blank": "error",
-    "react/jsx-no-duplicate-props": "error",
-    "react/no-danger-with-children": "error",
-    "react/void-dom-elements-no-children": "error",
-    "react/jsx-boolean-value": "warn",
-    "react/self-closing-comp": "warn",
-
-    // TypeScript enhancements
-    "typescript/prefer-as-const": "error",
-    "typescript/consistent-type-imports": "warn",
-    "typescript/array-type": "warn",
-    "typescript/consistent-type-definitions": "warn",
-    "typescript/prefer-function-type": "warn",
-    "typescript/no-explicit-any": "warn",
-
-    // Import organization
-    "import/no-duplicates": "warn",
-    "import/first": "warn",
-    "import/consistent-type-specifier-style": "warn",
-
-    // Code quality improvements
-    "unicorn/prefer-string-starts-ends-with": "error",
-    "unicorn/prefer-array-some": "warn",
-    "unicorn/prefer-includes": "warn",
-    "unicorn/prefer-string-slice": "warn",
-    "unicorn/prefer-math-trunc": "warn",
-    "unicorn/prefer-query-selector": "warn",
-    "unicorn/prefer-dom-node-append": "warn",
-    "unicorn/prefer-dom-node-remove": "warn",
-    "unicorn/prefer-modern-dom-apis": "warn",
-    "unicorn/prefer-negative-index": "warn",
-    "unicorn/prefer-string-trim-start-end": "warn",
-    "unicorn/throw-new-error": "error",
-    "unicorn/no-instanceof-array": "error",
-    "unicorn/prefer-number-properties": "warn",
-
-    // Style improvements (auto-fixable)
-    "eslint/prefer-object-spread": "warn",
-    "eslint/prefer-exponentiation-operator": "warn",
-    "eslint/prefer-template": "warn",
-    "eslint/no-var": "error",
-    "eslint/prefer-const": "error",
-    "eslint/object-shorthand": "warn",
-
-    // Accessibility (important for web apps)
-    "jsx-a11y/alt-text": "warn",
-    "jsx-a11y/anchor-has-content": "warn",
-    "jsx-a11y/click-events-have-key-events": "warn",
-    "jsx-a11y/no-autofocus": "warn",
-
-    // Disable some pedantic rules that might be too strict
-    "pedantic/no-else-return": "off",
-    "pedantic/max-lines": "off",
-    "pedantic/max-lines-per-function": "off"
+    "import/max-dependencies": "off",
+    "eslint/max-depth": ["error", 6],
+    "eslint/max-lines": ["error", 1000],
+    "eslint/max-params": ["error", 5],
+    "eslint/max-nested-callbacks": ["error", 10],
+    "prefer-logical-operator-over-ternary": "off",
+    "eslint/no-magic-numbers": "off",
+    "eslint/no-unused-vars": "off",
+    "eslint/no-ternary": "off",
+    "eslint/func-style": "off",
+    "max-lines-per-function": "off",
+    "prefer-default-export": "off",
+    "react-in-jsx-scope": "off",
+    "unicorn/explicit-length-check": "off",
+    "unicorn/filename-case": "error",
+    "unicorn/no-null": "off",
+    "yoda": "off"
   },
   "env": {
     "browser": true,

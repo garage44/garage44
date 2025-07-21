@@ -3,7 +3,7 @@ import {$s} from '@/app'
 let notificationId = 1
 
 export interface Notification {
-    id: string
+    id: number
     icon: string
     message: string
     link: {

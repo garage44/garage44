@@ -1,9 +1,7 @@
 import {$s, ws} from '@/app'
 import {FieldText, Icon} from '@garage44/common/components'
-
 import {$t} from '@garage44/common/app'
 import {TranslationResult} from '@/components/elements'
-
 import {classes} from '@garage44/common/lib/utils'
 
 export function Translation({group, path}) {
@@ -47,7 +45,7 @@ export function Translation({group, path}) {
                 <Icon
                     name="trash"
                     onClick={async() => {
-                        ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {path})
+                        await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {path})
                     }}
                     size="s"
                     tip={$t('translation.tip.remove')}
@@ -62,7 +60,7 @@ export function Translation({group, path}) {
                     const oldPath = [...path]
                     const newPath = [...oldPath.slice(0, -1), group._id]
                     if (oldPath.join('.') !== newPath.join('.')) {
-                        ws.put(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
+                        await ws.put(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
                             new_path: newPath,
                             old_path: oldPath,
                         })
@@ -77,15 +75,15 @@ export function Translation({group, path}) {
                 className="src-field"
                 model={group.$source}
                 onBlur={async() => {
-                    ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/tags`, {
+                    await ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/tags`, {
                         path,
                         source: group.source,
                     })
                 }}
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter' && e.ctrlKey) {
+                onKeyDown={(event: KeyboardEvent) => {
+                    if (event.key === 'Enter' && event.ctrlKey) {
                         translate()
-                    } else if (e.key === ' ' && e.ctrlKey) {
+                    } else if (event.key === ' ' && event.ctrlKey) {
                         group._collapsed = !group._collapsed
                     }
                 }}

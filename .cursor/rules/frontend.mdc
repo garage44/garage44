@@ -6,7 +6,7 @@ globs:
   - "packages/common/scss/**"
   - "**/*.scss"
   - "**/*.tsx"
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Expressio Frontend Development Rules
@@ -38,8 +38,8 @@ src/components/
 ```tsx
 // ✅ Proper component structure
 interface TranslationProps {
-  translations: Translation[];
-  onSelect?: (id: string) => void;
+    translations: Translation[];
+    onSelect?: (id: string) => void;
 }
 
 export const TranslationGroup = ({ translations, onSelect }: TranslationProps) => {
@@ -169,15 +169,15 @@ class Store {
 ```scss
 // ✅ Use predefined spacing
 .translation-item {
-  margin: $spacer-1;
-  padding: $spacer-2;
-  font-size: $font-size-base;
+    margin: $spacer-1;
+    padding: $spacer-2;
+    font-size: $font-size-base;
 }
 
 // ❌ Don't use arbitrary values
 .bad-item {
-  margin: 1rem;
-  padding: 2rem;
+    margin: 1rem;
+    padding: 2rem;
 }
 ```
 

@@ -1,9 +1,9 @@
 import {config, saveConfig} from '../lib/config.ts'
 import {enola, logger, workspaces} from '../service.ts'
 
-export default async function(router) {
+export default function apiConfig(router) {
     // HTTP API endpoints using familiar Express-like pattern
-    router.get('/api/config', async () => {
+    router.get('/api/config', () => {
         // For now, assume admin user since we don't have session context here
         // In a real implementation, you'd get the user from the session
         const user = config.users.find((i) => i.name === 'admin')
@@ -21,11 +21,11 @@ export default async function(router) {
 
     router.post('/api/config', async (req) => {
         // For now, assume admin user since we don't have session context here
-        const user = config.users.find((i) => i.name === 'admin')
+        const user = config.users.find((user) => user.name === 'admin')
         if (!user.admin) {
             return new Response(JSON.stringify({error: 'Unauthorized'}), {
+                headers: { 'Content-Type': 'application/json' },
                 status: 403,
-                headers: { 'Content-Type': 'application/json' }
             })
         }
 
@@ -34,11 +34,8 @@ export default async function(router) {
 
         for (const [engineName, engine] of Object.entries(config.enola.engines)) {
             const engineConfig = engine as any
-            if (engineConfig.api_key) {
-                // Note: activate/deactivate methods may not exist, using init instead
-                if (enola.engines[engineName] && typeof enola.engines[engineName].init === 'function') {
-                    await enola.engines[engineName].init(engineConfig, logger)
-                }
+            if (engineConfig.api_key && enola.engines[engineName] && typeof enola.engines[engineName].init === 'function') {
+                await enola.engines[engineName].init(engineConfig, logger)
             }
         }
 
@@ -48,7 +45,7 @@ export default async function(router) {
         const requestedWorkspaceIds = body.workspaces.map(w => w.workspace_id)
         // Find workspaces that need to be removed
         const redundantWorkspaces = workspaces.workspaces.filter(
-            w => !requestedWorkspaceIds.includes(w.config.workspace_id),
+            workspace => !requestedWorkspaceIds.includes(workspace.config.workspace_id),
         )
 
         // Remove redundant workspaces
