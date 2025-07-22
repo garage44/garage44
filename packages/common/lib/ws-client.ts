@@ -27,7 +27,7 @@ class WebSocketClient extends EventEmitter {
     private eventHandlers: Record<string, ((data: MessageData) => void)[]> = {}
     private intentionalClose = false
     private maxReconnectAttempts = 10
-    private maxReconnectDelay = 30000 // 30 seconds
+    private maxReconnectDelay = 30_000 // 30 seconds
     private messageListeners: EventListener[] = []
     private pendingRequests = new Map<string, {
         reject: (reason?: unknown) => void
@@ -36,7 +36,7 @@ class WebSocketClient extends EventEmitter {
     }>()
     private reconnectAttempts = 0
     private reconnectTimeout: ReturnType<typeof setTimeout> | null = null
-    private requestTimeout = 30000 // 30 seconds
+    private requestTimeout = 30_000 // 30 seconds
     private url: string
     private messageQueue: {data?: MessageData; id?: string; method?: string; url: string}[] = []
 
@@ -71,7 +71,7 @@ class WebSocketClient extends EventEmitter {
 
     // Remove URL-based handler
     offRoute(url: string, handler?: (data: MessageData) => void) {
-        if (!this.eventHandlers[url]) return
+        if (!this.eventHandlers[url]) {return}
 
         if (handler) {
             this.eventHandlers[url] = this.eventHandlers[url].filter(h => h !== handler)
@@ -128,7 +128,7 @@ class WebSocketClient extends EventEmitter {
                 const message = JSON.parse(event.data)
 
                 // Handle request-response messages first
-                if (this.handleResponse(message)) return
+                if (this.handleResponse(message)) {return}
 
                 this.emit('message', message)
 
@@ -267,7 +267,7 @@ class WebSocketClient extends EventEmitter {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
                 logger.debug('[WS] connection not open, queuing request')
                 // Instead of resolving null immediately, queue both the message and its promise handlers
-                const id = Math.random().toString(36).substring(2, 15)
+                const id = Math.random().toString(36).slice(2, 15)
                 logger.debug(`[WS] generated request id for queue: ${id}`)
                 this.messageQueue.push({data, id, method, url})
 
@@ -286,7 +286,7 @@ class WebSocketClient extends EventEmitter {
                 return
             }
 
-            const id = Math.random().toString(36).substring(2, 15)
+            const id = Math.random().toString(36).slice(2, 15)
             logger.debug(`[WS] sending request with id: ${id}`)
             const message = constructMessage(url, data, id, method)
 

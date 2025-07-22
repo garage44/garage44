@@ -5,13 +5,13 @@ const LEVELS: Record<LogLevel, number> = {
 }
 
 const COLORS = {
-    debug: '\x1b[90m', // gray
-    error: '\x1b[31m', // red
-    info: '\x1b[34m', // blue
-    reset: '\x1b[0m',
-    success: '\x1b[38;2;39;174;96m', // muted green (matches browser #27ae60)
-    verbose: '\x1b[36m', // cyan
-    warn: '\x1b[33m', // yellow
+    debug: '\x1B[90m', // gray
+    error: '\x1B[31m', // red
+    info: '\x1B[34m', // blue
+    reset: '\x1B[0m',
+    success: '\x1B[38;2;39;174;96m', // muted green (matches browser #27ae60)
+    verbose: '\x1B[36m', // cyan
+    warn: '\x1B[33m', // yellow
 }
 
 export class Logger {
@@ -40,31 +40,31 @@ export class Logger {
 
                 if (level === 'debug') {
             // Keep prefix color, but make timestamp and message text medium grey
-            const mediumGrey = '\x1b[38;5;244m' // medium gray
+            const mediumGrey = '\x1B[38;5;244m' // medium gray
             return `${color}[${levelStr[0]}]${COLORS.reset} ${mediumGrey}[${ts}] ${msg}${COLORS.reset}`
         }
 
         if (level === 'warn') {
             // Keep prefix color, but make timestamp and message text light orange
-            const lightOrange = '\x1b[38;5;215m' // light orange pastel
+            const lightOrange = '\x1B[38;5;215m' // light orange pastel
             return `${color}[${levelStr[0]}]${COLORS.reset} ${lightOrange}[${ts}] ${msg}${COLORS.reset}`
         }
 
         if (level === 'success') {
             // Keep prefix color, but make timestamp and message text light green
-            const lightGreen = '\x1b[38;5;156m' // light green pastel
+            const lightGreen = '\x1B[38;5;156m' // light green pastel
             return `${color}[${levelStr[0]}]${COLORS.reset} ${lightGreen}[${ts}] ${msg}${COLORS.reset}`
         }
 
                 if (level === 'info') {
             // Keep prefix color, but make timestamp and message text pastel blue
-            const pastelBlue = '\x1b[38;5;153m' // pastel blue
+            const pastelBlue = '\x1B[38;5;153m' // pastel blue
             return `${color}[${levelStr[0]}]${COLORS.reset} ${pastelBlue}[${ts}] ${msg}${COLORS.reset}`
         }
 
         if (level === 'error') {
             // Keep prefix color, but make timestamp and message text pastel red
-            const pastelRed = '\x1b[38;5;210m' // pastel red
+            const pastelRed = '\x1B[38;5;210m' // pastel red
             return `${color}[${levelStr[0]}]${COLORS.reset} ${pastelRed}[${ts}] ${msg}${COLORS.reset}`
         }
 
@@ -72,7 +72,7 @@ export class Logger {
     }
 
     private logToFile(msg: string) {
-        if (this.fileStream) this.fileStream.write(msg + '\n')
+        if (this.fileStream) {this.fileStream.write(msg + '\n')}
     }
 
     log(level: LogLevel, msg: string, ...args: any[]) {
@@ -88,7 +88,7 @@ export class Logger {
         } else {
             console.log(formatted, ...args)
         }
-        this.logToFile(formatted.replace(/\x1b\[[0-9;]*m/g, ''))
+        this.logToFile(formatted.replaceAll(/\x1B\[[0-9;]*m/g, ''))
     }
 
     error(msg: string, ...args: any[]) {this.log('error', msg, ...args)}
@@ -100,6 +100,6 @@ export class Logger {
 
     setLevel(level: LogLevel) {this.level = level}
     close() {
-        if (this.fileStream) this.fileStream.end()
+        if (this.fileStream) {this.fileStream.end()}
     }
 }

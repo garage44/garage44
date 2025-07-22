@@ -44,7 +44,7 @@ interface WebSocketServerOptions {
     sessionMiddleware?: any
     authOptions?: {
         noSecurityEnv?: string
-        users?: Array<{name: string, [key: string]: unknown}>
+        users?: {name: string, [key: string]: unknown}[]
     }
     globalMiddlewares?: Middleware[]
 }

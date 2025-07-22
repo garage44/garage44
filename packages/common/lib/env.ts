@@ -32,8 +32,8 @@ export default function env(env) {
         }
     })
     document.addEventListener('keyup', (e) => {
-        if (!e.altKey) env.altKey = false
-        if (!e.ctrlKey) env.ctrlKey = false
-        if (!e.shiftKey) env.shiftKey = false
+        if (!e.altKey) {env.altKey = false}
+        if (!e.ctrlKey) {env.ctrlKey = false}
+        if (!e.shiftKey) {env.shiftKey = false}
     })
 }

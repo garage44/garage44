@@ -12,7 +12,7 @@ class Store {
         let restoredState
         try {
             restoredState = JSON.parse(localStorage.getItem('store'))
-        } catch (err) {
+        } catch {
             restoredState = {}
         }
 

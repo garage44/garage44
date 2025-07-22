@@ -30,9 +30,9 @@ export default class Api {
 
         if (res.status === 401) {
             return {status: 'unauthorized'}
-        } else {
-            return await res.json()
         }
+            return await res.json()
+        
     }
 
     async post(endpoint, data) {

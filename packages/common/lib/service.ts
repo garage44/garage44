@@ -16,7 +16,7 @@ function loggerTransports(logger_config: LoggerConfig, type: 'cli' | 'service') 
             colors: true,
             level: logger_config.level || 'info'
         })
-    } else if (type === 'service') {
+    }if (type === 'service') {
         // Service mode: console + file, timestamps enabled, colors enabled for console
         return new Logger({
             ...logger_config,

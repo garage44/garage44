@@ -23,7 +23,7 @@ function flattenEnv(obj, parent, res = {}) {
 function formatBytes(size) {
     if (size > Math.pow(1024, 3)) {
         return `${Math.round((size / Math.pow(1024, 3)) * 10) / 10}GiB`
-    } else if (size > Math.pow(1024, 2)) {
+    }if (size > Math.pow(1024, 2)) {
         return `${Math.round((size / Math.pow(1024, 2)) * 10) / 10}MiB`
     } else if (size > 1024) {
         return `${Math.round((size / 1024) * 10) / 10}KiB`
@@ -41,13 +41,13 @@ function formatBytes(size) {
  */
 function hash(str: string): string {
     // FNV-1a hash algorithm constants
-    let h1 = 0xdeadbeef | 0 // First half
-    let h2 = 0x41c6ce57 | 0 // Second half
+    let h1 = 0xDEADBEEF | 0 // First half
+    let h2 = 0x41C6CE57 | 0 // Second half
 
     for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i)
-        h1 = Math.imul(h1 ^ char, 2654435761)
-        h2 = Math.imul(h2 ^ char, 1597334677)
+        const char = str.codePointAt(i)
+        h1 = Math.imul(h1 ^ char, 2_654_435_761)
+        h2 = Math.imul(h2 ^ char, 1_597_334_677)
     }
 
     // Generate 16-char hex string from the two halves
@@ -94,7 +94,7 @@ function keyMod(reference, apply, refPath = [], nestingLevel = 0) {
  */
 function keyPath(obj, refPath, create = false) {
     if (!Array.isArray(refPath)) {
-        throw new Error('refPath must be an array')
+        throw new TypeError('refPath must be an array')
     }
     if (!refPath.length) {
         return obj
