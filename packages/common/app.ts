@@ -1,22 +1,24 @@
+// oxlint-disable-next-line no-namespace
 import * as _i18n from '@/lib/i18n'
+import {$t} from './lib/i18n'
 import Api from '@/lib/api'
-import EventEmitter from 'eventemitter3'
-import { Logger } from '@garage44/common/lib/logger.ts'
-import Store from '@/lib/store'
+import {EventEmitter} from 'eventemitter3'
+import {Logger} from '@garage44/common/lib/logger.ts'
+import {Store} from '@/lib/store'
 import env from '@/lib/env'
-export {notify} from '@/lib/notifier'
+import {notify} from '@/lib/notifier'
 
-export const logger = new Logger()
+const logger = new Logger()
 logger.setLevel('debug')
-export const store = new Store()
-export const i18n = _i18n
-export const $s = store.state
-export {$t} from './lib/i18n'
 
-export const api = new Api()
-export const events = new EventEmitter()
+const store = new Store()
+const i18n = _i18n
+const $s = store.state
 
-export class App {
+const api = new Api()
+const events = new EventEmitter()
+
+class App {
 
     async init(Main, renderFn, hFn, translations) {
         env($s.env)
@@ -33,3 +35,15 @@ export class App {
 }
 
 globalThis.$s = $s
+
+export {
+    $s,
+    $t,
+    api,
+    App,
+    events,
+    logger,
+    i18n,
+    store,
+    notify,
+}
