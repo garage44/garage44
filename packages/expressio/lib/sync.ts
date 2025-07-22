@@ -19,22 +19,21 @@ export async function syncLanguage(workspace, language, action) {
 
     keyMod(workspace.i18n, (_srcRef, _id, refPath) => {
         const {id, ref} = pathRef(workspace.i18n, refPath)
-        if (typeof ref[id] === 'object') {
-            if ('target' in ref[id]) {
-                if (action === 'remove') {
-                    if (language.id in ref[id].target) {
-                        delete ref[id].target[language.id]
-                    }
-                } else if (action === 'update') {
-                    // These are still placeholders; no need to translate these.
-                    if (ref[id].source.startsWith('tag')) {
-                        ref[id].target[language.id] = ref[id].source
-                    } else {
+        if (typeof ref[id] === 'object' && 'target' in ref[id]) {
+            if (action === 'remove') {
+                if (language.id in ref[id].target) {
+                    delete ref[id].target[language.id]
+                }
+            } else if (action === 'update') {
+                // These are still placeholders; no need to translate these.
+                if (ref[id].source.startsWith('tag')) {
+                    ref[id].target[language.id] = ref[id].source
+                } else {
 
-                        syncTags.push([ref[id], ref[id].source])
-                    }
+                    syncTags.push([ref[id], ref[id].source])
                 }
             }
+
         }
     })
 

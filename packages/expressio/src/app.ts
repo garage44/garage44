@@ -3,13 +3,10 @@ import {
     $s as _$s,
     store,
 } from '@garage44/common/app'
-import {
-    ExpressioState,
-    persistantState,
-    volatileState,
-} from './lib/state'
 import {h, render} from 'preact'
+import {persistantState, volatileState} from './lib/state'
 import {BunchyClient} from '@garage44/bunchy/client'
+import type {ExpressioState} from './types'
 import {Main} from '@/components/main/main'
 import {WebSocketClient} from '@garage44/common/lib/ws-client'
 
@@ -19,11 +16,17 @@ import workspace from '@/.expressio.json'
 // Development client is injected here
 process.env.NODE_ENV === 'development' && new BunchyClient()
 
-export const ws = new WebSocketClient(`ws://${window.location.hostname}:3030/ws`)
-export const $s = _$s as ExpressioState
+const ws = new WebSocketClient(`ws://${globalThis.location.hostname}:3030/ws`)
+const $s = _$s as ExpressioState
 
 store.load(persistantState, volatileState)
 
-export const app = new App()
+const app = new App()
 
 app.init(Main, render, h, i18nFormat(workspace.i18n, workspace.config.languages.target))
+
+export {
+    $s,
+    app,
+    ws,
+}

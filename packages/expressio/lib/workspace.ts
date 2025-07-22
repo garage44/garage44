@@ -1,4 +1,3 @@
-import * as chokidar from 'chokidar'
 import type {I18n, WorkspaceConfig, WorkspaceDescription} from '../src/types.ts'
 import {
     copyObject,
@@ -7,12 +6,14 @@ import {
     mergeDeep,
     sortNestedObjectKeys,
 } from '@garage44/common/lib/utils.ts'
+
 import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import fs from 'fs-extra'
 import {glob} from 'glob'
 import {lintWorkspace} from './lint.ts'
 import {logger} from '../service.ts'
 import path from 'node:path'
+import {watch} from 'chokidar'
 
 export class Workspace {
     private wsManager?: WebSocketServerManager
@@ -42,7 +43,7 @@ export class Workspace {
     private isHistoryOperation = false
 
     // Flag to prevent recursive history additions
-    private watcher: chokidar.FSWatcher
+    private watcher: any
     // Add transaction tracking with smarter time-based grouping
     private pendingChanges = false
     private batchUpdateInProgress = false
@@ -256,7 +257,7 @@ export class Workspace {
         const scan_target = this.config.sync.dir.replace('${workspaceFolder}', path.dirname(this.config.source_file))
         logger.info(`[workspace-${this.config.workspace_id}] watch ${scan_target}`)
         const files = await glob(scan_target)
-        this.watcher = chokidar.watch(files)
+        this.watcher = watch(files as string[])
         this.watcher.on('ready', () => {
             const watched = this.watcher.getWatched()
             const fileCount = Object.values(watched)

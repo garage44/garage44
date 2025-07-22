@@ -5,7 +5,7 @@ import {homedir} from 'node:os'
 import path from 'node:path'
 import rc from 'rc'
 
-export const config = rc('expressio', {
+const config = rc('expressio', {
     enola: {
         engines: {
             anthropic: {
@@ -39,7 +39,7 @@ export const config = rc('expressio', {
     workspaces: [],
 })
 
-export async function initConfig(config) {
+async function initConfig(config) {
     const configPath = path.join(homedir(), '.expressiorc')
     // Check if the config file exists
     if (!await fs.pathExists(configPath)) {
@@ -48,7 +48,7 @@ export async function initConfig(config) {
     return config
 }
 
-export async function saveConfig() {
+async function saveConfig() {
     const configPath = path.join(homedir(), '.expressiorc')
     const data = copyObject(config)
     delete data.configs
@@ -65,4 +65,10 @@ export async function saveConfig() {
 
     await fs.writeFile(configPath, JSON.stringify(data, null, 4))
     logger.info(`[config] saved config to ${configPath}`)
+}
+
+export {
+    config,
+    saveConfig,
+    initConfig,
 }

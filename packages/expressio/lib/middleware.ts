@@ -1,9 +1,9 @@
+import {handleRequest, handleWebSocket} from '@garage44/common/lib/middleware'
 import {logger, runtime} from '../service.ts'
 import apiConfig from '../api/config.ts'
 import apiI18n from '../api/i18n.ts'
 import apiProfile from '../api/profile.ts'
 import apiWorkspaces from '../api/workspaces'
-import {commonMiddleware} from '@garage44/common/lib/middleware'
 import {config} from '../lib/config.ts'
 import path from 'node:path'
 
@@ -104,13 +104,13 @@ const authMiddleware = (request: Request, session: any) => {
         '/api/login',
     ]
 
-    if (endpointAllowList.find((i) => url.pathname.includes(i))) {
+    if (endpointAllowList.some((endpoint) => url.pathname.includes(endpoint))) {
         return true
     }
 
     if (session.userid) {
         const users = config.users
-        const user = users.find((i) => i.name === session.userid)
+        const user = users.find((user) => user.name === session.userid)
         if (user) {
             return true
         }
@@ -142,7 +142,7 @@ const setSessionCookie = (response: Response, sessionId: string) => {
 
 // Auth middleware that can be reused across workspace routes
 const requireAdmin = (ctx, next) => {
-    const user = config.users.find((i) => i.name === ctx.session?.userid)
+    const user = config.users.find((user) => user.name === ctx.session?.userid)
     if (!user?.admin) {
         throw new Error('Unauthorized')
     }
@@ -153,14 +153,13 @@ const requireAdmin = (ctx, next) => {
 
 
 async function initMiddleware(bunchyConfig) {
-    const {handleRequest, handleWebSocket} = await commonMiddleware(logger, config, bunchyConfig)
-    const router = new Router();
+    const router = new Router()
 
     // Register HTTP API endpoints using familiar Express-like pattern
     await apiI18n(router)
     await apiConfig(router)
     await apiProfile(router)
-    await apiWorkspaces(router);
+    await apiWorkspaces(router)
 
     const publicPath = path.join(runtime.service_dir, 'public')
 
@@ -176,12 +175,12 @@ async function initMiddleware(bunchyConfig) {
                 if (success) {
                     return
                 }
-                return new Response("WebSocket upgrade failed", { status: 400 })
+                return new Response('WebSocket upgrade failed', {status: 400})
             }
-            return new Response("WebSocket server not available", { status: 500 })
-        } else {
-            logger.info(`[HTTP] ${url.pathname} miss`)
+            return new Response('WebSocket server not available', {status: 500})
         }
+
+        logger.info(`[HTTP] ${url.pathname} miss`)
 
         // Handle session and auth
         const { session, sessionId } = sessionMiddleware(request)
@@ -215,7 +214,7 @@ async function initMiddleware(bunchyConfig) {
 
         // Try the enhanced request handler (for WebSocket API, etc.)
         try {
-            const response = await handleRequest(request)
+            const response = await handleRequest(request, config,logger, bunchyConfig)
             if (response) {
                 logger.info('[HTTP] Enhanced handler matched', url.pathname)
                 return setSessionCookie(response, sessionId)

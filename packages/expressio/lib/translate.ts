@@ -5,7 +5,7 @@ import {hash} from '@garage44/common/lib/utils.ts'
 
 const LANGUAGE_PROCESSING_DELAY = 100 // 1 second delay between languages
 
-export async function translate_tag(workspace, tagPath:string[], sourceText:string, persist = true) {
+async function translate_tag(workspace, tagPath:string[], sourceText:string, persist = true) {
     const {id, ref} = pathRef(workspace.i18n, tagPath)
 
     ref[id].source = sourceText
@@ -53,7 +53,7 @@ export async function translate_tag(workspace, tagPath:string[], sourceText:stri
     return {id, ref}
 }
 
-export async function translate_path(workspace, tagPath:string[], ignore_cache) {
+async function translate_path(workspace, tagPath:string[], ignore_cache) {
     const {cached, targets} = collectSource(workspace.i18n, tagPath, ignore_cache)
     const translations = []
 
@@ -95,4 +95,9 @@ export async function translate_path(workspace, tagPath:string[], ignore_cache) 
     workspace.broadcastI18nState()
 
     return {cached, targets, translations}
+}
+
+export {
+    translate_tag,
+    translate_path,
 }

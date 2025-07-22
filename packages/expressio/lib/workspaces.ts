@@ -1,7 +1,7 @@
+import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import {Workspace} from './workspace'
-import {WorkspaceDescription} from '../src/types'
+import type {WorkspaceDescription} from '../src/types'
 import {logger} from '../service.ts'
-import {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import path from 'node:path'
 
 export class Workspaces {
@@ -31,7 +31,7 @@ export class Workspaces {
         return workspace
     }
 
-    async delete(workspace_id) {
+    delete(workspace_id) {
         this.workspaces = this.workspaces.filter((i) => i.config.workspace_id !== workspace_id)
         logger.info(`[workspaces] removed workspace ${workspace_id} from configuration`)
     }

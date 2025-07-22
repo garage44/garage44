@@ -23,6 +23,7 @@
     "max-lines-per-function": "off",
     "prefer-default-export": "off",
     "react-in-jsx-scope": "off",
+    "typescript/consistent-indexed-object-style": "off",
     "unicorn/explicit-length-check": "off",
     "unicorn/filename-case": "error",
     "unicorn/no-null": "off",

@@ -1,4 +1,6 @@
-import type {TargetLanguage} from '@garage44/common/types.ts'
+import type {CommonState, TargetLanguage} from '@garage44/common/types'
+import type {DeepSignal} from 'deepsignal'
+import type {EnolaConfig} from '@garage44/enola/types'
 
 type TranslationTarget = Record<string, string>
 
@@ -12,9 +14,9 @@ interface TranslationGroup {
     [key: string]: TranslationEntry | TranslationGroup
 }
 
-export type I18n = Record<string, TranslationGroup>
+type I18n = Record<string, TranslationGroup>
 
-export interface WorkspaceConfig {
+interface WorkspaceConfig {
     languages: {
         source: string
         target: TargetLanguage[]
@@ -27,13 +29,38 @@ export interface WorkspaceConfig {
     workspace_id: string
 }
 
-export interface Workspace {
+interface Workspace {
     config: WorkspaceConfig
     i18n: I18n
 }
 
-export interface WorkspaceDescription {
+interface WorkspaceDescription {
     source_file: string
     status?: 'existing' | 'new'
     workspace_id?: string
+}
+
+interface ExpressioStateBase extends CommonState {
+    enola: EnolaConfig
+    filter: string
+    sort: 'asc' | 'desc'
+    /** Keeps track which tags have been updated for visual feedback */
+    tags: {
+        updated: string
+    }
+    workspace: Workspace
+    workspaces: DeepSignal<[WorkspaceDescription]>
+}
+
+type ExpressioState = DeepSignal<ExpressioStateBase>
+
+export {
+    ExpressioState,
+    type I18n,
+    type TranslationEntry,
+    type TranslationGroup,
+    type TranslationTarget,
+    type Workspace,
+    type WorkspaceConfig,
+    type WorkspaceDescription,
 }
