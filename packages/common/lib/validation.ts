@@ -1,5 +1,6 @@
-import type {Signal} from '@preact/signals';
-import { batch, computed, signal} from '@preact/signals'
+// oxlint-disable-next-line no-duplicate-imports
+import {batch, computed, signal} from '@preact/signals'
+import type {Signal} from '@preact/signals'
 
 interface ValidationRule<Tpl = unknown> {
     message: string

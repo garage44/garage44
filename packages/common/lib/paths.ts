@@ -22,7 +22,9 @@ function collectSource(source, path, ignore_cache = false) {
         }
 
         for (const key in current) {
-            traverse(current[key], [...path, key])
+            if (Object.hasOwn(current, key)) {
+                traverse(current[key], [...path, key])
+            }
         }
     }
 
@@ -116,6 +118,52 @@ function pathHas(source, path, key) {
  * @param {string} mode - How to apply the change: 'self' (target only), 'groups' (target+nested groups), 'all' (target+all nested)
  */
 function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'all' = 'groups') {
+    function applyRecursively(obj) {
+        if (!obj || typeof obj !== 'object') {
+            return
+        }
+
+        for (const key in obj) {
+            if (Object.hasOwn(obj, key)) {
+                const value = obj[key]
+                if (value && typeof value === 'object') {
+                    const isTag = 'source' in value
+
+                    // Apply based on mode and node type
+                    if ((mode === 'all') || (!isTag && mode === 'groups')) {
+                        mergeDeep(value, modifier)
+                    }
+
+                    // Continue recursion
+                    applyRecursively(value)
+                }
+            }
+        }
+    }
+
+    function applyToChildren(obj) {
+        if (!obj || typeof obj !== 'object') {
+            return
+        }
+
+        for (const key in obj) {
+            if (Object.hasOwn(obj, key)) {
+                const value = obj[key]
+                if (value && typeof value === 'object') {
+                    const isTag = 'source' in value
+
+                    // Apply based on mode and node type
+                    if ((mode === 'all') || (!isTag && mode === 'groups')) {
+                        mergeDeep(value, modifier)
+                    }
+
+                    // Continue recursion
+                    applyToChildren(value)
+                }
+            }
+        }
+    }
+
     if (!modifier) {
         return
     }
@@ -127,27 +175,6 @@ function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'all' = 'g
 
         // Recursively apply changes based on mode
         if (mode !== 'self') {
-            function applyRecursively(obj) {
-                if (!obj || typeof obj !== 'object') {
-                    return
-                }
-
-                for (const key in obj) {
-                    const value = obj[key]
-                    if (value && typeof value === 'object') {
-                        const isTag = 'source' in value
-
-                        // Apply based on mode and node type
-                        if ((mode === 'all') || (!isTag && mode === 'groups')) {
-                            mergeDeep(value, modifier)
-                        }
-
-                        // Continue recursion
-                        applyRecursively(value)
-                    }
-                }
-            }
-
             applyRecursively(source)
         }
 
@@ -165,27 +192,6 @@ function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'all' = 'g
 
     // Apply to nested nodes based on mode
     if (mode !== 'self') {
-        function applyToChildren(obj) {
-            if (!obj || typeof obj !== 'object') {
-                return
-            }
-
-            for (const key in obj) {
-                const value = obj[key]
-                if (value && typeof value === 'object') {
-                    const isTag = 'source' in value
-
-                    // Apply based on mode and node type
-                    if ((mode === 'all') || (!isTag && mode === 'groups')) {
-                        mergeDeep(value, modifier)
-                    }
-
-                    // Continue recursion
-                    applyToChildren(value)
-                }
-            }
-        }
-
         applyToChildren(ref[id])
     }
 }

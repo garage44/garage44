@@ -194,7 +194,7 @@ class WebSocketClient extends EventEmitter {
 
         // Calculate delay with exponential backoff
         const delay = Math.min(
-            this.baseReconnectDelay * Math.pow(1.5, this.reconnectAttempts),
+            this.baseReconnectDelay * (1.5 ** this.reconnectAttempts),
             this.maxReconnectDelay,
         )
 

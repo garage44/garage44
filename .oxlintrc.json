@@ -11,6 +11,7 @@
   "plugins": ["react", "jsx-a11y", "typescript", "unicorn", "import"],
   "rules": {
     "import/max-dependencies": "off",
+    "eslint/require-await": "off",
     "eslint/max-depth": ["error", 6],
     "eslint/max-lines": ["error", 1000],
     "eslint/max-params": ["error", 5],
@@ -26,6 +27,9 @@
     "typescript/consistent-indexed-object-style": "off",
     "unicorn/explicit-length-check": "off",
     "unicorn/filename-case": "error",
+    "unicorn/prefer-add-event-listener": "off",
+    "unicorn/prefer-event-target": "off",
+    "unicorn/prefer-structured-clone": "off",
     "unicorn/no-null": "off",
     "yoda": "off"
   },

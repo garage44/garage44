@@ -4,9 +4,7 @@ import classnames from 'classnames'
 
 const classes = classnames
 
-const copyObject = (obj) => {
-    return JSON.parse(JSON.stringify(obj))
-}
+const copyObject = (obj) => JSON.parse(JSON.stringify(obj))
 
 function flattenEnv(obj, parent, res = {}) {
     for (const key of Object.keys(obj)) {
@@ -21,15 +19,15 @@ function flattenEnv(obj, parent, res = {}) {
 }
 
 function formatBytes(size) {
-    if (size > Math.pow(1024, 3)) {
-        return `${Math.round((size / Math.pow(1024, 3)) * 10) / 10}GiB`
-    }if (size > Math.pow(1024, 2)) {
-        return `${Math.round((size / Math.pow(1024, 2)) * 10) / 10}MiB`
-    } else if (size > 1024) {
+    if (size > 1024 ** 3) {
+        return `${Math.round((size / 1024 ** 3) * 10) / 10}GiB`
+    }if (size > 1024 ** 2) {
+        return `${Math.round((size / 1024 ** 2) * 10) / 10}MiB`
+    }if (size > 1024) {
         return `${Math.round((size / 1024) * 10) / 10}KiB`
-    } else {
-        return `${size}B`
     }
+        return `${size}B`
+
 }
 
 /**
@@ -41,18 +39,18 @@ function formatBytes(size) {
  */
 function hash(str: string): string {
     // FNV-1a hash algorithm constants
-    let h1 = 0xDEADBEEF | 0 // First half
-    let h2 = 0x41C6CE57 | 0 // Second half
+    let h1 = 0xDE_AD_BE_EF // First half
+    let h2 = 0x41_C6_CE_57 // Second half
 
-    for (let i = 0; i < str.length; i++) {
-        const char = str.codePointAt(i)
+    for (let index = 0; index < str.length; index++) {
+        const char = str.codePointAt(index)
         h1 = Math.imul(h1 ^ char, 2_654_435_761)
         h2 = Math.imul(h2 ^ char, 1_597_334_677)
     }
 
     // Generate 16-char hex string from the two halves
-    const hash1 = ((h1 >>> 0).toString(16)).padStart(8, '0')
-    const hash2 = ((h2 >>> 0).toString(16)).padStart(8, '0')
+    const hash1 = (h1.toString(16)).padStart(8, '0')
+    const hash2 = (h2.toString(16)).padStart(8, '0')
 
     return hash1 + hash2
 }
@@ -69,17 +67,16 @@ function keyMod(reference, apply, refPath = [], nestingLevel = 0) {
 
     const keys = Object.keys(reference)
     for (const key of keys) {
-        if (key.startsWith('_') || ['src', 'target'].includes(key)) {
-            continue
-        }
-        refPath.push(key)
+        if (!key.startsWith('_') && !['src', 'target'].includes(key)) {
+            refPath.push(key)
 
-        if (typeof reference[key] === 'object' && reference[key] !== null) {
-            keyMod(reference[key], apply, refPath, nestingLevel + 1)
-        } else if (typeof reference[key] === 'string') {
-            apply(reference, key, refPath, nestingLevel + 1)
+            if (typeof reference[key] === 'object' && reference[key] !== null) {
+                keyMod(reference[key], apply, refPath, nestingLevel + 1)
+            } else if (typeof reference[key] === 'string') {
+                apply(reference, key, refPath, nestingLevel + 1)
+            }
+            refPath.pop()
         }
-        refPath.pop()
     }
 }
 
@@ -157,7 +154,7 @@ function padLeft(value: string | number, length: number, char = '0'): string {
 function randomId(size = 8) {
     const characters = 'abcdefghijklmnopqrstuvwxyz0123456789'
     let result = ''
-    for (let i = 0; i < size; i++) {
+    for (let index = 0; index < size; index++) {
         result += characters.charAt(Math.floor(Math.random() * characters.length))
     }
     return result
@@ -192,11 +189,11 @@ function sortNestedObjectKeys(obj) {
  * @param {number} wait - The number of milliseconds to throttle invocations to.
  * @returns {Function} The throttled function.
  */
-function throttle(func, wait, options = {trailing: true}) {
+function throttle(func, wait, options = {trailing: true} as {trailing: boolean}) {
     let lastCallTime = 0
     let timeoutId = null
 
-    return function(...args) {
+    return function throttled(...args) {
         const now = Date.now()
         const remainingTime = wait - (now - lastCallTime)
 
