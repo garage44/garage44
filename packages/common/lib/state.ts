@@ -1,6 +1,3 @@
-import type {DeepSignal} from 'deepsignal'
-
-
 const persistentState = {
     language_ui: {
         selection: 'eng-gbr',
@@ -16,7 +13,7 @@ const volatileState = {
     },
     language_ui: {
         /** Stores the calls to i18next.t, allowing to reactively update $t */
-        i18n: {} as Record<string, unknown>,
+        i18n: {} as Record<string, Record<string, string>>,
         options: [
             {id: 'ara', name: 'Arabic'},
             {id: 'zho', name: 'Chinese (Simplified)'},

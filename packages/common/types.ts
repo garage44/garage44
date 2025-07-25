@@ -1,5 +1,14 @@
 import type {DeepSignal} from 'deepsignal'
 
+type LogLevel = 'error' | 'warn' | 'info' | 'success' | 'verbose' | 'debug'
+
+interface LoggerConfig {
+    level?: LogLevel
+    colors?: boolean
+    file?: string
+    timestamp?: boolean
+}
+
 interface CommonState {
     env: {
         ctrlKey: boolean
@@ -31,5 +40,7 @@ interface TargetLanguage {
 
 export {
     type CommonState,
+    type LoggerConfig,
+    type LogLevel,
     type TargetLanguage,
 }

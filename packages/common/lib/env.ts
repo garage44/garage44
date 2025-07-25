@@ -4,7 +4,7 @@ export default function env(env) {
     if (globalThis.navigator) {
         env.isBrowser = true
 
-        if (env.ua.indexOf('safari') >= 0 && env.ua.indexOf('chrome') < 0) {
+        if (env.ua.includes('safari') && !env.ua.includes('chrome')) {
             env.isSafari = true
             env.browserName = 'Safari'
         }
@@ -14,26 +14,26 @@ export default function env(env) {
         }
     }
 
-    const mediaQuery = window.matchMedia('(max-width: 768px)')
+    const mediaQuery = globalThis.matchMedia('(max-width: 768px)')
     env.layout = mediaQuery.matches ? 'tablet' : 'desktop'
-    mediaQuery.addListener(function(e) {
-        env.layout = e.matches ? 'tablet' : 'desktop'
+    mediaQuery.addListener((event) => {
+        env.layout = event.matches ? 'tablet' : 'desktop'
     })
 
-    document.addEventListener('keydown', (e) => {
-        if (e.altKey) {
+    document.addEventListener('keydown', (event) => {
+        if (event.altKey) {
             env.altKey = true
         }
-        if (e.ctrlKey) {
+        if (event.ctrlKey) {
             env.ctrlKey = true
         }
-        if (e.shiftKey) {
+        if (event.shiftKey) {
             env.shiftKey = true
         }
     })
-    document.addEventListener('keyup', (e) => {
-        if (!e.altKey) {env.altKey = false}
-        if (!e.ctrlKey) {env.ctrlKey = false}
-        if (!e.shiftKey) {env.shiftKey = false}
+    document.addEventListener('keyup', (event) => {
+        if (!event.altKey) {env.altKey = false}
+        if (!event.ctrlKey) {env.ctrlKey = false}
+        if (!event.shiftKey) {env.shiftKey = false}
     })
 }

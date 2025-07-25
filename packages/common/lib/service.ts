@@ -1,6 +1,5 @@
-import type {LoggerConfig} from './logger.ts'
 import {Logger} from './logger.ts'
-// import {type LoggerConfig} from './logger.ts'
+import type {LoggerConfig} from '../types'
 
 function serviceLogger(logger_config: LoggerConfig) {
     return new Logger(logger_config)
@@ -11,18 +10,18 @@ function loggerTransports(logger_config: LoggerConfig, type: 'cli' | 'service') 
         // CLI mode: console only, no timestamps, colors enabled
         return new Logger({
             ...logger_config,
-            file: undefined,
-            timestamp: false,
             colors: true,
-            level: logger_config.level || 'info'
+            file: undefined,
+            level: logger_config.level || 'info',
+            timestamp: false,
         })
     }if (type === 'service') {
         // Service mode: console + file, timestamps enabled, colors enabled for console
         return new Logger({
             ...logger_config,
-            timestamp: true,
             colors: true,
-            level: logger_config.level || 'info'
+            level: logger_config.level || 'info',
+            timestamp: true,
         })
     }
     return new Logger(logger_config)

@@ -1,7 +1,7 @@
 import {$s, api, logger, store} from '@/app'
+import {changeLanguage, init as i18nextInit, t as i18nextT} from 'i18next'
 import {copyObject, keyMod, keyPath} from './utils.ts'
 import {effect} from '@preact/signals'
-import i18next from 'i18next'
 
 function i18nFormat(i18n, targetLanguages) {
     const _i18n = copyObject(i18n)
@@ -42,7 +42,7 @@ async function init(translations = null) {
         $s.language_ui.i18n[language_id] = {}
     }
 
-    i18next.init({
+    i18nextInit({
         debug: process.env.NODE_ENV !== 'production',
         fallbackLng: 'eng-gbr',
         interpolation: {
@@ -54,7 +54,7 @@ async function init(translations = null) {
 
     effect(() => {
         const language = $s.language_ui.selection
-        i18next.changeLanguage(language)
+        changeLanguage(language)
         logger.debug(`language changed to: ${language}`)
         store.save()
     })
@@ -75,7 +75,7 @@ const $t = (key: string, context = null): string => {
     const cacheKey = context ? `${key}:${JSON.stringify(context)}` : key
 
     if (!$s.language_ui.i18n[$s.language_ui.selection][cacheKey]) {
-        $s.language_ui.i18n[$s.language_ui.selection][cacheKey] = i18next.t(key, context)
+        $s.language_ui.i18n[$s.language_ui.selection][cacheKey] = i18nextT(key, context) as string
     }
     return $s.language_ui.i18n[$s.language_ui.selection][cacheKey]
 }

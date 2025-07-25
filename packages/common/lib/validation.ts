@@ -30,7 +30,7 @@ function setTouched(modelRef: ModelRef, touched = true) {
 // Combine multiple validation rules into one
 const and = (...rules: ValidationRule[]): ValidationRule => ({
     // Use first failing message, or empty string if all pass
-    message: rules.find(r => !r.test)?.message || '',
+    message: rules.find(rule => !rule.test)?.message || '',
     // All rules must pass
     test: (value) => rules.every(rule => rule.test(value)),
 })
@@ -46,8 +46,8 @@ interface ValidationResult {
 // Add this helper function to aggregate validation errors
 function getValidationErrors(validation: Record<string, ValidationResult>) {
     const errors: string[] = []
-    for (const field in validation) {
-        const fieldErrors = validation[field].errors
+    for (const [field, result] of Object.entries(validation)) {
+        const fieldErrors = result.errors
         if (fieldErrors.length > 0) {
             errors.push(...fieldErrors)
         }
@@ -56,7 +56,7 @@ function getValidationErrors(validation: Record<string, ValidationResult>) {
     return errors.join('<br/>')
 }
 
-function createValidator<T extends Record<string, ValidationEntry>>(validations: T) {
+function createValidator<TValidations extends Record<string, ValidationEntry>>(validations: TValidations) {
     // Track initial values to determine if fields are dirty
     const initialValues = new Map<ModelRef, unknown>()
 

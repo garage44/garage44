@@ -1,17 +1,22 @@
+// oxlint-disable-next-line consistent-type-specifier-style
+import {type DeepSignal, deepSignal} from 'deepsignal'
 import {copyObject, mergeDeep} from '@/lib/utils'
 
-import {deepSignal} from 'deepsignal'
+class Store<StateType extends object = object> {
 
-class Store {
+    state: DeepSignal<StateType>
+    persistantState?: StateType
 
-    state = deepSignal({})
+    constructor() {
+        this.state = deepSignal({} as StateType)
+    }
 
-    load(persistantState, volatileState) {
+    load(persistantState: StateType, volatileState: Partial<StateType>) {
         this.persistantState = copyObject(persistantState)
 
-        let restoredState
+        let restoredState = {}
         try {
-            restoredState = JSON.parse(localStorage.getItem('store'))
+            restoredState = JSON.parse(localStorage.getItem('store') || '{}')
         } catch {
             restoredState = {}
         }
@@ -19,10 +24,10 @@ class Store {
         Object.assign(this.state, mergeDeep(mergeDeep(persistantState, restoredState), volatileState))
     }
 
-    filterKeys(obj, blueprint) {
+    filterKeys(obj: any, blueprint: any) {
         const result = {}
         for (const key in blueprint) {
-            if (obj.hasOwnProperty(key)) {
+            if (Object.hasOwn(obj, key)) {
                 if (typeof blueprint[key] === 'object' && blueprint[key] !== null) {
                     result[key] = this.filterKeys(obj[key], blueprint[key])
                 } else {

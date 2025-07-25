@@ -1,22 +1,23 @@
 export default class Api {
 
     async delete(endpoint, data) {
-        return await (await fetch(endpoint, {
+        const response = await fetch(endpoint, {
             body: JSON.stringify(data),
             credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
             },
             method: 'DELETE',
-        })).json()
+        })
+        return await response.json()
     }
 
     async get(endpoint, params = null) {
-        const url = new URL(endpoint, window.location.origin)
+        const url = new URL(endpoint, globalThis.location.origin)
         if (params) {
             Object.entries(params).forEach(([key, value]) => {
                 if (!value) {value = ''}
-                url.searchParams.append(key, value)
+                url.searchParams.append(key, String(value))
             })
         }
 
@@ -32,28 +33,30 @@ export default class Api {
             return {status: 'unauthorized'}
         }
             return await res.json()
-        
+
     }
 
     async post(endpoint, data) {
-        return await (await fetch(endpoint, {
+        const response = await fetch(endpoint, {
             body: JSON.stringify(data),
             credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
             },
             method: 'POST',
-        })).json()
+        })
+        return await response.json()
     }
 
     async put(endpoint, data) {
-        return await (await fetch(endpoint, {
+        const response = await fetch(endpoint, {
             body: JSON.stringify(data),
             credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
             },
             method: 'PUT',
-        })).json()
+        })
+        return await response.json()
     }
 }

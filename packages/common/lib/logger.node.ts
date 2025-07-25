@@ -9,14 +9,15 @@ const LEVELS: Record<LogLevel, number> = {
     warn: 1,
 }
 
+const ESC = String.fromCodePoint(27)
 const COLORS = {
-    debug: '\u001B[90m', // gray
-    error: '\u001B[31m', // red
-    info: '\u001B[34m', // blue
-    reset: '\u001B[0m',
-    success: '\u001B[38;2;39;174;96m', // muted green (matches browser #27ae60)
-    verbose: '\u001B[36m', // cyan
-    warn: '\u001B[33m', // yellow
+    debug: `${ESC}[90m`, // gray
+    error: `${ESC}[31m`, // red
+    info: `${ESC}[34m`, // blue
+    reset: `${ESC}[0m`,
+    success: `${ESC}[38;2;39;174;96m`, // muted green (matches browser #27ae60)
+    verbose: `${ESC}[36m`, // cyan
+    warn: `${ESC}[33m`, // yellow
 }
 
 export class Logger {
@@ -93,7 +94,7 @@ export class Logger {
         } else {
             console.log(formatted, ...args)
         }
-        this.logToFile(formatted.replaceAll(/\u001B\[[0-9;]*m/g, ''))
+        this.logToFile(formatted.replaceAll(new RegExp(`${ESC}\\[[0-9;]*m`, 'g'), ''))
     }
 
     error(msg: string, ...args: any[]) {this.log('error', msg, ...args)}
