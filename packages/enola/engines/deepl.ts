@@ -1,6 +1,6 @@
 import type {EnolaEngine, EnolaEngineConfig, EnolaLogger, EnolaTag, TargetLanguage} from '../types.ts'
-import {toIso6391} from '../iso-codes.ts'
 import {decode} from 'html-entities'
+import {toIso6391} from '../iso-codes.ts'
 
 
 const ignoreXTagRegex = /<x>[\w]*<\/x>/g
@@ -51,8 +51,8 @@ export default class Deepl implements EnolaEngine {
         try {
             this.logger.info('[enola-deepl] activating...')
             await this.usage()
-        } catch (err) {
-            this.logger.error(`Deepl initialization failed (${err})`)
+        } catch (error) {
+            this.logger.error(`Deepl initialization failed (${error})`)
             process.exit(1)
         }
         this.config.active = true
@@ -76,7 +76,7 @@ export default class Deepl implements EnolaEngine {
 
         const headers = {
             Authorization: `DeepL-Auth-Key ${this.config.api_key}`,
-            ...(options.method !== 'GET' ? {'Content-Type': 'application/json'} : {}),
+            ...(options.method === 'GET' ?  {} : {'Content-Type': 'application/json'}),
             ...options.headers,
         }
 
@@ -98,10 +98,7 @@ export default class Deepl implements EnolaEngine {
     }
 
     prepareSource(tag:EnolaTag) {
-        const srcPrepped = tag.source.replaceAll(placeholderRegex, (res) => {
-            return res.replace('{{', '<x>').replace('}}', '</x>')
-        })
-
+        const srcPrepped = tag.source.replaceAll(placeholderRegex, (res) => res.replace('{{', '<x>').replace('}}', '</x>'))
         return srcPrepped
     }
 
@@ -128,14 +125,14 @@ export default class Deepl implements EnolaEngine {
             preppedTarget = decode(preppedTarget)
             this.logger.info(`[enola-deepl] ${toIso6391(targetLanguage.id)}: ${preppedTarget}`)
             return preppedTarget
-        } catch (err) {
-            this.logger.error(`[enola-deepl] ${err}`)
+        } catch (error) {
+            this.logger.error(`[enola-deepl] ${error}`)
             return ''
         }
     }
 
     async translateBatch(batch:EnolaTag[], targetLanguage:TargetLanguage) {
-        const sourceStrings = batch.map(([tag]) => this.prepareSource(tag))
+        const sourceStrings = batch.map((tag) => this.prepareSource(tag))
         this.logger.info(`[enola-deepl] Converting ${targetLanguage.id} to ISO 639-1`)
         try {
             const response = await this.fetch('/translate', {
@@ -159,9 +156,9 @@ export default class Deepl implements EnolaEngine {
                 return translatedText
             })
 
-            return batch.map(([tag], index) => [tag, translations[index]])
-        } catch (err) {
-            this.logger.error(`[enola-deepl] ${targetLanguage.id}: ${err}`)
+            return translations
+        } catch (error) {
+            this.logger.error(`[enola-deepl] ${targetLanguage.id}: ${error}`)
             return []
         }
     }

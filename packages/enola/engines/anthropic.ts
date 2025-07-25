@@ -37,7 +37,7 @@ export default class Anthropic implements EnolaEngine {
         name: 'anthropic',
         usage: {
             count: 0,  // Will store total tokens used
-            limit: 1000000, // Example limit - adjust as needed
+            limit: 1_000_000, // Example limit - adjust as needed
         },
     }
 
@@ -62,8 +62,8 @@ export default class Anthropic implements EnolaEngine {
             this.config.usage.count = response.headers.limit - response.headers.remaining
 
             await this.usage() // This will log the initial usage stats
-        } catch (err) {
-            this.logger.error(`Anthropic initialization failed (${err})`)
+        } catch (error) {
+            this.logger.error(`Anthropic initialization failed (${error})`)
             process.exit(1)
         }
 
@@ -101,8 +101,8 @@ export default class Anthropic implements EnolaEngine {
         return {
             ...json,
             headers: {
-                limit: parseInt(response.headers.get('anthropic-ratelimit-tokens-limit') || '100000'),
-                remaining: parseInt(response.headers.get('anthropic-ratelimit-tokens-remaining') || '100000'),
+                limit: parseInt(response.headers.get('anthropic-ratelimit-tokens-limit') || '100000', 10),
+                remaining: parseInt(response.headers.get('anthropic-ratelimit-tokens-remaining') || '100000', 10),
                 reset: response.headers.get('anthropic-ratelimit-tokens-reset') || '',
             },
         }
@@ -115,9 +115,9 @@ export default class Anthropic implements EnolaEngine {
         if (similarTranslations?.length) {
             examplesSection = `
 EXISTING TRANSLATION EXAMPLES:
-${similarTranslations.slice(0, 5).map(t =>
-        `Key: ${t.path.join('.')}
-Source text: ${t.source}`,
+${similarTranslations.slice(0, 5).map((example) =>
+        `Key: ${example.path.join('.')}
+Source text: ${example.source}`,
     ).join('\n\n')}
 
 Use these examples to maintain a consistent style and tone.
@@ -160,8 +160,8 @@ SUGGESTED SOURCE TEXT:`
 
         // Clean up the suggested text
         let suggestedText = response.content[0].text.trim()
-        suggestedText = suggestedText.replace(/[«»""]/g, '') // Remove guillemets and smart quotes
-        suggestedText = suggestedText.replace(/^['"]|['"]$/g, '') // Remove single or double quotes at start/end
+        suggestedText = suggestedText.replaceAll(/[«»""]/g, '') // Remove guillemets and smart quotes
+        suggestedText = suggestedText.replaceAll(/^['"]|['"]$/g, '') // Remove single or double quotes at start/end
 
         // Update usage statistics if available
         if (response.usage) {
@@ -181,7 +181,7 @@ SUGGESTED SOURCE TEXT:`
      * @returns The translated text
      */
     async translate(tag:EnolaTag, targetLanguage:TargetLanguage) {
-        const language = target.find((t) => t.id === targetLanguage.id)
+        const language = target.find((tag) => tag.id === targetLanguage.id)
         const prompt = `TRANSLATION TASK
 ===
 You are translating this sentence: "${tag.source}"
@@ -223,9 +223,9 @@ TRANSLATE THE SENTENCE HERE:`
 
         // Clean up the translation by removing quotes and special characters
         let translation = response.content[0].text.trim()
-        translation = translation.replace(/[«»""]/g, '') // Remove guillemets and smart quotes
-        translation = translation.replace(/^['"]|['"]$/g, '') // Remove single or double quotes at start/end
-        translation = translation.replace(/<\/?i>/g, '') // Remove <i> and </i> tags while keeping their content
+        translation = translation.replaceAll(/[«»""]/g, '') // Remove guillemets and smart quotes
+        translation = translation.replaceAll(/^['"]|['"]$/g, '') // Remove single or double quotes at start/end
+        translation = translation.replaceAll(/<\/?i>/g, '') // Remove <i> and </i> tags while keeping their content
 
         this.logger.info(`[enola-anthropic] ${targetLanguage.id}: ${translation}`)
         return translation
@@ -238,15 +238,15 @@ TRANSLATE THE SENTENCE HERE:`
         return this.config.usage
     }
 
-    async translateBatch(batch: [{ source: string }], targetLanguage: { id: string, name: string }) {
-        const language = target.find((t) => t.id === targetLanguage.id)
-        const sourceStrings = batch.map(([tag]) => tag.source)
+    async translateBatch(batch: EnolaTag[], targetLanguage: TargetLanguage) {
+        const language = target.find((lang) => lang.id === targetLanguage.id)
+        const sourceStrings = batch.map((tag) => tag.source)
 
         const prompt = `BATCH TRANSLATION TASK
 ===
 You are translating these sentences to ${targetLanguage.id} (${language.name}):
 
-${sourceStrings.map((text, i) => `${i + 1}. "${text}"`).join('\n')}
+${sourceStrings.map((text, index) => `${index + 1}. "${text}"`).join('\n')}
 
 CRITICAL INSTRUCTIONS:
 - Translate each sentence naturally
@@ -289,17 +289,16 @@ TRANSLATIONS:`
             .filter(line => /^\d+\./.test(line))
             .map(line => {
                 let translation = line.replace(/^\d+\.\s*/, '').trim()
-                translation = translation.replace(/[«»""]/g, '') // Remove guillemets and smart quotes
-                translation = translation.replace(/^['"]|['"]$/g, '') // Remove single or double quotes at start/end
-                translation = translation.replace(/<\/?i>/g, '') // Remove <i> and </i> tags while keeping their content
+                translation = translation.replaceAll(/[«»""]/g, '') // Remove guillemets and smart quotes
+                translation = translation.replaceAll(/^['"]|['"]$/g, '') // Remove single or double quotes at start/end
+                translation = translation.replaceAll(/<\/?i>/g, '') // Remove <i> and </i> tags while keeping their content
                 return translation
             })
-
         // Match the translations with their original tags
-        return batch.map(([tag], index) => {
+        return batch.map((_tag, index) => {
             const translation = translations[index]
             this.logger.info(`[enola-anthropic] ${targetLanguage.id}: ${translation}`)
-            return [tag, translation]
+            return translation
         })
     }
 }
