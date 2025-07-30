@@ -98,12 +98,31 @@ const tasks: Tasks = {} as Tasks
 tasks.assets = new Task('assets', async function taskAssets() {
     await fs.ensureDir(path.join(settings.dir.public, 'fonts'))
 
-    const actions = [
-        fs.copy(path.join(settings.dir.assets, 'fonts'), path.join(settings.dir.public, 'fonts')),
-        fs.copy(path.join(settings.dir.assets, 'img'), path.join(settings.dir.public, 'img')),
+    const copyOperations = [
+        // Copy fonts from common package (shared across all projects)
+        {
+            from: path.join(settings.dir.common, 'fonts'),
+            to: path.join(settings.dir.public, 'fonts'),
+        },
+        // Copy local assets if they exist
+        {
+            from: path.join(settings.dir.assets, 'img'),
+            to: path.join(settings.dir.public, 'img'),
+        },
     ]
 
-    await Promise.all(actions)
+    // Execute copy operations, skipping if source doesn't exist
+    for (const operation of copyOperations) {
+        try {
+            await fs.copy(operation.from, operation.to)
+        } catch (error) {
+            // Skip if source directory doesn't exist
+            const errorCode = error.code
+            if (errorCode !== 'ENOENT') {
+                throw error
+            }
+        }
+    }
 })
 
 

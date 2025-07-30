@@ -1,6 +1,6 @@
 @import "./_variables.css";
 @import "./_spacing.css";
-@import "./_typography.css";
+@import "../../../common/css/_typography.css";
 @import "../../../common/css/common/_tooltip.css";
 
 html, body {

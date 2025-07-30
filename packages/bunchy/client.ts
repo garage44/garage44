@@ -233,7 +233,7 @@ export class BunchyClient extends WebSocketClient {
         constructor() {
         // Use the full path to prevent WebSocketClient from appending /ws
         // The endpoint should match the path provided in the server configuration
-        const url = `ws://${window.location.hostname}:3030/bunchy`
+        const url = `ws://${window.location.hostname}:${window.location.port}/bunchy`
 
         super(url)
 
