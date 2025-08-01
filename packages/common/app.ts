@@ -5,7 +5,7 @@ import Api from '@/lib/api'
 import env from '@/lib/env'
 import {EventEmitter} from 'eventemitter3'
 import {Logger} from '@garage44/common/lib/logger.ts'
-import {notify} from '@/lib/notifier'
+import {Notifier} from '@/lib/notifier'
 import {Store} from '@/lib/store'
 import type {CommonState} from '@/types'
 
@@ -16,6 +16,7 @@ const store = new Store<CommonState>()
 const i18n = _i18n
 const $s = store.state
 
+const notifier = new Notifier($s.notifications)
 const api = new Api()
 const events = new EventEmitter()
 
@@ -45,6 +46,6 @@ export {
     events,
     logger,
     i18n,
+    notifier,
     store,
-    notify,
 }

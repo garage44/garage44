@@ -1,6 +1,5 @@
 import {$s} from '@/app'
 
-let notificationId = 1
 
 export interface Notification {
     id: number
@@ -18,16 +17,26 @@ export interface Notification {
     type: string
 }
 
-export function notify(notification: Notification, timeout = 3000) {
-    notification.id = notificationId
-    $s.notifications.push(notification)
+export class Notifier {
 
-    if (timeout) {
-        setTimeout(() => {
-            $s.notifications.splice($s.notifications.findIndex(i => i.id === notification.id), 1)
-        }, timeout)
+    notificationId = 1
+    notifications: [Notification]
+
+    constructor(notifications) {
+        this.notifications = notifications
     }
 
-    notificationId += 1
-    return $s.notifications.find((i) => i.id === notification.id)
+    notify(notification: Notification, timeout = 3000) {
+        notification.id = this.notificationId
+        this.notifications.push(notification)
+
+        if (timeout) {
+            setTimeout(() => {
+                this.notifications.splice(this.notifications.findIndex(_notification => _notification.id === notification.id), 1)
+            }, timeout)
+        }
+
+        this.notificationId += 1
+        return this.notifications.find((_notification) => _notification.id === notification.id)
+    }
 }

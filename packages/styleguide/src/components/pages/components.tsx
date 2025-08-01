@@ -1,4 +1,3 @@
-import {h} from 'preact'
 import {
     Button,
     FieldCheckbox,
@@ -10,29 +9,24 @@ import {
     Notifications,
     Progress,
 } from '@garage44/common/components'
+import {ComponentDemo} from '../lib/component-demo'
+import {Notifier} from '@garage44/common/lib/notifier'
+import {StateView} from '../lib/state_view'
 import {deepSignal} from 'deepsignal'
-import {ComponentDemo} from '../component-demo'
 
-const state = deepSignal({
-    model: 'test',
+const data = deepSignal({
+    model: {
+        notifications: [],
+        select: '',
+    },
 })
+
+const notifier = new Notifier(data.model.notifications)
 
 export const Components = () => (
     <div class="styleguide__page">
         <h1>Components</h1>
         <p>All available components from @garage44/common</p>
-
-        {/* <ComponentDemo title="Button" component="Button">
-            <div class="demo-grid">
-                <Button label="Default Button" />
-                <Button label="Primary Button" type="primary" />
-                <Button label="Secondary Button" type="secondary" />
-                <Button label="Danger Button" type="danger" />
-                <Button icon="settings" label="With Icon" />
-                <Button icon="settings" />
-                <Button label="Disabled" disabled />
-            </div>
-        </ComponentDemo>
 
         <ComponentDemo title="Icon" component="Icon">
             <div class="demo-grid">
@@ -43,6 +37,18 @@ export const Components = () => (
                 <Icon name="eye" />
                 <Icon name="eye_off" />
                 <Icon name="loading" />
+            </div>
+        </ComponentDemo>
+
+        <ComponentDemo title="Button" component="Button">
+            <div class="demo-grid">
+                <Button label="Default Button" />
+                <Button label="Primary Button" type="primary" />
+                <Button label="Secondary Button" type="secondary" />
+                <Button label="Danger Button" type="danger" />
+                <Button icon="settings" label="With Icon" />
+                <Button icon="settings" />
+                <Button label="Disabled" disabled />
             </div>
         </ComponentDemo>
 
@@ -60,7 +66,7 @@ export const Components = () => (
             <div class="demo-grid">
                 <FieldText label="Basic Input" model="test" />
                 <FieldText label="With Placeholder" placeholder="Enter text..." model="test" />
-                <FieldText label="Required Field" required model="test" />
+                <FieldText label="Required Field" model="test" />
                 <FieldText label="Disabled" disabled model="test" />
             </div>
         </ComponentDemo>
@@ -76,13 +82,17 @@ export const Components = () => (
         <ComponentDemo title="Field Select" component="FieldSelect">
             <div class="demo-grid">
                 <FieldSelect
+                    help="I am a select description"
                     label="Basic Select"
+                    model="test"
                     options={[
                         {id: 'option1', name: 'Option 1'},
                         {id: 'option2', name: 'Option 2'},
                         {id: 'option3', name: 'Option 3'},
                     ]}
                 />
+
+                <StateView />
             </div>
         </ComponentDemo>
 
@@ -90,10 +100,10 @@ export const Components = () => (
             <div class="demo-grid">
                 <FieldCheckboxGroup
                     label="Multiple Choice"
-                    options={[
-                        {id: 'item1', name: 'Item 1'},
-                        {id: 'item2', name: 'Item 2'},
-                        {id: 'item3', name: 'Item 3'},
+                    model={[
+                        {value: 'item1', label: 'Item 1'},
+                        {value: 'item2', label: 'Item 2'},
+                        {value: 'item3', label: 'Item 3'},
                     ]}
                 />
             </div>
@@ -101,12 +111,22 @@ export const Components = () => (
 
         <ComponentDemo title="Field Upload" component="FieldUpload">
             <div class="demo-grid">
-                <FieldUpload label="File Upload" />
+                <FieldUpload
+                    label="File Upload"
+                    model="test"
+                />
             </div>
         </ComponentDemo>
 
         <ComponentDemo title="Notifications" component="Notifications">
-            <Notifications />
-        </ComponentDemo> */}
+            <Button
+                label="Add notification"
+                onClick={() => {
+                    console.log("CLICK")
+                    notifier.notify({type: 'info', message: 'Hello there'})
+                }}
+            />
+            <Notifications notifications={data.model.notifications}/>
+        </ComponentDemo>
     </div>
 )
