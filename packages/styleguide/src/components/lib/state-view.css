@@ -1,0 +1,55 @@
+.c-state-view {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 13px;
+    margin-top: 16px;
+    padding: 12px;
+}
+
+.c-state-view__header {
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+}
+
+.c-state-view__title {
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.c-state-view__content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.c-state-view__entry {
+    align-items: flex-start;
+    display: flex;
+    gap: 8px;
+}
+
+.c-state-view__key {
+    color: #495057;
+    flex-shrink: 0;
+    font-weight: 500;
+    min-width: 80px;
+}
+
+.c-state-view__value {
+    color: #212529;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.c-state-view__value:empty::after {
+    color: #adb5bd;
+    content: '<empty>';
+    font-style: italic;
+}

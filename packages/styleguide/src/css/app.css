@@ -55,3 +55,25 @@ body {
     overflow-x: auto;
     padding: var(--spacer-3);
 }
+
+.icon-grid {
+    display: grid;
+    gap: var(--spacer-3);
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+.icon-grid__item {
+    align-items: center;
+    border: 1px solid var(--surface-6);
+    border-radius: var(--border-radius-d);
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacer-2);
+}
+
+.icon-grid__label {
+    font-size: var(--font-xs);
+    margin-top: var(--spacer-1);
+    text-align: center;
+    word-break: break-all;
+}
