@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "NODE_ENV=development BUN_ENV=development bun run --watch service.ts start",
     "build": "NODE_ENV=production BUN_ENV=development bun service.ts build",
+    "lint:css": "stylelint src/**/*.css",
     "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json",
     "serve": "bun serve dist --port 8080"
   },
