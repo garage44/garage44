@@ -5,6 +5,7 @@ const persistentState = {
     panel: {
         collapsed: false,
     },
+    theme: 'dark',
 } as const
 
 const volatileState = {

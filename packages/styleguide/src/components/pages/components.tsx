@@ -30,19 +30,75 @@ const data = deepSignal({
 const notifier = new Notifier(data.model.notifications)
 
 export const Components = () => (
-    <div class="styleguide__page">
+    <div class="styleguide-page">
         <h1>Components</h1>
         <p>All available components from @garage44/common</p>
 
         <ComponentDemo title="Button" component="Button">
             <div class="demo-grid">
-                <Button label="Default Button" onClick={() => {}} />
-                <Button label="Primary Button" type="primary" onClick={() => {}} />
-                <Button label="Secondary Button" type="secondary" onClick={() => {}} />
-                <Button label="Danger Button" type="danger" onClick={() => {}} />
-                <Button label="With Icon" onClick={() => {}} />
-                <Button onClick={() => {}} />
-                <Button label="Disabled" disabled onClick={() => {}} />
+                <div class="item-container">
+                    <div class="item-label">Default</div>
+                    <div class="item-variant">
+                        <Button icon="workspace" label="Default" type="default"/>
+                        <Button active={true} icon="workspace" label="Default Active" type="default"/>
+                        <Button disabled={true} icon="workspace" label="Default Disabled" type="default"/>
+                    </div>
+
+                    <div class="item-variant">
+                        <Button icon="workspace" label="Info" type="info"/>
+                        <Button active={true} icon="workspace" label="Info Active" type="info"/>
+                        <Button disabled={true} icon="workspace" label="Info Disabled" type="info"/>
+                    </div>
+
+                    <div class="item-variant">
+                        <Button icon="workspace" label="Success" type="success"/>
+                        <Button active={true} icon="workspace" label="Success Active" type="success"/>
+                        <Button disabled={true} icon="workspace" label="Success Disabled" type="success"/>
+                    </div>
+
+                    <div class="item-variant">
+                        <Button icon="workspace" label="Danger" type="danger"/>
+                        <Button active={true} icon="workspace" label="Danger Active" type="danger"/>
+                        <Button disabled={true} icon="workspace" label="Danger Disabled" type="danger"/>
+                    </div>
+
+                    <div class="item-variant">
+                        <Button icon="workspace" label="Warning" type="warning"/>
+                        <Button active={true} icon="workspace" label="Warning Active" type="warning"/>
+                        <Button disabled={true} icon="workspace" label="Warning Disabled" type="warning"/>
+                    </div>
+                </div>
+                <div class="item-container">
+                    <div class="item-label">Toggle</div>
+                    <div class="item-variant">
+                        <Button icon="workspace" type="default" variant="toggle" />
+                        <Button active={true} icon="workspace" type="default" variant="toggle" />
+                        <Button disabled={true} icon="workspace" type="default" variant="toggle" />
+                    </div>
+                    <div class="item-variant">
+                        <Button icon="workspace" type="info" variant="toggle" />
+                        <Button active={true} icon="workspace" type="info" variant="toggle" />
+                        <Button disabled={true} icon="workspace" type="info" variant="toggle" />
+                    </div>
+                    <div class="item-variant">
+                        <Button icon="workspace" type="success" variant="toggle" />
+                        <Button active={true} icon="workspace" type="success" variant="toggle" />
+                        <Button disabled={true} icon="workspace" type="success" variant="toggle" />
+                    </div>
+                    <div class="item-variant">
+                        <Button icon="workspace" type="danger" variant="toggle" />
+                        <Button active={true} icon="workspace" type="danger" variant="toggle" />
+                        <Button disabled={true} icon="workspace" type="danger" variant="toggle" />
+                    </div>
+                    <div class="item-variant">
+                        <Button icon="workspace" type="warning" variant="toggle" />
+                        <Button active={true} icon="workspace" type="warning" variant="toggle" />
+                        <Button disabled={true} icon="workspace" type="warning" variant="toggle" />
+                    </div>
+                </div>
+
+
+
             </div>
         </ComponentDemo>
 
@@ -107,7 +163,7 @@ export const Components = () => (
         <ComponentDemo title="Field Checkbox Group" component="FieldCheckboxGroup">
             <div class="demo-grid">
                 <FieldCheckboxGroup
-                    className=""
+                    class=""
                     model={[
                         {label: 'Item 1', value: data.model.checkboxGroupValue.includes('item1')},
                         {label: 'Item 2', value: data.model.checkboxGroupValue.includes('item2')},

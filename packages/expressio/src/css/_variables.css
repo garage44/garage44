@@ -188,3 +188,37 @@
     --info-7: var(--primary-7);
     --info-8: var(--primary-8);
 }
+
+/* ===== LIGHT THEME ===== */
+
+:root.light {
+    /* Inverted lightness scale for light theme */
+    --l-0: 0.95;   /* Light backgrounds (was dark text) */
+    --l-1: 0.85;   /* Light elements (was dark elements) */
+    --l-2: 0.75;   /* Light surfaces (was medium-dark text) */
+    --l-3: 0.60;   /* Light secondary (was body text) */
+    --l-4: 0.45;   /* Medium - balanced (unchanged) */
+    --l-5: 0.35;   /* Dark secondary (was secondary text) */
+    --l-6: 0.26;   /* Dark elements (was light elements) */
+    --l-7: 0.18;   /* Dark surfaces (was light backgrounds) */
+    --l-8: 0.14;   /* Dark text (was lightest backgrounds) */
+
+    /* Light theme specific semantic overrides */
+    --input-bg: var(--surface-0);
+    --input-text: var(--surface-8);
+    --input-border: var(--surface-2);
+    --input-placeholder: var(--surface-5);
+    --input-label: var(--surface-8);
+    --input-disabled-bg: var(--surface-1);
+    --input-disabled-text: var(--surface-6);
+    --input-disabled-border: var(--surface-3);
+
+    /* Adjust shadows for light theme */
+    --shadow-soft: 0 2px var(--spacer-2) oklch(var(--l-7) var(--c-2) var(--h-surface) / 0.15);
+    --shadow-d: 0 4px var(--spacer-1) oklch(var(--l-8) var(--c-2) var(--h-surface) / 0.25);
+    --shadow-hard: 0 8px var(--spacer-3) oklch(var(--l-8) var(--c-2) var(--h-surface) / 0.35);
+
+    /* Light theme table adjustments */
+    --table-header-bg: var(--primary-1);
+    --table-header-text: var(--primary-7);
+}

@@ -25,6 +25,7 @@ interface CommonState {
     panel: {
         collapsed: boolean
     }
+    theme: 'dark' | 'light' | 'system'
     user: DeepSignal<{
         admin: boolean
         authenticated: boolean

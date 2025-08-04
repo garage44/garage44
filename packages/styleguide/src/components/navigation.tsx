@@ -1,10 +1,21 @@
+import {Button} from '@garage44/common/components'
 import {h} from 'preact'
 import {route} from 'preact-router'
 import {$s} from '../app'
 
 export const Navigation = () => (
     <nav class="styleguide__nav">
-        <h1 class="styleguide__title">Garage44 Common</h1>
+        <div class="styleguide__header">
+            <h1 class="styleguide__title">Garage44 Common</h1>
+            <Button
+                icon={$s.theme === 'dark' ? 'sun' : 'moon'}
+                onClick={() => {
+                    $s.theme = $s.theme === 'dark' ? 'light' : 'dark'
+                }}
+                tip={`Switch to ${$s.theme === 'dark' ? 'light' : 'dark'} theme`}
+                variant="toggle"
+            />
+        </div>
         <ul class="styleguide__nav-list">
             <li>
                 <button

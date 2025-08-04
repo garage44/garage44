@@ -10,7 +10,7 @@ const colors = [
 
 
 export const Tokens = () => (
-    <div class="styleguide__page">
+    <div class="styleguide-page">
         <h1>Design Tokens</h1>
         <p>Colors, typography, spacing, and other design system values</p>
 

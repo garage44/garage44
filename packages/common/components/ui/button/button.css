@@ -1,38 +1,103 @@
 .c-button {
+    /* Button type abstraction using CSS custom properties */
+    --btn-bg: var(--btn-color-4, var(--info-4));
+    --btn-text: var(--btn-color-7, var(--info-7));
+    --btn-hover: var(--btn-color-3, var(--info-3));
+    --btn-active: var(--btn-color-2, var(--info-2));
+    --btn-active-hover: var(--btn-color-1, var(--info-1));
+
+    align-items: center;
+    background: var(--btn-bg);
+    border: none;
     border-radius: var(--spacer-3);
+    color: var(--btn-text);
     cursor: pointer;
+    display: flex;
     font-size: var(--font-s);
     font-weight: 800;
-    padding: calc(var(--spacer-1) * 1.5) var(--spacer-2);
+    gap: var(--spacer-1);
+    overflow: hidden;
+    padding: var(--spacer-1) var(--spacer-2);
     transition: all 0.1s ease;
 
-    &.type-info {
-        background: var(--info-4);
-        border: none;
-        color: var(--info-7);
+    .label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 
-        &:hover {
-            background: var(--info-3);
+    &:hover {
+        background: var(--btn-hover);
+    }
+
+    /* Type variants - just set the color scale */
+
+    &.type-default {
+        --btn-color-1: var(--surface-1);
+        --btn-color-2: var(--surface-2);
+        --btn-color-3: var(--surface-3);
+        --btn-color-4: var(--surface-4);
+        --btn-color-7: var(--surface-7);
+    }
+
+    &.type-warning {
+        --btn-color-1: var(--warning-1);
+        --btn-color-2: var(--warning-2);
+        --btn-color-3: var(--warning-3);
+        --btn-color-4: var(--warning-4);
+        --btn-color-7: var(--warning-7);
+    }
+
+    &.type-danger {
+        --btn-color-1: var(--danger-1);
+        --btn-color-2: var(--danger-2);
+        --btn-color-3: var(--danger-3);
+        --btn-color-4: var(--danger-4);
+        --btn-color-7: var(--danger-7);
+
+        &.active {
+            background: var(--btn-active);
+
+            &:hover {
+                background: var(--btn-active-hover);
+            }
         }
     }
 
-    &.type-success {
-        background: var(--success-4);
-        border: none;
-        color: var(--success-7);
-        font-weight: 600;
+    &.type-info {
+        --btn-color-1: var(--info-1);
+        --btn-color-2: var(--info-2);
+        --btn-color-3: var(--info-3);
+        --btn-color-4: var(--info-4);
+        --btn-color-7: var(--info-7);
+    }
 
-        &:hover {
-            background: var(--success-3);
-        }
+    &.type-success {
+        --btn-color-1: var(--success-1);
+        --btn-color-2: var(--success-2);
+        --btn-color-3: var(--success-3);
+        --btn-color-4: var(--success-4);
+        --btn-color-7: var(--success-7);
+        font-weight: 600;
     }
 
     &.disabled {
         opacity: 0.5;
 
         &:hover {
-            background: var(--info-4);
+            background: var(--btn-bg);
             cursor: not-allowed;
         }
+    }
+
+    /* Variant modifiers */
+
+    &.variant-toggle {
+        aspect-ratio: 1;
+        border-radius: 50%;
+        justify-content: center;
+        min-width: calc(var(--spacer-1) * 4);
+        padding: var(--spacer-1);
+        width: auto;
     }
 }

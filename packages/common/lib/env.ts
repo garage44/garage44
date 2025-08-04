@@ -1,3 +1,6 @@
+import {$s} from '@garage44/common/app'
+import {effect} from '@preact/signals'
+
 export default function env(env) {
     env.ua = navigator.userAgent.toLowerCase()
 
@@ -36,4 +39,28 @@ export default function env(env) {
         if (!event.ctrlKey) {env.ctrlKey = false}
         if (!event.shiftKey) {env.shiftKey = false}
     })
+
+        // Watch for theme changes and update HTML class
+    let isFirstRun = true
+    effect(() => {
+        const theme = $s.theme
+
+        // Skip the initial run, only react to actual changes
+        if (isFirstRun) {
+            isFirstRun = false
+            return
+        }
+
+        const htmlElement = document.documentElement
+
+        // Remove existing theme classes
+        htmlElement.classList.remove('dark', 'light', 'system')
+
+        // Add new theme class
+        if (theme) {
+            htmlElement.classList.add(theme)
+        }
+    })
+
+    console.log('TEHEM', $s.theme)
 }

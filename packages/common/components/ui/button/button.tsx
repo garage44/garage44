@@ -5,7 +5,20 @@ import {classes} from '@/lib/utils'
 import {signal} from '@preact/signals'
 import tippy from 'tippy.js'
 
+export interface ButtonProps {
+    active?: boolean
+    className?: string
+    disabled?: boolean
+    icon?: string
+    label?: string
+    onClick?: (event: MouseEvent) => void
+    tip?: string
+    type?: 'default' | 'success' | 'info' | 'warning' | 'danger'
+    variant?: 'default' | 'toggle'
+}
+
 export function Button({
+    active = false,
     className = '',
     disabled = false,
     icon = null,
@@ -13,7 +26,8 @@ export function Button({
     onClick,
     tip = '',
     type = 'default',
-}) {
+    variant = 'default',
+}: ButtonProps) {
     const buttonRef = useRef(null)
     const tippyInstanceRef = useRef<TippyInstance | null>(null)
     const tipSignal = signal(tip)
@@ -47,7 +61,8 @@ export function Button({
 
     return <button
         ref={buttonRef}
-        class={classes('c-button', `type-${type}`, className, {
+        class={classes('c-button', `type-${type}`, `variant-${variant}`, className, {
+            active,
             disabled,
         })}
         disabled={disabled}
@@ -61,7 +76,7 @@ export function Button({
         }}
     >
 
-        {icon && <Icon name={icon}/>}
-        {label}
+        {icon && <Icon name={icon} type="unset" />}
+        {label && <span class="label">{label}</span>}
     </button>
 }
