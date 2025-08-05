@@ -1,8 +1,8 @@
 .c-button {
     /* Button type abstraction using CSS custom properties */
-    --btn-bg: var(--btn-color-4, var(--info-4));
-    --btn-text: var(--btn-color-7, var(--info-7));
-    --btn-hover: var(--btn-color-3, var(--info-3));
+    --btn-bg: var(--btn-color-4, var(--info-6));
+    --btn-text: var(--btn-color-7, var(--info-8));
+    --btn-hover: var(--btn-color-3, var(--info-5));
     --btn-active: var(--btn-color-2, var(--info-2));
     --btn-active-hover: var(--btn-color-1, var(--info-1));
 
@@ -33,27 +33,27 @@
     /* Type variants - just set the color scale */
 
     &.type-default {
-        --btn-color-1: var(--surface-1);
-        --btn-color-2: var(--surface-2);
-        --btn-color-3: var(--surface-3);
-        --btn-color-4: var(--surface-4);
-        --btn-color-7: var(--surface-7);
+        --btn-bg: var(--surface-3);
+        --btn-text: var(--surface-8);
+        --btn-hover: var(--surface-5);
+        --btn-active: var(--surface-2);
+        --btn-active-hover: var(--surface-1);
     }
 
     &.type-warning {
-        --btn-color-1: var(--warning-1);
-        --btn-color-2: var(--warning-2);
-        --btn-color-3: var(--warning-3);
-        --btn-color-4: var(--warning-4);
-        --btn-color-7: var(--warning-7);
+        --btn-bg: var(--warning-3);
+        --btn-text: var(--warning-5);
+        --btn-hover: var(--warning-5);
+        --btn-active: var(--warning-2);
+        --btn-active-hover: var(--warning-1);
     }
 
     &.type-danger {
-        --btn-color-1: var(--danger-1);
-        --btn-color-2: var(--danger-2);
-        --btn-color-3: var(--danger-3);
-        --btn-color-4: var(--danger-4);
-        --btn-color-7: var(--danger-7);
+        --btn-bg: var(--danger-3);
+        --btn-text: var(--danger-5);
+        --btn-hover: var(--danger-5);
+        --btn-active: var(--danger-2);
+        --btn-active-hover: var(--danger-1);
 
         &.active {
             background: var(--btn-active);
@@ -65,19 +65,19 @@
     }
 
     &.type-info {
-        --btn-color-1: var(--info-1);
-        --btn-color-2: var(--info-2);
-        --btn-color-3: var(--info-3);
-        --btn-color-4: var(--info-4);
-        --btn-color-7: var(--info-7);
+        --btn-bg: var(--info-3);
+        --btn-text: var(--info-8);
+        --btn-hover: var(--info-5);
+        --btn-active: var(--info-2);
+        --btn-active-hover: var(--info-1);
     }
 
     &.type-success {
-        --btn-color-1: var(--success-1);
-        --btn-color-2: var(--success-2);
-        --btn-color-3: var(--success-3);
-        --btn-color-4: var(--success-4);
-        --btn-color-7: var(--success-7);
+        --btn-bg: var(--success-3);
+        --btn-text: var(--success-8);
+        --btn-hover: var(--success-5);
+        --btn-active: var(--success-2);
+        --btn-active-hover: var(--success-1);
         font-weight: 600;
     }
 
