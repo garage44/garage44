@@ -225,7 +225,6 @@ class WebSocketClient extends EventEmitter {
     }
 
     private processMessageQueue() {
-        logger.debug(`[WS] processing message queue, ${this.messageQueue.length} messages`)
         while (this.messageQueue.length > 0) {
             const message = this.messageQueue.shift()
             if (message) {
@@ -242,7 +241,6 @@ class WebSocketClient extends EventEmitter {
                 }
             }
         }
-        logger.debug(`[WS] finished processing message queue`)
     }
 
     private handleResponse(message: WebSocketMessage) {

@@ -2,14 +2,15 @@
 import * as _i18n from '@/lib/i18n'
 import {$t} from './lib/i18n'
 import Api from '@/lib/api'
-import {initializeBunchy} from '@garage44/bunchy/client'
 import type {CommonState} from '@/types'
 import {EventEmitter} from 'eventemitter3'
-import {logger} from '@garage44/common/lib/logger.ts'
 import {Store} from '@/lib/store'
 import env from '@/lib/env'
+import {initializeBunchy} from '@garage44/bunchy/client'
+import {logger} from '@garage44/common/lib/logger.ts'
 
-// Logger level defaults per environment; avoid setting here to prevent init cycles in browser
+logger.setLevel('debug')
+
 
 const store = new Store<CommonState>()
 const i18n = _i18n
