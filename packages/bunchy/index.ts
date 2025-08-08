@@ -61,6 +61,9 @@ async function bunchyService(server, config, wsManager?) {
             wsManager.broadcast(url, data, method)
         }
         logger.info('[bunchy] connected to WebSocket broadcast system')
+
+        // Set up log forwarding route
+        setupLogForwarding(wsManager, config.logPrefix || 'B')
     } else {
         logger.warn('[bunchy] no WebSocket manager provided - broadcasts will be disabled')
     }
@@ -122,6 +125,52 @@ const broadcast = (url: string, data: MessageData, method = 'POST') => {
     } else {
         logger.warn('[bunchy] Broadcast attempted but WebSocket not connected:', url, data, method)
     }
+}
+
+// Set up log forwarding from client to server
+function setupLogForwarding(wsManager: any, logPrefix: string) {
+    logger.info(`[bunchy] Setting up log forwarding route with prefix: ${logPrefix}`)
+
+    wsManager.api.post('/logs/forward', async (ctx, req) => {
+        const { level, message, args, timestamp, source } = req.data as {
+            level: string
+            message: string
+            args: string[]
+            timestamp: string
+            source: string
+            prefix?: string
+        }
+
+        // Format the log message for server output
+        const formattedMessage = `[${logPrefix}] ${message}`
+        const formattedArgs = args && args.length > 0 ? args : []
+
+        // Log using the server logger with appropriate level
+        switch (level) {
+            case 'error':
+                logger.remote(formattedMessage, ...formattedArgs)
+                break
+            case 'warn':
+                logger.remote(formattedMessage, ...formattedArgs)
+                break
+            case 'info':
+                logger.remote(formattedMessage, ...formattedArgs)
+                break
+            case 'success':
+                logger.remote(formattedMessage, ...formattedArgs)
+                break
+            case 'verbose':
+                logger.remote(formattedMessage, ...formattedArgs)
+                break
+            case 'debug':
+                logger.remote(formattedMessage, ...formattedArgs)
+                break
+            default:
+                logger.remote(formattedMessage, ...formattedArgs)
+        }
+
+        return { status: 'ok' }
+    })
 }
 
 export {

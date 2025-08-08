@@ -13,6 +13,7 @@ let bunchyConfig: any = null
 if (BUN_ENV === 'development') {
     bunchyConfig = {
         common: path.resolve(import.meta.dir, '../', 'common'),
+        logPrefix: 'B',
         reload_ignore: [],
         version: '1.0.0',
         workspace: import.meta.dir,

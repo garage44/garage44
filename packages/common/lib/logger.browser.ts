@@ -20,9 +20,15 @@ const COLORS = {
 
 class Logger {
     private level: LogLevel
+    private logForwarder?: (level: LogLevel, msg: string, args: any[]) => void
 
     constructor({ level = 'info' }: { level?: LogLevel } = {}) {
         this.level = level
+    }
+
+    setLogForwarder(forwarder: (level: LogLevel, msg: string, args: any[]) => void) {
+        console.log("SET", forwarder)
+        this.logForwarder = forwarder
     }
 
     private shouldLog(level: LogLevel) {
@@ -32,6 +38,12 @@ class Logger {
     log(level: LogLevel, msg: string, ...args: any[]) {
         if (!this.shouldLog(level)) {
             return
+        }
+
+        // Forward to server if forwarder is set
+        if (this.logForwarder) {
+            console.log("FORWARDING LOG")
+            this.logForwarder(level, msg, args)
         }
         const now = new Date()
         const ts = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
@@ -63,7 +75,12 @@ class Logger {
             const pastelRedStyle = 'color: #ff9999'
             const prefix = `%c[${levelStr[0]}]%c [${ts}] ${msg}`
             console.error(prefix, style, pastelRedStyle, ...args)
-        } else {
+        } else if (level === 'remote') {
+            const purpleStyle = 'color:rgb(166, 32, 184)'
+            const prefix = `%c[${levelStr[0]}]%c [${ts}] ${msg}`
+            console.warn(prefix, style, purpleStyle, ...args)
+        }
+        else {
             const prefix = `%c[${levelStr[0]}]%c [${ts}]`
             if (level === 'verbose') {
                 console.log(`${prefix} ${msg}`, style, '', ...args)
@@ -73,6 +90,7 @@ class Logger {
     error(msg: string, ...args: any[]) { this.log('error', msg, ...args); }
     warn(msg: string, ...args: any[]) { this.log('warn', msg, ...args); }
     info(msg: string, ...args: any[]) { this.log('info', msg, ...args); }
+    remote(msg: string, ...args: any[]) { this.log('remote', msg, ...args); }
     success(msg: string, ...args: any[]) { this.log('success', msg, ...args); }
     verbose(msg: string, ...args: any[]) { this.log('verbose', msg, ...args); }
     debug(msg: string, ...args: any[]) { this.log('debug', msg, ...args); }

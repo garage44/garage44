@@ -1,9 +1,10 @@
-type LogLevel = 'error' | 'warn' | 'info' | 'success' | 'verbose' | 'debug';
+type LogLevel = 'error' | 'warn' | 'info' | 'success' | 'verbose' | 'debug' | 'remote';
 
 const LEVELS: Record<LogLevel, number> = {
     debug: 5,
     error: 0,
     info: 2,
+    remote: 2,
     success: 3,
     verbose: 4,
     warn: 1,
@@ -14,6 +15,7 @@ const COLORS = {
     debug: `${ESC}[90m`, // gray
     error: `${ESC}[31m`, // red
     info: `${ESC}[34m`, // blue
+    remote: `${ESC}[38;5;166m`, // purple
     reset: `${ESC}[0m`,
     success: `${ESC}[38;2;39;174;96m`, // muted green (matches browser #27ae60)
     verbose: `${ESC}[36m`, // cyan
@@ -44,7 +46,7 @@ export class Logger {
         const color = COLORS[level] || ''
         const levelStr = level.toUpperCase()
 
-                if (level === 'debug') {
+        if (level === 'debug') {
             // Keep prefix color, but make timestamp and message text medium grey
             const mediumGrey = '\u001B[38;5;244m' // medium gray
             return `${color}[${levelStr[0]}]${COLORS.reset} ${mediumGrey}[${ts}] ${msg}${COLORS.reset}`
@@ -54,6 +56,11 @@ export class Logger {
             // Keep prefix color, but make timestamp and message text light orange
             const lightOrange = '\u001B[38;5;215m' // light orange pastel
             return `${color}[${levelStr[0]}]${COLORS.reset} ${lightOrange}[${ts}] ${msg}${COLORS.reset}`
+        }
+
+        if (level === 'remote') {
+            const purple = '\u001B[38;5;166m' // purple
+            return `${color}[${levelStr[0]}]${COLORS.reset} ${purple}[${ts}] ${msg}${COLORS.reset}`
         }
 
         if (level === 'success') {
@@ -88,9 +95,10 @@ export class Logger {
         const formatted = this.format(level, msg)
         if (level === 'error') {
             console.error(formatted, ...args)
-        }
-        else if (level === 'warn') {
+        } else if (level === 'warn') {
             console.warn(formatted, ...args)
+        } else if (level === 'remote') {
+            console.log(formatted, ...args)
         } else {
             console.log(formatted, ...args)
         }
@@ -100,6 +108,7 @@ export class Logger {
     error(msg: string, ...args: any[]) {this.log('error', msg, ...args)}
     warn(msg: string, ...args: any[]) {this.log('warn', msg, ...args)}
     info(msg: string, ...args: any[]) {this.log('info', msg, ...args)}
+    remote(msg: string, ...args: any[]) {this.log('remote', msg, ...args)}
     success(msg: string, ...args: any[]) {this.log('success', msg, ...args)}
     verbose(msg: string, ...args: any[]) {this.log('verbose', msg, ...args)}
     debug(msg: string, ...args: any[]) {this.log('debug', msg, ...args)}

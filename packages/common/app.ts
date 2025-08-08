@@ -2,12 +2,11 @@
 import * as _i18n from '@/lib/i18n'
 import {$t} from './lib/i18n'
 import Api from '@/lib/api'
-import {EventEmitter} from 'eventemitter3'
-import env from '@/lib/env'
-import {Logger} from '@garage44/common/lib/logger.ts'
-import {Notifier} from '@/lib/notifier'
-import {Store} from '@/lib/store'
 import type {CommonState} from '@/types'
+import {EventEmitter} from 'eventemitter3'
+import {Logger} from '@garage44/common/lib/logger.ts'
+import {Store} from '@/lib/store'
+import env from '@/lib/env'
 
 const logger = new Logger()
 logger.setLevel('debug')
@@ -16,7 +15,6 @@ const store = new Store<CommonState>()
 const i18n = _i18n
 const $s = store.state
 
-const notifier = new Notifier($s.notifications)
 const api = new Api()
 const events = new EventEmitter()
 
@@ -46,6 +44,5 @@ export {
     events,
     logger,
     i18n,
-    notifier,
     store,
 }

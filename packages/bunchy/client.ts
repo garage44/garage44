@@ -1,4 +1,5 @@
 import {WebSocketClient} from '@garage44/common/lib/ws-client'
+import {logger} from '@garage44/common/lib/logger'
 
 // Keep track of which stylesheets are currently being updated
 const pendingStylesheetUpdates = new Set<string>()
@@ -228,17 +229,27 @@ function hideExceptionPage() {
     }
 }
 
-export class BunchyClient extends WebSocketClient {
+// Helper function to initialize Bunchy with configurable log forwarding
+export function initializeBunchy(options: { logPrefix?: string } = {}) {
+    return new BunchyClient(options)
+}
 
-        constructor() {
+export class BunchyClient extends WebSocketClient {
+    private logPrefix: string
+
+    constructor(options: { logPrefix?: string } = {}) {
         // Use the full path to prevent WebSocketClient from appending /ws
         // The endpoint should match the path provided in the server configuration
         const url = `ws://${window.location.hostname}:${window.location.port}/bunchy`
 
         super(url)
+        this.logPrefix = options.logPrefix || 'B'
+
+        console.log('[Bunchy] Client initialized with prefix:', this.logPrefix)
 
         // Set up route handlers BEFORE connecting to avoid race condition
         this.setupRouter()
+        this.setupLogForwarding()
 
         // Small delay to ensure handlers are fully registered before connecting
         setTimeout(() => {
@@ -246,7 +257,7 @@ export class BunchyClient extends WebSocketClient {
         }, 100)
     }
 
-        setupRouter() {
+    setupRouter() {
         // Using URL-based routing method for handling bunchy task messages
         this.onRoute('/tasks/code_frontend', () => {
             hideExceptionPage()
@@ -274,5 +285,37 @@ export class BunchyClient extends WebSocketClient {
             const {task, error, details, timestamp} = data as {task: string, error: string, details: string, timestamp: string}
             showExceptionPage(task, error, details, timestamp)
         })
+    }
+
+    setupLogForwarding() {
+        // Set up log forwarding for the browser logger
+        if (typeof logger.setLogForwarder === 'function') {
+            console.log('[Bunchy] Setting up log forwarder with prefix:', this.logPrefix)
+            logger.setLogForwarder((level, msg, args) => {
+                // Only forward if we're connected
+                if (this.isConnected()) {
+                    const serializedArgs = args.map(arg => {
+                        try {
+                            return typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                        } catch {
+                            return '[Circular or unserializable object]'
+                        }
+                    })
+
+                    this.post('/logs/forward', {
+                        level,
+                        message: msg,
+                        args: serializedArgs,
+                        prefix: this.logPrefix,
+                        timestamp: new Date().toISOString(),
+                        source: 'client'
+                    }).catch(error => {
+                        console.warn('[Bunchy] Failed to forward log:', error)
+                    })
+                }
+            })
+        } else {
+            console.warn('[Bunchy] logger.setLogForwarder is not available')
+        }
     }
 }

@@ -246,6 +246,8 @@ class WebSocketServerManager extends EventEmitter {
         try {
             const parsedMessage = JSON.parse(message)
             const {url, data, id, method = 'GET'} = parsedMessage
+            
+
 
             // Create context for this request
             const ctx: WebSocketContext = {

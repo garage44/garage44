@@ -4,13 +4,13 @@ import {
     store,
 } from '@garage44/common/app'
 import {h, render} from 'preact'
-import {persistantState, volatileState} from './lib/state'
-import {BunchyClient} from '@garage44/bunchy/client'
-import {Main} from '@/components/main'
-import type {StyleguideState} from './types'
 import {i18nFormat} from '@garage44/common/lib/i18n.ts'
+import {initializeBunchy} from '@garage44/bunchy/client'
+import {persistantState, volatileState} from './lib/state'
+import type {StyleguideState} from './types'
+import {Main} from '@/components/main'
 // Development client is injected here
-process.env.NODE_ENV === 'development' && new BunchyClient()
+process.env.NODE_ENV === 'development' && initializeBunchy({ logPrefix: 'S' })
 
 const $s = _$s as StyleguideState
 
