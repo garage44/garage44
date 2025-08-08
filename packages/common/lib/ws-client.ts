@@ -1,5 +1,7 @@
 import {EventEmitter} from 'eventemitter3'
-import {logger} from '@garage44/common/app'
+import {logger} from '@garage44/common/lib/logger.ts'
+
+globalThis.logger = logger
 
 type MessageData = Record<string, unknown>
 
@@ -255,7 +257,6 @@ class WebSocketClient extends EventEmitter {
             return false
         }
 
-        logger.debug(`[WS] resolving pending request: ${message.id}`)
         clearTimeout(pending.timeout)
         this.pendingRequests.delete(message.id)
         pending.resolve(message.data || null)
@@ -282,12 +283,10 @@ class WebSocketClient extends EventEmitter {
                     resolve,
                     timeout,
                 })
-                logger.debug(`[WS] stored pending request with id: ${id}`)
                 return
             }
 
             const id = Math.random().toString(36).slice(2, 15)
-            logger.debug(`[WS] sending request with id: ${id}`)
             const message = constructMessage(url, data, id, method)
 
             const timeout = setTimeout(() => {

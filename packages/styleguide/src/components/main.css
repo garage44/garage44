@@ -21,18 +21,11 @@
     width: 250px;
 }
 
-.styleguide__header {
-    align-items: center;
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: var(--spacer-4);
-}
-
 .styleguide__title {
     color: var(--surface-0);
     font-size: var(--font-xl);
     font-weight: 600;
-    margin: 0;
+    margin: 0 0 var(--spacer-4) 0;
 }
 
 .styleguide__nav-list {

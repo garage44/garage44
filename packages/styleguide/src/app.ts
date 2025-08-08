@@ -5,13 +5,9 @@ import {
 } from '@garage44/common/app'
 import {h, render} from 'preact'
 import {i18nFormat} from '@garage44/common/lib/i18n.ts'
-import {initializeBunchy} from '@garage44/bunchy/client'
 import {persistantState, volatileState} from './lib/state'
-import type {StyleguideState} from './types'
 import {Main} from '@/components/main'
-// Development client is injected here
-process.env.NODE_ENV === 'development' && initializeBunchy({ logPrefix: 'S' })
-
+import type {StyleguideState} from './types'
 const $s = _$s as StyleguideState
 
 store.load(persistantState, volatileState)
@@ -27,7 +23,7 @@ const mockTranslations = {
     'styleguide.tokens': 'Design Tokens',
 }
 
-app.init(Main, render, h, mockTranslations)
+app.init(Main, render, h, mockTranslations, {bunchyPrefix: 'S'})
 
 export {
     $s,

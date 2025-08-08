@@ -27,7 +27,6 @@ class Logger {
     }
 
     setLogForwarder(forwarder: (level: LogLevel, msg: string, args: any[]) => void) {
-        console.log("SET", forwarder)
         this.logForwarder = forwarder
     }
 
@@ -42,7 +41,6 @@ class Logger {
 
         // Forward to server if forwarder is set
         if (this.logForwarder) {
-            console.log("FORWARDING LOG")
             this.logForwarder(level, msg, args)
         }
         const now = new Date()
@@ -98,6 +96,7 @@ class Logger {
     close() {}
 }
 
+// Provide a shared logger instance for the browser
 const logger = new Logger()
 
 export {

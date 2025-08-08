@@ -118,3 +118,8 @@ export class Logger {
         if (this.fileStream) {this.fileStream.end()}
     }
 }
+
+// Provide a shared logger instance for Node/Bun environments
+const logger = new Logger()
+
+export { logger }
