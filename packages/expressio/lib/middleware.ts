@@ -1,4 +1,5 @@
 import {handleRequest, handleWebSocket} from '@garage44/common/lib/middleware'
+import {devContext} from '@garage44/common/lib/dev-context'
 import {logger, runtime} from '../service.ts'
 import apiConfig from '../api/config.ts'
 import apiI18n from '../api/i18n.ts'
@@ -170,6 +171,7 @@ async function initMiddleware(bunchyConfig) {
         // Handle WebSocket upgrade requests
         if (url.pathname === '/ws' || url.pathname === '/bunchy') {
             logger.info(`[HTTP] ${url.pathname} hit, attempting Bun WebSocket upgrade`)
+            devContext.addHttp({ ts: Date.now(), method: 'WS_UPGRADE', url: url.pathname })
             if (server && typeof server.upgrade === 'function') {
                 const success = server.upgrade(request, { data: { endpoint: url.pathname } })
                 if (success) {
@@ -181,6 +183,7 @@ async function initMiddleware(bunchyConfig) {
         }
 
         logger.info(`[HTTP] ${url.pathname} miss`)
+        devContext.addHttp({ ts: Date.now(), method: request.method, url: url.pathname })
 
         // Handle session and auth
         const { session, sessionId } = sessionMiddleware(request)
@@ -196,6 +199,7 @@ async function initMiddleware(bunchyConfig) {
                 const file = Bun.file(filePath)
                 if (await file.exists()) {
                     logger.debug(`[HTTP] GET ${filePath}`)
+                    devContext.addHttp({ ts: Date.now(), method: 'GET', url: filePath, status: 200 })
                     return new Response(file)
                 }
             } catch (error) {
@@ -208,6 +212,7 @@ async function initMiddleware(bunchyConfig) {
         const apiResponse = await router.route(request, session);
         if (apiResponse) {
             logger.info('[HTTP] API route matched', url.pathname)
+            devContext.addHttp({ ts: Date.now(), method: request.method, url: url.pathname, status: apiResponse.status })
             // Set session cookie if this is a new session
             return setSessionCookie(apiResponse, sessionId);
         }
@@ -217,6 +222,7 @@ async function initMiddleware(bunchyConfig) {
             const response = await handleRequest(request, config,logger, bunchyConfig)
             if (response) {
                 logger.info('[HTTP] Enhanced handler matched', url.pathname)
+                devContext.addHttp({ ts: Date.now(), method: request.method, url: url.pathname, status: response.status })
                 return setSessionCookie(response, sessionId)
             }
         } catch (error) {
@@ -232,6 +238,7 @@ async function initMiddleware(bunchyConfig) {
                 const response = new Response(indexFile, {
                     headers: { 'Content-Type': 'text/html' }
                 })
+                devContext.addHttp({ ts: Date.now(), method: request.method, url: url.pathname, status: 200 })
                 return setSessionCookie(response, sessionId);
             }
         } catch (error) {
@@ -242,6 +249,7 @@ async function initMiddleware(bunchyConfig) {
         // Final fallback - 404
         logger.info('[HTTP] 404 for', url.pathname)
         const response = new Response('Not Found', { status: 404 })
+        devContext.addHttp({ ts: Date.now(), method: request.method, url: url.pathname, status: 404 })
         return setSessionCookie(response, sessionId);
     }
 

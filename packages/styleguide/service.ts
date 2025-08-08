@@ -4,6 +4,7 @@ import {bunchyArgs, bunchyService} from '@garage44/bunchy'
 import {hideBin} from 'yargs/helpers'
 import path from 'path'
 import {withSpaFallback} from '@garage44/common/lib/service'
+import {devContext} from '@garage44/common/lib/dev-context'
 import yargs from 'yargs'
 
 const BUN_ENV = process.env.BUN_ENV || 'production'
@@ -57,6 +58,14 @@ cli.usage('Usage: $0 [task]')
         const handleRequest = async (req: Request, server?: any) => {
             const url = new URL(req.url)
             let pathname = url.pathname
+
+            // Dev snapshot endpoint provided by Bunchy context
+            if (pathname === '/dev/snapshot') {
+                return new Response(JSON.stringify(devContext.snapshot({
+                    version: bunchyConfig?.version,
+                    workspace: 'styleguide',
+                })), { headers: { 'Content-Type': 'application/json' } })
+            }
 
             // Handle WebSocket upgrade requests
             if (url.pathname === '/bunchy') {

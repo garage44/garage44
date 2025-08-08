@@ -20,6 +20,7 @@ import pc from 'picocolors'
 import {registerI18nWebSocketApiRoutes} from './api/i18n.ts'
 import {registerWorkspacesWebSocketApiRoutes} from './api/workspaces.ts'
 import yargs from 'yargs'
+import {devContext} from '@garage44/common/lib/dev-context'
 
 const expressioDir = fileURLToPath(new URL('.', import.meta.url))
 
@@ -240,7 +241,16 @@ cli.usage('Usage: $0 [task]')
 
         // Start Bun.serve server
         const server = Bun.serve({
-            fetch: (req, server) => handleRequest(req, server),
+            fetch: (req, server) => {
+                const url = new URL(req.url)
+                if (url.pathname === '/dev/snapshot') {
+                    return new Response(JSON.stringify(devContext.snapshot({
+                        version: runtime.version,
+                        workspace: 'expressio',
+                    })), { headers: { 'Content-Type': 'application/json' } })
+                }
+                return handleRequest(req, server)
+            },
             hostname: argv.host,
             port: argv.port,
             websocket: enhancedWebSocketHandler,

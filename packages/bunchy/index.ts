@@ -4,6 +4,7 @@ import {Logger} from '@garage44/common/lib/logger'
 import type {MessageData} from '@garage44/common/lib/ws-server'
 import path from 'node:path'
 import {tasks} from './tasks.ts'
+import {devContext} from '@garage44/common/lib/dev-context'
 
 const logger = new Logger()
 
@@ -69,6 +70,20 @@ async function bunchyService(server, config, wsManager?) {
     }
 
     logger.info('[bunchy] Development service ready')
+
+    // Expose a generic dev snapshot endpoint for all apps using Bunchy
+    const originalFetch = server.fetch
+    server.fetch = async (request: Request, ...rest: any[]) => {
+        try {
+            const url = new URL(request.url)
+            if (url.pathname === '/dev/snapshot') {
+                return new Response(JSON.stringify(devContext.snapshot({
+                    version: settings.version,
+                })), { headers: { 'Content-Type': 'application/json' } })
+            }
+        } catch {}
+        return originalFetch.call(server, request, ...rest)
+    }
 
     await tasks.dev.start({minify: false, sourcemap: true})
     return server
@@ -146,6 +161,7 @@ function setupLogForwarding(wsManager: any, logPrefix: string) {
         const formattedArgs = args && args.length > 0 ? args : []
 
         // Log using the server logger with appropriate level
+        try { devContext.addLog('remote', `${formattedMessage} ${formattedArgs.join(' ')}`) } catch {}
         switch (level) {
             case 'error':
                 logger.remote(formattedMessage, ...formattedArgs)

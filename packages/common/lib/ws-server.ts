@@ -1,5 +1,6 @@
 import {EventEmitter} from 'node:events'
 import {constructMessage} from './ws-client'
+import {devContext} from './dev-context'
 import {logger} from '../app'
 import {match} from 'path-to-regexp'
 
@@ -176,6 +177,7 @@ class WebSocketServerManager extends EventEmitter {
     // Broadcast a message to all connections
     broadcast(url: string, data: MessageData, method = 'POST') {
         const message = constructMessage(url, data, undefined, method)
+        try { devContext.addWs({ ts: Date.now(), endpoint: this.endpoint, type: 'broadcast', url, dataPreview: JSON.stringify(message).slice(0, 200) }) } catch {}
         for (const ws of this.connections) {
             if (ws.readyState === 1) { // OPEN state for Bun WebSocket
                 ws.send(JSON.stringify(message))
@@ -231,12 +233,14 @@ class WebSocketServerManager extends EventEmitter {
         }
 
         logger.success(`[WS] connection established: ${this.endpoint}`)
+        try { devContext.addWs({ ts: Date.now(), endpoint: this.endpoint, type: 'open' }) } catch {}
         this.connections.add(ws)
     }
 
     // Handle WebSocket connection close
     close(ws: any) {
         logger.debug(`[WS] connection closed: ${this.endpoint}`)
+        try { devContext.addWs({ ts: Date.now(), endpoint: this.endpoint, type: 'close' }) } catch {}
         this.connections.delete(ws)
         this.cleanupSubscriptions(ws)
     }
@@ -246,9 +250,7 @@ class WebSocketServerManager extends EventEmitter {
         try {
             const parsedMessage = JSON.parse(message)
             const {url, data, id, method = 'GET'} = parsedMessage
-            
-
-
+            try { devContext.addWs({ ts: Date.now(), endpoint: this.endpoint, type: 'message', url, dataPreview: JSON.stringify({ url, data, id, method }).slice(0, 200) }) } catch {}
             // Create context for this request
             const ctx: WebSocketContext = {
                 broadcast: this.broadcast.bind(this),
