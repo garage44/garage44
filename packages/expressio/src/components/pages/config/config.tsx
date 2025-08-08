@@ -1,7 +1,7 @@
-import {$t, api, notify, store} from '@garage44/common/app'
+import {$s, notifier} from '@/app'
+import {$t, api, store} from '@garage44/common/app'
 import {Button, FieldSelect, FieldText} from '@garage44/common/components'
 import {createValidator, required} from '@garage44/common/lib/validation'
-import {$s} from '@/app'
 import {WorkspaceSelector} from '@/components/elements'
 import {loadConfig} from '@/lib/config'
 import {persistantState} from '@/lib/state'
@@ -97,7 +97,7 @@ export function Config() {
                     })
 
                     await loadConfig()
-                    notify({message: $t('notifications.config_updated'), type: 'info'})
+                    notifier.notify({message: $t('notifications.config_updated'), type: 'info'})
                 }}
                 tip={errors?.value}
                 type="info"

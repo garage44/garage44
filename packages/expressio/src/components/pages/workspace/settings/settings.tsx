@@ -1,7 +1,7 @@
-import {$t, api, notify, store} from '@garage44/common/app'
+import {$s, notifier} from '@/app'
+import {$t, api, store} from '@garage44/common/app'
 import {Button, FieldCheckbox, FieldSelect, FieldText} from '@garage44/common/components'
 import {createValidator, required} from '@garage44/common/lib/validation'
-import {$s} from '@/app'
 import {classes} from '@garage44/common/lib/utils'
 import {deepSignal} from 'deepsignal'
 import {persistantState} from '@/lib/state'
@@ -140,7 +140,7 @@ export function WorkspaceSettings() {
                 label={$t('settings.label.update_settings')}
                 onClick={async() => {
                     if (!isValid.value) {
-                        notify({message: 'Please fix validation errors', type: 'error'})
+                        notifier.notify({message: 'Please fix validation errors', type: 'error'})
                         return
                     }
                     store.save(persistantState)

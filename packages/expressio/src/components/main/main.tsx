@@ -1,5 +1,5 @@
-import {$s, ws} from '@/app'
-import {$t, api, notify} from '@garage44/common/app'
+import {$s, notifier, ws} from '@/app'
+import {$t, api} from '@garage44/common/app'
 import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
 import {FieldSelect, Icon, Notifications, Progress} from '@garage44/common/components'
 import {Router, getCurrentUrl, route} from 'preact-router'
@@ -56,7 +56,7 @@ export const Main = () => {
 
             if (result.error) {
                 // Replace console.log with proper error handling
-                notify({message: $t('workspace.error.not_found'), type: 'error'})
+                notifier.notify({message: $t('workspace.error.not_found'), type: 'error'})
 
                 // Use route with replace option to avoid adding to history
                 route('/', true)

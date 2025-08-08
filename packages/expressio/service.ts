@@ -51,6 +51,7 @@ cli.scriptName("expressio")
 if (BUN_ENV === 'development') {
     bunchyConfig = {
         common: path.resolve(runtime.service_dir, '../', 'common'),
+        logPrefix: 'B',
         // reload_ignore: ['/tasks/code_frontend'],
         reload_ignore: [],
         version: runtime.version,

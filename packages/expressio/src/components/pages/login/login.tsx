@@ -1,5 +1,5 @@
-import {$s, ws} from '@/app'
-import {$t, api, notify} from '@garage44/common/app'
+import {$s, notifier, ws} from '@/app'
+import {$t, api} from '@garage44/common/app'
 import {Button, FieldText, Notifications} from '@garage44/common/components'
 import {createValidator, required} from '@garage44/common/lib/validation'
 import {deepSignal} from 'deepsignal'
@@ -172,7 +172,7 @@ export const Login = () => {
         resetTouched()
 
         if (!isValid.value) {
-            notify({message: $t('notifications.validation_errors'), type: 'warning'})
+            notifier.notify({message: $t('notifications.validation_errors'), type: 'warning'})
             return
         }
 
@@ -182,7 +182,7 @@ export const Login = () => {
         })
         if (result.authenticated) {
             mergeDeep(state, {password: '', username: ''})
-            notify({message: $t('notifications.logged_in'), type: 'info'})
+            notifier.notify({message: $t('notifications.logged_in'), type: 'info'})
             const config = await api.get('/api/config')
             mergeDeep($s, {
                 enola: config.enola,
@@ -192,7 +192,7 @@ export const Login = () => {
 
             ws.connect()
         } else {
-            notify({message: $t('notifications.logged_in_fail'), type: 'warning'})
+            notifier.notify({message: $t('notifications.logged_in_fail'), type: 'warning'})
         }
     }
 
