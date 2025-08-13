@@ -2,3 +2,4 @@ bun.lock
 node_modules
 expressio.log
 public
+test.log
