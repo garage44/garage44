@@ -10,13 +10,12 @@
     "clean": "bun run --filter './packages/**' clean",
     "lint:ts": "bun run --filter './packages/**' lint:ts",
     "lint:css": "bun run --filter './packages/**' lint:css",
+    "playwright:install": "bunx playwright install chromium",
     "prepublishOnly": "bun run lint:ts && bun run build",
-    "publish": "bun scripts/publish_workspace.ts",
+    "publish": "bun lib/publish-workspace.ts",
     "screenshots": "bun scripts/take-screenshots.ts",
     "screenshots:test": "bun scripts/test-login.ts",
-    "setup:screenshots": "bun scripts/setup-screenshots.ts",
-    "playwright:install": "bunx playwright install chromium",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bun test"
   },
   "type": "module",
   "workspaces": [
