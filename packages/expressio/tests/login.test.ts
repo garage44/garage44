@@ -87,4 +87,3 @@ describe('expressio login', () => {
     expect(typeof result.snapshotText).toBe('string')
   }, 60_000)
 })
-

@@ -18,7 +18,7 @@
   "scripts": {
     "lint:css": "stylelint src/**/*.css",
     "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bun test"
   },
   "type": "module",
   "author": "Garage44",

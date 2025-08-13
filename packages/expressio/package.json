@@ -31,10 +31,10 @@
   },
   "scripts": {
     "build": "NODE_ENV=production BUN_ENV=development bun service.ts build",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "NODE_ENV=development BUN_ENV=development bun run --watch service.ts start",
     "lint:css": "stylelint src/**/*.css",
-    "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json"
+    "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json",
+    "test": "bun test"
   },
   "type": "module",
   "devDependencies": {

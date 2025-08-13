@@ -15,7 +15,7 @@
     "publish": "bun lib/publish-workspace.ts",
     "screenshots": "bun scripts/take-screenshots.ts",
     "screenshots:test": "bun scripts/test-login.ts",
-    "test": "bun test"
+    "test": "bun run --filter './packages/**' test"
   },
   "type": "module",
   "workspaces": [

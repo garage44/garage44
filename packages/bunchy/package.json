@@ -30,6 +30,6 @@
   },
   "scripts": {
     "lint:ts": "oxlint **/*.ts --config ../../.oxlintrc.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bun test"
   }
 }
