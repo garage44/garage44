@@ -1,0 +1,194 @@
+/**
+ * Pyrite Main Stylesheet
+ * Entry point for all application styles
+ */
+
+/* Import CSS variables and tokens */
+@import "./_variables.css";
+
+/* Import common typography and utilities from common package */
+@import "../../../common/css/_typography.css";
+@import "../../../common/css/common/_tooltip.css";
+
+/* Base styles and resets */
+
+html, body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+::selection {
+    background: var(--info-5);
+    color: var(--info-8);
+}
+
+#app {
+    height: 100%;
+}
+
+/* Scrollbar styling */
+
+.scroller {
+    overflow-y: auto;
+    scrollbar-color: var(--info-4) var(--info-7);
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--info-7);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--info-4);
+        border-radius: var(--radius-full);
+
+        &:hover {
+            background: var(--info-3);
+        }
+    }
+}
+
+/* Common utility classes */
+
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-center {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Text utilities */
+
+.uca {
+    text-transform: uppercase;
+}
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Animations */
+@keyframes fade-in {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes rotate-animation {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse {
+
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.fade-in {
+    animation: fade-in var(--transition-base) ease-in forwards;
+}
+
+.rotate {
+    animation: rotate-animation 1s linear infinite;
+}
+
+.pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Link styles */
+
+a {
+    color: var(--brand-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+
+    &:hover {
+        color: var(--brand-secondary);
+    }
+
+    &.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+}
+
+/* Button reset for custom buttons */
+
+button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
+}
+
+/* Focus visible styling */
+
+:focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+}
+
+/* Disabled state */
+
+[disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Loading state */
+
+.loading {
+    cursor: wait;
+    opacity: 0.6;
+    pointer-events: none;
+}

@@ -19,6 +19,7 @@ export { default as ContextSelect } from './elements/context-select/context-sele
 export { default as Hint } from './elements/hint/hint'
 export { default as PanelContext } from './elements/panel-context/panel-context'
 export { default as Soundmeter } from './elements/soundmeter/soundmeter'
+export { default as SoundMeter } from './elements/soundmeter/soundmeter'
 export { default as Splash } from './elements/splash/splash'
 
 // Pyrite-specific field components (might need conversion)

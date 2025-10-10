@@ -1,6 +1,8 @@
 import {
+    api,
     App,
     $s as _$s,
+    $t,
     store,
 } from '@garage44/common/app'
 import {h, render} from 'preact'
@@ -9,6 +11,7 @@ import type {PyriteState} from './types.ts'
 import {Main} from '@/components/main/main'
 import {Notifier} from '@garage44/common/lib/notifier'
 import {WebSocketClient} from '@garage44/common/lib/ws-client'
+import {initWebSocketSubscriptions} from '@/lib/ws-subscriptions'
 
 const ws = new WebSocketClient(`ws://${globalThis.location.hostname}:3030/ws`)
 const $s = _$s as PyriteState
@@ -17,6 +20,11 @@ store.load(persistantState, volatileState)
 
 const app = new App()
 const notifier = new Notifier($s.notifications)
+
+// Pluralization helper using i18next's count feature
+const $tc = (key: string, count: number, context?: any) => {
+    return $t(key, { count, ...context })
+}
 
 // Initialize app with translations loaded from API
 async function initApp() {
@@ -37,6 +45,9 @@ async function initApp() {
         const response = await fetch(`/api/i18n/${currentLanguage}`)
         const translations = await response.json()
 
+        // Initialize WebSocket subscriptions
+        initWebSocketSubscriptions()
+
         // Initialize the app
         app.init(Main, render, h, translations, {bunchyPrefix: 'P'})
     } catch (error) {
@@ -49,7 +60,11 @@ initApp()
 
 export {
     $s,
+    $t,
+    $tc,
+    api,
     app,
     notifier,
+    store,
     ws,
 }

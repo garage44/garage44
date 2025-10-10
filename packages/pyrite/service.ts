@@ -11,9 +11,9 @@ import {initMiddleware} from './lib/middleware.ts'
 import {loggerTransports} from '@garage44/common/lib/service.ts'
 import path from 'node:path'
 import pc from 'picocolors'
-import {registerChatWebSocketApiRoutes} from './api/chat.ts'
-import {registerGroupsWebSocketApiRoutes} from './api/groups.ts'
-import {registerUsersWebSocketApiRoutes} from './api/users.ts'
+import {registerChatWebSocket} from './api/ws-chat.ts'
+import {registerGroupsWebSocket} from './api/ws-groups.ts'
+import {registerPresenceWebSocket} from './api/ws-presence.ts'
 import yargs from 'yargs'
 
 const pyriteDir = fileURLToPath(new URL('.', import.meta.url))
@@ -99,9 +99,9 @@ cli.usage('Usage: $0 [task]')
         const enhancedWebSocketHandler = createBunWebSocketHandler(wsManagers)
 
         // Register WebSocket API routes
-        registerChatWebSocketApiRoutes(wsManager)
-        registerGroupsWebSocketApiRoutes(wsManager)
-        registerUsersWebSocketApiRoutes(wsManager)
+        registerChatWebSocket(wsManager)
+        registerGroupsWebSocket(wsManager)
+        registerPresenceWebSocket(wsManager)
 
         // Start Bun.serve server
         const server = Bun.serve({

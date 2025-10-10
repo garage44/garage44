@@ -4,7 +4,7 @@ import {Link} from 'preact-router'
 import {useEffect, useRef, useMemo} from 'preact/hooks'
 import {ComponentChildren} from 'preact'
 import {$s, $t} from '@/app'
-import {animate} from '@/lib/animate'
+import animate from '@/lib/animate'
 
 interface PanelContextProps {
     children?: ComponentChildren

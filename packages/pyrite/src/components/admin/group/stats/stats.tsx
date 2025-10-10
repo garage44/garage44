@@ -1,5 +1,5 @@
 // TODO: Implement stats dashboard with Chart component
-import {Chart} from '@/components/elements'
+import {Chart} from '@garage44/common/components'
 
 interface StatsProps {
     groupId?: string

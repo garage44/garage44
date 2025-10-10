@@ -3,7 +3,6 @@
 
 // Re-export from existing Pyrite elements
 export { default as ButtonGroup } from './button-group/button-group'
-export { default as Chart } from './chart/chart'
 export { default as ContextInput } from './context-input/context-input'
 export { default as ContextSelect } from './context-select/context-select'
 export { default as Hint } from './hint/hint'
