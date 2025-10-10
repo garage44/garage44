@@ -9,7 +9,6 @@
                 },
                 {
                     "engine": "deepl",
-                    "formality": "less",
                     "id": "zho-hans"
                 },
                 {
@@ -53,18 +52,19 @@
                         "eng-gbr": "Url to Anthropic's API",
                         "fra": "Url vers l'API d'Anthropic",
                         "nld": "Url naar Anthropic's API",
-                        "zho-hans": ""
+                        "zho-hans": "人类学应用程序接口链接"
                     }
                 },
                 "anthropic_key": {
-                    "cache": "b13c1012cc858ac2",
+                    "cache": "-4ec3efee-337a753e",
                     "source": "The API key for the Anthropic service",
                     "target": {
                         "ara": "مفتاح API لخدمة أنثروبيك",
                         "deu": "Der API-Schlüssel für den Anthropic-Dienst",
                         "eng-gbr": "The API key for the Anthropic service",
                         "fra": "La clé API pour le service Anthropic",
-                        "nld": "De API-sleutel voor de Anthropic-service"
+                        "nld": "De API-sleutel voor de Anthropic-service",
+                        "zho-hans": ""
                     }
                 },
                 "deepl_base_url": {
@@ -147,14 +147,15 @@
                     }
                 },
                 "ui_language": {
-                    "cache": "bd1e03811268aa91",
+                    "cache": "-42e1fc7f1268aa91",
                     "source": "UI Language",
                     "target": {
                         "ara": "لغة واجهة المستخدم",
                         "deu": "UI Sprache",
                         "eng-gbr": "UI Language",
                         "fra": "Langue de l'interface utilisateur",
-                        "nld": "UI Taal"
+                        "nld": "UI Taal",
+                        "zho-hans": ""
                     }
                 },
                 "update_config": {
@@ -579,6 +580,7 @@
             }
         },
         "translation": {
+            "message": {},
             "placeholder": {
                 "translate": {
                     "cache": "fdbb80e87a78423c",

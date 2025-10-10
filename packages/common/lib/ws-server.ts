@@ -50,7 +50,9 @@ interface WebSocketServerOptions {
     globalMiddlewares?: Middleware[]
 }
 
-// WebSocket Server Manager - handles a single WebSocket endpoint
+/**
+ * WebSocket Server Manager - handles a single WebSocket endpoint
+ */
 class WebSocketServerManager extends EventEmitter {
     connections = new Set<any>()
     routeHandlers: RouteHandler[] = []
@@ -76,7 +78,6 @@ class WebSocketServerManager extends EventEmitter {
         },
     ]
 
-    // Create API registration convenience methods
     api = {
         delete: (route: string, handler: ApiHandler, middlewares?: Middleware[]) =>
             this.registerApi('DELETE', route, handler, middlewares),
@@ -100,7 +101,6 @@ class WebSocketServerManager extends EventEmitter {
         }
     }
 
-    // Middleware composition helper
     composeMiddleware(middlewares: Middleware[], handler: ApiHandler): ApiHandler {
         return (ctx, request) => {
             let index = -1
@@ -122,7 +122,6 @@ class WebSocketServerManager extends EventEmitter {
         }
     }
 
-    // Main registration function for APIs
     registerApi(method: HttpMethod, route: string, handler: ApiHandler, middlewares: Middleware[] = []) {
         const matchFn = match(route, {decode: decodeURIComponent})
         this.routeHandlers.push({
@@ -132,7 +131,7 @@ class WebSocketServerManager extends EventEmitter {
                 if (result === false) {
                     return false
                 }
-                // Convert params to Record<string, string>
+
                 const params: Record<string, string> = {}
                 for (const [key, value] of Object.entries(result.params)) {
                     params[key] = Array.isArray(value) ? value[0] : value

@@ -11,8 +11,8 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
 
     // oxlint-disable-next-line require-await
     apiWs.post('/api/workspaces/:workspace_id/paths', async(_context, request) => {
-        const params = request.params
-        const workspace = workspaces.get(params.workspace_id)
+        const {workspace_id} = request.params
+        const workspace = workspaces.get(workspace_id)
         const {path, value} = request.data as {path: string[], value: any}
         pathCreate(workspace.i18n, path, value, workspace.config.languages.target)
         workspace.save()
@@ -20,8 +20,8 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
 
     // oxlint-disable-next-line require-await
     apiWs.delete('/api/workspaces/:workspace_id/paths', async(_context, request) => {
-        const params = request.params
-        const workspace = workspaces.get(params.workspace_id)
+        const {workspace_id} = request.params
+        const workspace = workspaces.get(workspace_id)
         const path = request.data.path as string
         pathDelete(workspace.i18n, path)
         workspace.save()
@@ -29,17 +29,17 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
 
     // oxlint-disable-next-line require-await
     apiWs.put('/api/workspaces/:workspace_id/paths', async(_context, request) => {
-        const params = request.params
-        const workspace = workspaces.get(params.workspace_id)
+        const {workspace_id} = request.params
+        const workspace = workspaces.get(workspace_id)
         const {old_path, new_path} = request.data
         pathMove(workspace.i18n, old_path, new_path)
         workspace.save()
     })
     // oxlint-disable-next-line require-await
     apiWs.post('/api/workspaces/:workspace_id/collapse', async(_context, request) => {
-        const params = request.params
+        const {workspace_id} = request.params
         const {path, tag_modifier, value} = request.data as {path: string[], tag_modifier?: boolean, value?: any}
-        const workspace = workspaces.get(params.workspace_id)
+        const workspace = workspaces.get(workspace_id)
 
         // Determine which mode to use based on the request
         const mode = (tag_modifier || (value && value._collapsed === true)) ? 'all' : 'groups'
@@ -52,8 +52,8 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
 
     // oxlint-disable-next-line require-await
     apiWs.post('/api/workspaces/:workspace_id/tags', async(_context, request) => {
-        const params = request.params
-        const workspace = workspaces.get(params.workspace_id)
+        const {workspace_id} = request.params
+        const workspace = workspaces.get(workspace_id)
         const {path, source} = request.data
         const {id, ref} = pathRef(workspace.i18n, path)
         ref[id].source = source
@@ -63,8 +63,7 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
     apiWs.post('/api/workspaces/:workspace_id/translate', async(_context, request) => {
         const workspace = workspaces.get(request.params.workspace_id)
 
-        const {path, value} = request.data
-        const ignore_cache = request.data.ignore_cache
+        const {path, value, ignore_cache} = request.data
 
         // Expand the path to ensure it's visible in the UI
         pathToggle(workspace.i18n, path, {_collapsed: false}, 'all' as const)
@@ -74,7 +73,8 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
             const persist = !!value._soft
 
             try {
-                await translate_tag(workspace, path, sourceText, persist)
+                const result = await translate_tag(workspace, path, sourceText, persist)
+                console.log('TRANSLATED', result)
                 return {cached: [], targets: [], translations: []}
             } catch (error) {
                 logger.error('Translation error:', error)
@@ -91,12 +91,14 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
         workspace.save()
     })
 
-    apiWs.post('/api/workspaces/:workspace_id/undo', (_context, request) => {
+    // oxlint-disable-next-line require-await
+    apiWs.post('/api/workspaces/:workspace_id/undo', async (_context, request) => {
         const workspace = workspaces.get(request.params.workspace_id)
         workspace.undo()
     })
 
-    apiWs.post('/api/workspaces/:workspace_id/redo', (_context, request) => {
+    // oxlint-disable-next-line require-await
+    apiWs.post('/api/workspaces/:workspace_id/redo', async (_context, request) => {
         const workspace = workspaces.get(request.params.workspace_id)
         workspace.redo()
     })

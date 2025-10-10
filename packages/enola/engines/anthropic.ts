@@ -150,12 +150,12 @@ SUGGESTED SOURCE TEXT:`
                     content: prompt,
                     role: 'user',
                 }],
-                model: 'claude-3-sonnet-20240229',
+                model: 'claude-sonnet-4-20250514',
             },
         })
 
         if (!response.content || !response.content[0] || !response.content[0].text) {
-            throw new Error('Invalid response from Claude API')
+            throw new Error(`Invalid response from Claude API: ${JSON.stringify(response)}`)
         }
 
         // Clean up the suggested text

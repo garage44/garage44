@@ -1,4 +1,4 @@
-import {$s, ws} from '@/app'
+import {$s, notifier, ws} from '@/app'
 import {FieldText, Icon} from '@garage44/common/components'
 import {$t} from '@garage44/common/app'
 import {TranslationResult} from '@/components/elements'
@@ -9,9 +9,13 @@ export function Translation({group, path}) {
     const path_update = path.join('.')
 
     async function translate() {
-        await ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/translate`, {
+        const result = await ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/translate`, {
             path,
             value: group,
+        })
+        notifier.notify({
+            message: $t('translation.message.translated'),
+            type: 'success',
         })
     }
 

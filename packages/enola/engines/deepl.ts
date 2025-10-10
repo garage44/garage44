@@ -90,8 +90,10 @@ export default class Deepl implements EnolaEngine {
         }
 
         const response = await fetch(url, fetchOptions)
+
         if (!response.ok) {
-            throw new Error(`[enola-deepl] ${response.statusText}`)
+            const {message} = await response.json()
+            throw new Error(`[enola-deepl] ${response.status}: ${message}`)
         }
 
         return await response.json()
@@ -111,7 +113,7 @@ export default class Deepl implements EnolaEngine {
                     ignore_tags: ['i', 'x'],
                     source_lang: 'en',
                     tag_handling: 'xml',
-                    target_lang: toIso6391(targetLanguage.id.split('-')[0]),
+                    target_lang: toIso6391(targetLanguage.id),
                     text: [sourceString],
                 },
                 method: 'POST',
