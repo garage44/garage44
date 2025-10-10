@@ -1,0 +1,46 @@
+{
+  "name": "@garage44/pyrite",
+  "description": "Pyrite - Video conferencing powered by Galène SFU",
+  "version": "2.0.0",
+  "author": "Garage44",
+  "main": "service.ts",
+  "bin": {
+    "pyrite": "./service.ts"
+  },
+  "dependencies": {
+    "@garage44/bunchy": "workspace:^",
+    "@garage44/common": "workspace:^",
+    "deepsignal": "^1.5.0",
+    "figlet": "^1.8.0",
+    "preact": "^10.26.5",
+    "preact-router": "^4.1.2",
+    "rc": "^1.2.8",
+    "ws": "^8.18.1"
+  },
+  "files": [
+    "api/*",
+    "lib/*",
+    "public/**/*",
+    "LICENSE.md",
+    "README.md",
+    "service.ts"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "NODE_ENV=production BUN_ENV=development bun service.ts build",
+    "dev": "NODE_ENV=development BUN_ENV=development bun run --watch service.ts start",
+    "lint:css": "stylelint src/**/*.css",
+    "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json",
+    "test": "bun test"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^22.13.13",
+    "bun-types": "^1.2.6",
+    "oxlint": "^0.16.6",
+    "stylelint": "^16.17.0"
+  }
+}

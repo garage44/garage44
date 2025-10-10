@@ -1,0 +1,26 @@
+.c-chart {
+
+    svg {
+
+        .line {
+            stroke: hsl(var(--brand-h) var(--s-3) var(--dl-4));
+        }
+
+        .chart-area {
+            stroke: hsl(var(--surface-h) var(--s-1) var(--dl-4));
+        }
+
+        .axis-y {
+            fill: hsl(var(--surface-h) var(--s-1) var(--dl-c-2));
+            font-family: $font-2;
+            stroke: none;
+        }
+
+        .name {
+            fill: hsl(var(--surface-h) var(--s-1) var(--dl-c-1));
+            font-family: $font-2;
+            font-size: $font-xs;
+            stroke: none;
+        }
+    }
+}

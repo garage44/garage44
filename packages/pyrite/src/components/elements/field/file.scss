@@ -1,0 +1,21 @@
+.c-field-file {
+    cursor: pointer;
+    height: 20px;
+
+    input {
+        left: 0;
+        opacity: 0;
+        outline: none;
+        position: absolute;
+        width: 0;
+
+        &::-webkit-file-upload-button {
+            outline: none;
+            visibility: hidden;
+        }
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+}

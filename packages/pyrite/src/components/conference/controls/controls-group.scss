@@ -1,0 +1,9 @@
+.c-group-controls {
+    align-items: center;
+    background: $panel-bg;
+    box-shadow: var(--shadow-r);
+    display: flex;
+    flex-direction: column;
+    gap: $spacer-2;
+    padding-top: $spacer-2;
+}

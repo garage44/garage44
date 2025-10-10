@@ -1,0 +1,360 @@
+{
+    "chat": {
+        "general": "General",
+        "send_message": "Send message",
+        "type_help": "type /help for help"
+    },
+    "device": {
+        "action_required": "Your current audio setup requires re-adjustment:",
+        "added": "Device has become available:|Devices have become available:",
+        "audio_volume": "Audio Volume",
+        "media_error": "Unable to find a valid device",
+        "removed": "Device has become unavailable:|Devices have become unavailable:",
+        "select_audio_help": "Select the audio output device",
+        "select_audio_label": "Audio output",
+        "select_audio_verify_help": "Verify your audio configuration with the test sound",
+        "select_cam_help": "Select the video device",
+        "select_cam_label": "Camera",
+        "select_mic_help": "Select the microphone device",
+        "select_mic_label": "Microphone",
+        "select_mic_verify_help": "verify the soundmeter responds to your selected microphone"
+    },
+    "error": "An unexpected error occured: {error}",
+    "file": {
+        "modified": "Modified",
+        "name": "Filename",
+        "size": "Filesize",
+        "stream": "Stream file ({formats})",
+        "streaming": "Streaming file",
+        "type": "Filetype"
+    },
+    "group": {
+        "about": "About Group",
+        "action": {
+            "add": "Add a new group",
+            "cam_off": "Switch camera off",
+            "cam_on": "Switch camera on",
+            "clear_chat": "Clear chat",
+            "delete_confirm": "Confirm deletion of {amount} group|Confirm deletion of {amount} groups",
+            "delete_mark": "Mark group for deletion",
+            "delete_mark_undo": "Unmark group for deletion",
+            "leave": "Leave Group",
+            "lock": "Lock group",
+            "lock_context": "Lock message or leave empty...",
+            "mic_off": "Switch microphone off",
+            "mic_on": "Switch microphone on",
+            "mute_participants": "Mute all participants",
+            "notify": "Send Notification",
+            "notify_context": "Notification message...",
+            "raisehand": "Wave for attention",
+            "raisehand_active": "You are waving for attention",
+            "renamed": "Group {oldname} renamed to {newname}",
+            "save": "Save Group",
+            "saved": "Group {group} saved",
+            "screenshare_off": "Switch screensharing off",
+            "screenshare_on": "Switch screensharing on",
+            "select": "Select a group",
+            "start_recording": "Start Recording",
+            "stop_recording": "Stop Recording",
+            "unlock": "Unlock group"
+        },
+        "audio_volume": "Audio volume",
+        "contact": "Group Contact",
+        "current": "Current group",
+        "groups": "Groups",
+        "join": "Join group",
+        "join_locked": "Join locked group",
+        "join_unlisted": "Join unlisted group",
+        "locked": "Locked",
+        "name": "Group",
+        "no_groups": "No groups yet",
+        "no_groups_public": "No public groups",
+        "permissions": "Group Permisions",
+        "recording": {
+            "delete": "Delete recording",
+            "deleted": "Deleted recording: {recording}",
+            "download": "Download recording",
+            "name": "Group Recordings",
+            "no_recordings": "No recordings yet"
+        },
+        "report": {
+            "audio": "Audio",
+            "not_available": "No connection statistics available",
+            "video": "Video"
+        },
+        "settings": {
+            "access": {
+                "anonymous_login_help": "Allow anonymous logins",
+                "anonymous_login_label": "Anonymous login",
+                "autokick_help": "All participants will be removed, whenever there are no more participants with operator privileges",
+                "autokick_label": "Autokick",
+                "autolock_help": "The group will start locked and stay locked whenever there are no clients with operator privileges",
+                "autolock_label": "Autolock",
+                "guest_login_help": "Allow guest logins (non-taken random usernames without a password)",
+                "guest_login_label": "Guest login",
+                "maxclient_help": "Maximum number of clients that may participate in a group",
+                "maxclient_label": "Maximum",
+                "name": "Access Settings",
+                "public_group_help": "Show the group in the public group list",
+                "public_group_label": "Public Group",
+                "subgroups_help": "Subgroup gets automatically created on first use",
+                "subgroups_label": "Subgroups"
+            },
+            "misc": {
+                "chat_history_help": "Chat history retention in seconds (default: 14400; 4 hours)",
+                "chat_history_label": "Chat History",
+                "codec_av1_help": "AV1 offers the best video quality, but is only supported by a few browsers; recording is not supported, SVC is not supported",
+                "codec_g722_help": "G722 codec does not support recording",
+                "codec_h264_help": "H264 codec is incompatible with Debian and with some Android devices; SVC is not supported",
+                "codec_help": "Allowed group codecs (default: VP8 & Opus)",
+                "codec_label": "Media Codecs",
+                "codec_opus_help": "Opus codec is the only audio codec that supports recording",
+                "codec_pcma_help": "PCMA codec does not support recording",
+                "codec_pcmu_help": "PCMU codec does not support recording",
+                "codec_vp8_help": "VP8 codec is compatible with all supported browsers",
+                "codec_vp9_help": "VP9 codec offers better video quality than VP8, but is incompatible with the Safari browser",
+                "comment_help": "A short text describing the group on its login page",
+                "comment_label": "Group Comment",
+                "contact_help": "Show group contact information of an operator",
+                "contact_label": "Group Contact",
+                "description_help": "A short description that is visible beneath the group name",
+                "description_label": "Group Description",
+                "name": "General Settings",
+                "name_help": "The old group gets removed after the last participant left",
+                "name_label": "Group name",
+                "recording_help": "Allows recording of all the group's streams",
+                "recording_label": "Recording"
+            },
+            "name": "Group Settings",
+            "permissions": {
+                "misc": "Miscellaneous Permission",
+                "name": "Group Permissions",
+                "operator": "Operator Permission",
+                "presenter": "Presenter Permission"
+            },
+            "statistic": {
+                "name": "Group Statistics",
+                "no_connections": "No connections yet"
+            }
+        },
+        "unlisted": "unlisted-group",
+        "unlocked": "Unlocked",
+        "verify_devices": "Verify microphone & video settings"
+    },
+    "message": {
+        "clearchat": {
+            "source": "General chat history was removed",
+            "target": "General chat history was removed"
+        },
+        "error": {
+            "source": "An error occured: {error}",
+            "target": "An error occured: {error}"
+        },
+        "kicked": {
+            "source": "You removed participant {target} from the group",
+            "target": "You were removed from the group by operator {source}"
+        },
+        "lock": {
+            "source": "You locked group {group}",
+            "target": "Group {group} has been locked"
+        },
+        "mute": {
+            "source": "You muted the microphone of participant {target}",
+            "target": "Your microphone was muted by operator {source}"
+        },
+        "notification": {
+            "source": "Notification sent to participant {target}",
+            "target": "Incoming notification from operator {source}"
+        },
+        "op": {
+            "source": "You assigned the operator role to participant {target}",
+            "target": "You aqcuired the operator role"
+        },
+        "present": {
+            "source": "You assigned the presenter role to {target}",
+            "target": "You aqcuired the presenter role"
+        },
+        "raisehand": {
+            "source": "{source} wants to say something",
+            "target": "{source} wants to say something"
+        },
+        "record": {
+            "source": "You started recording group {group}",
+            "target": "Group {group} is being recorded!"
+        },
+        "unlock": {
+            "source": "Group {group} has been unlocked",
+            "target": "Group {group} has been unlocked"
+        },
+        "unop": {
+            "source": "You revoked the operator role from participant {target}",
+            "target": "Your operator role was revoked"
+        },
+        "unpresent": {
+            "source": "You revoked the presenter role from participant {target}",
+            "target": "Your presenter role was revoked"
+        },
+        "unrecord": {
+            "source": "You stopped recording group {group}",
+            "target": "Group {group} stopped being recorded"
+        }
+    },
+    "stream": {
+        "fullscreen": "Fullscreen",
+        "info": "Stream Report",
+        "pip": "Picture-in-picture"
+    },
+    "ui": {
+        "action": {
+            "close": "Close",
+            "double_click": "Double click to {achievement}",
+            "submit": "Submit"
+        },
+        "conferencing": "Conferencing",
+        "panel": {
+            "collapse": "Collapse panel",
+            "expand": "Expand panel"
+        },
+        "panel_chat": {
+            "collapse": "Collapse chat panel",
+            "expand": "Expand chat panel"
+        },
+        "settings": {
+            "action": {
+                "save": "Save Settings",
+                "saved": "Settings saved"
+            },
+            "devices": "Devices",
+            "media": {
+                "accept": {
+                    "audio_label": "Audio only",
+                    "everything_label": "Audio, Video & Screensharing",
+                    "nothing_label": "Nothing",
+                    "screenshare_label": "Screenshare only"
+                },
+                "accept_help": "Stream types that you want to be able to receive",
+                "accept_label": "Accepted media formats",
+                "bandwidth": {
+                    "low_label": "Low - 300 KiBps",
+                    "lowest_label": "Lowest - 150KiBps",
+                    "normal_label": "700 KiBps",
+                    "unlimited_help": "Unlimited bandwidth may negatively affect the audio and video quality for others",
+                    "unlimited_label": "Unlimited"
+                },
+                "bandwidth_help": "Bandwidth to use for sending media",
+                "bandwidth_label": "Bandwidth",
+                "name": "Media",
+                "resolution": {
+                    "1080p_help": "full HD may negatively affect the audio and video quality for others",
+                    "1080p_label": "full HD - 1080p (1920x1080)",
+                    "720p_label": "720p HD - 720p (1280x720)",
+                    "default_label": "Default"
+                },
+                "resolution_help": "Supported resolutions depend on the camera's capabilities",
+                "resolution_label": "Preferred resolution"
+            },
+            "misc": {
+                "language": {
+                    "dutch_label": "Dutch",
+                    "english_label": "English",
+                    "french_label": "French",
+                    "german_label": "German"
+                },
+                "language_help": "Change the interface to your preferred language",
+                "language_label": "Language",
+                "name": "General Settings",
+                "theme": {
+                    "dark_label": "Dark",
+                    "light_label": "Light",
+                    "system_label": "System Setting"
+                },
+                "theme_help": "Select a theme or use the system default",
+                "theme_label": "Theme"
+            },
+            "name": "Settings"
+        },
+        "switch_admin": "Switch to admin UI",
+        "switch_conference": "Switch to Conferencing UI",
+        "unsupported_option": "{browser} does not support this option"
+    },
+    "user": {
+        "action": {
+            "add": "Add a new user",
+            "chat": "Chat with {username}",
+            "clear_credentials": "Clear credentials",
+            "delete_confirm": "Confirm deletion of {amount} user|Confirm deletion of {amount} users",
+            "delete_mark": "Mark user for deletion",
+            "delete_mark_undo": "Unmark user for deletion",
+            "kick": "Kick {username}",
+            "logout": "Logout",
+            "mute_mic": "Mute Microphone",
+            "notify": "Send Notification",
+            "save": "Save User",
+            "saved": "User {username} saved",
+            "select": "Select a user",
+            "set_availability": {
+                "available": "Available",
+                "away": "Unavailable",
+                "busy": "Do Not Disturb"
+            },
+            "set_role": {
+                "op_assign": "Assign Operator Role",
+                "op_retract": "Retract Operator Role",
+                "present_assign": "Assign Present Role",
+                "present_retract": "Retract Presenter Role"
+            },
+            "share_file": {
+                "receiving": "Receiving file {file}",
+                "send": "Send File",
+                "sending": "Sending file {file}",
+                "share_accept": "{username} wants to share a file with you: {file} ({size})",
+                "share_confirm": "You are about to share file {file} ({size}) with participant {username}",
+                "transfer_cancelled": "File transfer of file {file} cancelled",
+                "transfer_complete": "File transfer of file {file} ({size}) complete!"
+            }
+        },
+        "anonymous": "Anonymous",
+        "guest": "Guest",
+        "login": {
+            "as": "Login as",
+            "as_admin": "Login as admin",
+            "as_guest": "Login as guest",
+            "credentials_invalid": "Invalid login credentials",
+            "fail_credentials": "Invalid credentials for group {group}",
+            "fail_locked": "Group {group} is locked; only administrators may login",
+            "locked_maintenance": "Only administrators may login locked groups",
+            "management": "Administrator Login",
+            "no_permission": "Sorry, you do not have the right permission for this section",
+            "succesful": "You just logged in",
+            "validate_locked": "Group {group} has been locked"
+        },
+        "name": "User",
+        "operator": "Operator",
+        "password": "Password",
+        "password_placeholder": "Psst, it is a secret!",
+        "recorder": "Recorder",
+        "role": {
+            "operator": "Operator role",
+            "presenter": "Presenter role"
+        },
+        "settings": {
+            "misc": {
+                "name": "General Settings",
+                "password_label": "Password",
+                "role_admin_help": "Assigns the pyrite admin role to this user",
+                "role_admin_label": "Admin Role",
+                "username_label": "Username"
+            },
+            "permission": {
+                "misc": "Misc Permission",
+                "name": "User Permissions",
+                "operator": "Operator Permission",
+                "presenter": "Presenter Permission"
+            }
+        },
+        "username": "Username",
+        "username_placeholder": "Donna, Denzel, Barbara...",
+        "users": "Users",
+        "you": "You"
+    }
+}

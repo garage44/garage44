@@ -1,0 +1,10 @@
+.c-users-context-menu {
+
+    .action {
+
+        &[disabled] {
+            background: hsl(var(--surface-h) var(--s-1) var(--dl-c-1));
+            color: hsl(var(--surface-h) var(--s-1) var(--dl-c-3));
+        }
+    }
+}

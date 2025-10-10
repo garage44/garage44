@@ -1,0 +1,76 @@
+.c-field-text {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+
+    &.validation {
+
+        &.invalid {
+
+            .input-container {
+
+                input {
+                    border-bottom: $border solid var(--error-4);
+                }
+            }
+        }
+
+        .validation-message {
+            bottom: calc(-1 * $spacer-1);
+            color: var(--error-4);
+            flex: 1;
+            font-size: $font-s;
+            height: var(--space1);
+            min-height: $spacer-2;
+            position: absolute;
+        }
+    }
+
+    .input-container {
+        align-items: center;
+        display: flex;
+        width: 100%;
+
+        input {
+            background: none;
+            border: none;
+            border-bottom: $border solid hsl(var(--surface-h) var(--s-1) var(--dl-c-1));
+            color: hsl(var(--surface-h) var(--s-1) var(--dl-2));
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.5s ease;
+            width: 100%;
+
+            &[readonly] {
+                border-bottom: $border solid transparent;
+            }
+
+            &:focus {
+                border-bottom: $border solid hsl(var(--brand-h) var(--s-3) var(--dl-2));
+            }
+        }
+
+        .icon {
+
+            &:hover {
+                cursor: pointer;
+            }
+
+            &.active {
+                color: hsl(var(--brand-h) var(--s-3) var(--dl-4));
+            }
+        }
+    }
+
+    .field-label {
+        font-family: $font-2;
+        text-transform: capitalize;
+    }
+
+    .help {
+
+        &::first-letter {
+            text-transform: capitalize;
+        }
+    }
+}

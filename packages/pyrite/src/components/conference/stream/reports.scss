@@ -1,0 +1,55 @@
+.c-stream-reports {
+    background: rgb(0 0 0 / 75%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+
+    &:hover {
+        cursor: pointer;
+    }
+
+    .title {
+        color: hsl(var(--brand-h) var(--s-3) var(--dl-4));
+        font-weight: 600;
+    }
+
+    .category {
+        display: flex;
+        flex-direction: column;
+        font-size: $font-xs;
+        gap: $spacer-1;
+        margin-top: $spacer-1;
+        overflow-y: scroll;
+        padding: $spacer-1;
+
+        .stat {
+            display: flex;
+
+            .key {
+                font-weight: bold;
+            }
+
+            .value {
+                left: 200px;
+                position: absolute;
+            }
+        }
+
+        &.active {
+            display: flex;
+        }
+    }
+
+    .no-stats-available {
+        align-items: center;
+        display: flex;
+        flex: 1;
+        font-family: $font-2;
+        font-size: $font-l;
+        justify-content: center;
+        margin-bottom: $spacer-6;
+    }
+}

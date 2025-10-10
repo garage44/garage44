@@ -1,0 +1,34 @@
+.c-group {
+    align-content: center;
+    align-items: center;
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    gap: var(--stream-margin);
+    justify-content: center;
+    position: relative;
+
+    .c-stream {
+        animation: show 0.35s ease-in;
+        aspect-ratio: var(--aspect-ratio);
+        box-shadow: var(--shadow-m);
+        max-width: var(--stream-width);
+        width: var(--stream-width);
+    }
+
+    .logo-animated {
+        height: 30%;
+        width: 30%;
+    }
+
+    .c-settings {
+        backdrop-filter: blur($overlay-blur);
+        background: hsl(var(--surface-h) var(--s-1) var(--dl-c-1) / #{$overlay-opacity});
+        left: 0;
+        max-width: 700px;
+        position: absolute;
+        top: 0;
+        width: 100%;
+        z-index: 10;
+    }
+}

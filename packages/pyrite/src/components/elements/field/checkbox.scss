@@ -1,0 +1,98 @@
+.c-field-checkbox {
+
+    .checkbox-row {
+        align-items: flex-start;
+        display: flex;
+        flex-direction: column;
+
+        label.switch {
+            height: $spacer-1;
+            margin-inline-end: $spacer-1;
+            margin-top: $spacer-05;
+            position: relative;
+            user-select: none;
+            width: $spacer-5;
+
+            .slider {
+                background: hsl(var(--surface-h) var(--s-2) var(--l-1));
+                border-radius: $spacer-2;
+                bottom: 0;
+                cursor: pointer;
+                left: 0;
+                position: absolute;
+                right: 0;
+                top: 0;
+
+                &::after {
+                    background: hsl(var(--surface-h) var(--s-2) var(--l-2));
+                    border-radius: 50%;
+                    content: "";
+                    height: 10px;
+                    left: 5px;
+                    position: absolute;
+                    top: -1px;
+                    transition: 0.4s;
+                    width: 10px;
+                }
+
+                &::before {
+                    background: hsl(var(--surface-h) var(--s-2) var(--l-3));
+                    border: 1px solid hsl(var(--surface-h) var(--s-3) var(--l-1));
+                    border-radius: 50%;
+                    content: "";
+                    height: 20px;
+                    left: -1px;
+                    position: absolute;
+                    top: -7px;
+                    transition: 0.4s;
+                    width: 20px;
+                }
+            }
+
+            input {
+                height: 0;
+                opacity: 0;
+                width: 0;
+
+                &:focus {
+
+                    + .slider {
+
+                        &::before {
+                            box-shadow: $focus-glow-disabled;
+                        }
+                    }
+
+                    &:checked + .slider {
+
+                        &::before {
+                            box-shadow: $focus-glow;
+                        }
+                    }
+                }
+
+                + .slider {
+
+                    svg {
+                        transition: all 0.5s ease-in-out;
+                    }
+                }
+
+                &:checked + .slider {
+                    background: hsl(var(--accent-h) var(--s-3) var(--dl-c-2));
+
+                    &::before {
+                        background: hsl(var(--accent-h) var(--s-3) var(--dl-c-1));
+                        border: 1px solid hsl(var(--accent-h) var(--s-3) var(--dl-1));
+                        transform: translateX(20px);
+                    }
+
+                    &::after {
+                        background: hsl(var(--accent-h) var(--s-3) var(--dl-1));
+                        transform: translateX(20px);
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,39 @@
+.c-admin-groups-stats {
+
+    .client {
+        background: hsl(var(--surface-h) var(--s-1) var(--dl-c-3));
+        margin-bottom: $spacer-1;
+        padding: $spacer-1;
+
+        .client-header {
+            align-items: center;
+            color: hsl(var(--brand-h) var(--s-3) var(--dl-4));
+            display: flex;
+            font-family: $font-2;
+            font-size: $font-s;
+            user-select: none;
+
+            &.collapsed {
+                color: hsl(var(--surface-h) var(--s-1) var(--dl-c-2));
+            }
+
+            svg {
+                margin-inline-end: $spacer-1;
+            }
+
+            &:hover {
+                cursor: pointer;
+            }
+        }
+
+        .stream {
+            padding: $spacer-05;
+
+            .track {
+                background: hsl(var(--surface-h) var(--s-1) var(--dl-2));
+                margin-bottom: $spacer-2;
+                padding: $spacer-1;
+            }
+        }
+    }
+}

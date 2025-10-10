@@ -1,0 +1,23 @@
+.c-groups-context.presence {
+
+    .actions {
+        padding-left: 0;
+    }
+
+    .group {
+
+        .stats {
+            align-items: center;
+            display: flex;
+            transition: all 0.25s ease-in;
+
+            &.active {
+                color: hsl(var(--surface-h) var(--s-1) var(--dl-c-3));
+            }
+        }
+    }
+
+    .custom-group {
+        padding-left: 0;
+    }
+}

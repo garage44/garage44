@@ -1,0 +1,107 @@
+.c-field-select {
+    max-width: 350px;
+    width: 100%;
+
+    .input-container {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        width: 100%;
+
+        .button-wrapper {
+            border-bottom: $border solid hsl(var(--surface-h) var(--s-1) var(--dl-c-2));
+            display: flex;
+            z-index: 1000;
+
+            input {
+                background: none;
+                border: 0;
+                font-size: 1rem;
+                height: $spacer-4;
+                outline: none;
+                text-transform: capitalize;
+                user-select: none;
+                width: 100%;
+
+                &::placeholder {
+                    color: hsl(var(--surface-h) var(--s-1) var(--dl-1));
+                    font-style: italic;
+                    font-weight: 500;
+                }
+
+                &:hover {
+                    cursor: pointer;
+                }
+
+                &[disabled] {
+
+                    &::placeholder {
+                        color: hsl(var(--surface-h) var(--s-1) var(--dl-4));
+                    }
+
+                    &:hover {
+                        cursor: not-allowed;
+                    }
+                }
+            }
+        }
+
+        .options {
+            border: $border solid transparent;
+            margin-top: calc($spacer-4 + 4px);
+            max-height: 0;
+            max-width: inherit;
+            overflow-y: hidden;
+            position: absolute;
+            transition: all 0.3s ease;
+            width: inherit;
+            z-index: 100000;
+
+            &.active {
+                background: hsl(var(--surface-h) var(--s-1) var(--dl-c-3));
+                border: $border solid hsl(var(--surface-h) var(--s-1) var(--dl-c-1));
+                box-shadow: var(--shadow);
+                max-height: 200px;
+                overflow-y: scroll;
+            }
+
+            .option {
+                color: hsl(var(--surface-h) var(--s-1) var(--dl-1));
+                cursor: pointer;
+                padding: $spacer-1;
+                text-align: left;
+                text-transform: capitalize;
+                user-select: none;
+                width: inherit;
+
+                &:hover,
+                &.selected {
+                    background: hsl(var(--accent-h) var(--s-2) var(--dl-c-1));
+                    color: hsl(var(--accent-h) var(--s-2) var(--dl-1));
+                }
+            }
+        }
+    }
+
+    &.validation {
+
+        &.invalid {
+
+            .input-container {
+
+                input {
+                    border-bottom: $border solid var(--error-4);
+                }
+            }
+        }
+
+        .validation-message {
+            bottom: calc(-1 * $spacer-1);
+            color: var(--error-4);
+            flex: 1;
+            font-size: $font-s;
+            height: var(--space1);
+            min-height: $spacer-2;
+        }
+    }
+}
