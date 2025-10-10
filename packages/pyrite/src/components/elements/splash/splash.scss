@@ -1,0 +1,31 @@
+.c-splash {
+    align-items: center;
+    background: hsl(var(--surface-h) var(--s-2) var(--l-1));
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    font-family: $font-2;
+    justify-content: center;
+
+    .icon {
+        height: 300px;
+        transform: scale(1.5);
+        width: 300px;
+    }
+
+    .title {
+        color: hsl(var(--accent-h) var(--s-3) var(--l-2));
+        font-size: 3.7rem;
+        font-weight: 600;
+        height: 3.7rem;
+        line-height: 3.7rem;
+        margin: 0;
+        padding: 0;
+    }
+
+    .subtitle {
+        color: hsl(var(--accent-h) var(--s-1) var(--l-2));
+        font-size: 1.67rem;
+        font-weight: 500;
+    }
+}

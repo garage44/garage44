@@ -1,0 +1,25 @@
+.c-chart {
+    svg {
+        .line {
+            stroke: var(--brand-primary);
+        }
+
+        .chart-area {
+            stroke: var(--border-color);
+        }
+
+        .axis-y {
+            fill: var(--text-secondary);
+            font-family: var(--font-family-mono);
+            stroke: none;
+        }
+
+        .name {
+            fill: var(--text-primary);
+            font-family: var(--font-family-mono);
+            font-size: var(--font-size-xs);
+            stroke: none;
+        }
+    }
+}
+

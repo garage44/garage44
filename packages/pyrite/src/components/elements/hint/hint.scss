@@ -1,0 +1,13 @@
+.c-hint {
+    align-items: center;
+    display: flex;
+
+    .icon {
+        margin-inline-end: $spacer-1;
+    }
+
+    .description {
+        font-size: $font-s;
+        font-style: italic;
+    }
+}

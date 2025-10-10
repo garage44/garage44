@@ -1,0 +1,358 @@
+{
+    "chat": {
+        "general": "Général",
+        "send_message": "Envoyer le message",
+        "type_help": "tapez /help pour obtenir de l'aide"
+    },
+    "device": {
+        "audio_volume": "Volume audio",
+        "media_error": "Impossible de trouver un appareil valide",
+        "select_audio_help": "Sélectionnez le périphérique de sortie audio",
+        "select_audio_label": "Sortie audio",
+        "select_audio_verify_help": "Vérifiez votre configuration audio avec le son de test",
+        "select_cam_help": "Sélectionnez le périphérique vidéo",
+        "select_cam_label": "Caméra",
+        "select_mic_help": "Sélectionnez le micro",
+        "select_mic_label": "Microphone",
+        "select_mic_verify_help": "Vérifier votre microphone avec le sonomètre",
+        "action_required": "Votre configuration audio actuelle nécessite une réajustement :",
+        "added": "Le dispositif est devenu disponible :|Les dispositifs sont devenus disponibles :",
+        "removed": "Le dispositif est devenu indisponible :|Les dispositifs sont devenus indisponibles :"
+    },
+    "error": "Une erreur s’est produite : {error}",
+    "file": {
+        "modified": "Modifié",
+        "name": "Nom du fichier",
+        "size": "Taille du fichier",
+        "stream": "Fichier de flux ({formats})",
+        "streaming": "Fichier en streaming",
+        "type": "Type de fichier"
+    },
+    "group": {
+        "about": "À propos du groupe",
+        "action": {
+            "add": "Ajouter un groupe",
+            "cam_off": "Désactiver la caméra",
+            "cam_on": "Activer la caméra",
+            "clear_chat": "Effacer la discussion",
+            "delete_confirm": "Confirmer la suppression de {amount} groupe|Confirmer la suppression de {amount} groupes",
+            "delete_mark": "Marquer pour suppression",
+            "delete_mark_undo": "Retirer des suppressions",
+            "leave": "Quitter le groupe",
+            "lock": "Verrouiller le groupe",
+            "mic_off": "Désactiver le microphone",
+            "mic_on": "Activer le microphone",
+            "mute_participants": "Couper le son des participants",
+            "notify": "Envoyer une notification",
+            "raisehand": "Lever la main",
+            "raisehand_active": "Vous levez la main",
+            "renamed": "Le groupe {oldgroup} est renommé {newgroup}",
+            "save": "Enregistrer le groupe",
+            "saved": "Enregistrer {group}",
+            "screenshare_off": "Désactiver le partage d’écran",
+            "screenshare_on": "Activer le partage d’écran",
+            "select": "Sélectionnez un groupe",
+            "start_recording": "Démarrer l’enregistrement",
+            "stop_recording": "Arrêter l’enregistrement",
+            "unlock": "Déverrouiller le groupe"
+        },
+        "audio_volume": "Audio volume",
+        "contact": "Contact du groupe",
+        "current": "Groupe actuel",
+        "groups": "Groupes",
+        "join": "Rejoindre le groupe",
+        "join_locked": "Rejoindre le groupe verrouillé",
+        "join_unlisted": "ReJoindre le groupe non répertorié",
+        "locked": "Verrouillé",
+        "name": "Groupe",
+        "no_groups": "Pas de groupes",
+        "no_groups_public": "Pas de groupes publics",
+        "permissions": "Autorisation de groupes",
+        "recording": {
+            "delete": "Dupprimer l’enregistrement",
+            "deleted": "Enregistrement supprimé : {recording}",
+            "download": "Télécharger l’enregistrement",
+            "name": "Enregistrements du groupe",
+            "no_recordings": "Pas d’enregistrements"
+        },
+        "report": {
+            "audio": "Audio",
+            "not_available": "Aucune statistique de connexion disponible",
+            "video": "Vidéo"
+        },
+        "settings": {
+            "access": {
+                "anonymous_login_help": "Connexion anonyme",
+                "anonymous_login_label": "Connexion anonyme",
+                "autokick_help": "Tous les participants seront supprimés, chaque fois qu’il n’y a plus de participants avec des privilèges d’opérateur",
+                "autokick_label": "Suppression automatique",
+                "autolock_help": "le groupe démarrera verrouillé et restera verrouillé chaque fois qu’il n’y aura pas de clients avec des privilèges d’opérateur",
+                "autolock_label": "Verrouillage automatique",
+                "guest_login_help": "Autoriser les connexions d'invités (noms d'utilisateur aléatoires non pris sans mot de passe)",
+                "guest_login_label": "Connexion invité",
+                "maxclient_help": "Nombre maximum de clients pouvant participer à un groupe",
+                "maxclient_label": "Client maximum",
+                "name": "Les paramètres connexion",
+                "public_group_help": "Afficher le groupe dans la liste publique des groupes",
+                "public_group_label": "Groupe public",
+                "subgroups_help": "Le groupe/sous-groupe est automatiquement créé lors de la première utilisation",
+                "subgroups_label": "Sous-groupes"
+            },
+            "misc": {
+                "chat_history_help": "Conservation de l'historique de discussion en quelques secondes (par défaut : 14400 ; 4 heures)",
+                "chat_history_label": "Historique de discussion",
+                "codec_av1_help": "AV1 offre la meilleure qualité vidéo, mais est seulement pris en charge par quelques navigateurs ; l'enregistrement n'est pas pris en charge, SVC n'est pas pris en charge",
+                "codec_g722_help": "G722 codec ne prend pas en charge l’enregistrement",
+                "codec_h264_help": "H264 codec est incompatible avec Debian et avec certains appareils Android ; SVC n'est pas supporté",
+                "codec_help": "Codecs de groupe autorisés (par défaut: VP8 et Opus)",
+                "codec_label": "Codecs médias",
+                "codec_opus_help": "Opus codec est le seul codec audio qui supporte l'enregistrement",
+                "codec_pcma_help": "PCMA codec ne supporte pas l'enregistrement",
+                "codec_pcmu_help": "PCMU codec ne supporte pas l'enregistrement",
+                "codec_vp8_help": "VP8 codec est compatible avec tous les navigateurs pris en charge",
+                "codec_vp9_help": "VP9 codec offre une meilleure qualité vidéo que VP8, mais est incompatible avec le navigateur Safari",
+                "comment_help": "Ajouter un court texte à la page de connexion du groupee",
+                "comment_label": "Commentaire du groupe",
+                "contact_help": "Afficher les coordonnées de groupe d’un opérateur",
+                "contact_label": "Contact du groupe",
+                "description_help": "Ajouter une brève description à la page de liste de groupe",
+                "description_label": "Description du groupe",
+                "name": "Paramètres du général",
+                "name_help": "L'ancien groupe est supprimé après le départ du dernier participant",
+                "name_label": "Nom du groupe",
+                "recording_help": "Permet l’enregistrement des flux du groupe",
+                "recording_label": "Enregistrements du groupe"
+            },
+            "name": "Paramètres du groupe",
+            "permissions": {
+                "misc": "Autorisation de Divers",
+                "name": "Autorisation de Group",
+                "operator": "Autorisation de l’opérateur",
+                "presenter": "Autorisation du présentateur"
+            },
+            "statistic": {
+                "name": "Statistiques de connexion",
+                "no_connections": "Pas de connexions"
+            }
+        },
+        "unlisted": "group-non-répertorié",
+        "unlocked": "Déverrouillé",
+        "verify_devices": "Vérifier votre micro & vidéo"
+    },
+    "message": {
+        "clearchat": {
+            "source": "L’historique général des discussions a été supprimé",
+            "target": "L’historique général des discussions a été supprimé"
+        },
+        "error": {
+            "source": "Une erreur s'est produite : {error}",
+            "target": "Une erreur s'est produite : {error}"
+        },
+        "kicked": {
+            "source": "Vous avez supprimé le participant {target}",
+            "target": "Vous avez été retiré du groupe par l'opérateur {source}"
+        },
+        "lock": {
+            "source": "Vous avez verrouillé le groupe {group}",
+            "target": "Le groupe {group} a été verrouillé"
+        },
+        "mute": {
+            "source": "Vous avez coupé le micro du participant {target}",
+            "target": "Votre microphone a été mis en sourdine par l’opérateur {source}"
+        },
+        "notification": {
+            "source": "Notification envoyée au participant {target} : {message}",
+            "target": "Notification entrante de l’opérateur {source}"
+        },
+        "op": {
+            "source": "Vous avez attribué le rôle d’opérateur au participant {target}",
+            "target": "Vous avez acquis le rôle d’opérateur"
+        },
+        "present": {
+            "source": "Vous avez attribué le rôle d’opérateur au participant {target}",
+            "target": "Vous avez acquis le rôle de présentateur"
+        },
+        "raisehand": {
+            "source": "{source} veut dire quelque chose",
+            "target": "{source} veut dire quelque chose"
+        },
+        "record": {
+            "source": "Vous avez commencé à enregistrer le groupe {group}",
+            "target": "Le groupe {group} est en cours d’enregistrement !"
+        },
+        "unlock": {
+            "source": "Le groupe {group} a été déverrouillé",
+            "target": "Le groupe {group} a été déverrouillé"
+        },
+        "unop": {
+            "source": "Vous avez révoqué le rôle d’opérateur du participant {target}",
+            "target": "Votre rôle d’opérateur a été révoqué"
+        },
+        "unpresent": {
+            "source": "Vous avez révoqué le rôle de présentateur du participant {target}",
+            "target": "Votre rôle de présentateur a été révoqué"
+        },
+        "unrecord": {
+            "source": "Vous avez arrêté l'enregistrement du groupe {group}",
+            "target": "Le groupe {group} a cessé d’être enregistré"
+        }
+    },
+    "stream": {
+        "fullscreen": "Plein écran",
+        "info": "Rapport sur les flux",
+        "pip": "Image dans l'image"
+    },
+    "ui": {
+        "action": {
+            "close": "Fermer",
+            "double_click": "Double-cliquez sur {achievement}",
+            "submit": "Soumettre"
+        },
+        "conferencing": "Conférence",
+        "panel": {
+            "collapse": "Réduire le panneau",
+            "expand": "Développer le panneau"
+        },
+        "panel_chat": {
+            "collapse": "Réduire le panneau de chat",
+            "expand": "Développer le panneau de chat"
+        },
+        "settings": {
+            "action": {
+                "save": "Enregistrer les paramètres",
+                "saved": "Paramètres enregistrés"
+            },
+            "devices": "Appareils",
+            "media": {
+                "accept": {
+                    "audio_label": "Audio seulement",
+                    "everything_label": "Audio, vidéo et partage d'écran",
+                    "nothing_label": "Aucun",
+                    "screenshare_label": "Partage d’écran uniquement"
+                },
+                "accept_help": "Types de flux que vous souhaitez pouvoir recevoir",
+                "accept_label": "Formats de médias acceptés",
+                "bandwidth": {
+                    "low_label": "Bas - 300 kio/s",
+                    "lowest_label": "Au plus bas - 150 kio/s",
+                    "normal_label": "700 kio/s",
+                    "unlimited_help": "Une bande passante illimitée peut affecter négativement la qualité audio et vidéo pour les autres",
+                    "unlimited_label": "Illimité"
+                },
+                "bandwidth_help": "Bande passante à utiliser pour l’envoi de médias",
+                "bandwidth_label": "Bande passante",
+                "name": "Média",
+                "resolution": {
+                    "1080p_help": "HD peut affecter négativement la qualité audio et vidéo pour les autres",
+                    "1080p_label": "full HD - 1080p (1920×1080)",
+                    "720p_label": "720p HD - 720p (1280×720)",
+                    "default_label": "Défaut"
+                },
+                "resolution_help": "Les résolutions prises en charge dépendent des capacités de l’appareil",
+                "resolution_label": "Résolution préférée"
+            },
+            "misc": {
+                "language": {
+                    "dutch_label": "Néerlandais",
+                    "english_label": "Anglais",
+                    "french_label": "Fichier",
+                    "german_label": "Allemand"
+                },
+                "language_help": "Langue de l’interface utilisateur",
+                "language_label": "Langue",
+                "name": "Paramètres généraux",
+                "theme": {
+                    "dark_label": "Sombre",
+                    "light_label": "Clair",
+                    "system_label": "Paramètres du système"
+                },
+                "theme_help": "Sélectionnez un thème ou utilisez la valeur par défaut du système",
+                "theme_label": "Thème"
+            },
+            "name": "Paramètres"
+        },
+        "switch_admin": "Passer à l'interface utilisateur d'administration",
+        "switch_conference": "Basculer vers l'interface utilisateur de conférence",
+        "unsupported_option": "{browser} ne prend pas en charge cette option"
+    },
+    "user": {
+        "action": {
+            "add": "Ajouter un nouvel utilisateur",
+            "chat": "Parler avec {username}",
+            "clear_credentials": "Effacer les identifiants",
+            "delete_confirm": "Confirmer la suppression de {amount} utilisateur|Confirmer la suppression de {amount} utilisateurs",
+            "delete_mark": "Marquer l’utilisateur pour suppression",
+            "delete_mark_undo": "Décocher l'utilisateur pour suppression",
+            "kick": "Expulser {username}",
+            "logout": "Déconnexion",
+            "mute_mic": "Désactiver le microphone",
+            "notify": "Envoyer une notification",
+            "save": "Enregistrer l'utilisateur",
+            "saved": "Utilisateur {username} enregistré",
+            "select": "Sélectionnez un utilisateur",
+            "set_availability": {
+                "available": "Disponible",
+                "away": "Indisponible",
+                "busy": "Ne pas déranger"
+            },
+            "set_role": {
+                "op_assign": "Attribuer un rôle d'opérateur",
+                "op_retract": "Rétracter le rôle d'opérateur",
+                "present_assign": "Attribuer le rôle actuel",
+                "present_retract": "Rétracter le rôle du présentateur"
+            },
+            "share_file": {
+                "receiving": "Réception du fichier {file}",
+                "send": "Envoyer un fichier",
+                "sending": "Envoi du fichier {file}",
+                "share_accept": "{username} veut partager un fichier avec vous : {file} ({size})",
+                "share_confirm": "Vous êtes sur le point de partager le fichier {file} {(size)} avec le participant {name}",
+                "transfer_cancelled": "Transfert de fichier du fichier {file} annulé",
+                "transfer_complete": "Transfert de fichier du fichier {file} ({size}) terminé !"
+            }
+        },
+        "anonymous": "Anonyme",
+        "guest": "Invité",
+        "login": {
+            "as": "Se connecter en tant que",
+            "as_admin": "Connectez-vous en tant qu'administrateur",
+            "as_guest": "Connectez-vous en tant qu'invité",
+            "credentials_invalid": "Identifiants invalides",
+            "fail_credentials": "Identifiants invalides pour le groupe {group}",
+            "fail_locked": "Le groupe {group} est verrouillé ; seuls les administrateurs peuvent se connecter",
+            "locked_maintenance": "Seuls les administrateurs peuvent se connecter aux groupes verrouillés",
+            "management": "Administrateur",
+            "no_permission": "Désolé, vous n’avez pas l’autorisation appropriée pour cette section",
+            "succesful": "Connexion réussie",
+            "validate_locked": "Le groupe {group} a été verrouillé"
+        },
+        "name": "Utilisateur",
+        "operator": "Opérateur",
+        "password": "Mot de passe",
+        "password_placeholder": "Psst, c'est un secret !",
+        "recorder": "Enregistreur",
+        "role": {
+            "operator": "Rôle d’opérateur",
+            "presenter": "Rôle de présentateur"
+        },
+        "settings": {
+            "misc": {
+                "name": "Paramètres généraux",
+                "password_label": "Mot de passe",
+                "role_admin_help": "Accorde les privilèges d’administrateur de Pyrite",
+                "role_admin_label": "Rôle d'administrateur",
+                "username_label": "nom d’utilisateur"
+            },
+            "permission": {
+                "misc": "Autorisation diverse",
+                "name": "Autorisations utilisateur",
+                "operator": "Outorisation de l’opérateur",
+                "presenter": "Autorisation du présentateur"
+            }
+        },
+        "username": "Nom d’utilisateur",
+        "username_placeholder": "Chloé, Farid, Alice…",
+        "users": "Utilisateurs",
+        "you": "Tu"
+    }
+}

@@ -1,0 +1,15 @@
+.c-general-controls {
+    align-items: center;
+    background: $panel-bg;
+    box-shadow: var(--shadow-l);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: $spacer-1;
+
+    .toggles {
+        display: flex;
+        flex-direction: column;
+        gap: $spacer-1;
+    }
+}

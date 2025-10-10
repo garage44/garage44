@@ -1,8 +1,8 @@
 {
-  "name": "@garage44/expressio-workspace",
+  "name": "@garage44/workspace",
   "version": "1.0.0",
   "author": "Garage44",
-  "description": "Expressio workspace",
+  "description": "Garage44 monorepo - Modern web applications built with Bun, Preact, and DeepSignal",
   "license": "MIT",
   "private": true,
   "scripts": {
