@@ -10,14 +10,19 @@
   "dependencies": {
     "@garage44/bunchy": "workspace:^",
     "@garage44/common": "workspace:^",
+    "classnames": "^2.5.1",
     "deepsignal": "^1.5.0",
     "figlet": "^1.8.0",
+    "fs-extra": "^11.3.2",
     "globby": "^15.0.0",
+    "picocolors": "^1.1.1",
     "preact": "^10.26.5",
     "preact-router": "^4.1.2",
     "rc": "^1.2.8",
     "unique-names-generator": "^4.7.1",
-    "ws": "^8.18.1"
+    "uuid": "^13.0.0",
+    "ws": "^8.18.1",
+    "yargs": "^18.0.0"
   },
   "files": [
     "api/*",
@@ -33,6 +38,7 @@
   },
   "scripts": {
     "build": "NODE_ENV=production BUN_ENV=development bun service.ts build",
+    "clean": "rm -rf dist;rm -rf node_modules",
     "dev": "NODE_ENV=development BUN_ENV=development bun run --watch service.ts start",
     "lint:css": "stylelint src/**/*.css",
     "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json",
