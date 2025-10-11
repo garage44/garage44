@@ -68,6 +68,11 @@ export interface PyriteState extends CommonState {
     }
     groups: any[]
     language: {id: string | null}
+    language_ui: {
+        selection: string
+        i18n: Record<string, Record<string, string>>
+        options: any[]
+    }
     loading: boolean
     login: {
         autofocus: boolean

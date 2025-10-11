@@ -12,7 +12,7 @@ interface PanelContextProps {
 
 export default function PanelContext({ children }: PanelContextProps) {
     const panelRef = useRef<HTMLDivElement>(null)
-    const version = process.env.PYR_VERSION
+    const version = process.env.APP_VERSION || '2.0.0'
 
     const toggleContext = useMemo(() => {
         const pathname = window.location.pathname

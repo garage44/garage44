@@ -32,7 +32,7 @@ bun run dev
 
 **Core features:** Multi-party video, screen sharing, chat, recording, admin interface, responsive design
 
-**License:** MIT
+**License:** AGPLv3
 
 ## Shared Architecture
 
@@ -152,8 +152,8 @@ See [ADR-003](./docs/adr/ADR-003-bun-runtime-adoption.md) for details.
 
 ## Contact
 
-- Website: [expressio.tech](https://expressio.tech)
-- Email: info@expressio.tech
+- Website: [garage44](https://garage44.org)
+- Email: info@garage44.org
 - GitHub: [github.com/garage44](https://github.com/garage44)
 
 ---

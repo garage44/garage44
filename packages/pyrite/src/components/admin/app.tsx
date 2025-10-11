@@ -29,7 +29,7 @@ export const AdminApp = () => {
                 <Route path="/admin/users/:userId" component={Users} />
                 <Route default component={Groups} />
             </Router>
-            <Notifications />
+            <Notifications notifications={$s.notifications} />
         </div>
     )
 }

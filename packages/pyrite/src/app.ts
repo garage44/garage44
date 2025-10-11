@@ -29,16 +29,17 @@ const $tc = (key: string, count: number, context?: any) => {
 // Initialize app with translations loaded from API
 async function initApp() {
     try {
-        // Determine language
+        // Determine language - use language_ui.selection
         let currentLanguage = 'en'
-        if ($s.language.id) {
-            currentLanguage = $s.language.id
+        if ($s.language_ui.selection) {
+            currentLanguage = $s.language_ui.selection
         } else {
             const supportedLanguages = ['de', 'en', 'nl', 'fr']
             const browserLanguage = navigator.language.split('-')[0]
             if (supportedLanguages.includes(browserLanguage)) {
                 currentLanguage = browserLanguage
             }
+            $s.language_ui.selection = currentLanguage
         }
 
         // Fetch translations

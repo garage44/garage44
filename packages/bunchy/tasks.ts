@@ -149,6 +149,7 @@ tasks.code_frontend = new Task('code:frontend', async function taskCodeFrontend(
         const result = await Bun.build({
             define: {
                 'process.env.NODE_ENV': `'${process.env.NODE_ENV}'`,
+                'process.env.APP_VERSION': `'${settings.version}'`,
             },
             entrypoints: ['src/app.ts'],
             format: 'esm',

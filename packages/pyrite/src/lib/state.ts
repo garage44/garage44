@@ -26,6 +26,16 @@ export const persistantState: Partial<PyriteState> = {
         },
     },
     language: {id: null},
+    language_ui: {
+        selection: 'en',
+        i18n: {},
+        options: [
+            {id: 'de', name: 'Deutsch'},
+            {id: 'en', name: 'English'},
+            {id: 'fr', name: 'Français'},
+            {id: 'nl', name: 'Nederlands'},
+        ],
+    },
     loading: true,
     media: {
         accept: {id: 'everything', name: ''},

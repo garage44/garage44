@@ -61,7 +61,7 @@ export const ConferenceApp = () => {
             )}
 
             {$s.group.connected && <GroupControls/>}
-            <Notifications />
+            <Notifications notifications={$s.notifications} />
         </div>
     )
 }
