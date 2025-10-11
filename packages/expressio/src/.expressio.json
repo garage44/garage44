@@ -33,7 +33,7 @@
                 }
             ]
         },
-        "source_file": "/home/deck/code/expressio/packages/expressio/src/.expressio.json",
+        "source_file": "/home/deck/code/garage44/packages/expressio/src/.expressio.json",
         "sync": {
             "dir": "${workspaceFolder}/**/*.{ts,tsx}",
             "enabled": true

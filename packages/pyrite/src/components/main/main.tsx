@@ -1,6 +1,6 @@
 import {$s, ws} from '@/app'
-import {$t, api} from '@garage44/common/app'
-import {Router, route} from 'preact-router'
+import {api} from '@garage44/common/app'
+import {Router} from 'preact-router'
 import {classes, mergeDeep} from '@garage44/common/lib/utils'
 import {ConferenceApp} from '../conference/app'
 import {AdminApp} from '../admin/app'
@@ -29,18 +29,16 @@ export const Main = () => {
         return null
     }
 
-    return <>
-        <div class={classes('app', {
-            [`theme-${$s.theme.id}`]: true,
-        })}>
-            <Router>
-                {/* Admin routes */}
-                <AdminApp path="/admin/*" />
+    return <div class={classes('app', {
+        [`theme-${$s.theme.id}`]: true,
+    })}>
+        <Router>
+            {/* Admin routes */}
+            <AdminApp path="/admin/*" />
 
-                {/* Conference routes (default) */}
-                <ConferenceApp default path="/*" />
-            </Router>
-            <Notifications notifications={$s.notifications}/>
-        </div>
-    </>
+            {/* Conference routes (default) */}
+            <ConferenceApp default path="/*" />
+        </Router>
+        <Notifications notifications={$s.notifications}/>
+    </div>
 }

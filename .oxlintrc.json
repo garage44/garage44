@@ -4,11 +4,11 @@
     "correctness": "error",
     "suspicious": "error",
     "pedantic": "error",
-    "style": "error",
+    "style": "off",
     "restriction": "off",
     "nursery": "off"
   },
-  "plugins": ["react", "jsx-a11y", "typescript", "unicorn", "import"],
+  "plugins": ["react", "jsx-a11y", "typescript", "unicorn"],
   "rules": {
     "import/max-dependencies": "off",
     "eslint/require-await": "off",
@@ -16,7 +16,6 @@
     "eslint/max-lines": ["error", 1000],
     "eslint/max-params": ["error", 5],
     "eslint/max-nested-callbacks": ["error", 10],
-    "eslint/no-named-export": "off",
     "prefer-logical-operator-over-ternary": "off",
     "eslint/no-magic-numbers": "off",
     "eslint/no-unused-vars": "off",

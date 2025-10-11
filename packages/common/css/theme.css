@@ -1,0 +1,17 @@
+/**
+ * Garage44 Common Theme
+ *
+ * Single entry point for all shared design system styles.
+ * Import this file in your project's main CSS instead of individual files.
+ *
+ * Usage in projects:
+ *   @import "../../../common/css/theme.css";
+ */
+
+/* Core design tokens and typography */
+@import "./_typography.css";
+
+/* Shared component styles */
+@import "./common/_tooltip.css";
+
+/* Add future shared styles here */
