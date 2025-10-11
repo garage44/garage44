@@ -4,6 +4,7 @@
   "author": "Garage44",
   "main": "index.ts",
   "dependencies": {
+    "@garage44/common": "workspace:^",
     "archy": "^1.0.0",
     "fs-extra": "^11.3.0",
     "glob": "^11.0.1",

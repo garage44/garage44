@@ -8,8 +8,10 @@
   "files": [
     "README.md",
     "app.ts",
+    "css/**",
     "components/**",
     "components.ts",
+    "fonts/**",
     "lib/**",
     "scss/**/*",
     "tsconfig.json",
@@ -28,7 +30,6 @@
     "./lib/logger.ts": "./lib/logger.browser.ts"
   },
   "dependencies": {
-    "@garage44/bunchy": "workspace:^",
     "@preact/signals": "^2.0.2",
     "bufferutil": "^4.0.9",
     "classnames": "^2.5.1",

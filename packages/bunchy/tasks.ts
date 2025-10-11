@@ -152,6 +152,11 @@ tasks.code_frontend = new Task('code:frontend', async function taskCodeFrontend(
             },
             entrypoints: ['src/app.ts'],
             format: 'esm',
+            jsx: {
+                runtime: 'classic',
+                factory: 'h',
+                importSource: 'preact',
+            },
             minify: {
                 identifiers: false,
                 syntax: minify,

@@ -6,7 +6,6 @@ import type {CommonState} from '@/types'
 import {EventEmitter} from 'eventemitter3'
 import {Store} from '@/lib/store'
 import env from '@/lib/env'
-import {initializeBunchy} from '@garage44/bunchy/client'
 import {logger} from '@garage44/common/lib/logger.ts'
 
 logger.setLevel('debug')
@@ -39,8 +38,17 @@ class App {
 
         // Initialize Bunchy centrally when a prefix is provided (apps pass this in dev)
         if (options.bunchyPrefix) {
-            try { initializeBunchy({logPrefix: options.bunchyPrefix}) }
-            catch (error) { console.warn('[App] Failed to initialize Bunchy:', error) }
+            try {
+                // Runtime check to avoid circular dependency at build time
+                if (typeof require !== 'undefined') {
+                    const bunchyModule = require('@garage44/bunchy/client')
+                    bunchyModule.initializeBunchy({logPrefix: options.bunchyPrefix})
+                }
+            }
+            catch (error) {
+                // Silently fail if bunchy is not available
+                console.warn('[App] Bunchy not available for development features:', error.message)
+            }
         }
     }
 }

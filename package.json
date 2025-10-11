@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "build": "bun run --filter './packages/**' build",
-    "clean": "bun run --filter './packages/**' clean",
+    "clean": "rm bun.lock;bun run --filter './packages/**' clean",
     "lint:ts": "bun run --filter './packages/**' lint:ts",
     "lint:css": "bun run --filter './packages/**' lint:css",
     "playwright:install": "bunx playwright install chromium",
