@@ -241,7 +241,28 @@ async function initMiddleware(bunchyConfig) {
                 if (await file.exists()) {
                     logger.debug(`[HTTP] GET ${filePath}`)
                     devContext.addHttp({ ts: Date.now(), method: 'GET', url: filePath, status: 200 })
-                    return new Response(file)
+
+                    // Determine MIME type based on file extension
+                    const ext = path.extname(filePath).toLowerCase()
+                    const mimeTypes: Record<string, string> = {
+                        '.css': 'text/css',
+                        '.js': 'application/javascript',
+                        '.json': 'application/json',
+                        '.png': 'image/png',
+                        '.jpg': 'image/jpeg',
+                        '.jpeg': 'image/jpeg',
+                        '.gif': 'image/gif',
+                        '.svg': 'image/svg+xml',
+                        '.woff': 'font/woff',
+                        '.woff2': 'font/woff2',
+                        '.ttf': 'font/ttf',
+                        '.eot': 'application/vnd.ms-fontobject',
+                    }
+                    const contentType = mimeTypes[ext] || 'application/octet-stream'
+
+                    return new Response(file, {
+                        headers: { 'Content-Type': contentType }
+                    })
                 }
             } catch (error) {
                 // File doesn't exist, continue to next handler

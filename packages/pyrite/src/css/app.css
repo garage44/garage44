@@ -3,12 +3,11 @@
  * Entry point for all application styles
  */
 
+/* Import unified theme from common package */
+@import "../../../common/css/theme.css";
+
 /* Import CSS variables and tokens */
 @import "./_variables.css";
-
-/* Import common typography and utilities from common package */
-@import "../../../common/css/_typography.css";
-@import "../../../common/css/common/_tooltip.css";
 
 /* Base styles and resets */
 

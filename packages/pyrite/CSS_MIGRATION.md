@@ -1,8 +1,12 @@
 # CSS Migration - SCSS to Modern CSS
 
+> **See also**: [ADR-011: Modern CSS Migration and Unified Styleguide](../../../docs/adr/ADR-011-modern-css-migration.md) for the architectural decision and rationale behind this migration.
+
 ## Overview
 
 Pyrite has been migrated from SCSS to modern CSS with native nesting, following the same pattern as Expressio. The build system uses Bun's native CSS bundler through Bunchy.
+
+This migration is part of a larger initiative to establish a **unified design system** across all Garage44 projects (Pyrite, Expressio) using shared design tokens from the `@garage44/common` package.
 
 ## Structure
 
@@ -244,19 +248,25 @@ Pyrite uses OKLCH for predictable perceptual color scaling:
 
 ## Shared Styles
 
-Common styles from `@garage44/common` package:
+Common styles from `@garage44/common` package are imported via a **single entry point**:
 
 ```css
-/* In app.css */
-@import "../../../common/css/_typography.css";
-@import "../../../common/css/common/_tooltip.css";
+/* In app.css - ONE import for all common styles */
+@import "../../../common/css/theme.css";
 ```
 
-These provide:
+This single import provides:
 - Typography utilities
 - Tooltip styles
 - Icon fonts
 - Form elements
+- All future shared common styles
+
+**Why a single import?**
+- **Consistency**: All projects automatically receive the same common styles
+- **Maintainability**: No need to update imports when common package adds new styles
+- **Simplicity**: One line instead of managing multiple import paths
+- **Less error-prone**: Can't forget to import a required common file
 
 ## Performance
 

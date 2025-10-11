@@ -16,6 +16,7 @@
     "eslint/max-lines": ["error", 1000],
     "eslint/max-params": ["error", 5],
     "eslint/max-nested-callbacks": ["error", 10],
+    "eslint/no-named-export": "off",
     "prefer-logical-operator-over-ternary": "off",
     "eslint/no-magic-numbers": "off",
     "eslint/no-unused-vars": "off",

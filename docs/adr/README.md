@@ -1,6 +1,6 @@
-# Expressio Architecture Documentation
+# Garage44 Architecture Documentation
 
-This directory contains Architecture Decision Records (ADRs) that document the key architectural decisions made during the development of Expressio.
+This directory contains Architecture Decision Records (ADRs) that document the key architectural decisions made during the development of the Garage44 monorepo projects (Expressio, Pyrite, Bunchy, etc.).
 
 ## What are ADRs?
 
@@ -29,10 +29,11 @@ Each ADR follows this structure:
 | [ADR-008](./ADR-008-isomorphic-logger.md) | Isomorphic Logger Implementation | Accepted | 2025-06-02 |
 | [ADR-009](./ADR-009-llm-optimized-project-structure.md) | LLM-Optimized Project Structure for Strategic Reasoning | Accepted | 2025-01-27 |
 | [ADR-010](./ADR-010-oxlint-eslint-replacement.md) | OxLint as ESLint Replacement for Enhanced TypeScript/React Linting | Accepted | 2025-01-03 |
+| [ADR-011](./ADR-011-modern-css-migration.md) | Modern CSS Migration and Unified Styleguide | Accepted | 2025-10-11 |
 
 ## Architectural Principles
 
-Based on these decisions, Expressio follows these core principles:
+Based on these decisions, the Garage44 monorepo follows these core principles:
 
 ### 1. **Real-time First**
 - Default to WebSocket communication for user-facing features
@@ -60,6 +61,12 @@ Based on these decisions, Expressio follows these core principles:
 - Maintain clear traceability between technical and business decisions
 - Centralize strategic context for improved reasoning capabilities
 - Enable automated analysis of project evolution and market fit
+
+### 6. **Unified Design System**
+- Maintain consistent visual identity across all projects (Pyrite, Expressio)
+- Share design tokens and components through `@garage44/common` package
+- Use modern CSS features (native nesting, custom properties, OKLCH colors)
+- Prioritize accessibility and theme support in all user interfaces
 
 ## Adding New ADRs
 
