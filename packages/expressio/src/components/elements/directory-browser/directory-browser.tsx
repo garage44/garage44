@@ -1,8 +1,10 @@
-import {classes, mergeDeep} from '@garage44/common/lib/utils'
+import {mergeDeep} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {Icon} from '@garage44/common/components'
 import {deepSignal} from 'deepsignal'
 import {useEffect} from 'preact/hooks'
-import {ws} from '@/app'
+import {ws} from '@garage44/common/app'
+
 const state = deepSignal({
     current: {
         path: '',
@@ -62,7 +64,7 @@ export function DirectoryBrowser({onSelect}) {
                 </div>
                 {state.directories.map(dir => (
                     <div
-                        class={classes("directory", {'is-workspace': dir.is_workspace})}
+                        class={classnames("directory", {'is-workspace': dir.is_workspace})}
                         onClick={() => loadDirectory(dir.path)}
                     >{dir.name}</div>
                 ))}

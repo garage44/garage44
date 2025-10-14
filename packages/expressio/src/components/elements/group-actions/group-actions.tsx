@@ -1,5 +1,7 @@
-import {$s, ws} from '@/app'
-import {classes, randomId} from '@garage44/common/lib/utils'
+import {$s} from '@/app'
+import {ws} from '@garage44/common/app'
+import {randomId} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {$t} from '@garage44/common/app'
 import type {EnolaTag} from '@garage44/enola/types'
 import {Icon} from '@garage44/common/components'
@@ -13,7 +15,7 @@ interface TranslationGroup {
 }
 
 export function GroupActions({className, group, path}: {className?: string, group: TranslationGroup, path: string[]}) {
-    return <div class={classes('c-group-actions', className)}>
+    return <div class={classnames('c-group-actions', className)}>
         <div className="collapse-toggle">
             <Icon
                 disabled={$s.filter.length > 0}

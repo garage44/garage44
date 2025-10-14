@@ -1,10 +1,11 @@
-import {$s, ws} from '@/app'
+import {$s} from '@/app'
+import {ws} from '@garage44/common/app'
 import {FieldText} from '@garage44/common/components'
 import {GroupActions} from '../group-actions/group-actions'
 import {Translation} from '@/components/elements'
-import {classes} from '@garage44/common/lib/utils'
 import {pathHas} from '@garage44/common/lib/paths'
 import {tag_updated} from '@/lib/ui'
+import classnames from 'classnames'
 
 interface TranslationGroupType {
     _id: string
@@ -71,7 +72,7 @@ export function TranslationGroup({group, level = 0, path, filter = '', sort = 'a
     const autoExpand = !!filter
     const collapsed = autoExpand ? false : group._collapsed
 
-    return <div class={classes('c-translation-group', `level-${level}`, {
+    return <div class={classnames('c-translation-group', `level-${level}`, {
         collapsed,
         'has-redundant': pathHas($s.workspace.i18n, path, '_redundant'),
         'has-soft': pathHas($s.workspace.i18n, path, '_soft'),

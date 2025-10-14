@@ -1,9 +1,9 @@
 import {$s} from '@/app'
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 
 export function TranslationResult({group}) {
     return (
-        <div class={classes('c-translation-result', {
+        <div class={classnames('c-translation-result', {
             collapsed: group._collapsed,
         }, {
             'tag-updated': $s.tags.updated === null,

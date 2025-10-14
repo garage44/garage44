@@ -1,8 +1,9 @@
-import {$s, notifier, ws} from '@/app'
+import {$s} from '@/app'
+import {notifier, ws} from '@garage44/common/app'
 import {FieldText, Icon} from '@garage44/common/components'
 import {$t} from '@garage44/common/app'
 import {TranslationResult} from '@/components/elements'
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 
 export function Translation({group, path}) {
 
@@ -19,7 +20,7 @@ export function Translation({group, path}) {
         })
     }
 
-    return <div class={classes('c-translation', {
+    return <div class={classnames('c-translation', {
         redundant: group._redundant,
         soft: group._soft,
         'tag-updated': $s.tags.updated === path_update})}>

@@ -2,7 +2,7 @@ import {FieldText, Icon} from '@garage44/common/components'
 import {$t} from '@garage44/common/app'
 import {DirectoryBrowser} from '../directory-browser/directory-browser'
 import type {WorkspaceDescription} from '@/types'
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 
 interface WorkspaceSelectorProps {
     workspaces: WorkspaceDescription[]
@@ -18,7 +18,7 @@ export function WorkspaceSelector({workspaces}: WorkspaceSelectorProps) {
             <div class="wrapper">
                 <div className="options">
                     {workspaces.map((workspace:WorkspaceDescription) =>
-                    <div className={classes('option', workspace.status)} key={workspace.workspace_id}>
+                    <div className={classnames('option', workspace.status)} key={workspace.workspace_id}>
                         <Icon
                             name="close"
                             onClick={() => {

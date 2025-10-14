@@ -1,9 +1,10 @@
-import {$s, notifier, ws} from '@/app'
-import {$t, api} from '@garage44/common/app'
+import {$s} from '@/app'
+import {$t, api, notifier, ws} from '@garage44/common/app'
 import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
 import {FieldSelect, Icon, Notifications, Progress} from '@garage44/common/components'
 import {Router, getCurrentUrl, route} from 'preact-router'
-import {classes, mergeDeep} from '@garage44/common/lib/utils'
+import {mergeDeep} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {Link} from 'preact-router/match'
 import {Login} from '@/components/pages/login/login'
 import {deepSignal} from 'deepsignal'
@@ -69,7 +70,7 @@ export const Main = () => {
 
     return <>
         <div
-            class={classes('panel fade-in', {
+            class={classnames('panel fade-in', {
                 collapsed: $s.panel.collapsed,
             })}
         >
@@ -117,7 +118,7 @@ export const Main = () => {
 
                     <Link
                         activeClassName="active"
-                        className={classes({disabled: !$s.workspace})}
+                        className={classnames({disabled: !$s.workspace})}
                         href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/settings` : ''}
                     >
                         <Icon name="workspace" type="info"/>
@@ -125,7 +126,7 @@ export const Main = () => {
                     </Link>
                     <Link
                         activeClassName="active"
-                        className={classes({disabled: !$s.workspace})}
+                        className={classnames({disabled: !$s.workspace})}
                         href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/translations` : ''}
                     >
                         <Icon name="translate" type="info"/>

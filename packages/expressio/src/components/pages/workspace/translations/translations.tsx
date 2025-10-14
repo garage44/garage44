@@ -1,10 +1,11 @@
-import {$s, ws} from '@/app'
+import {$s} from '@/app'
+import {ws} from '@garage44/common/app'
 import {pathCreate, pathDelete, pathUpdate} from '@garage44/common/lib/paths.ts'
 import type {EnolaTag} from '@garage44/enola/types.ts'
 import {GroupActions} from '@/components/elements/group-actions/group-actions'
 import {Button, FieldText, Icon} from '@garage44/common/components'
 import {TranslationGroup} from '@/components/elements'
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {events} from '@garage44/common/app'
 import {useEffect} from 'preact/hooks'
 
@@ -55,7 +56,7 @@ export function WorkspaceTranslations() {
     }, []) // Empty dependency array means this runs once on mount
 
     return <div class="c-translations">
-        <div className={classes('workspace-info', {disabled: !$s.workspace})}>
+        <div className={classnames('workspace-info', {disabled: !$s.workspace})}>
             <GroupActions className="horizontal" group={$s.workspace.i18n} path={[]}/>
             <div className="history-actions">
                 <Icon

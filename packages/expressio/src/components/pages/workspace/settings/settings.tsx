@@ -1,8 +1,8 @@
-import {$s, notifier} from '@/app'
-import {$t, api, store} from '@garage44/common/app'
+import {$s} from '@/app'
+import {$t, api, notifier, store} from '@garage44/common/app'
 import {Button, FieldCheckbox, FieldSelect, FieldText} from '@garage44/common/components'
 import {createValidator, required} from '@garage44/common/lib/validation'
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {deepSignal} from 'deepsignal'
 import {persistantState} from '@/lib/state'
 import {useEffect} from 'preact/hooks'
@@ -78,7 +78,7 @@ export function WorkspaceSettings() {
                 </div>
                 <div className="options">
                     {state.target_languages.sort((a, b) => a.name.localeCompare(b.name)).map((language) => {
-                        return <div class={classes("option", {
+                        return <div class={classnames("option", {
                             'is-invalid': !validation.value[`target_${language.id}_engine`].isValid || !validation.value[`target_${language.id}_formality`].isValid,
                             'is-touched': validation.value[`target_${language.id}_engine`].isTouched || validation.value[`target_${language.id}_formality`].isTouched,
                         })}>

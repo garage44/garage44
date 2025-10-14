@@ -1,5 +1,5 @@
-import {$s, notifier} from '@/app'
-import {$t, api, store} from '@garage44/common/app'
+import {$s} from '@/app'
+import {$t, api, notifier, store} from '@garage44/common/app'
 import {Button, FieldSelect, FieldText} from '@garage44/common/components'
 import {createValidator, required} from '@garage44/common/lib/validation'
 import {WorkspaceSelector} from '@/components/elements'
