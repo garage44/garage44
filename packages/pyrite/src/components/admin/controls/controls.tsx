@@ -67,14 +67,12 @@ export default function AdminControls({ path }: AdminControlsProps) {
                 )}
             </div>
 
-            {$s.env.layout === 'desktop' && (
-                <Button
-                    icon="ViewList"
-                    tip={$s.panels.context.collapsed ? $t('ui.panel.expand') : $t('ui.panel.collapse')}
-                    variant="toggle"
-                    onClick={toggleCollapse}
-                />
-            )}
+            <Button
+                icon="ViewList"
+                tip={$s.panels.context.collapsed ? $t('ui.panel.expand') : $t('ui.panel.collapse')}
+                variant="toggle"
+                onClick={toggleCollapse}
+            />
         </div>
     )
 }

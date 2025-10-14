@@ -45,17 +45,19 @@ export default function PanelContext({ children }: PanelContextProps) {
     useEffect(() => {
         if (!panelRef.current) return
 
-        const spacer = Number(getComputedStyle(document.querySelector('.app')!).getPropertyValue('--spacer').replace('px', ''))
+        const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
+        const currentWidth = panelRef.current.offsetWidth
+        const targetWidth = $s.panels.context.collapsed ? rootFontSize * 2.5 : 250 // 2.5rem = --spacer-5
+
         animate({
             duration: 350,
-            from: $s.panels.context.collapsed ? 300 : spacer * 8,
-            onFinish: () => {},
+            from: currentWidth,
             onUpdate: v => {
                 if (panelRef.current) {
                     panelRef.current.style.width = `${Math.floor(v)}px`
                 }
             },
-            to: $s.panels.context.collapsed ? spacer * 8 : 300,
+            to: targetWidth,
         })
     }, [$s.panels.context.collapsed])
 
@@ -67,7 +69,7 @@ export default function PanelContext({ children }: PanelContextProps) {
     }, [$s.env.layout])
 
     return (
-        <div ref={panelRef} class={classnames('c-panel-context', {collapsed: false})}>
+        <div ref={panelRef} class={classnames('c-panel-context', {collapsed: $s.panels.context.collapsed})}>
             <header>
                 {!$s.group.connected ? (
                     <Link class="logo" href={toggleContext}>

@@ -153,15 +153,13 @@ export default function ControlsMain({ path }: ControlsMainProps) {
                     variant="toggle"
                 />
 
-                {$s.env.layout === 'desktop' && (
-                    <Button
-                        active={!$s.panels.context.collapsed}
-                        icon="ViewList"
-                        tip={$s.panels.context.collapsed ? $t('ui.panel.expand') : $t('ui.panel.collapse')}
-                        variant="toggle"
-                        onClick={toggleCollapse}
-                    />
-                )}
+                <Button
+                    active={!$s.panels.context.collapsed}
+                    icon="ViewList"
+                    tip={$s.panels.context.collapsed ? $t('ui.panel.expand') : $t('ui.panel.collapse')}
+                    variant="toggle"
+                    onClick={toggleCollapse}
+                />
             </div>
         </nav>
     )

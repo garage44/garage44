@@ -1,11 +1,11 @@
 .c-panel-context {
-    background: #0f0;
-    /* background: var(--bg-primary); */
+    background: var(--bg-secondary);
+
     display: flex;
     flex-direction: column;
-    min-width: var(--spacer-8);
+    min-width: var(--spacer-5);
     position: relative;
-    width: 300px;
+    width: 250px;
 
     header {
         align-items: center;
@@ -151,7 +151,7 @@
     }
 
     &.collapsed {
-        width: var(--spacer-8);
+        width: var(--spacer-5);
 
         header {
             padding: 0;
