@@ -1,0 +1,2695 @@
+{
+    "config": {
+        "languages": {
+            "source": "eng-gbr",
+            "target": [
+                {
+                    "engine": "deepl",
+                    "id": "deu"
+                },
+                {
+                    "engine": "deepl",
+                    "id": "eng-gbr"
+                },
+                {
+                    "engine": "deepl",
+                    "id": "fra"
+                },
+                {
+                    "engine": "deepl",
+                    "id": "nld"
+                }
+            ]
+        },
+        "source_file": "/home/deck/code/garage44/packages/pyrite/src/.expressio.json",
+        "sync": {
+            "dir": "${workspaceFolder}/**/*.{ts,tsx}",
+            "enabled": true
+        },
+        "workspace_id": "pyrite"
+    },
+    "i18n": {
+        "chat": {
+            "general": {
+                "cache": "0db377921f4ce762",
+                "source": "General",
+                "target": {
+                    "eng-gbr": "General",
+                    "deu": "Allgemein",
+                    "fra": "Général",
+                    "nld": "Algemeen"
+                }
+            },
+            "send_message": {
+                "cache": "747c6a3564774149",
+                "source": "Send message",
+                "target": {
+                    "eng-gbr": "Send message",
+                    "deu": "Nachricht senden",
+                    "fra": "Envoyer le message",
+                    "nld": "Verstuur bericht"
+                }
+            },
+            "type_help": {
+                "cache": "ad63f58b32e3040b",
+                "source": "type /help for help",
+                "target": {
+                    "eng-gbr": "type /help for help",
+                    "deu": "Geben Sie /help ein, um Hilfe zu erhalten",
+                    "fra": "tapez /help pour obtenir de l'aide",
+                    "nld": "type /help voor hulp"
+                }
+            }
+        },
+        "device": {
+            "action_required": {
+                "cache": "1d00e6632ef8abd0",
+                "source": "Your current audio setup requires re-adjustment:",
+                "target": {
+                    "eng-gbr": "Your current audio setup requires re-adjustment:",
+                    "deu": "Ihre derzeitige Audio-Einführung erfordert eine Neuangleichung:",
+                    "fra": "Votre configuration audio actuelle nécessite une réajustement :",
+                    "nld": "Uw huidige audio-instellingen moet opnieuw worden aangepast:"
+                }
+            },
+            "added": {
+                "cache": "56bf63faf86bf439",
+                "source": "Device has become available:|Devices have become available:",
+                "target": {
+                    "eng-gbr": "Device has become available:|Devices have become available:",
+                    "deu": "Gerät ist verfügbar geworden:|Geräte sind verfügbar geworden:",
+                    "fra": "Le dispositif est devenu disponible :|Les dispositifs sont devenus disponibles :",
+                    "nld": "Apparaat is beschikbaar geworden:|Apparaten zijn beschikbaar geworden:"
+                }
+            },
+            "audio_volume": {
+                "cache": "bb6594e19733a547",
+                "source": "Audio Volume",
+                "target": {
+                    "eng-gbr": "Audio Volume",
+                    "deu": "Audiolautstärke",
+                    "fra": "Volume audio",
+                    "nld": "Audio Volume"
+                }
+            },
+            "media_error": {
+                "cache": "b0ba50dead7946d2",
+                "source": "Unable to find a valid device",
+                "target": {
+                    "eng-gbr": "Unable to find a valid device",
+                    "deu": "Keine gültige Vorrichtung",
+                    "fra": "Impossible de trouver un appareil valide",
+                    "nld": "Kan geen geldig apparaat vinden"
+                }
+            },
+            "removed": {
+                "cache": "351e3be1810666ad",
+                "source": "Device has become unavailable:|Devices have become unavailable:",
+                "target": {
+                    "eng-gbr": "Device has become unavailable:|Devices have become unavailable:",
+                    "deu": "Gerät ist nicht mehr verfügbar:|Geräte sind nicht mehr verfügbar:",
+                    "fra": "Le dispositif est devenu indisponible :|Les dispositifs sont devenus indisponibles :",
+                    "nld": "Apparaat is onbeschikbaar geworden:| Apparaten zijn onbeschikbaar geworden:"
+                }
+            },
+            "select_audio_help": {
+                "cache": "30774e5e617579e0",
+                "source": "Select the audio output device",
+                "target": {
+                    "eng-gbr": "Select the audio output device",
+                    "deu": "Auswahl der Audio-Produktionsgeräte",
+                    "fra": "Sélectionnez le périphérique de sortie audio",
+                    "nld": "Selecteer het apparaat voor audio uitvoer"
+                }
+            },
+            "select_audio_label": {
+                "cache": "403103b867780ddf",
+                "source": "Audio output",
+                "target": {
+                    "eng-gbr": "Audio output",
+                    "deu": "Audio-Ausgang",
+                    "fra": "Sortie audio",
+                    "nld": "Audio uitvoer"
+                }
+            },
+            "select_audio_verify_help": {
+                "cache": "6301a2755a201d00",
+                "source": "Verify your audio configuration with the test sound",
+                "target": {
+                    "eng-gbr": "Verify your audio configuration with the test sound",
+                    "deu": "Verifizieren Sie Ihre Audio-Zusammensetzung mit dem Testgeräusch",
+                    "fra": "Vérifiez votre configuration audio avec le son de test",
+                    "nld": "Controleer je audio instellingen met het test geluid"
+                }
+            },
+            "select_cam_help": {
+                "cache": "5c891f566ba506dc",
+                "source": "Select the video device",
+                "target": {
+                    "eng-gbr": "Select the video device",
+                    "deu": "Auswahl der Videogeräte",
+                    "fra": "Sélectionnez le périphérique vidéo",
+                    "nld": "Selecteer het video apparaat"
+                }
+            },
+            "select_cam_label": {
+                "cache": "967d35e40f3f95b1",
+                "source": "Camera",
+                "target": {
+                    "eng-gbr": "Camera",
+                    "deu": "Kamera",
+                    "fra": "Caméra",
+                    "nld": "Camera"
+                }
+            },
+            "select_mic_help": {
+                "cache": "20fdf44b1d3a0653",
+                "source": "Select the microphone device",
+                "target": {
+                    "eng-gbr": "Select the microphone device",
+                    "deu": "Wählen Sie das Mikrofongerät aus",
+                    "fra": "Sélectionnez le micro",
+                    "nld": "Selecteer het microfoon apparaat"
+                }
+            },
+            "select_mic_label": {
+                "cache": "2cc9187af12cfb28",
+                "source": "Microphone",
+                "target": {
+                    "eng-gbr": "Microphone",
+                    "deu": "Mikrofon",
+                    "fra": "Microphone",
+                    "nld": "Microfoon"
+                }
+            },
+            "select_mic_verify_help": {
+                "cache": "c58fc57ec537af6f",
+                "source": "verify the soundmeter responds to your selected microphone",
+                "target": {
+                    "eng-gbr": "verify the soundmeter responds to your selected microphone",
+                    "deu": "Überprüfung des Schallmeters auf Ihr ausgewähltes Mikrofon",
+                    "fra": "Vérifier votre microphone avec le sonomètre",
+                    "nld": "Controleer of de geluidsmeter reageert op de microfoon"
+                }
+            }
+        },
+        "error": {
+            "cache": "6771e0ac59c69dfe",
+            "source": "An unexpected error occured: {error}",
+            "target": {
+                "eng-gbr": "An unexpected error occured: {error}",
+                "deu": "Ein unerwarteter Fehler entsteht: {Terror}",
+                "fra": "Une erreur s’est produite : {error}",
+                "nld": "Er is een overwachte fout opgetreden: {error}"
+            }
+        },
+        "file": {
+            "modified": {
+                "cache": "35e0c8c0b180c95d",
+                "source": "Modified",
+                "target": {
+                    "eng-gbr": "Modified",
+                    "deu": "geändert",
+                    "fra": "Modifié",
+                    "nld": "Aangepast"
+                }
+            },
+            "name": {
+                "cache": "1351017ac6423911",
+                "source": "Filename",
+                "target": {
+                    "eng-gbr": "Filename",
+                    "deu": "Dateiname",
+                    "fra": "Nom du fichier",
+                    "nld": "Bestandsnaam"
+                }
+            },
+            "size": {
+                "cache": "b18c29b8470190a0",
+                "source": "Filesize",
+                "target": {
+                    "eng-gbr": "Filesize",
+                    "deu": "Dateigröße",
+                    "fra": "Taille du fichier",
+                    "nld": "Bestandsgrootte"
+                }
+            },
+            "stream": {
+                "cache": "a85aa07165e8613b",
+                "source": "Stream file ({formats})",
+                "target": {
+                    "eng-gbr": "Stream file ({formats})",
+                    "deu": "{(formats})",
+                    "fra": "Fichier de flux ({formats})",
+                    "nld": "Stream bestand ({formats})"
+                }
+            },
+            "streaming": {
+                "cache": "f1e7785cee3e74ed",
+                "source": "Streaming file",
+                "target": {
+                    "eng-gbr": "Streaming file",
+                    "deu": "Streaming-Datei",
+                    "fra": "Fichier en streaming",
+                    "nld": "Streaming bestand"
+                }
+            },
+            "type": {
+                "cache": "181fe9ca393210c0",
+                "source": "Filetype",
+                "target": {
+                    "eng-gbr": "Filetype",
+                    "deu": "Dateityp",
+                    "fra": "Type de fichier",
+                    "nld": "Bestandstype"
+                }
+            }
+        },
+        "group": {
+            "about": {
+                "cache": "2e4ded13371e70b8",
+                "source": "About Group",
+                "target": {
+                    "eng-gbr": "About Group",
+                    "deu": "Über die Gruppe",
+                    "fra": "À propos du groupe",
+                    "nld": "Over Groep"
+                }
+            },
+            "action": {
+                "add": {
+                    "cache": "e1f67764d44c555e",
+                    "source": "Add a new group",
+                    "target": {
+                        "eng-gbr": "Add a new group",
+                        "deu": "Neue Gruppe hinzufügen",
+                        "fra": "Ajouter un groupe",
+                        "nld": "Voeg nieuww groep toe"
+                    }
+                },
+                "cam_off": {
+                    "cache": "202a0010bac84b87",
+                    "source": "Switch camera off",
+                    "target": {
+                        "eng-gbr": "Switch camera off",
+                        "deu": "Kamera ausschalten",
+                        "fra": "Désactiver la caméra",
+                        "nld": "Zet camera uit"
+                    }
+                },
+                "cam_on": {
+                    "cache": "f5f2aab68a677965",
+                    "source": "Switch camera on",
+                    "target": {
+                        "eng-gbr": "Switch camera on",
+                        "deu": "Kamera einschalten",
+                        "fra": "Activer la caméra",
+                        "nld": "Zet camera aan"
+                    }
+                },
+                "clear_chat": {
+                    "cache": "1b142ecd462663c8",
+                    "source": "Clear chat",
+                    "target": {
+                        "eng-gbr": "Clear chat",
+                        "deu": "Klarer Chat",
+                        "fra": "Effacer la discussion",
+                        "nld": "Chat leegmaken"
+                    }
+                },
+                "delete_confirm": {
+                    "cache": "d17a5dd92247f6a6",
+                    "source": "Confirm deletion of {amount} group|Confirm deletion of {amount} groups",
+                    "target": {
+                        "eng-gbr": "Confirm deletion of {amount} group|Confirm deletion of {amount} groups",
+                        "deu": "Löschen der Gruppe {amount} bestätigen|Löschen der Gruppe {amount} bestätigen",
+                        "fra": "Confirmer la suppression de {amount} groupe|Confirmer la suppression de {amount} groupes",
+                        "nld": "Bevestig verwijdering van {amount} groep|Bevestig verwijdering van {amount} groepen"
+                    }
+                },
+                "delete_mark": {
+                    "cache": "fecc281bc44c9125",
+                    "source": "Mark group for deletion",
+                    "target": {
+                        "eng-gbr": "Mark group for deletion",
+                        "deu": "Mark-Gruppe zur Löschung",
+                        "fra": "Marquer pour suppression",
+                        "nld": "Markeer groep voor verwijdering"
+                    }
+                },
+                "delete_mark_undo": {
+                    "cache": "31e4eb87b81e602d",
+                    "source": "Unmark group for deletion",
+                    "target": {
+                        "eng-gbr": "Unmark group for deletion",
+                        "deu": "Keine Gruppe zur Löschung",
+                        "fra": "Retirer des suppressions",
+                        "nld": "Demarkeer groep voor verwijdering"
+                    }
+                },
+                "leave": {
+                    "cache": "cc9d5b273c7893ad",
+                    "source": "Leave Group",
+                    "target": {
+                        "eng-gbr": "Leave Group",
+                        "deu": "Gruppe verlassen",
+                        "fra": "Quitter le groupe",
+                        "nld": "Verlaat Groep"
+                    }
+                },
+                "lock": {
+                    "cache": "7cf98d5f3e7e21f1",
+                    "source": "Lock group",
+                    "target": {
+                        "eng-gbr": "Lock group",
+                        "deu": "Gruppe sperren",
+                        "fra": "Verrouiller le groupe",
+                        "nld": "Vergrendel groep"
+                    }
+                },
+                "lock_context": {
+                    "cache": "cf11dd245c7b22a7",
+                    "source": "Lock message or leave empty...",
+                    "target": {
+                        "eng-gbr": "Lock message or leave empty...",
+                        "deu": "Lock message or leave empty...",
+                        "fra": "Lock message or leave empty...",
+                        "nld": "Lock message or leave empty..."
+                    }
+                },
+                "mic_off": {
+                    "cache": "b74d6c6a7a4ae5a3",
+                    "source": "Switch microphone off",
+                    "target": {
+                        "eng-gbr": "Switch microphone off",
+                        "deu": "Mikrofon ausschalten",
+                        "fra": "Désactiver le microphone",
+                        "nld": "Zet microfoon uit"
+                    }
+                },
+                "mic_on": {
+                    "cache": "239af48709cdfc7a",
+                    "source": "Switch microphone on",
+                    "target": {
+                        "eng-gbr": "Switch microphone on",
+                        "deu": "Mikrofon einschalten",
+                        "fra": "Activer le microphone",
+                        "nld": "Zet microfoon aan"
+                    }
+                },
+                "mute_participants": {
+                    "cache": "8f362ad1a13e1b53",
+                    "source": "Mute all participants",
+                    "target": {
+                        "eng-gbr": "Mute all participants",
+                        "deu": "Alle Teilnehmer stummschalten",
+                        "fra": "Couper le son des participants",
+                        "nld": "Demp alle deelnemers"
+                    }
+                },
+                "notify": {
+                    "cache": "6b3ecaab7f7d3cc9",
+                    "source": "Send Notification",
+                    "target": {
+                        "eng-gbr": "Send Notification",
+                        "deu": "Benachrichtigung senden",
+                        "fra": "Envoyer une notification",
+                        "nld": "Stuur Notificatie"
+                    }
+                },
+                "notify_context": {
+                    "cache": "462e8c0ae7355dc4",
+                    "source": "Notification message...",
+                    "target": {
+                        "eng-gbr": "Notification message...",
+                        "deu": "Notification message...",
+                        "fra": "Notification message...",
+                        "nld": "Notification message..."
+                    }
+                },
+                "raisehand": {
+                    "cache": "dcdfc03a15796851",
+                    "source": "Wave for attention",
+                    "target": {
+                        "eng-gbr": "Wave for attention",
+                        "deu": "Welle der Aufmerksamkeit",
+                        "fra": "Lever la main",
+                        "nld": "Zwaai om aandacht"
+                    }
+                },
+                "raisehand_active": {
+                    "cache": "bd1038246f1d9824",
+                    "source": "You are waving for attention",
+                    "target": {
+                        "eng-gbr": "You are waving for attention",
+                        "deu": "Sie winken um Aufmerksamkeit",
+                        "fra": "Vous levez la main",
+                        "nld": "Je bent aan het zwaaien om aandachten"
+                    }
+                },
+                "renamed": {
+                    "cache": "97139e588f3306ef",
+                    "source": "Group {oldname} renamed to {newname}",
+                    "target": {
+                        "eng-gbr": "Group {oldname} renamed to {newname}",
+                        "deu": "Gruppe {oldname} umbenannt in {newname}",
+                        "fra": "Le groupe {oldgroup} est renommé {newgroup}",
+                        "nld": "Groep {oldname} hernoemd naar {newname}"
+                    }
+                },
+                "save": {
+                    "cache": "f4ef8fa1b62f537c",
+                    "source": "Save Group",
+                    "target": {
+                        "eng-gbr": "Save Group",
+                        "deu": "Gruppe speichern",
+                        "fra": "Enregistrer le groupe",
+                        "nld": "Groep Opslaan"
+                    }
+                },
+                "saved": {
+                    "cache": "91c989eb9f74abfa",
+                    "source": "Group {group} saved",
+                    "target": {
+                        "eng-gbr": "Group {group} saved",
+                        "deu": "Gruppe {group} gespeichert",
+                        "fra": "Enregistrer {group}",
+                        "nld": "Groep {group} opgeslagen"
+                    }
+                },
+                "screenshare_off": {
+                    "cache": "baeddbea5f9c702a",
+                    "source": "Switch screensharing off",
+                    "target": {
+                        "eng-gbr": "Switch screensharing off",
+                        "deu": "Wechselbildschirm-Sharing",
+                        "fra": "Désactiver le partage d’écran",
+                        "nld": "Zet schermdeling uit"
+                    }
+                },
+                "screenshare_on": {
+                    "cache": "a17bc336d173bdf5",
+                    "source": "Switch screensharing on",
+                    "target": {
+                        "eng-gbr": "Switch screensharing on",
+                        "deu": "Bildschirmfreigabe einschalten",
+                        "fra": "Activer le partage d’écran",
+                        "nld": "Zet schermdeling aan"
+                    }
+                },
+                "select": {
+                    "cache": "c599b5e87a2de532",
+                    "source": "Select a group",
+                    "target": {
+                        "eng-gbr": "Select a group",
+                        "deu": "Wählen Sie eine Gruppe aus",
+                        "fra": "Sélectionnez un groupe",
+                        "nld": "Selecteer een groep"
+                    }
+                },
+                "start_recording": {
+                    "cache": "616441e888d288a6",
+                    "source": "Start Recording",
+                    "target": {
+                        "eng-gbr": "Start Recording",
+                        "deu": "Aufnahme starten",
+                        "fra": "Démarrer l’enregistrement",
+                        "nld": "Start Opname"
+                    }
+                },
+                "stop_recording": {
+                    "cache": "182150829889bd55",
+                    "source": "Stop Recording",
+                    "target": {
+                        "eng-gbr": "Stop Recording",
+                        "deu": "Aufnahme stoppen",
+                        "fra": "Arrêter l’enregistrement",
+                        "nld": "Stop Opname"
+                    }
+                },
+                "unlock": {
+                    "cache": "6525920d2d73fa74",
+                    "source": "Unlock group",
+                    "target": {
+                        "eng-gbr": "Unlock group",
+                        "deu": "Gruppe entsperren",
+                        "fra": "Déverrouiller le groupe",
+                        "nld": "Ontgrendel groep"
+                    }
+                }
+            },
+            "audio_volume": {
+                "cache": "f8779c93f72e4cd4",
+                "source": "Audio volume",
+                "target": {
+                    "eng-gbr": "Audio volume",
+                    "deu": "Lautstärke",
+                    "fra": "Audio volume",
+                    "nld": "Audio volume"
+                }
+            },
+            "contact": {
+                "cache": "ffaea0032ec02248",
+                "source": "Group Contact",
+                "target": {
+                    "eng-gbr": "Group Contact",
+                    "deu": "Gruppenkontakt",
+                    "fra": "Contact du groupe",
+                    "nld": "Groep Contact"
+                }
+            },
+            "current": {
+                "cache": "8ca4629e2f1d6cc9",
+                "source": "Current group",
+                "target": {
+                    "eng-gbr": "Current group",
+                    "deu": "Aktuelle Gruppe",
+                    "fra": "Groupe actuel",
+                    "nld": "Huidige group"
+                }
+            },
+            "groups": {
+                "cache": "a37ede293936e292",
+                "source": "Groups",
+                "target": {
+                    "eng-gbr": "Groups",
+                    "deu": "Gruppen",
+                    "fra": "Groupes",
+                    "nld": "Groepen"
+                }
+            },
+            "join": {
+                "cache": "9fc5685fd53d625b",
+                "source": "Join group",
+                "target": {
+                    "eng-gbr": "Join group",
+                    "deu": "Gruppe beitreten",
+                    "fra": "Rejoindre le groupe",
+                    "nld": "Aanvoegen bij groep"
+                }
+            },
+            "join_locked": {
+                "cache": "bd85f0590192a6c4",
+                "source": "Join locked group",
+                "target": {
+                    "eng-gbr": "Join locked group",
+                    "deu": "Mitgliedschaft in geschlossenen Gruppen",
+                    "fra": "Rejoindre le groupe verrouillé",
+                    "nld": "Aanvoegen bij vergrendelde groep"
+                }
+            },
+            "join_unlisted": {
+                "cache": "92d1f007c4b3af53",
+                "source": "Join unlisted group",
+                "target": {
+                    "eng-gbr": "Join unlisted group",
+                    "deu": "Nicht gelistete Gruppe beitreten",
+                    "fra": "ReJoindre le groupe non répertorié",
+                    "nld": "Aanvoegen bij onvermelde groep"
+                }
+            },
+            "locked": {
+                "cache": "d0f2e5376298c880",
+                "source": "Locked",
+                "target": {
+                    "eng-gbr": "Locked",
+                    "deu": "Abgeschlossen",
+                    "fra": "Verrouillé",
+                    "nld": "Vergrendeld"
+                }
+            },
+            "name": {
+                "cache": "03937134cedab907",
+                "source": "Group",
+                "target": {
+                    "eng-gbr": "Group",
+                    "deu": "Gruppe",
+                    "fra": "Groupe",
+                    "nld": "Groep"
+                }
+            },
+            "no_groups": {
+                "cache": "6c51a9a3214e1ea7",
+                "source": "No groups yet",
+                "target": {
+                    "eng-gbr": "No groups yet",
+                    "deu": "Noch keine Gruppen",
+                    "fra": "Pas de groupes",
+                    "nld": "Nog geen groepen"
+                }
+            },
+            "no_groups_public": {
+                "cache": "48324a26dda3eb8e",
+                "source": "No public groups",
+                "target": {
+                    "eng-gbr": "No public groups",
+                    "deu": "Keine öffentlichen Gruppen",
+                    "fra": "Pas de groupes publics",
+                    "nld": "Geen publieke groepen"
+                }
+            },
+            "permissions": {
+                "cache": "4a715acf839a660b",
+                "source": "Group Permisions",
+                "target": {
+                    "eng-gbr": "Group Permisions",
+                    "deu": "Gruppengenehmigungen",
+                    "fra": "Autorisation de groupes",
+                    "nld": "Groep Permissies"
+                }
+            },
+            "recording": {
+                "delete": {
+                    "cache": "44f6a55ce1d3dc7e",
+                    "source": "Delete recording",
+                    "target": {
+                        "eng-gbr": "Delete recording",
+                        "deu": "Aufzeichnung löschen",
+                        "fra": "Dupprimer l’enregistrement",
+                        "nld": "Verwijder opname"
+                    }
+                },
+                "deleted": {
+                    "cache": "db33d1a1be218428",
+                    "source": "Deleted recording: {recording}",
+                    "target": {
+                        "eng-gbr": "Deleted recording: {recording}",
+                        "deu": "Gelöschte Aufnahme: {Aufnahme}",
+                        "fra": "Enregistrement supprimé : {recording}",
+                        "nld": "Opname verwijderd: {recording}"
+                    }
+                },
+                "download": {
+                    "cache": "4b332d999f16c026",
+                    "source": "Download recording",
+                    "target": {
+                        "eng-gbr": "Download recording",
+                        "deu": "Aufnahme herunterladen",
+                        "fra": "Télécharger l’enregistrement",
+                        "nld": "Download opname"
+                    }
+                },
+                "name": {
+                    "cache": "c8ef2773a7a8d685",
+                    "source": "Group Recordings",
+                    "target": {
+                        "eng-gbr": "Group Recordings",
+                        "deu": "Gruppenaufzeichnungen",
+                        "fra": "Enregistrements du groupe",
+                        "nld": "Groep Opname"
+                    }
+                },
+                "no_recordings": {
+                    "cache": "eeea9a52cdffc2a6",
+                    "source": "No recordings yet",
+                    "target": {
+                        "eng-gbr": "No recordings yet",
+                        "deu": "Keine Aufzeichnungen",
+                        "fra": "Pas d’enregistrements",
+                        "nld": "Nog geen opnames"
+                    }
+                }
+            },
+            "report": {
+                "audio": {
+                    "cache": "b22f0418e8ac915e",
+                    "source": "Audio",
+                    "target": {
+                        "eng-gbr": "Audio",
+                        "deu": "Audio",
+                        "fra": "Audio",
+                        "nld": "Audio"
+                    }
+                },
+                "not_available": {
+                    "cache": "26d29168e9549d69",
+                    "source": "No connection statistics available",
+                    "target": {
+                        "eng-gbr": "No connection statistics available",
+                        "deu": "Keine Verbindungsstatistik verfügbar",
+                        "fra": "Aucune statistique de connexion disponible",
+                        "nld": "Geen connectie statistieken beschikbaar"
+                    }
+                },
+                "video": {
+                    "cache": "34e2d1989a1dbf75",
+                    "source": "Video",
+                    "target": {
+                        "eng-gbr": "Video",
+                        "deu": "Video",
+                        "fra": "Vidéo",
+                        "nld": "Video"
+                    }
+                }
+            },
+            "settings": {
+                "access": {
+                    "anonymous_login_help": {
+                        "cache": "f11c881423e77bd8",
+                        "source": "Allow anonymous logins",
+                        "target": {
+                            "eng-gbr": "Allow anonymous logins",
+                            "deu": "Anonyme Anmeldungen zulassen",
+                            "fra": "Connexion anonyme",
+                            "nld": "Anonieme logins toestaan"
+                        }
+                    },
+                    "anonymous_login_label": {
+                        "cache": "f8592353a9a9a4ef",
+                        "source": "Anonymous login",
+                        "target": {
+                            "eng-gbr": "Anonymous login",
+                            "deu": "Anonymer Login",
+                            "fra": "Connexion anonyme",
+                            "nld": "Anonieme login"
+                        }
+                    },
+                    "autokick_help": {
+                        "cache": "5eaab04cb8cc098f",
+                        "source": "All participants will be removed, whenever there are no more participants with operator privileges",
+                        "target": {
+                            "eng-gbr": "All participants will be removed, whenever there are no more participants with operator privileges",
+                            "deu": "Alle Teilnehmer werden entfernt, sobald keine Teilnehmer mehr mit Operator-Rechten vorhanden sind",
+                            "fra": "Tous les participants seront supprimés, chaque fois qu’il n’y a plus de participants avec des privilèges d’opérateur",
+                            "nld": "Alle deelnemers worden verwijderd, wanneer er niet langer deelnemers meer zijn met de operator rol"
+                        }
+                    },
+                    "autokick_label": {
+                        "cache": "93098a4627bfe92d",
+                        "source": "Autokick",
+                        "target": {
+                            "eng-gbr": "Autokick",
+                            "deu": "Auto",
+                            "fra": "Suppression automatique",
+                            "nld": "Autokick"
+                        }
+                    },
+                    "autolock_help": {
+                        "cache": "d20e4efe874c89ed",
+                        "source": "The group will start locked and stay locked whenever there are no clients with operator privileges",
+                        "target": {
+                            "eng-gbr": "The group will start locked and stay locked whenever there are no clients with operator privileges",
+                            "deu": "Die Gruppe wird gesperrt gestartet und bleibt gesperrt, wenn keine Clients mit Operatorberechtigungen vorhanden sind",
+                            "fra": "le groupe démarrera verrouillé et restera verrouillé chaque fois qu’il n’y aura pas de clients avec des privilèges d’opérateur",
+                            "nld": "De groep zal vergrendeld gestart worden, en vergrendeld blijven wanneer er geen deelnemers meer zijn met de operator rol"
+                        }
+                    },
+                    "autolock_label": {
+                        "cache": "00b4209594e895c1",
+                        "source": "Autolock",
+                        "target": {
+                            "eng-gbr": "Autolock",
+                            "deu": "Automatische Sperre",
+                            "fra": "Verrouillage automatique",
+                            "nld": "Autolock"
+                        }
+                    },
+                    "guest_login_help": {
+                        "cache": "eca86d663deb2a0e",
+                        "source": "Allow guest logins (non-taken random usernames without a password)",
+                        "target": {
+                            "eng-gbr": "Allow guest logins (non-taken random usernames without a password)",
+                            "deu": "Gastanmeldungen zulassen (nicht vergebene zufällige Benutzernamen ohne Passwort)",
+                            "fra": "Autoriser les connexions d'invités (noms d'utilisateur aléatoires non pris sans mot de passe)",
+                            "nld": "Gast logins toestaan (niet gereserveerde namen zonder wachtwoord)"
+                        }
+                    },
+                    "guest_login_label": {
+                        "cache": "caaa2bf6e2e2affc",
+                        "source": "Guest login",
+                        "target": {
+                            "eng-gbr": "Guest login",
+                            "deu": "Anmeldung als Gast",
+                            "fra": "Connexion invité",
+                            "nld": "Gast login"
+                        }
+                    },
+                    "maxclient_help": {
+                        "cache": "0ad05a8ba7e9fedf",
+                        "source": "Maximum number of clients that may participate in a group",
+                        "target": {
+                            "eng-gbr": "Maximum number of clients that may participate in a group",
+                            "deu": "Maximale Anzahl von Kunden, die an einer Gruppe teilnehmen können",
+                            "fra": "Nombre maximum de clients pouvant participer à un groupe",
+                            "nld": "Maximaal aantal deelnemers in een groep"
+                        }
+                    },
+                    "maxclient_label": {
+                        "cache": "8321e79c278ec510",
+                        "source": "Maximum",
+                        "target": {
+                            "eng-gbr": "Maximum",
+                            "deu": "Maximal",
+                            "fra": "Client maximum",
+                            "nld": "Maximum"
+                        }
+                    },
+                    "name": {
+                        "cache": "a52e233302e7392e",
+                        "source": "Access Settings",
+                        "target": {
+                            "eng-gbr": "Access Settings",
+                            "deu": "Greifen Sie auf die Einstellungen zu",
+                            "fra": "Les paramètres connexion",
+                            "nld": "Toegangsinstellingen"
+                        }
+                    },
+                    "public_group_help": {
+                        "cache": "cb4e0676bfad0e60",
+                        "source": "Show the group in the public group list",
+                        "target": {
+                            "eng-gbr": "Show the group in the public group list",
+                            "deu": "Die Gruppe in der öffentlichen Gruppenliste anzeigen",
+                            "fra": "Afficher le groupe dans la liste publique des groupes",
+                            "nld": "Toon de groep in de publieke groepslijst"
+                        }
+                    },
+                    "public_group_label": {
+                        "cache": "1094cc7997da6ec7",
+                        "source": "Public Group",
+                        "target": {
+                            "eng-gbr": "Public Group",
+                            "deu": "Öffentliche Gruppe",
+                            "fra": "Groupe public",
+                            "nld": "Publieke Groep"
+                        }
+                    },
+                    "subgroups_help": {
+                        "cache": "0ccb775479c8bec3",
+                        "source": "Subgroup gets automatically created on first use",
+                        "target": {
+                            "eng-gbr": "Subgroup gets automatically created on first use",
+                            "deu": "Untergruppe wird bei der ersten Verwendung automatisch erstellt",
+                            "fra": "Le groupe/sous-groupe est automatiquement créé lors de la première utilisation",
+                            "nld": "Subgroep wordt automatisch gemaakt bij eerste gebruik"
+                        }
+                    },
+                    "subgroups_label": {
+                        "cache": "9aed6d0d8d4ecd80",
+                        "source": "Subgroups",
+                        "target": {
+                            "eng-gbr": "Subgroups",
+                            "deu": "Untergruppen",
+                            "fra": "Sous-groupes",
+                            "nld": "Subgroepen"
+                        }
+                    }
+                },
+                "misc": {
+                    "chat_history_help": {
+                        "cache": "0f3d6032a2bde73a",
+                        "source": "Chat history retention in seconds (default: 14400; 4 hours)",
+                        "target": {
+                            "eng-gbr": "Chat history retention in seconds (default: 14400; 4 hours)",
+                            "deu": "Aufbewahrung des Chat-Verlaufs in Sekunden (Standard: 14400; 4 Stunden)",
+                            "fra": "Conservation de l'historique de discussion en quelques secondes (par défaut : 14400 ; 4 heures)",
+                            "nld": "Chat retentie in seconden (standaard: 14400; 4 uur)"
+                        }
+                    },
+                    "chat_history_label": {
+                        "cache": "91d6e7b08f5ec0d8",
+                        "source": "Chat History",
+                        "target": {
+                            "eng-gbr": "Chat History",
+                            "deu": "Chatverlauf",
+                            "fra": "Historique de discussion",
+                            "nld": "Chat Geschiedenis"
+                        }
+                    },
+                    "codec_av1_help": {
+                        "cache": "33d565cf13bac4de",
+                        "source": "AV1 offers the best video quality, but is only supported by a few browsers; recording is not supported, SVC is not supported",
+                        "target": {
+                            "eng-gbr": "AV1 offers the best video quality, but is only supported by a few browsers; recording is not supported, SVC is not supported",
+                            "deu": "AV1 bietet die beste Videoqualität, wird aber nur von wenigen Browsern unterstützt; Aufzeichnung wird nicht unterstützt, SVC wird nicht unterstützt",
+                            "fra": "AV1 offre la meilleure qualité vidéo, mais est seulement pris en charge par quelques navigateurs ; l'enregistrement n'est pas pris en charge, SVC n'est pas pris en charge",
+                            "nld": "AV1 codec biedt de beste video kwaliteit, maar wordt alleen ondersteund door enkele browsers; opname wordt niet ondersteund, SVC wordt niet ondersteund"
+                        }
+                    },
+                    "codec_g722_help": {
+                        "cache": "0a96d1e35f040058",
+                        "source": "G722 codec does not support recording",
+                        "target": {
+                            "eng-gbr": "G722 codec does not support recording",
+                            "deu": "Der G722-Codec unterstützt keine Aufzeichnung",
+                            "fra": "G722 codec ne prend pas en charge l’enregistrement",
+                            "nld": "Ondersteund geen opname"
+                        }
+                    },
+                    "codec_h264_help": {
+                        "cache": "6f15efc026e1510e",
+                        "source": "H264 codec is incompatible with Debian and with some Android devices; SVC is not supported",
+                        "target": {
+                            "eng-gbr": "H264 codec is incompatible with Debian and with some Android devices; SVC is not supported",
+                            "deu": "Der H264-Codec ist mit Debian und einigen Android-Geräten nicht kompatibel; SVC wird nicht unterstützt",
+                            "fra": "H264 codec est incompatible avec Debian et avec certains appareils Android ; SVC n'est pas supporté",
+                            "nld": "H264 codec is niet compatible met Debian en sommige Android apparatem; SVC wordt niet ondersteund"
+                        }
+                    },
+                    "codec_help": {
+                        "cache": "f5218af23d69f1ba",
+                        "source": "Allowed group codecs (default: VP8 & Opus)",
+                        "target": {
+                            "eng-gbr": "Allowed group codecs (default: VP8 & Opus)",
+                            "deu": "Erlaubte Gruppencodecs (Standard: VP8 & Opus)",
+                            "fra": "Codecs de groupe autorisés (par défaut: VP8 et Opus)",
+                            "nld": "Ingestelde groep codecs (standaard: VP8 & Opus)"
+                        }
+                    },
+                    "codec_label": {
+                        "cache": "b461df5ade960583",
+                        "source": "Media Codecs",
+                        "target": {
+                            "eng-gbr": "Media Codecs",
+                            "deu": "Medien-Codecs",
+                            "fra": "Codecs médias",
+                            "nld": "Media Codecs"
+                        }
+                    },
+                    "codec_opus_help": {
+                        "cache": "773f1551d19276e9",
+                        "source": "Opus codec is the only audio codec that supports recording",
+                        "target": {
+                            "eng-gbr": "Opus codec is the only audio codec that supports recording",
+                            "deu": "Der Opus-Codec ist der einzige Audiocodec, der die Aufnahme von",
+                            "fra": "Opus codec est le seul codec audio qui supporte l'enregistrement",
+                            "nld": "Opus codec is de enige audio codec die opname ondersteund"
+                        }
+                    },
+                    "codec_pcma_help": {
+                        "cache": "24887fe617875446",
+                        "source": "PCMA codec does not support recording",
+                        "target": {
+                            "eng-gbr": "PCMA codec does not support recording",
+                            "deu": "Der PCMA-Codec unterstützt keine Aufzeichnung",
+                            "fra": "PCMA codec ne supporte pas l'enregistrement",
+                            "nld": "PCMA codec ondersteund geen opname"
+                        }
+                    },
+                    "codec_pcmu_help": {
+                        "cache": "f69d02735f239c1e",
+                        "source": "PCMU codec does not support recording",
+                        "target": {
+                            "eng-gbr": "PCMU codec does not support recording",
+                            "deu": "Der PCMU-Codec unterstützt keine Aufzeichnung",
+                            "fra": "PCMU codec ne supporte pas l'enregistrement",
+                            "nld": "PCMU codec ndersteund geen opname"
+                        }
+                    },
+                    "codec_vp8_help": {
+                        "cache": "718a719f15a7df29",
+                        "source": "VP8 codec is compatible with all supported browsers",
+                        "target": {
+                            "eng-gbr": "VP8 codec is compatible with all supported browsers",
+                            "deu": "Der VP8-Codec ist mit allen unterstützten Browsern kompatibel",
+                            "fra": "VP8 codec est compatible avec tous les navigateurs pris en charge",
+                            "nld": "VP8 codec is compatible met alle ondersteunde browsers"
+                        }
+                    },
+                    "codec_vp9_help": {
+                        "cache": "5c1812441c38b33f",
+                        "source": "VP9 codec offers better video quality than VP8, but is incompatible with the Safari browser",
+                        "target": {
+                            "eng-gbr": "VP9 codec offers better video quality than VP8, but is incompatible with the Safari browser",
+                            "deu": "VP9-Codec bietet eine bessere Videoqualität als VP8, ist aber nicht mit dem Safari-Browser kompatibel",
+                            "fra": "VP9 codec offre une meilleure qualité vidéo que VP8, mais est incompatible avec le navigateur Safari",
+                            "nld": "VP9 codec biet betere video kwaliteit, maar is incompatible met de Safari browser"
+                        }
+                    },
+                    "comment_help": {
+                        "cache": "b91da2f781107eb4",
+                        "source": "A short text describing the group on its login page",
+                        "target": {
+                            "eng-gbr": "A short text describing the group on its login page",
+                            "deu": "Ein kurzer Text zur Beschreibung der Gruppe auf ihrer Anmeldeseite",
+                            "fra": "Ajouter un court texte à la page de connexion du groupee",
+                            "nld": "Een korte tekst die de groep beschrijft op de login pagina"
+                        }
+                    },
+                    "comment_label": {
+                        "cache": "c27d2a26c2182a6e",
+                        "source": "Group Comment",
+                        "target": {
+                            "eng-gbr": "Group Comment",
+                            "deu": "Gruppenkommentar",
+                            "fra": "Commentaire du groupe",
+                            "nld": "Groep Commentaar"
+                        }
+                    },
+                    "contact_help": {
+                        "cache": "6ee98abba9293502",
+                        "source": "Show group contact information of an operator",
+                        "target": {
+                            "eng-gbr": "Show group contact information of an operator",
+                            "deu": "Gruppen-Kontaktinformationen eines Betreibers anzeigen",
+                            "fra": "Afficher les coordonnées de groupe d’un opérateur",
+                            "nld": "Toon groep contact informatie van een operator"
+                        }
+                    },
+                    "contact_label": {
+                        "cache": "ffaea0032ec02248",
+                        "source": "Group Contact",
+                        "target": {
+                            "eng-gbr": "Group Contact",
+                            "deu": "Kontakt zur Gruppe",
+                            "fra": "Contact du groupe",
+                            "nld": "Groep Contactpersoon"
+                        }
+                    },
+                    "description_help": {
+                        "cache": "bb2a962124c9d4f2",
+                        "source": "A short description that is visible beneath the group name",
+                        "target": {
+                            "eng-gbr": "A short description that is visible beneath the group name",
+                            "deu": "Eine kurze Beschreibung, die unter dem Gruppennamen sichtbar ist",
+                            "fra": "Ajouter une brève description à la page de liste de groupe",
+                            "nld": "Een korte beschrijving die zichtbaar is onder de groep naam"
+                        }
+                    },
+                    "description_label": {
+                        "cache": "3df4efb7a37e469d",
+                        "source": "Group Description",
+                        "target": {
+                            "eng-gbr": "Group Description",
+                            "deu": "Gruppe Beschreibung",
+                            "fra": "Description du groupe",
+                            "nld": "Groep Beschrijving"
+                        }
+                    },
+                    "name": {
+                        "cache": "52f4393e1b52ba63",
+                        "source": "General Settings",
+                        "target": {
+                            "eng-gbr": "General Settings",
+                            "deu": "Allgemeine Einstellungen",
+                            "fra": "Paramètres du général",
+                            "nld": "Algemene Instellingen"
+                        }
+                    },
+                    "name_help": {
+                        "cache": "a68e3b4ccea3abae",
+                        "source": "The old group gets removed after the last participant left",
+                        "target": {
+                            "eng-gbr": "The old group gets removed after the last participant left",
+                            "deu": "Die alte Gruppe wird nach dem letzten Teilnehmer verlassen",
+                            "fra": "L'ancien groupe est supprimé après le départ du dernier participant",
+                            "nld": "De oude groep wordt verwijderd, nadat de laatste deelnemer de groep heeft verlaten"
+                        }
+                    },
+                    "name_label": {
+                        "cache": "c6155aaecccf794c",
+                        "source": "Group name",
+                        "target": {
+                            "eng-gbr": "Group name",
+                            "deu": "Gruppenname",
+                            "fra": "Nom du groupe",
+                            "nld": "Groep naam"
+                        }
+                    },
+                    "recording_help": {
+                        "cache": "bf644c9431447bfb",
+                        "source": "Allows recording of all the group's streams",
+                        "target": {
+                            "eng-gbr": "Allows recording of all the group's streams",
+                            "deu": "Erfassung aller Bewegungen der Gruppe",
+                            "fra": "Permet l’enregistrement des flux du groupe",
+                            "nld": "Opname toestaan van alle groep streams"
+                        }
+                    },
+                    "recording_label": {
+                        "cache": "c5564d2e8b8e0ae0",
+                        "source": "Recording",
+                        "target": {
+                            "eng-gbr": "Recording",
+                            "deu": "Erfassung",
+                            "fra": "Enregistrements du groupe",
+                            "nld": "Opname"
+                        }
+                    }
+                },
+                "name": {
+                    "cache": "5fde141b342688ef",
+                    "source": "Group Settings",
+                    "target": {
+                        "eng-gbr": "Group Settings",
+                        "deu": "Gruppeneinstellungen",
+                        "fra": "Paramètres du groupe",
+                        "nld": "Groep Instellingen"
+                    }
+                },
+                "permissions": {
+                    "misc": {
+                        "cache": "30d70b6cac9ed117",
+                        "source": "Miscellaneous Permission",
+                        "target": {
+                            "eng-gbr": "Miscellaneous Permission",
+                            "deu": "Verschiedenes Permission",
+                            "fra": "Autorisation de Divers",
+                            "nld": "Diversion Permissie"
+                        }
+                    },
+                    "name": {
+                        "cache": "e2760628a46db019",
+                        "source": "Group Permissions",
+                        "target": {
+                            "eng-gbr": "Group Permissions",
+                            "deu": "Gruppenberechtigungen",
+                            "fra": "Autorisation de Group",
+                            "nld": "Groep Permissies"
+                        }
+                    },
+                    "operator": {
+                        "cache": "bdb781a6c590cf32",
+                        "source": "Operator Permission",
+                        "target": {
+                            "eng-gbr": "Operator Permission",
+                            "deu": "Betreiber Permission",
+                            "fra": "Autorisation de l’opérateur",
+                            "nld": "Operator Permissie"
+                        }
+                    },
+                    "presenter": {
+                        "cache": "0480ef924f7d97cb",
+                        "source": "Presenter Permission",
+                        "target": {
+                            "eng-gbr": "Presenter Permission",
+                            "deu": "Promission",
+                            "fra": "Autorisation du présentateur",
+                            "nld": "Presenteer Permissie"
+                        }
+                    }
+                },
+                "statistic": {
+                    "name": {
+                        "cache": "adb524146d1b7c7b",
+                        "source": "Group Statistics",
+                        "target": {
+                            "eng-gbr": "Group Statistics",
+                            "deu": "Gruppenstatistik",
+                            "fra": "Statistiques de connexion",
+                            "nld": "Groep Statistieken"
+                        }
+                    },
+                    "no_connections": {
+                        "cache": "6d5d6b6a389a4726",
+                        "source": "No connections yet",
+                        "target": {
+                            "eng-gbr": "No connections yet",
+                            "deu": "Noch keine Verbindungen",
+                            "fra": "Pas de connexions",
+                            "nld": "Nog geen verbindingen"
+                        }
+                    }
+                }
+            },
+            "unlisted": {
+                "cache": "da0a5fc860b4ec1a",
+                "source": "unlisted-group",
+                "target": {
+                    "eng-gbr": "unlisted-group",
+                    "deu": "Nicht gelistete_Gruppe",
+                    "fra": "group-non-répertorié",
+                    "nld": "onvermelde-groep"
+                }
+            },
+            "unlocked": {
+                "cache": "c76fd517e45cc957",
+                "source": "Unlocked",
+                "target": {
+                    "eng-gbr": "Unlocked",
+                    "deu": "Freisetzung",
+                    "fra": "Déverrouillé",
+                    "nld": "Ontgrendeld"
+                }
+            },
+            "verify_devices": {
+                "cache": "e0456a02c50b9e75",
+                "source": "Verify microphone & video settings",
+                "target": {
+                    "eng-gbr": "Verify microphone & video settings",
+                    "deu": "Lesen Sie die Mikrofon- und Videoeinstellungen",
+                    "fra": "Vérifier votre micro & vidéo",
+                    "nld": "Controleer microfoon & video instellingen"
+                }
+            }
+        },
+        "message": {
+            "clearchat": {
+                "source": {
+                    "cache": "257ecbb23d5d79b5",
+                    "source": "General chat history was removed",
+                    "target": {
+                        "eng-gbr": "General chat history was removed",
+                        "deu": "Allgemeiner Chatverlauf wurde entfernt",
+                        "fra": "L’historique général des discussions a été supprimé",
+                        "nld": "Algemene chat geschiedenis is verwijderd"
+                    }
+                },
+                "target": {
+                    "cache": "257ecbb23d5d79b5",
+                    "source": "General chat history was removed",
+                    "target": {
+                        "eng-gbr": "General chat history was removed",
+                        "deu": "Allgemeiner Chatverlauf wurde entfernt",
+                        "fra": "L’historique général des discussions a été supprimé",
+                        "nld": "Algemene chat geschiedenis is verwijderd"
+                    }
+                }
+            },
+            "error": {
+                "source": {
+                    "cache": "94024bcd29cee62b",
+                    "source": "An error occured: {error}",
+                    "target": {
+                        "eng-gbr": "An error occured: {error}",
+                        "deu": "Es ist ein Fehler aufgetreten: {Fehler}",
+                        "fra": "Une erreur s'est produite : {error}",
+                        "nld": "Er is een fout error opgetreden: {error}"
+                    }
+                },
+                "target": {
+                    "cache": "94024bcd29cee62b",
+                    "source": "An error occured: {error}",
+                    "target": {
+                        "eng-gbr": "An error occured: {error}",
+                        "deu": "Es ist ein Fehler aufgetreten: {Fehler}",
+                        "fra": "Une erreur s'est produite : {error}",
+                        "nld": "Er is een fout error opgetreden: {error}"
+                    }
+                }
+            },
+            "kicked": {
+                "source": {
+                    "cache": "05198f5e30643c17",
+                    "source": "You removed participant {target} from the group",
+                    "target": {
+                        "eng-gbr": "You removed participant {target} from the group",
+                        "deu": "Sie haben Teilnehmer {Ziel} aus der Gruppe entfernt",
+                        "fra": "Vous avez supprimé le participant {target}",
+                        "nld": "Je hebt deelnemer {target} verwijderd uit de groep"
+                    }
+                },
+                "target": {
+                    "cache": "6fbe35bb6d8a7a4f",
+                    "source": "You were removed from the group by operator {source}",
+                    "target": {
+                        "eng-gbr": "You were removed from the group by operator {source}",
+                        "deu": "Sie wurden von Operator {source} aus der Gruppe entfernt",
+                        "fra": "Vous avez été retiré du groupe par l'opérateur {source}",
+                        "nld": "Je bent verwijderd uit de groep door operator {source}"
+                    }
+                }
+            },
+            "lock": {
+                "source": {
+                    "cache": "5739fafb613e9d72",
+                    "source": "You locked group {group}",
+                    "target": {
+                        "eng-gbr": "You locked group {group}",
+                        "deu": "Sie haben die Gruppe {group} gesperrt",
+                        "fra": "Vous avez verrouillé le groupe {group}",
+                        "nld": "Je hebt groep {group} vergrendeld"
+                    }
+                },
+                "target": {
+                    "cache": "fc1d2339a1799376",
+                    "source": "Group {group} has been locked",
+                    "target": {
+                        "eng-gbr": "Group {group} has been locked",
+                        "deu": "Gruppe {group} wurde gesperrt",
+                        "fra": "Le groupe {group} a été verrouillé",
+                        "nld": "Groep {group} is vergrendeld"
+                    }
+                }
+            },
+            "mute": {
+                "source": {
+                    "cache": "06507e3613c8237e",
+                    "source": "You muted the microphone of participant {target}",
+                    "target": {
+                        "eng-gbr": "You muted the microphone of participant {target}",
+                        "deu": "Sie haben das Mikrofon von Teilnehmer {Ziel} stummgeschaltet",
+                        "fra": "Vous avez coupé le micro du participant {target}",
+                        "nld": "Je hebt de microfoon van deelnemer {target} gedempt"
+                    }
+                },
+                "target": {
+                    "cache": "25199553554e93a0",
+                    "source": "Your microphone was muted by operator {source}",
+                    "target": {
+                        "eng-gbr": "Your microphone was muted by operator {source}",
+                        "deu": "Ihr Mikrofon wurde von Betreiber {source} stummgeschaltet",
+                        "fra": "Votre microphone a été mis en sourdine par l’opérateur {source}",
+                        "nld": "Je microfoon is gedempt door operator {source}"
+                    }
+                }
+            },
+            "notification": {
+                "source": {
+                    "cache": "420830fd00a5efa7",
+                    "source": "Notification sent to participant {target}",
+                    "target": {
+                        "eng-gbr": "Notification sent to participant {target}",
+                        "deu": "Benachrichtigung an Teilnehmer {target} gesendet",
+                        "fra": "Notification envoyée au participant {target} : {message}",
+                        "nld": "Notificatie verzonden naar deelnemer {target}"
+                    }
+                },
+                "target": {
+                    "cache": "c1e6701b008ac6da",
+                    "source": "Incoming notification from operator {source}",
+                    "target": {
+                        "eng-gbr": "Incoming notification from operator {source}",
+                        "deu": "Eingehende Benachrichtigung von Operator {source}",
+                        "fra": "Notification entrante de l’opérateur {source}",
+                        "nld": "Inkomende notificatie van operator {source}"
+                    }
+                }
+            },
+            "op": {
+                "source": {
+                    "cache": "f2023943e1b30ecf",
+                    "source": "You assigned the operator role to participant {target}",
+                    "target": {
+                        "eng-gbr": "You assigned the operator role to participant {target}",
+                        "deu": "Sie haben die Operatorrolle dem Teilnehmer {target} zugewiesen",
+                        "fra": "Vous avez attribué le rôle d’opérateur au participant {target}",
+                        "nld": "Je hebt de operator rol toegewezen aan deelnemer {target}"
+                    }
+                },
+                "target": {
+                    "cache": "c3e027824545779b",
+                    "source": "You aqcuired the operator role",
+                    "target": {
+                        "eng-gbr": "You aqcuired the operator role",
+                        "deu": "Sie haben die Operatorrolle erworben",
+                        "fra": "Vous avez acquis le rôle d’opérateur",
+                        "nld": "Je hebt de operator rol verkregen"
+                    }
+                }
+            },
+            "present": {
+                "source": {
+                    "cache": "28eff5fb57e29698",
+                    "source": "You assigned the presenter role to {target}",
+                    "target": {
+                        "eng-gbr": "You assigned the presenter role to {target}",
+                        "deu": "Sie haben {target} die Rolle des Moderators zugewiesen",
+                        "fra": "Vous avez attribué le rôle d’opérateur au participant {target}",
+                        "nld": "Je hebt de presentatie rol toegewezen aan deelnemer {target}"
+                    }
+                },
+                "target": {
+                    "cache": "68dc2a591809739c",
+                    "source": "You aqcuired the presenter role",
+                    "target": {
+                        "eng-gbr": "You aqcuired the presenter role",
+                        "deu": "Sie haben die Rolle des Moderators erworben",
+                        "fra": "Vous avez acquis le rôle de présentateur",
+                        "nld": "Je hebt de presentatie rol verkregen"
+                    }
+                }
+            },
+            "raisehand": {
+                "source": {
+                    "cache": "2c45ae9357001e89",
+                    "source": "{source} wants to say something",
+                    "target": {
+                        "eng-gbr": "{source} wants to say something",
+                        "deu": "{source} möchte etwas sagen",
+                        "fra": "{source} veut dire quelque chose",
+                        "nld": "{source} wil iets zeggen"
+                    }
+                },
+                "target": {
+                    "cache": "2c45ae9357001e89",
+                    "source": "{source} wants to say something",
+                    "target": {
+                        "eng-gbr": "{source} wants to say something",
+                        "deu": "{source} möchte etwas sagen",
+                        "fra": "{source} veut dire quelque chose",
+                        "nld": "{source} wil iets zeggen"
+                    }
+                }
+            },
+            "record": {
+                "source": {
+                    "cache": "a98aea6e1844a443",
+                    "source": "You started recording group {group}",
+                    "target": {
+                        "eng-gbr": "You started recording group {group}",
+                        "deu": "Sie haben die Aufzeichnung der Gruppe {group} gestartet",
+                        "fra": "Vous avez commencé à enregistrer le groupe {group}",
+                        "nld": "Je hebt opname aangezet voor groep {group}"
+                    }
+                },
+                "target": {
+                    "cache": "8b477d28873b2c91",
+                    "source": "Group {group} is being recorded!",
+                    "target": {
+                        "eng-gbr": "Group {group} is being recorded!",
+                        "deu": "Gruppe {group} wird aufgenommen!",
+                        "fra": "Le groupe {group} est en cours d’enregistrement !",
+                        "nld": "Groep {group} wordt opgenomen!"
+                    }
+                }
+            },
+            "unlock": {
+                "source": {
+                    "cache": "4b068a03cab27b41",
+                    "source": "Group {group} has been unlocked",
+                    "target": {
+                        "eng-gbr": "Group {group} has been unlocked",
+                        "deu": "Gruppe {group} wurde entsperrt",
+                        "fra": "Le groupe {group} a été déverrouillé",
+                        "nld": "Groep {group} is ontgrendeld"
+                    }
+                },
+                "target": {
+                    "cache": "4b068a03cab27b41",
+                    "source": "Group {group} has been unlocked",
+                    "target": {
+                        "eng-gbr": "Group {group} has been unlocked",
+                        "deu": "Gruppe {group} wurde freigeschaltet",
+                        "fra": "Le groupe {group} a été déverrouillé",
+                        "nld": "Groep {group} is ontgrendeld"
+                    }
+                }
+            },
+            "unop": {
+                "source": {
+                    "cache": "08b01e23a6f51712",
+                    "source": "You revoked the operator role from participant {target}",
+                    "target": {
+                        "eng-gbr": "You revoked the operator role from participant {target}",
+                        "deu": "Sie haben dem Teilnehmer {target} die Operator-Rolle entzogen",
+                        "fra": "Vous avez révoqué le rôle d’opérateur du participant {target}",
+                        "nld": "Je hebt de operator rol ontnomen van deelnemer {target}"
+                    }
+                },
+                "target": {
+                    "cache": "8fc144787d37a14e",
+                    "source": "Your operator role was revoked",
+                    "target": {
+                        "eng-gbr": "Your operator role was revoked",
+                        "deu": "Ihre Bedienerrolle wurde widerrufen",
+                        "fra": "Votre rôle d’opérateur a été révoqué",
+                        "nld": "Je operator rol is ontnomen"
+                    }
+                }
+            },
+            "unpresent": {
+                "source": {
+                    "cache": "ead2ba569744f57d",
+                    "source": "You revoked the presenter role from participant {target}",
+                    "target": {
+                        "eng-gbr": "You revoked the presenter role from participant {target}",
+                        "deu": "Sie haben die Referentenrolle von Teilnehmer {target} widerrufen",
+                        "fra": "Vous avez révoqué le rôle de présentateur du participant {target}",
+                        "nld": "Je hebt de presentatie rol ontnomen van deelnemer {target}"
+                    }
+                },
+                "target": {
+                    "cache": "1ccc6f412caaf216",
+                    "source": "Your presenter role was revoked",
+                    "target": {
+                        "eng-gbr": "Your presenter role was revoked",
+                        "deu": "Ihre Moderatorenrolle wurde widerrufen",
+                        "fra": "Votre rôle de présentateur a été révoqué",
+                        "nld": "Je presentatie rol is ontnomen"
+                    }
+                }
+            },
+            "unrecord": {
+                "source": {
+                    "cache": "decfdaa0a448690f",
+                    "source": "You stopped recording group {group}",
+                    "target": {
+                        "eng-gbr": "You stopped recording group {group}",
+                        "deu": "Sie haben die Aufzeichnung der Gruppe {group} gestoppt",
+                        "fra": "Vous avez arrêté l'enregistrement du groupe {group}",
+                        "nld": "Je bent gestopt met opname van groep {group}"
+                    }
+                },
+                "target": {
+                    "cache": "73910f5ec06509ee",
+                    "source": "Group {group} stopped being recorded",
+                    "target": {
+                        "eng-gbr": "Group {group} stopped being recorded",
+                        "deu": "Gruppe {group} wird nicht mehr aufgezeichnet",
+                        "fra": "Le groupe {group} a cessé d’être enregistré",
+                        "nld": "Groep {group} wordt niet langer opgenomen"
+                    }
+                }
+            }
+        },
+        "stream": {
+            "fullscreen": {
+                "cache": "0829ea6734059d66",
+                "source": "Fullscreen",
+                "target": {
+                    "eng-gbr": "Fullscreen",
+                    "deu": "Vollbild",
+                    "fra": "Plein écran",
+                    "nld": "Fullscreen"
+                }
+            },
+            "info": {
+                "cache": "05b93b60c48458c0",
+                "source": "Stream Report",
+                "target": {
+                    "eng-gbr": "Stream Report",
+                    "deu": "Stream-Bericht",
+                    "fra": "Rapport sur les flux",
+                    "nld": "Stream Rapport"
+                }
+            },
+            "pip": {
+                "cache": "225d2808d8464b0a",
+                "source": "Picture-in-picture",
+                "target": {
+                    "eng-gbr": "Picture-in-picture",
+                    "deu": "Bild-in-Bild",
+                    "fra": "Image dans l'image",
+                    "nld": "Picture-in-picture"
+                }
+            }
+        },
+        "ui": {
+            "action": {
+                "close": {
+                    "cache": "d3d2e617335f08df",
+                    "source": "Close",
+                    "target": {
+                        "eng-gbr": "Close",
+                        "deu": "Schließen",
+                        "fra": "Fermer",
+                        "nld": "Sluiten"
+                    }
+                },
+                "double_click": {
+                    "cache": "aff7e692a786e5e2",
+                    "source": "Double click to {achievement}",
+                    "target": {
+                        "eng-gbr": "Double click to {achievement}",
+                        "deu": "Doppelklick auf {Errungenschaft}",
+                        "fra": "Double-cliquez sur {achievement}",
+                        "nld": "Dubbel klikken voor {achievement}"
+                    }
+                },
+                "submit": {
+                    "cache": "a4d3b161ce1309df",
+                    "source": "Submit",
+                    "target": {
+                        "eng-gbr": "Submit",
+                        "deu": "Submit",
+                        "fra": "Soumettre",
+                        "nld": "Verzenden"
+                    }
+                }
+            },
+            "conferencing": {
+                "cache": "4cf1c811e0fa2f29",
+                "source": "Conferencing",
+                "target": {
+                    "eng-gbr": "Conferencing",
+                    "deu": "Konferenzen",
+                    "fra": "Conférence",
+                    "nld": "Conferencing"
+                }
+            },
+            "panel": {
+                "collapse": {
+                    "cache": "1a324908d976d079",
+                    "source": "Collapse panel",
+                    "target": {
+                        "eng-gbr": "Collapse panel",
+                        "deu": "Panel zusammenklappen",
+                        "fra": "Réduire le panneau",
+                        "nld": "Paneel inklappen"
+                    }
+                },
+                "expand": {
+                    "cache": "3a4a446b0ec585bc",
+                    "source": "Expand panel",
+                    "target": {
+                        "eng-gbr": "Expand panel",
+                        "deu": "Panel erweitern",
+                        "fra": "Développer le panneau",
+                        "nld": "Paneel uitklappen"
+                    }
+                }
+            },
+            "panel_chat": {
+                "collapse": {
+                    "cache": "a197398fb772040f",
+                    "source": "Collapse chat panel",
+                    "target": {
+                        "eng-gbr": "Collapse chat panel",
+                        "deu": "Kollaps Chat-Panel",
+                        "fra": "Réduire le panneau de chat",
+                        "nld": "Chat paneel inklappen"
+                    }
+                },
+                "expand": {
+                    "cache": "dfe3a8c4292116ca",
+                    "source": "Expand chat panel",
+                    "target": {
+                        "eng-gbr": "Expand chat panel",
+                        "deu": "Erweiterung des Chat-Panels",
+                        "fra": "Développer le panneau de chat",
+                        "nld": "Chat paneel uitklappen"
+                    }
+                }
+            },
+            "settings": {
+                "action": {
+                    "save": {
+                        "cache": "9daf1fb753b42c3c",
+                        "source": "Save Settings",
+                        "target": {
+                            "eng-gbr": "Save Settings",
+                            "deu": "Einstellungen speichern",
+                            "fra": "Enregistrer les paramètres",
+                            "nld": "Instellingen Bewaren"
+                        }
+                    },
+                    "saved": {
+                        "cache": "96d4dadd096605d5",
+                        "source": "Settings saved",
+                        "target": {
+                            "eng-gbr": "Settings saved",
+                            "deu": "Einstellungen gespeichert",
+                            "fra": "Paramètres enregistrés",
+                            "nld": "Instellingen opgeslagen"
+                        }
+                    }
+                },
+                "devices": {
+                    "cache": "c03ca67dda321195",
+                    "source": "Devices",
+                    "target": {
+                        "eng-gbr": "Devices",
+                        "deu": "Geräte",
+                        "fra": "Appareils",
+                        "nld": "Apparaten"
+                    }
+                },
+                "media": {
+                    "accept": {
+                        "audio_label": {
+                            "cache": "136d4aaf7a9d7ad4",
+                            "source": "Audio only",
+                            "target": {
+                                "eng-gbr": "Audio only",
+                                "deu": "Nur Audio",
+                                "fra": "Audio seulement",
+                                "nld": "Alleen Audio"
+                            }
+                        },
+                        "everything_label": {
+                            "cache": "b16d6f39e7f33606",
+                            "source": "Audio, Video & Screensharing",
+                            "target": {
+                                "eng-gbr": "Audio, Video & Screensharing",
+                                "deu": "Audio-, Video- und Bildschirmfreigabe",
+                                "fra": "Audio, vidéo et partage d'écran",
+                                "nld": "Audio, Video & Schermdeling"
+                            }
+                        },
+                        "nothing_label": {
+                            "cache": "f80a4ad87fee7c9f",
+                            "source": "Nothing",
+                            "target": {
+                                "eng-gbr": "Nothing",
+                                "deu": "Nichts",
+                                "fra": "Aucun",
+                                "nld": "Niks"
+                            }
+                        },
+                        "screenshare_label": {
+                            "cache": "756ca78373f6b60f",
+                            "source": "Screenshare only",
+                            "target": {
+                                "eng-gbr": "Screenshare only",
+                                "deu": "Nur Screenshare",
+                                "fra": "Partage d’écran uniquement",
+                                "nld": "Alleen Schermdeling"
+                            }
+                        }
+                    },
+                    "accept_help": {
+                        "cache": "4d79496e25c87d29",
+                        "source": "Stream types that you want to be able to receive",
+                        "target": {
+                            "eng-gbr": "Stream types that you want to be able to receive",
+                            "deu": "Stream-Typen, die Sie empfangen möchten",
+                            "fra": "Types de flux que vous souhaitez pouvoir recevoir",
+                            "nld": "Stream types die je wilt kunnen ontvangen"
+                        }
+                    },
+                    "accept_label": {
+                        "cache": "b5553570cb40b1b1",
+                        "source": "Accepted media formats",
+                        "target": {
+                            "eng-gbr": "Accepted media formats",
+                            "deu": "akzeptierte Medienformate",
+                            "fra": "Formats de médias acceptés",
+                            "nld": "Geaccepteerde media formaten"
+                        }
+                    },
+                    "bandwidth": {
+                        "low_label": {
+                            "cache": "67c088fa9d4c5ae1",
+                            "source": "Low - 300 KiBps",
+                            "target": {
+                                "eng-gbr": "Low - 300 KiBps",
+                                "deu": "Niedrig - 300 kiB/s",
+                                "fra": "Bas - 300 kio/s",
+                                "nld": "Laag - 300 KiBps"
+                            }
+                        },
+                        "lowest_label": {
+                            "cache": "ad652860fc682db6",
+                            "source": "Lowest - 150KiBps",
+                            "target": {
+                                "eng-gbr": "Lowest - 150KiBps",
+                                "deu": "Niedrigste - 150 kiB/s",
+                                "fra": "Au plus bas - 150 kio/s",
+                                "nld": "Laagst - 150KiBps"
+                            }
+                        },
+                        "normal_label": {
+                            "cache": "cdfa5a49e6c0b05d",
+                            "source": "700 KiBps",
+                            "target": {
+                                "eng-gbr": "700 KiBps",
+                                "deu": "700 kiB/s",
+                                "fra": "700 kio/s",
+                                "nld": "700 KiBps"
+                            }
+                        },
+                        "unlimited_help": {
+                            "cache": "25fcfc4454d46cc0",
+                            "source": "Unlimited bandwidth may negatively affect the audio and video quality for others",
+                            "target": {
+                                "eng-gbr": "Unlimited bandwidth may negatively affect the audio and video quality for others",
+                                "deu": "Unbegrenzte Bandbreite kann die Audio- und Videoqualität für andere negativ beeinflussen",
+                                "fra": "Une bande passante illimitée peut affecter négativement la qualité audio et vidéo pour les autres",
+                                "nld": "Ongelimiteerde bandbreedte kan een negatieve invloed hebben op de audio & video kwaliteit van anderen"
+                            }
+                        },
+                        "unlimited_label": {
+                            "cache": "545f6c2f382c0481",
+                            "source": "Unlimited",
+                            "target": {
+                                "eng-gbr": "Unlimited",
+                                "deu": "Unbegrenzt",
+                                "fra": "Illimité",
+                                "nld": "Ongelimiteerd"
+                            }
+                        }
+                    },
+                    "bandwidth_help": {
+                        "cache": "4f16cbeb1cdccbf8",
+                        "source": "Bandwidth to use for sending media",
+                        "target": {
+                            "eng-gbr": "Bandwidth to use for sending media",
+                            "deu": "Bandbreite zur Verwendung von Medien",
+                            "fra": "Bande passante à utiliser pour l’envoi de médias",
+                            "nld": "Bandbreedte voor het versturen van media"
+                        }
+                    },
+                    "bandwidth_label": {
+                        "cache": "7d724e4bd163fe83",
+                        "source": "Bandwidth",
+                        "target": {
+                            "eng-gbr": "Bandwidth",
+                            "deu": "Bandbreite",
+                            "fra": "Bande passante",
+                            "nld": "Bandbreedte"
+                        }
+                    },
+                    "name": {
+                        "cache": "3b563524fdb17b4a",
+                        "source": "Media",
+                        "target": {
+                            "eng-gbr": "Media",
+                            "deu": "Media",
+                            "fra": "Média",
+                            "nld": "Media"
+                        }
+                    },
+                    "resolution": {
+                        "1080p_help": {
+                            "cache": "9c901c138739fa81",
+                            "source": "full HD may negatively affect the audio and video quality for others",
+                            "target": {
+                                "eng-gbr": "full HD may negatively affect the audio and video quality for others",
+                                "deu": "HD kann die Audio- und Videoqualität für andere negativ beeinflussen",
+                                "fra": "HD peut affecter négativement la qualité audio et vidéo pour les autres",
+                                "nld": "Volledig HD kan een negatieve invloed hebben op de audio & video kwaliteit van anderen"
+                            }
+                        },
+                        "1080p_label": {
+                            "cache": "92d6af4238c635c6",
+                            "source": "full HD - 1080p (1920x1080)",
+                            "target": {
+                                "eng-gbr": "full HD - 1080p (1920x1080)",
+                                "deu": "full HD - 1080p (1920x1080)",
+                                "fra": "full HD - 1080p (1920×1080)",
+                                "nld": "Volledig HD - 1080p (1920x1080)"
+                            }
+                        },
+                        "720p_label": {
+                            "cache": "d22eb2175c08edb9",
+                            "source": "720p HD - 720p (1280x720)",
+                            "target": {
+                                "eng-gbr": "720p HD - 720p (1280x720)",
+                                "deu": "720p HD - 720p (1280x720)",
+                                "fra": "720p HD - 720p (1280×720)",
+                                "nld": "720p HD - 720p (1280x720)"
+                            }
+                        },
+                        "default_label": {
+                            "cache": "7a1920d61156abc0",
+                            "source": "Default",
+                            "target": {
+                                "eng-gbr": "Default",
+                                "deu": "Default",
+                                "fra": "Défaut",
+                                "nld": "Standaard"
+                            }
+                        }
+                    },
+                    "resolution_help": {
+                        "cache": "9f1e7a6b55e2d6d0",
+                        "source": "Supported resolutions depend on the camera's capabilities",
+                        "target": {
+                            "eng-gbr": "Supported resolutions depend on the camera's capabilities",
+                            "deu": "Unterstützte Auflösungen hängen von den Fähigkeiten der Kamera ab",
+                            "fra": "Les résolutions prises en charge dépendent des capacités de l’appareil",
+                            "nld": "Ondersteunde resoluties hangen af van de mogelijkheden van de camera"
+                        }
+                    },
+                    "resolution_label": {
+                        "cache": "8d0aec353f007461",
+                        "source": "Preferred resolution",
+                        "target": {
+                            "eng-gbr": "Preferred resolution",
+                            "deu": "Bevorzugte Auflösung",
+                            "fra": "Résolution préférée",
+                            "nld": "Verkozen resolutie"
+                        }
+                    }
+                },
+                "misc": {
+                    "language": {
+                        "dutch_label": {
+                            "cache": "68bf367e228f45ba",
+                            "source": "Dutch",
+                            "target": {
+                                "eng-gbr": "Dutch",
+                                "deu": "Dutch",
+                                "fra": "Néerlandais",
+                                "nld": "Nederlands"
+                            }
+                        },
+                        "english_label": {
+                            "cache": "78463a384a5aa4fa",
+                            "source": "English",
+                            "target": {
+                                "eng-gbr": "English",
+                                "deu": "English",
+                                "fra": "Anglais",
+                                "nld": "Engels"
+                            }
+                        },
+                        "french_label": {
+                            "cache": "ad225f707802ba11",
+                            "source": "French",
+                            "target": {
+                                "eng-gbr": "French",
+                                "deu": "French",
+                                "fra": "Fichier",
+                                "nld": "Frans"
+                            }
+                        },
+                        "german_label": {
+                            "cache": "86bc3115eb4e9873",
+                            "source": "German",
+                            "target": {
+                                "eng-gbr": "German",
+                                "deu": "Deutsch",
+                                "fra": "Allemand",
+                                "nld": "Duits"
+                            }
+                        }
+                    },
+                    "language_help": {
+                        "cache": "ea28b489179d74e1",
+                        "source": "Change the interface to your preferred language",
+                        "target": {
+                            "eng-gbr": "Change the interface to your preferred language",
+                            "deu": "Änderung der Schnittstelle zu Ihrer bevorzugten Sprache",
+                            "fra": "Langue de l’interface utilisateur",
+                            "nld": "Verander de interface naar je voorkeurstaal"
+                        }
+                    },
+                    "language_label": {
+                        "cache": "4994a8ffeba4ac31",
+                        "source": "Language",
+                        "target": {
+                            "eng-gbr": "Language",
+                            "deu": "Sprache",
+                            "fra": "Langue",
+                            "nld": "Taal"
+                        }
+                    },
+                    "name": {
+                        "cache": "52f4393e1b52ba63",
+                        "source": "General Settings",
+                        "target": {
+                            "eng-gbr": "General Settings",
+                            "deu": "Allgemeine Einstellungen",
+                            "fra": "Paramètres généraux",
+                            "nld": "Algemene Instellingen"
+                        }
+                    },
+                    "theme": {
+                        "dark_label": {
+                            "cache": "a18366b217ebf811",
+                            "source": "Dark",
+                            "target": {
+                                "eng-gbr": "Dark",
+                                "deu": "Dunkel",
+                                "fra": "Sombre",
+                                "nld": "Donker"
+                            }
+                        },
+                        "light_label": {
+                            "cache": "9914a0ce04a7b7b6",
+                            "source": "Light",
+                            "target": {
+                                "eng-gbr": "Light",
+                                "deu": "Licht",
+                                "fra": "Clair",
+                                "nld": "Licht"
+                            }
+                        },
+                        "system_label": {
+                            "cache": "35a103978425c2f1",
+                            "source": "System Setting",
+                            "target": {
+                                "eng-gbr": "System Setting",
+                                "deu": "Systemeinstellung",
+                                "fra": "Paramètres du système",
+                                "nld": "Systeem Instelling"
+                            }
+                        }
+                    },
+                    "theme_help": {
+                        "cache": "c0031b954caa4b63",
+                        "source": "Select a theme or use the system default",
+                        "target": {
+                            "eng-gbr": "Select a theme or use the system default",
+                            "deu": "Wählen Sie ein Thema aus oder verwenden Sie die Systemvorgabe",
+                            "fra": "Sélectionnez un thème ou utilisez la valeur par défaut du système",
+                            "nld": "Selecteer een thema of gebruik de systeem instellingen"
+                        }
+                    },
+                    "theme_label": {
+                        "cache": "d721757161f7f70c",
+                        "source": "Theme",
+                        "target": {
+                            "eng-gbr": "Theme",
+                            "deu": "Theme",
+                            "fra": "Thème",
+                            "nld": "Thema"
+                        }
+                    }
+                },
+                "name": {
+                    "cache": "f4f70727dc34561d",
+                    "source": "Settings",
+                    "target": {
+                        "eng-gbr": "Settings",
+                        "deu": "Einstellungen",
+                        "fra": "Paramètres",
+                        "nld": "Instellingen"
+                    }
+                }
+            },
+            "switch_admin": {
+                "cache": "e71ce5027e1bbeea",
+                "source": "Switch to admin UI",
+                "target": {
+                    "eng-gbr": "Switch to admin UI",
+                    "deu": "Wechsel zur Verwaltung UI",
+                    "fra": "Passer à l'interface utilisateur d'administration",
+                    "nld": "Schakel over naar de admin UI"
+                }
+            },
+            "switch_conference": {
+                "cache": "4397a81fa07a7f1e",
+                "source": "Switch to Conferencing UI",
+                "target": {
+                    "eng-gbr": "Switch to Conferencing UI",
+                    "deu": "Zu Conferencing UI wechseln",
+                    "fra": "Basculer vers l'interface utilisateur de conférence",
+                    "nld": "Schakel over naar de conferencing UI"
+                }
+            },
+            "unsupported_option": {
+                "cache": "613aeb48e420e9f5",
+                "source": "{browser} does not support this option",
+                "target": {
+                    "eng-gbr": "{browser} does not support this option",
+                    "deu": "{browser} unterstützt diese Option nicht",
+                    "fra": "{browser} ne prend pas en charge cette option",
+                    "nld": "{browser} ondersteunt deze optie niet"
+                }
+            }
+        },
+        "user": {
+            "action": {
+                "add": {
+                    "cache": "08ec0f7654cccad6",
+                    "source": "Add a new user",
+                    "target": {
+                        "eng-gbr": "Add a new user",
+                        "deu": "Einen neuen Benutzer hinzufügen",
+                        "fra": "Ajouter un nouvel utilisateur",
+                        "nld": "Voeg nieuwe gebruiker toe"
+                    }
+                },
+                "chat": {
+                    "cache": "badcd2725ddf5b38",
+                    "source": "Chat with {username}",
+                    "target": {
+                        "eng-gbr": "Chat with {username}",
+                        "deu": "Chat with {username}",
+                        "fra": "Parler avec {username}",
+                        "nld": "Chat met {username}"
+                    }
+                },
+                "clear_credentials": {
+                    "cache": "53af6d9d04efb168",
+                    "source": "Clear credentials",
+                    "target": {
+                        "eng-gbr": "Clear credentials",
+                        "deu": "Berechtigungsnachweise löschen",
+                        "fra": "Effacer les identifiants",
+                        "nld": "Inloggegevens leegmaken"
+                    }
+                },
+                "delete_confirm": {
+                    "cache": "c31837c9f25b018b",
+                    "source": "Confirm deletion of {amount} user|Confirm deletion of {amount} users",
+                    "target": {
+                        "eng-gbr": "Confirm deletion of {amount} user|Confirm deletion of {amount} users",
+                        "deu": "Bestätigen Sie die Löschung von {Betrag} Benutzer|Bestätigen Sie die Löschung von {Betrag} Benutzer",
+                        "fra": "Confirmer la suppression de {amount} utilisateur|Confirmer la suppression de {amount} utilisateurs",
+                        "nld": "Bevestig verwijdering van {amount} gebruiker|Bevestig verwijdering van {amount} gebruikers"
+                    }
+                },
+                "delete_mark": {
+                    "cache": "461f0e43fd43c592",
+                    "source": "Mark user for deletion",
+                    "target": {
+                        "eng-gbr": "Mark user for deletion",
+                        "deu": "Benutzer zur Löschung vormerken",
+                        "fra": "Marquer l’utilisateur pour suppression",
+                        "nld": "Markeer gebruiker voor verwijdering"
+                    }
+                },
+                "delete_mark_undo": {
+                    "cache": "6824a1f544137846",
+                    "source": "Unmark user for deletion",
+                    "target": {
+                        "eng-gbr": "Unmark user for deletion",
+                        "deu": "Markierung des Benutzers zum Löschen aufheben",
+                        "fra": "Décocher l'utilisateur pour suppression",
+                        "nld": "Demarkeer gebruiker voor verwijdering"
+                    }
+                },
+                "kick": {
+                    "cache": "59668da23522e451",
+                    "source": "Kick {username}",
+                    "target": {
+                        "eng-gbr": "Kick {username}",
+                        "deu": "Tritt {username}",
+                        "fra": "Expulser {username}",
+                        "nld": "Verwijder {username}"
+                    }
+                },
+                "logout": {
+                    "cache": "0323de4f66a1700e",
+                    "source": "Logout",
+                    "target": {
+                        "eng-gbr": "Logout",
+                        "deu": "Abmelden",
+                        "fra": "Déconnexion",
+                        "nld": "Uitloggen"
+                    }
+                },
+                "mute_mic": {
+                    "cache": "7705564167d8fc0c",
+                    "source": "Mute Microphone",
+                    "target": {
+                        "eng-gbr": "Mute Microphone",
+                        "deu": "Mikrofon stummschalten",
+                        "fra": "Désactiver le microphone",
+                        "nld": "Microfoon Dempen"
+                    }
+                },
+                "notify": {
+                    "cache": "6b3ecaab7f7d3cc9",
+                    "source": "Send Notification",
+                    "target": {
+                        "eng-gbr": "Send Notification",
+                        "deu": "Benachrichtigung senden",
+                        "fra": "Envoyer une notification",
+                        "nld": "Verstuur Notificatie"
+                    }
+                },
+                "save": {
+                    "cache": "bbaea73c9e81f6ff",
+                    "source": "Save User",
+                    "target": {
+                        "eng-gbr": "Save User",
+                        "deu": "Benutzer speichern",
+                        "fra": "Enregistrer l'utilisateur",
+                        "nld": "Gebruiker Opslaan"
+                    }
+                },
+                "saved": {
+                    "cache": "7519ecf81fb85954",
+                    "source": "User {username} saved",
+                    "target": {
+                        "eng-gbr": "User {username} saved",
+                        "deu": "Benutzer {username} gespeichert",
+                        "fra": "Utilisateur {username} enregistré",
+                        "nld": "Gebruiker {username} opgeslagen"
+                    }
+                },
+                "select": {
+                    "cache": "224b751961354c0a",
+                    "source": "Select a user",
+                    "target": {
+                        "eng-gbr": "Select a user",
+                        "deu": "Wählen Sie einen Benutzer aus",
+                        "fra": "Sélectionnez un utilisateur",
+                        "nld": "Selecteer een gebruiker"
+                    }
+                },
+                "set_availability": {
+                    "available": {
+                        "cache": "78945de8de090e90",
+                        "source": "Available",
+                        "target": {
+                            "eng-gbr": "Available",
+                            "deu": "Verfügbar",
+                            "fra": "Disponible",
+                            "nld": "Beschikbaar"
+                        }
+                    },
+                    "away": {
+                        "cache": "453e6aa38d87b28c",
+                        "source": "Unavailable",
+                        "target": {
+                            "eng-gbr": "Unavailable",
+                            "deu": "Nicht verfügbar",
+                            "fra": "Indisponible",
+                            "nld": "Onbeschikbaar"
+                        }
+                    },
+                    "busy": {
+                        "cache": "ecf1f11ea2cc812e",
+                        "source": "Do Not Disturb",
+                        "target": {
+                            "eng-gbr": "Do Not Disturb",
+                            "deu": "Bitte nicht stören",
+                            "fra": "Ne pas déranger",
+                            "nld": "Niet Storen"
+                        }
+                    }
+                },
+                "set_role": {
+                    "op_assign": {
+                        "cache": "d9f40e4fa20f522c",
+                        "source": "Assign Operator Role",
+                        "target": {
+                            "eng-gbr": "Assign Operator Role",
+                            "deu": "Operator-Rolle zuweisen",
+                            "fra": "Attribuer un rôle d'opérateur",
+                            "nld": "Operator Rol Toewijzen"
+                        }
+                    },
+                    "op_retract": {
+                        "cache": "3943f42b1fe29d39",
+                        "source": "Retract Operator Role",
+                        "target": {
+                            "eng-gbr": "Retract Operator Role",
+                            "deu": "Zurückziehen der Bedienerrolle",
+                            "fra": "Rétracter le rôle d'opérateur",
+                            "nld": "Ontneem Operator Rol"
+                        }
+                    },
+                    "present_assign": {
+                        "cache": "1974651adda904a8",
+                        "source": "Assign Present Role",
+                        "target": {
+                            "eng-gbr": "Assign Present Role",
+                            "deu": "Aktuelle Rolle zuweisen",
+                            "fra": "Attribuer le rôle actuel",
+                            "nld": "Presenteer Rol Toewijzen"
+                        }
+                    },
+                    "present_retract": {
+                        "cache": "9e8176e9da039967",
+                        "source": "Retract Presenter Role",
+                        "target": {
+                            "eng-gbr": "Retract Presenter Role",
+                            "deu": "Rolle des Moderators zurückziehen",
+                            "fra": "Rétracter le rôle du présentateur",
+                            "nld": "Ontneem Presentie Rol"
+                        }
+                    }
+                },
+                "share_file": {
+                    "receiving": {
+                        "cache": "eb7ce2396c5038f7",
+                        "source": "Receiving file {file}",
+                        "target": {
+                            "eng-gbr": "Receiving file {file}",
+                            "deu": "Empfangene Datei {file}",
+                            "fra": "Réception du fichier {file}",
+                            "nld": "Bestand {file} aan het ontvangen"
+                        }
+                    },
+                    "send": {
+                        "cache": "d6ed4bcd75817510",
+                        "source": "Send File",
+                        "target": {
+                            "eng-gbr": "Send File",
+                            "deu": "Datei senden",
+                            "fra": "Envoyer un fichier",
+                            "nld": "Verstuur Bestand"
+                        }
+                    },
+                    "sending": {
+                        "cache": "818eb174cd9e90a2",
+                        "source": "Sending file {file}",
+                        "target": {
+                            "eng-gbr": "Sending file {file}",
+                            "deu": "Datei {file} senden",
+                            "fra": "Envoi du fichier {file}",
+                            "nld": "Bestand {file} aan het versturen"
+                        }
+                    },
+                    "share_accept": {
+                        "cache": "b0dee624b052ffc3",
+                        "source": "{username} wants to share a file with you: {file} ({size})",
+                        "target": {
+                            "eng-gbr": "{username} wants to share a file with you: {file} ({size})",
+                            "deu": "{username} möchte eine Datei mit Ihnen teilen: {file} ({size})",
+                            "fra": "{username} veut partager un fichier avec vous : {file} ({size})",
+                            "nld": "{username} wil een bestand met je delen: {file} ({size})"
+                        }
+                    },
+                    "share_confirm": {
+                        "cache": "e47e1e639cf55f1e",
+                        "source": "You are about to share file {file} ({size}) with participant {username}",
+                        "target": {
+                            "eng-gbr": "You are about to share file {file} ({size}) with participant {username}",
+                            "deu": "Sie sind dabei, die Datei {file} ({size}) mit dem Teilnehmer {username} zu teilen",
+                            "fra": "Vous êtes sur le point de partager le fichier {file} {(size)} avec le participant {name}",
+                            "nld": "Je staat op het punt om bestand {file} ({size}) te delen met deelnemer {username}"
+                        }
+                    },
+                    "transfer_cancelled": {
+                        "cache": "6e01287d21522a2c",
+                        "source": "File transfer of file {file} cancelled",
+                        "target": {
+                            "eng-gbr": "File transfer of file {file} cancelled",
+                            "deu": "Dateiübertragung der Datei {file} abgebrochen",
+                            "fra": "Transfert de fichier du fichier {file} annulé",
+                            "nld": "Versturen van bestand {file} is stop gezet"
+                        }
+                    },
+                    "transfer_complete": {
+                        "cache": "918e81017b76db1a",
+                        "source": "File transfer of file {file} ({size}) complete!",
+                        "target": {
+                            "eng-gbr": "File transfer of file {file} ({size}) complete!",
+                            "deu": "Dateiübertragung von Datei {file} ({size}) abgeschlossen!",
+                            "fra": "Transfert de fichier du fichier {file} ({size}) terminé !",
+                            "nld": "Bestand {file} ({size}) is verstuurd!"
+                        }
+                    }
+                }
+            },
+            "anonymous": {
+                "cache": "7079c72c21415131",
+                "source": "Anonymous",
+                "target": {
+                    "eng-gbr": "Anonymous",
+                    "deu": "Anonym",
+                    "fra": "Anonyme",
+                    "nld": "Anoniem"
+                }
+            },
+            "guest": {
+                "cache": "adb831a7fdd83dd1",
+                "source": "Guest",
+                "target": {
+                    "eng-gbr": "Guest",
+                    "deu": "Gast",
+                    "fra": "Invité",
+                    "nld": "Gast"
+                }
+            },
+            "login": {
+                "as": {
+                    "cache": "617098c2f786f171",
+                    "source": "Login as",
+                    "target": {
+                        "eng-gbr": "Login as",
+                        "deu": "Login as",
+                        "fra": "Se connecter en tant que",
+                        "nld": "Login als"
+                    }
+                },
+                "as_admin": {
+                    "cache": "960bfe864aca3a5d",
+                    "source": "Login as admin",
+                    "target": {
+                        "eng-gbr": "Login as admin",
+                        "deu": "Als Administrator anmelden",
+                        "fra": "Connectez-vous en tant qu'administrateur",
+                        "nld": "Login als administrator"
+                    }
+                },
+                "as_guest": {
+                    "cache": "e23a68aa702e3099",
+                    "source": "Login as guest",
+                    "target": {
+                        "eng-gbr": "Login as guest",
+                        "deu": "Als Gast anmelden",
+                        "fra": "Connectez-vous en tant qu'invité",
+                        "nld": "Login als gast"
+                    }
+                },
+                "credentials_invalid": {
+                    "cache": "51f37bbc7958241f",
+                    "source": "Invalid login credentials",
+                    "target": {
+                        "eng-gbr": "Invalid login credentials",
+                        "deu": "Ungültige Anmeldeinformationen",
+                        "fra": "Identifiants invalides",
+                        "nld": "Ongeldige logingegevens"
+                    }
+                },
+                "fail_credentials": {
+                    "cache": "fc8d26a7433a54da",
+                    "source": "Invalid credentials for group {group}",
+                    "target": {
+                        "eng-gbr": "Invalid credentials for group {group}",
+                        "deu": "Ungültige Anmeldedaten für Gruppe {group}",
+                        "fra": "Identifiants invalides pour le groupe {group}",
+                        "nld": "Ongeldige logingegevens voor groep {group}"
+                    }
+                },
+                "fail_locked": {
+                    "cache": "97ca643b3b838f38",
+                    "source": "Group {group} is locked; only administrators may login",
+                    "target": {
+                        "eng-gbr": "Group {group} is locked; only administrators may login",
+                        "deu": "Gruppe {group} ist gesperrt; nur Administratoren können sich anmelden",
+                        "fra": "Le groupe {group} est verrouillé ; seuls les administrateurs peuvent se connecter",
+                        "nld": "Groep {group} is vergrendeld; alleen administrators mogen inloggen"
+                    }
+                },
+                "locked_maintenance": {
+                    "cache": "5a6e314407c555c1",
+                    "source": "Only administrators may login locked groups",
+                    "target": {
+                        "eng-gbr": "Only administrators may login locked groups",
+                        "deu": "Nur Administratoren können gesperrte Gruppen anmelden",
+                        "fra": "Seuls les administrateurs peuvent se connecter aux groupes verrouillés",
+                        "nld": "Alleen administrators mogen inloggen op vergrendelde groepen"
+                    }
+                },
+                "management": {
+                    "cache": "2b996dca68382a09",
+                    "source": "Administrator Login",
+                    "target": {
+                        "eng-gbr": "Administrator Login",
+                        "deu": "Administrator Login",
+                        "fra": "Administrateur",
+                        "nld": "Administrator Login"
+                    }
+                },
+                "no_permission": {
+                    "cache": "b1c26b50030ac417",
+                    "source": "Sorry, you do not have the right permission for this section",
+                    "target": {
+                        "eng-gbr": "Sorry, you do not have the right permission for this section",
+                        "deu": "Tut mir leid, Sie haben nicht die richtige Erlaubnis für diesen Abschnitt",
+                        "fra": "Désolé, vous n’avez pas l’autorisation appropriée pour cette section",
+                        "nld": "Sorry, je hebt niet de juiste rechten voor deze afdeling"
+                    }
+                },
+                "succesful": {
+                    "cache": "cf178f9bdf4d3888",
+                    "source": "You just logged in",
+                    "target": {
+                        "eng-gbr": "You just logged in",
+                        "deu": "Sie haben sich gerade angemeldet",
+                        "fra": "Connexion réussie",
+                        "nld": "Je bent zojuist ingelogd"
+                    }
+                },
+                "validate_locked": {
+                    "cache": "fc1d2339a1799376",
+                    "source": "Group {group} has been locked",
+                    "target": {
+                        "eng-gbr": "Group {group} has been locked",
+                        "deu": "Gruppe {group} wurde gesperrt",
+                        "fra": "Le groupe {group} a été verrouillé",
+                        "nld": "Groep {group} is vergrendeld"
+                    }
+                }
+            },
+            "name": {
+                "cache": "8f9bfe9d1345237c",
+                "source": "User",
+                "target": {
+                    "eng-gbr": "User",
+                    "deu": "User",
+                    "fra": "Utilisateur",
+                    "nld": "Gebruiker"
+                }
+            },
+            "operator": {
+                "cache": "e1b3ec89ead7f83a",
+                "source": "Operator",
+                "target": {
+                    "eng-gbr": "Operator",
+                    "deu": "Operator",
+                    "fra": "Opérateur",
+                    "nld": "Operator"
+                }
+            },
+            "password": {
+                "cache": "dc647eb65e6711e1",
+                "source": "Password",
+                "target": {
+                    "eng-gbr": "Password",
+                    "deu": "Password",
+                    "fra": "Mot de passe",
+                    "nld": "Wachtwoord"
+                }
+            },
+            "password_placeholder": {
+                "cache": "203b5273a8f45607",
+                "source": "Psst, it is a secret!",
+                "target": {
+                    "eng-gbr": "Psst, it is a secret!",
+                    "deu": "Psst, es ist ein Geheimnis!",
+                    "fra": "Psst, c'est un secret !",
+                    "nld": "Psst, dit is een geheim!"
+                }
+            },
+            "recorder": {
+                "cache": "1aff765143dc4bf8",
+                "source": "Recorder",
+                "target": {
+                    "eng-gbr": "Recorder",
+                    "deu": "Recorder",
+                    "fra": "Enregistreur",
+                    "nld": "Opname"
+                }
+            },
+            "role": {
+                "operator": {
+                    "cache": "cfa584c2240d69ed",
+                    "source": "Operator role",
+                    "target": {
+                        "eng-gbr": "Operator role",
+                        "deu": "Operator role",
+                        "fra": "Rôle d’opérateur",
+                        "nld": "Operator rol"
+                    }
+                },
+                "presenter": {
+                    "cache": "6e0d8ade7de0f796",
+                    "source": "Presenter role",
+                    "target": {
+                        "eng-gbr": "Presenter role",
+                        "deu": "Rolle des Moderators",
+                        "fra": "Rôle de présentateur",
+                        "nld": "Presentatie rol"
+                    }
+                }
+            },
+            "settings": {
+                "misc": {
+                    "name": {
+                        "cache": "52f4393e1b52ba63",
+                        "source": "General Settings",
+                        "target": {
+                            "eng-gbr": "General Settings",
+                            "deu": "Allgemeine Einstellungen",
+                            "fra": "Paramètres généraux",
+                            "nld": "Algemene Instellingen"
+                        }
+                    },
+                    "password_label": {
+                        "cache": "dc647eb65e6711e1",
+                        "source": "Password",
+                        "target": {
+                            "eng-gbr": "Password",
+                            "deu": "Password",
+                            "fra": "Mot de passe",
+                            "nld": "Wachtwoord"
+                        }
+                    },
+                    "role_admin_help": {
+                        "cache": "f88140645579806a",
+                        "source": "Assigns the pyrite admin role to this user",
+                        "target": {
+                            "eng-gbr": "Assigns the pyrite admin role to this user",
+                            "deu": "Weist diesem Benutzer die Pyrit-Administratorrolle zu",
+                            "fra": "Accorde les privilèges d’administrateur de Pyrite",
+                            "nld": "Wijst de Pyrite admin rol toe aan deze gebruiker"
+                        }
+                    },
+                    "role_admin_label": {
+                        "cache": "a0c77eaafa198d6c",
+                        "source": "Admin Role",
+                        "target": {
+                            "eng-gbr": "Admin Role",
+                            "deu": "Administratorrolle",
+                            "fra": "Rôle d'administrateur",
+                            "nld": "Admin Rol"
+                        }
+                    },
+                    "username_label": {
+                        "cache": "f6039d44b29456b2",
+                        "source": "Username",
+                        "target": {
+                            "eng-gbr": "Username",
+                            "deu": "Nutzername",
+                            "fra": "nom d’utilisateur",
+                            "nld": "Gebruikersnaam"
+                        }
+                    }
+                },
+                "permission": {
+                    "misc": {
+                        "cache": "e8e4e92fa461aa44",
+                        "source": "Misc Permission",
+                        "target": {
+                            "eng-gbr": "Misc Permission",
+                            "deu": "Sonstige Berechtigung",
+                            "fra": "Autorisation diverse",
+                            "nld": "Diversen Permissie"
+                        }
+                    },
+                    "name": {
+                        "cache": "795341de32faec18",
+                        "source": "User Permissions",
+                        "target": {
+                            "eng-gbr": "User Permissions",
+                            "deu": "Benutzergenehmigungen",
+                            "fra": "Autorisations utilisateur",
+                            "nld": "Gebruiker Permissies"
+                        }
+                    },
+                    "operator": {
+                        "cache": "bdb781a6c590cf32",
+                        "source": "Operator Permission",
+                        "target": {
+                            "eng-gbr": "Operator Permission",
+                            "deu": "Operator-Berechtigung",
+                            "fra": "Outorisation de l’opérateur",
+                            "nld": "Operator Permissie"
+                        }
+                    },
+                    "presenter": {
+                        "cache": "0480ef924f7d97cb",
+                        "source": "Presenter Permission",
+                        "target": {
+                            "eng-gbr": "Presenter Permission",
+                            "deu": "Berechtigung für Referenten",
+                            "fra": "Autorisation du présentateur",
+                            "nld": "Presentatie Permissie"
+                        }
+                    }
+                }
+            },
+            "username": {
+                "cache": "f6039d44b29456b2",
+                "source": "Username",
+                "target": {
+                    "eng-gbr": "Username",
+                    "deu": "Benutzername",
+                    "fra": "Nom d’utilisateur",
+                    "nld": "Gebruikersnaam"
+                }
+            },
+            "username_placeholder": {
+                "cache": "7f1adbd9060014a0",
+                "source": "Donna, Denzel, Barbara...",
+                "target": {
+                    "eng-gbr": "Donna, Denzel, Barbara...",
+                    "deu": "Lena, Tobias, Isra...",
+                    "fra": "Chloé, Farid, Alice…",
+                    "nld": "Marijke, Orlando, Sanne..."
+                }
+            },
+            "users": {
+                "cache": "f9aae5fda8d810a2",
+                "source": "Users",
+                "target": {
+                    "eng-gbr": "Users",
+                    "deu": "Nutzer",
+                    "fra": "Utilisateurs",
+                    "nld": "Gebruikers"
+                }
+            },
+            "you": {
+                "cache": "cae8d14edd025e72",
+                "source": "You",
+                "target": {
+                    "eng-gbr": "You",
+                    "deu": "Du",
+                    "fra": "Tu",
+                    "nld": "Jij"
+                }
+            }
+        }
+    }
+}
