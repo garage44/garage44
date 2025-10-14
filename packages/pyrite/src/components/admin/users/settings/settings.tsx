@@ -32,7 +32,7 @@ export default function Settings({ userId, tabId = 'misc' }: SettingsProps) {
                 <div class="notice" />
                 <div class="title">
                     <span>{$s.admin.user.name}</span>
-                    <Icon class="icon icon-regular" name="User" />
+                    <Icon class="icon icon-regular" name="user" />
                 </div>
             </header>
 
@@ -41,7 +41,7 @@ export default function Settings({ userId, tabId = 'misc' }: SettingsProps) {
                     class={classnames('btn btn-menu', { active: tabId === 'misc' })}
                     href={routeSettings('misc')}
                 >
-                    <Icon class="icon-d" name="Pirate" />
+                    <Icon class="icon-d" name="pirate" />
                 </Link>
                 <Link
                     class={classnames('btn btn-menu tab', {
@@ -50,7 +50,7 @@ export default function Settings({ userId, tabId = 'misc' }: SettingsProps) {
                     })}
                     href={$s.admin.groups.length > 0 ? routeSettings('permissions') : '#'}
                 >
-                    <Icon class="icon-d" name="Operator" />
+                    <Icon class="icon-d" name="operator" />
                 </Link>
             </ul>
 
@@ -60,7 +60,7 @@ export default function Settings({ userId, tabId = 'misc' }: SettingsProps) {
 
                 <div class="actions">
                     <button class="btn btn-menu" onClick={saveUserAction}>
-                        <Icon class="icon-d" name="Save" />
+                        <Icon class="icon-d" name="save" />
                     </button>
                 </div>
             </div>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 24 24"
+   version="1.1"
+   id="svg840"
+   sodipodi:docname="logo-static.svg"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20, custom)"
+   inkscape:export-filename="/home/jeroen/code/pyrite/ui/public/logo-192.png"
+   inkscape:export-xdpi="814.67584"
+   inkscape:export-ydpi="814.67584"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs844" />
+  <sodipodi:namedview
+     id="namedview842"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="true"
+     showgrid="false"
+     inkscape:zoom="8.2291665"
+     inkscape:cx="2.1873418"
+     inkscape:cy="21.751899"
+     inkscape:window-width="1427"
+     inkscape:window-height="841"
+     inkscape:window-x="205"
+     inkscape:window-y="289"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg840" />
+  <style
+     id="style824">
+      :root {
+         --grey-3: hsl(220, 14%, 11%);
+         --primary-c: hsl(200, 80%, 65%);
+      }
+
+      .dark {
+         fill: hsl(220, 14%, 11%);
+      }
+
+      .primary {
+         fill: hsl(var(--primary-h) var(--primary-s) var(--light-4));
+      }
+  </style>
+  <path
+     class="shard dark"
+     d="m 1.4326731,16.060797 a 11.312578,11.312578 0 0 0 8.395511,7.06399 l 4.0776719,-7.06399 z"
+     id="path826"
+     style="fill:#5ebeed;fill-opacity:1"
+     inkscape:export-filename="/home/jeroen/code/pyrite/ui/public/logo-192.png"
+     inkscape:export-xdpi="814.67584"
+     inkscape:export-ydpi="814.67584" />
+  <path
+     class="shard primary"
+     d="m 16.86638,12.559181 -6.176691,10.699733 a 11.312578,11.312578 0 0 0 1.31031,0.07624 11.312578,11.312578 0 0 0 8.718789,-4.104612 z"
+     id="path828"
+     style="fill:#1c2126;fill-opacity:1"
+     inkscape:export-filename="/home/jeroen/code/pyrite/ui/public/logo-192.png"
+     inkscape:export-xdpi="814.67584"
+     inkscape:export-ydpi="814.67584" />
+  <path
+     class="shard dark"
+     d="m 15.314755,8.2447822 5.938246,10.2858888 a 11.312578,11.312578 0 0 0 2.05947,-6.507996 11.312578,11.312578 0 0 0 -0.649997,-3.7778928 z"
+     id="path830"
+     style="fill:#5ebeed;fill-opacity:1"
+     inkscape:export-filename="/home/jeroen/code/pyrite/ui/public/logo-192.png"
+     inkscape:export-xdpi="814.67584"
+     inkscape:export-ydpi="814.67584" />
+  <path
+     class="shard primary"
+     d="M 3.3339431,4.7511908 A 11.312578,11.312578 0 0 0 0.68752768,12.022675 11.312578,11.312578 0 0 0 1.1575432,15.248587 h 8.2361635 z"
+     id="path832"
+     style="fill:#1c2126;fill-opacity:1"
+     inkscape:export-filename="/home/jeroen/code/pyrite/ui/public/logo-192.png"
+     inkscape:export-xdpi="814.67584"
+     inkscape:export-ydpi="814.67584" />
+  <path
+     class="shard primary"
+     d="M 14.518022,0.99450516 10.800888,7.432572 H 22.339196 A 11.312578,11.312578 0 0 0 14.518022,0.99450516 Z"
+     id="path834"
+     style="fill:#1c2126;fill-opacity:1"
+     inkscape:export-filename="/home/jeroen/code/pyrite/ui/public/logo-192.png"
+     inkscape:export-xdpi="814.67584"
+     inkscape:export-ydpi="814.67584" />
+  <path
+     class="shard dark"
+     d="M 11.999999,0.7102031 A 11.312578,11.312578 0 0 0 3.9077074,4.1183893 L 7.8415072,10.933041 13.671995,0.8345855 A 11.312578,11.312578 0 0 0 11.999999,0.7102031 Z"
+     id="path836"
+     style="fill:#5ebeed;fill-opacity:1"
+     inkscape:export-filename="/home/jeroen/code/pyrite/ui/public/logo-192.png"
+     inkscape:export-xdpi="814.67584"
+     inkscape:export-ydpi="814.67584" />
+  <circle
+     class="pupil primary"
+     cx="11.999944"
+     cy="12.022856"
+     r="2.5045466"
+     id="circle838"
+     style="fill:#5ebeed;fill-opacity:1"
+     inkscape:export-filename="/home/jeroen/code/pyrite/ui/public/logo-192.png"
+     inkscape:export-xdpi="814.67584"
+     inkscape:export-ydpi="814.67584" />
+</svg>

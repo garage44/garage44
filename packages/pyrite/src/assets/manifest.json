@@ -1,0 +1,23 @@
+{
+    "id": "@garage44/pyrite",
+    "name": "Pyrite Video",
+    "description": "Pyrite Video Communication",
+    "background_color": "#eef2f6",
+    "theme_color": "#cad6e2",
+    "display": "standalone",
+    "lang": "en-US",
+    "icons": [
+        {
+            "src": "/img/logo-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/img/logo-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "orientation": "landscape",
+    "start_url": "/"
+}

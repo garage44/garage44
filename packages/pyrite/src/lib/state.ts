@@ -62,6 +62,7 @@ export const persistantState: Partial<PyriteState> = {
         },
         id: null,
         name: '',
+        username: '',
         password: '',
     },
 }

@@ -1,0 +1,43 @@
+.c-admin-recordings {
+
+    .recording {
+        align-items: center;
+        background: var(--bg-primary);
+        display: flex;
+        margin-bottom: var(--spacer-1);
+        padding: var(--spacer-1);
+
+        video {
+            max-height: 90px;
+        }
+
+        .actions {
+            background: var(--text-secondary);
+            margin-inline-end: var(--spacer-1);
+        }
+
+        .info {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            justify-content: center;
+
+            .line {
+                display: flex;
+                font-size: var(--font-size-sm);
+                padding: var(--spacer-05) var(--spacer-1);
+
+                .key {
+                    color: var(--bg-tertiary);
+                    padding-right: var(--spacer-1);
+                    text-align: right;
+                    width: 75px;
+                }
+
+                .value {
+                    color: hsl(var(--brand-h) var(--s-3) var(--dl-4));
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,39 @@
+.c-admin-groups-stats {
+
+    .client {
+        background: var(--bg-primary);
+        margin-bottom: var(--spacer-1);
+        padding: var(--spacer-1);
+
+        .client-header {
+            align-items: center;
+            color: hsl(var(--brand-h) var(--s-3) var(--dl-4));
+            display: flex;
+            font-family: var(--font-family-mono);
+            font-size: var(--font-size-sm);
+            user-select: none;
+
+            &.collapsed {
+                color: var(--bg-secondary);
+            }
+
+            svg {
+                margin-inline-end: var(--spacer-1);
+            }
+
+            &:hover {
+                cursor: pointer;
+            }
+        }
+
+        .stream {
+            padding: var(--spacer-05);
+
+            .track {
+                background: var(--info-2);
+                margin-bottom: var(--spacer-2);
+                padding: var(--spacer-1);
+            }
+        }
+    }
+}

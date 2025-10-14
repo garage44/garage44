@@ -115,24 +115,24 @@ export default function ContextUsers({ path, userId }: ContextUsersProps) {
                 <button class="btn" disabled={!$s.admin.user} onClick={toggleMarkDelete}>
                     <Icon
                         class="item-icon icon-d"
-                        name="Minus"
+                        name="minus"
                     />
                 </button>
                 <button class="btn">
                     <Icon
                         class="item-icon icon-d"
-                        name="Plus"
+                        name="plus"
                         onClick={addUser}
                     />
                 </button>
                 <button class="btn" disabled={!deletionUsers.length} onClick={deleteUsers}>
                     <Icon
                         class="icon-d"
-                        name="Trash"
+                        name="trash"
                     />
                 </button>
                 <button class="btn" disabled={!$s.admin.user} onClick={saveUserAction}>
-                    <Icon class="icon-d" name="Save" />
+                    <Icon class="icon-d" name="save" />
                 </button>
             </div>
             {orderedUsers.map((user) => (

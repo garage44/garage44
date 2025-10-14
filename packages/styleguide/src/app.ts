@@ -3,12 +3,12 @@ import {
     store,
 } from '@garage44/common/app'
 import {h, render} from 'preact'
-import {i18nFormat} from '@garage44/common/lib/i18n'
 import {persistantState, volatileState} from './lib/state'
 import {Main} from '@/components/main'
 import type {StyleguideState} from './types'
+import {type DeepSignal} from 'deepsignal'
 
-const $s = store.state as StyleguideState
+const $s = store.state  as unknown as DeepSignal<StyleguideState>
 
 store.load(persistantState, volatileState)
 
@@ -25,7 +25,4 @@ const mockTranslations = {
 
 app.init(Main, render, h, mockTranslations, {bunchyPrefix: 'S'})
 
-export {
-    $s,
-    app,
-}
+export {$s, app}

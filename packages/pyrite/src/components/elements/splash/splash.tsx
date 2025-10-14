@@ -1,4 +1,4 @@
-import {Icon} from '@/components/elements'
+import {IconLogo} from '@/components/elements'
 import {useEffect, useMemo} from 'preact/hooks'
 import {$t} from '@garage44/common/app'
 import {$s} from '@/app'
@@ -33,7 +33,9 @@ export default function Splash({ header, instruction }: SplashProps) {
 
     return (
         <div class="c-splash">
-            <Icon class="icon logo-animated" name="Logo" />
+            <svg class="icon logo-animated" viewBox="0 0 24 24" height="40" width="40">
+                <IconLogo />
+            </svg>
             <div class="title uca">
                 {title}
             </div>

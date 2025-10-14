@@ -1,0 +1,15 @@
+.c-button-group {
+    transition: background 0.3s ease;
+
+    &:hover,
+    &.active {
+        background: var(--text-secondary);
+    }
+
+    .btn {
+
+        .active-group {
+            opacity: 0.5;
+        }
+    }
+}

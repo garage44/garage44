@@ -1,4 +1,4 @@
-import {Icon} from '@/components/elements'
+import {IconLogo} from '@/components/elements'
 import {Stream} from '../stream/stream'
 import {useEffect, useRef, useMemo} from 'preact/hooks'
 import {$s} from '@/app'
@@ -97,7 +97,11 @@ export const Group = () => {
                 <Stream key={description.id || index} modelValue={sortedStreams[index]} />
             ))}
 
-            {!$s.streams.length && <Icon class="icon logo-animated" name="Logo" />}
+            {!$s.streams.length && (
+                <svg class="icon logo-animated" viewBox="0 0 24 24" height="40" width="40">
+                    <IconLogo />
+                </svg>
+            )}
         </div>
     )
 }

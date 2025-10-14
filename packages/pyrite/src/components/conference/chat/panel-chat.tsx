@@ -119,7 +119,7 @@ export default function PanelChat() {
                             onClick={() => selectChannel(channel)}
                         >
                             <div class="channel-name">
-                                <Icon class="icon icon-s" icon-props={{unread: channel.unread}} name="Chat" />
+                                <Icon class="icon icon-s" icon-props={{unread: channel.unread}} name="chat" />
                             </div>
 
                             <span>{key === 'main' ? $t('chat.general') : channel.name}</span>
@@ -131,7 +131,7 @@ export default function PanelChat() {
                                         closeChannel(channel)
                                     }}
                                 >
-                                    <Icon class="icon icon-xs" name="Close" />
+                                    <Icon class="icon icon-xs" name="close" />
                                 </button>
                             )}
                         </div>
@@ -154,7 +154,7 @@ export default function PanelChat() {
                     disabled={formattedMessage === ''}
                     onClick={sendMessage}
                 >
-                    <Icon class="icon icon-s" name="Send" />
+                    <Icon class="icon icon-s" name="send" />
                 </button>
             </div>
 

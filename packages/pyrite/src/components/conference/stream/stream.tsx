@@ -1,7 +1,7 @@
 import classnames from 'classnames'
 import {useEffect, useRef, useState, useMemo} from 'preact/hooks'
 import {Button, FieldSlider, SoundMeter} from '@/components/elements'
-import {Icon} from '@/components/elements'
+import {Icon, IconLogo} from '@/components/elements'
 import {Reports} from './reports'
 import {$s} from '@/app'
 import {$t, logger} from '@garage44/common/app'
@@ -349,13 +349,15 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
 
             {!modelValue.playing && (
                 <div class="loading-container">
-                    <Icon class="spinner" name="Spinner" />
+                    <Icon class="spinner" name="spinner" />
                 </div>
             )}
 
             {modelValue.playing && !modelValue.hasVideo && (
                 <div class="media-container">
-                    <Icon name="Logo" />
+                    <svg viewBox="0 0 24 24" height="40" width="40">
+                        <IconLogo />
+                    </svg>
                 </div>
             )}
 

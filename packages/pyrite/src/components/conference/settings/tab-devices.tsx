@@ -110,7 +110,7 @@ export default function TabDevices() {
                 {description && <Stream modelValue={description} controls={false} />}
                 {!description && (
                     <div class="webcam-placeholder">
-                        <Icon name="Webcam" />
+                        <Icon name="webcam" />
                     </div>
                 )}
             </div>
@@ -147,7 +147,7 @@ export default function TabDevices() {
                         <div class="label-container">
                             <label class="field-label">{$t('device.select_audio_label')}</label>
                             <button class="btn" disabled={playing} onClick={testSoundAudio}>
-                                <Icon class="icon-d" name="Play" />
+                                <Icon class="icon-d" name="play" />
                             </button>
                         </div>
 

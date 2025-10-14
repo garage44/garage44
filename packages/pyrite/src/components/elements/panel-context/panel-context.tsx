@@ -1,5 +1,5 @@
 import classnames from 'classnames'
-import {Icon} from '@/components/elements'
+import {IconLogo} from '@/components/elements'
 import {Link} from 'preact-router'
 import {useEffect, useRef, useMemo} from 'preact/hooks'
 import {ComponentChildren} from 'preact'
@@ -71,7 +71,9 @@ export default function PanelContext({ children }: PanelContextProps) {
             <header>
                 {!$s.group.connected ? (
                     <Link class="logo" href={toggleContext}>
-                        <Icon class="icon" name="Logo" />
+                        <svg class="icon" viewBox="0 0 24 24" height="40" width="40">
+                            <IconLogo />
+                        </svg>
                         <div class="l-name">
                             <div class="name">
                                 PYRITE
@@ -83,7 +85,9 @@ export default function PanelContext({ children }: PanelContextProps) {
                     </Link>
                 ) : (
                     <span class="logo">
-                        <Icon class="icon" name="Logo" />
+                        <svg class="icon" viewBox="0 0 24 24" height="40" width="40">
+                            <IconLogo />
+                        </svg>
                         <div class="l-name">
                             <div class="name">
                                 PYRITE

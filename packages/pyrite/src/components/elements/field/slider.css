@@ -1,0 +1,52 @@
+.c-field-slider {
+    align-items: center;
+    display: flex;
+    height: var(--spacer-6);
+    justify-content: center;
+    outline: none;
+    overflow: hidden;
+
+    .track {
+        background: var(--info-6);
+        height: var(--spacer-6);
+        overflow: visible;
+        position: relative;
+        width: 8px;
+
+        &:hover {
+            cursor: ns-resize;
+        }
+    }
+
+    .thumb {
+        background: var(--info-4);
+        border-radius: 50%;
+        height: var(--spacer-1);
+        position: absolute;
+        width: var(--spacer-1);
+    }
+
+    .icon.locked {
+        bottom: 0;
+        color: hsl(var(--brand-h) var(--s-3) var(--dl-4));
+        margin-bottom: -18px;
+        margin-inline-start: -3px;
+        position: absolute;
+        z-index: 1000;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    &.active {
+
+        .track {
+            background: var(--brand-primary);
+        }
+
+        .thumb {
+            background: var(--brand-secondary);
+        }
+    }
+}

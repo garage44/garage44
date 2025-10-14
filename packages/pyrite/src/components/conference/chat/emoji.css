@@ -1,0 +1,19 @@
+.c-emoji {
+    align-items: center;
+    display: grid;
+    flex-wrap: wrap;
+    grid-template-columns: repeat(auto-fill, minmax(30px, 40px));
+    justify-content: center;
+    overflow-y: scroll;
+
+    .emoji {
+        cursor: pointer;
+        font-size: var(--font-size-xl);
+        text-align: center;
+        user-select: none;
+
+        &:hover {
+            background: hsl(var(--brand-h) var(--s-3) var(--dl-4));
+        }
+    }
+}

@@ -1,0 +1,53 @@
+.c-tab-devices {
+
+    .connected-warning {
+        align-items: center;
+        display: flex;
+        font-family: var(--font-family-mono);
+
+        .icon {
+            color: hsl(var(--warn-h) var(--s-3) var(--dl-4));
+            margin-inline-end: var(--spacer-1);
+        }
+    }
+
+    .camera-field {
+        display: flex;
+        flex-direction: column;
+
+        .webcam-placeholder,
+        .c-stream {
+            border: 1px solid var(--info-1);
+            margin: var(--spacer-1) 0;
+            right: 0;
+            width: 100%;
+        }
+
+        .webcam-placeholder {
+            align-items: center;
+            aspect-ratio: 4 / 3;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+
+            .icon {
+                filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 40%));
+                height: 50%;
+                width: 50%;
+            }
+        }
+    }
+
+    .soundmeter {
+
+        canvas {
+            margin: 0;
+        }
+    }
+
+    .output-config {
+        align-content: center;
+        align-items: center;
+        display: flex;
+    }
+}

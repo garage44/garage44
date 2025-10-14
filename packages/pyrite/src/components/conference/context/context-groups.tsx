@@ -100,7 +100,7 @@ export default function GroupsContext() {
                     })}
                     onClick={toggleUnlisted}
                 >
-                    <Icon class="icon item-icon icon-d" name="Incognito" />
+                    <Icon class="icon item-icon icon-d" name="incognito" />
                     <div class="flex-column">
                         {(isListedGroup || !$s.group.name) ? (
                             <div class="name">...</div>
@@ -135,14 +135,14 @@ export default function GroupsContext() {
 
                     <div class={classnames('stats', {active: group.clientCount > 0})}>
                         {group.clientCount}
-                        <Icon class="icon-d" name="User" />
+                        <Icon class="icon-d" name="user" />
                     </div>
                 </Link>
             ))}
 
             {!$s.groups.length && (
                 <div class="group item no-presence">
-                    <Icon class="item-icon icon-d" name="Group" />
+                    <Icon class="item-icon icon-d" name="group" />
                     <div class="name">
                         {$t('group.no_groups_public')}
                     </div>

@@ -65,14 +65,14 @@ export default function ContextInput({ value, submit, required = true, revert = 
                         <button class="btn" onClick={() => setInput(!input)}>
                             <Icon
                                 class="icon icon-s"
-                                name="Close"
+                                name="close"
                             />
                         </button>
                     ) : (
                         <button class="btn" onClick={submitMethod}>
                             <Icon
                                 class="icon icon-s"
-                                name="Send"
+                                name="send"
                             />
                         </button>
                     )}

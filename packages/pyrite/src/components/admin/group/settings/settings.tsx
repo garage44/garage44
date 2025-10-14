@@ -35,7 +35,7 @@ export default function Settings({ groupId, tabId = 'misc', path }: SettingsProp
                 <div class="notice" />
                 <div class="title">
                     {$s.admin.group && <span>{$s.admin.group._name}</span>}
-                    <Icon class="icon icon-regular" name="Group" />
+                    <Icon class="icon icon-regular" name="group" />
                 </div>
             </header>
 
@@ -44,35 +44,35 @@ export default function Settings({ groupId, tabId = 'misc', path }: SettingsProp
                     class={classnames('btn btn-menu tab', { active: tabId === 'misc' })}
                     href={routeSettings('misc')}
                 >
-                    <Icon class="icon-d" name="Pirate" />
+                    <Icon class="icon-d" name="pirate" />
                 </Link>
 
                 <Link
                     class={classnames('btn btn-menu tab', { active: tabId === 'access' })}
                     href={routeSettings('access')}
                 >
-                    <Icon class="icon-d" name="Access" />
+                    <Icon class="icon-d" name="access" />
                 </Link>
 
                 <Link
                     class={classnames('btn btn-menu tab', { active: tabId === 'permissions' })}
                     href={routeSettings('permissions')}
                 >
-                    <Icon class="icon-d" name="Operator" />
+                    <Icon class="icon-d" name="operator" />
                 </Link>
 
                 <Link
                     class={classnames('btn btn-menu tab', { active: tabId === 'stats' })}
                     href={routeSettings('stats')}
                 >
-                    <Icon class="icon-d" name="Stats" />
+                    <Icon class="icon-d" name="stats" />
                 </Link>
 
                 <Link
                     class={classnames('btn btn-menu tab', { active: tabId === 'recordings' })}
                     href={routeSettings('recordings')}
                 >
-                    <Icon class="icon-d" name="Record" />
+                    <Icon class="icon-d" name="record" />
                 </Link>
             </ul>
 
@@ -86,7 +86,7 @@ export default function Settings({ groupId, tabId = 'misc', path }: SettingsProp
                 {path?.includes('/admin/groups') && (
                     <div class="actions">
                         <button class="btn btn-menu btn-save" onClick={saveGroupAction}>
-                            <Icon class="icon-d" name="Save" />
+                            <Icon class="icon-d" name="save" />
                         </button>
                     </div>
                 )}

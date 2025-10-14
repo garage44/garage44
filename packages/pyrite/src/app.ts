@@ -46,4 +46,4 @@ async function initApp() {
 
 await initApp()
 
-export {$s, app}
+export {$s, app, store}

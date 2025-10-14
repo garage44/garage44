@@ -2,15 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta name="theme-color" content="#194759">
     <title>Pyrite - Video Conferencing</title>
+
+    <!-- Favicon and PWA icons -->
+    <link rel="icon" type="image/png" href="<%= settings.assetPath %>/img/favicon.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="<%= settings.assetPath %>/img/logo-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="<%= settings.assetPath %>/img/logo-512.png">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="<%= settings.assetPath %>/manifest.json">
+
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="/public/app.<%= settings.buildId %>.css">
     <link rel="stylesheet" href="/public/components.<%= settings.buildId %>.css">
-    <link rel="icon" href="/public/img/favicon.png">
 </head>
 <body>
     <div id="app"></div>
     <script src="/public/app.<%= settings.buildId %>.js" type="module"></script>
+
+    <!-- Service Worker -->
+    <script src="<%= settings.assetPath %>/sw-loader.js"></script>
 </body>
 </html>

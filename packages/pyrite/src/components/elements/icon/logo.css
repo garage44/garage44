@@ -1,0 +1,77 @@
+@keyframes light-1 {
+
+    0%,
+    85% {
+        fill: var(--brand-accent);
+        opacity: 0;
+    }
+
+    100% {
+        fill: hsl(var(--accent-h) var(--s-3) var(--dl-1));
+        opacity: 1;
+    }
+}
+
+@keyframes light-2 {
+
+    0%,
+    65% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes blink {
+
+    0% {
+        fill: transparent;
+        opacity: 0.2;
+    }
+
+    50% { fill: hsl(var(--surface-h) var(--s-1) var(--l-2)); }
+    52% { fill: hsl(var(--brand-h) var(--s-3) var(--l-2)); }
+    60% { fill: hsl(var(--surface-h) var(--s-1) var(--l-2)); }
+    65% { fill: hsl(var(--brand-h) var(--s-3) var(--l-2)); }
+    70% { fill: hsl(var(--surface-h) var(--s-1) var(--l-2)); }
+    75% { fill: hsl(var(--brand-h) var(--s-3) var(--l-2)); }
+
+    80% {
+        fill: hsl(var(--surface-h) var(--s-3) var(--l-2));
+        opacity: 0.2;
+    }
+    83% { fill: hsl(var(--brand-h) var(--s-3) var(--l-2)); }
+    85% { fill: hsl(var(--surface-h) var(--s-1) var(--l-2)); }
+    87% { fill: hsl(var(--brand-h) var(--s-3) var(--l-2)); }
+
+    100% {
+        fill: hsl(var(--brand-h) var(--s-3) var(--l-2));
+        opacity: 1;
+    }
+}
+
+.dark {
+    fill: hsl(var(--accent-h) var(--s-3) var(--l-2));
+}
+
+.primary {
+    fill: var(--brand-accent);
+}
+
+.logo-animated {
+
+    .shard.primary {
+        animation: 1.75s ease-in-out running light-1;
+    }
+
+    .shard.dark {
+        animation: 1.5s ease running light-2;
+    }
+
+    .pupil {
+        animation: 1.5s ease-in-out running blink;
+        fill: hsl(var(--accent-h) var(--s-1) var(--l-2));
+    }
+}

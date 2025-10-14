@@ -64,13 +64,13 @@ export default function TabPermissions() {
                 <div class="group-name" />
                 <div class="categories">
                     <div class="category" onClick={() => toggleCategory('op')}>
-                        <Icon class="icon-d" name="Operator" />
+                        <Icon class="icon-d" name="operator" />
                     </div>
                     <div class="category" onClick={() => toggleCategory('presenter')}>
-                        <Icon class="icon-d" name="Present" />
+                        <Icon class="icon-d" name="present" />
                     </div>
                     <div class="category" onClick={() => toggleCategory('other')}>
-                        <Icon class="icon-d" name="OtherPermissions" />
+                        <Icon class="icon-d" name="otherpermissions" />
                     </div>
                 </div>
             </div>

@@ -135,7 +135,7 @@ export default function FieldSlider({ value, onChange }: FieldSliderProps) {
             {value.locked && (
                 <Icon
                     class="icon icon-xs locked"
-                    name="Lock"
+                    name="lock"
                     onClick={() => onClick(false)}
                 />
             )}

@@ -33,7 +33,7 @@ export default function Settings({ tabId }: SettingsProps) {
                 <div class="notice" />
                 <div class="title">
                     <span>{$t('ui.settings.name')}</span>
-                    <Icon class="item-icon icon-regular" name="Settings" />
+                    <Icon class="item-icon icon-regular" name="settings" />
                 </div>
             </header>
             <div class="tabs">

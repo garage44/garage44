@@ -215,6 +215,7 @@ tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = 
     })
 
     watch(settings.dir.src, {recursive: true}, (event, filename) => {
+        console.log('WATCH', settings.dir.src, filename)
         const extension = path.extname(filename)
 
         if (filename.startsWith('assets/')) {
@@ -223,7 +224,8 @@ tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = 
             runner.code_frontend()
         } else if (filename === 'index.html') {
             runner.html()
-                } else if (extension === '.css') {
+        } else if (extension === '.css') {
+            console.log('css', filename)
             // Differentiate between app-level and component-level CSS files
             if (filename.startsWith('css/')) {
                 // App-level styles (src/css/*.css)

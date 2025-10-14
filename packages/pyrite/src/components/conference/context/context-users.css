@@ -1,0 +1,51 @@
+.c-users-context.presence {
+
+    .user {
+        font-size: var(--font-size-sm);
+
+        /* font-family: var(--font-family-mono); */
+
+        .item-icon {
+
+            &.away {
+                color: hsl(var(--warn-h) var(--s-3) var(--dl-4));
+            }
+
+            &.busy {
+                color: var(--error-4);
+            }
+
+            &.hand {
+                animation-duration: 2.5s;
+                animation-iteration-count: infinite;
+                animation-name: wave-animation;
+                transform-origin: center bottom;
+            }
+        }
+
+        .name {
+            display: flex;
+            height: 100%;
+            margin-bottom: 0;
+
+            .permissions {
+                align-items: center;
+                display: flex;
+                height: 100%;
+                justify-content: center;
+                margin-inline-start: var(--spacer-05);
+
+                .status {
+                    align-items: center;
+                    display: flex;
+                    height: 100%;
+                    margin-inline-end: var(--spacer-1);
+                }
+
+                span {
+                    display: flex;
+                }
+            }
+        }
+    }
+}

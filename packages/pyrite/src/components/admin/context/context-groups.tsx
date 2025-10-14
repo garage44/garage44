@@ -112,24 +112,24 @@ export default function ContextGroups({ path, groupId }: ContextGroupsProps) {
                 <button class="btn" disabled={!$s.admin.group} onClick={toggleMarkDelete}>
                     <Icon
                         class="item-icon icon-d"
-                        name="Minus"
+                        name="minus"
                     />
                 </button>
                 <button class="btn">
                     <Icon
                         class="item-icon icon-d"
-                        name="Plus"
+                        name="plus"
                         onClick={addGroup}
                     />
                 </button>
                 <button class="btn" disabled={!deletionGroups.length} onClick={deleteGroups}>
                     <Icon
                         class="icon-d"
-                        name="Trash"
+                        name="trash"
                     />
                 </button>
                 <button class="btn" disabled={!$s.admin.group} onClick={saveGroupAction}>
-                    <Icon class="icon-d" name="Save" />
+                    <Icon class="icon-d" name="save" />
                 </button>
             </div>
 
@@ -167,7 +167,7 @@ export default function ContextGroups({ path, groupId }: ContextGroupsProps) {
 
             {!orderedGroups.length && (
                 <div class="group item no-presence">
-                    <Icon class="item-icon icon-d" name="Group" />
+                    <Icon class="item-icon icon-d" name="group" />
                     <div class="name">
                         {$t('group.no_groups')}
                     </div>

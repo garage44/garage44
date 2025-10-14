@@ -64,21 +64,21 @@ export default function UsersContext() {
 
                         <div class="status">
                             {user.data.mic ? (
-                                <Icon class="icon icon-s" name="Mic" />
+                                <Icon class="icon icon-s" name="mic" />
                             ) : (
-                                <Icon class="icon icon-s error" name="MicMute" />
+                                <Icon class="icon icon-s error" name="micmute" />
                             )}
                         </div>
 
                         <div class="permissions">
                             {user.permissions.present && (
                                 <span>
-                                    <Icon class="icon icon-s" name="Present" />
+                                    <Icon class="icon icon-s" name="present" />
                                 </span>
                             )}
                             {user.permissions.op && (
                                 <span>
-                                    <Icon class="icon icon-s" name="Operator" />
+                                    <Icon class="icon icon-s" name="operator" />
                                 </span>
                             )}
                         </div>

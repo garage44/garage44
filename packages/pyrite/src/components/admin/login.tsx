@@ -43,7 +43,7 @@ export const Login = () => {
                 <div class="notice" />
                 <div class="title">
                     <span>{$t('user.login.management')}</span>
-                    <Icon class="item-icon icon-d" name="Dashboard" />
+                    <Icon class="item-icon icon-d" name="dashboard" />
                 </div>
             </header>
             <div class="panels">

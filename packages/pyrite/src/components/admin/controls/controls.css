@@ -1,0 +1,15 @@
+.c-admin-controls {
+    align-items: center;
+    background: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: space-between;
+    padding-bottom: var(--spacer-1);
+
+    .btn-collapse {
+        color: var(--bg-tertiary);
+        height: var(--spacer-8);
+        width: var(--spacer-8);
+    }
+}

@@ -1,0 +1,10 @@
+.c-users-context-menu {
+
+    .action {
+
+        &[disabled] {
+            background: var(--bg-tertiary);
+            color: var(--bg-primary);
+        }
+    }
+}

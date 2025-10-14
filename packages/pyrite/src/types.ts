@@ -110,6 +110,7 @@ export interface PyriteState extends CommonState {
         }
         id: string | null
         name: string
+        username: string
         password: string
     }
     users: any[]

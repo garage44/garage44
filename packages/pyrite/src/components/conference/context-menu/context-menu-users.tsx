@@ -98,10 +98,10 @@ export default function UsersContextMenu({ user }: UsersContextMenuProps) {
 
     return (
         <div class={classnames('c-users-context-menu context-menu', {active: active})}>
-            <Icon class="icon icon-d" name="Menu" onClick={toggleMenu} />
+            <Icon class="icon icon-d" name="menu" onClick={toggleMenu} />
             {active && <div class="context-actions">
                 {user.id !== $s.user.id && <button class="action" onClick={activateUserChat}>
-                    <Icon class="icon icon-s" name="Chat" />
+                    <Icon class="icon icon-s" name="chat" />
                     {`${$t('user.action.chat', {username: user.username})}`}
                 </button>}
 
@@ -121,17 +121,17 @@ export default function UsersContextMenu({ user }: UsersContextMenuProps) {
                 />}
 
                 {($s.permissions.op && user.id !== $s.user.id) && <button class="action" onClick={muteUser}>
-                    <Icon class="icon icon-s" name="Mic" />
+                    <Icon class="icon icon-s" name="mic" />
                     {$t('user.action.mute_mic')}
                 </button>}
 
                 {($s.permissions.op && user.id !== $s.user.id) && <button class="action" onClick={toggleOperator}>
-                    <Icon class="icon icon-s" name="Operator" />
+                    <Icon class="icon icon-s" name="operator" />
                     {user.permissions.op ? $t('user.action.set_role.op_retract') : $t('user.action.set_role.op_assign')}
                 </button>}
 
                 {($s.permissions.op && user.id !== $s.user.id) && <button class="action" onClick={togglePresenter}>
-                    <Icon class="icon icon-s" name="Present" />
+                    <Icon class="icon icon-s" name="present" />
                     {user.permissions.present ? $t('user.action.set_role.present_retract') : $t('user.action.set_role.present_assign')}
                 </button>}
 

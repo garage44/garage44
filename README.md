@@ -136,7 +136,7 @@ See individual package READMEs for details.
 
 Mixed licensing strategy:
 
-- **Expressio:** AGPLv3 (copyleft for main product)
+- **End Products:** AGPLv3
 - **Libraries:** MIT (permissive for shared tools)
 
 See [ADR-002](./docs/adr/ADR-002-mixed-license-strategy.md) for rationale.
