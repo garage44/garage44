@@ -53,7 +53,7 @@ Benefits: consistent development experience, reusable components, unified build 
 | Package | Purpose | License |
 |---------|---------|---------|
 | [expressio](./packages/expressio/) | i18n automation tool | AGPLv3 |
-| [pyrite](./packages/pyrite/) | Video conferencing frontend | MIT |
+| [pyrite](./packages/pyrite/) | Video conferencing frontend | AGPLv3 |
 | [enola](./packages/enola/) | Translation engine wrapper | MIT |
 | [bunchy](./packages/bunchy/) | Development tooling | MIT |
 | [common](./packages/common/) | Shared components & utilities | MIT |
