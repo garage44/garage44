@@ -1,5 +1,5 @@
 import {useEffect, useState, useMemo} from 'preact/hooks'
-import {$t} from '@/app'
+import {$t} from '@garage44/common/app'
 import {connection} from '@/models/sfu/sfu'
 
 interface ReportsProps {

@@ -1,9 +1,9 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {Icon} from '@/components/elements'
 import {Link} from 'preact-router'
 import {useEffect, useRef, useMemo} from 'preact/hooks'
 import {ComponentChildren} from 'preact'
-import {$s, $t} from '@/app'
+import {$s} from '@/app'
 import animate from '@/lib/animate'
 
 interface PanelContextProps {
@@ -67,7 +67,7 @@ export default function PanelContext({ children }: PanelContextProps) {
     }, [$s.env.layout])
 
     return (
-        <div ref={panelRef} class={classes('c-panel-context', {collapsed: false})}>
+        <div ref={panelRef} class={classnames('c-panel-context', {collapsed: false})}>
             <header>
                 {!$s.group.connected ? (
                     <Link class="logo" href={toggleContext}>

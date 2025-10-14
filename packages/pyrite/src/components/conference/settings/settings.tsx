@@ -3,9 +3,9 @@ import TabDevices from './tab-devices'
 import TabMedia from './tab-media'
 import TabMisc from './tab-misc'
 import {useMemo} from 'preact/hooks'
-import {$s, $t, store, notifier} from '@/app'
-import {logger} from '@garage44/common/app'
-import {setLanguage} from '@garage44/common/app'
+import {$s} from '@/app'
+import {$t, logger, store, notifier} from '@garage44/common/app'
+// import {setLanguage} from '@garage44/common/app'
 
 interface SettingsProps {
     tabId?: string
@@ -21,7 +21,7 @@ export default function Settings({ tabId }: SettingsProps) {
     }, [$s.group.connected, $s.group.name])
 
     const saveSettings = async () => {
-        await setLanguage($s.language.id)
+        // await setLanguage($s.language.id)
         logger.debug(`settings language to ${$s.language.id}`)
         store.save()
         notifier.notify({icon: 'Settings', level: 'info', message: $t('ui.settings.action.saved')})

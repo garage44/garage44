@@ -1,4 +1,4 @@
-export default class Api {
+export class Api {
 
     async delete(endpoint, data) {
         const response = await fetch(endpoint, {

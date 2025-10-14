@@ -1,6 +1,6 @@
-import {$s, api, logger, store} from '@/app'
+import {logger} from './logger'
 import {changeLanguage, init as i18nextInit, t as i18nextT} from 'i18next'
-import {copyObject, keyMod, keyPath} from './utils.ts'
+import {copyObject, keyMod, keyPath} from './utils'
 import {effect} from '@preact/signals'
 
 function i18nFormat(i18n, targetLanguages) {
@@ -19,7 +19,7 @@ function i18nFormat(i18n, targetLanguages) {
                     i18nextFormatted[language_id] = {translation: {}}
                 }
                 const _18nextObject = keyPath(i18nextFormatted[language_id].translation, refPath.slice(0, -1), true)
-                _18nextObject[refPath[refPath.length - 1]] = _i18nObject.target[language_id]
+                _18nextObject[refPath.at(-1)] = _i18nObject.target[language_id]
             }
         }
     })
@@ -27,19 +27,21 @@ function i18nFormat(i18n, targetLanguages) {
     return i18nextFormatted
 }
 
-async function init(translations = null) {
+async function init(translations = null, api = null, store = null) {
     let resources = null
 
     if (translations) {
         resources = translations
         logger.debug(`loading languages from bundle: ${Object.keys(resources).join(', ')}`)
-    } else {
+    } else if (api) {
         resources = await api.get('/api/translations')
         logger.debug(`loading languages from endpoint: ${Object.keys(resources).join(', ')}`)
     }
 
-    for (const language_id of Object.keys(resources)) {
-        $s.language_ui.i18n[language_id] = {}
+    if (store && resources) {
+        for (const language_id of Object.keys(resources)) {
+            store.state.language_ui.i18n[language_id] = {}
+        }
     }
 
     i18nextInit({
@@ -48,40 +50,42 @@ async function init(translations = null) {
         interpolation: {
             escapeValue: false,
         },
-        lng: $s.language_ui.selection,
+        lng: store?.state.language_ui.selection || 'eng-gbr',
         resources,
     })
 
-    effect(() => {
-        const language = $s.language_ui.selection
-        changeLanguage(language)
-        logger.debug(`language changed to: ${language}`)
-        store.save()
-    })
+    if (store) {
+        effect(() => {
+            const language = store.state.language_ui.selection
+            changeLanguage(language)
+            logger.debug(`language changed to: ${language}`)
+            store.save()
+        })
+    }
 }
 
 /**
- * A simple reactive signal based translation function, which
- * allows to switch languages without having to reload the page.
- * @param key Translation key
- * @param context Translation context
+ * Creates a translation function with store-based caching
+ * This is exported as a factory to avoid circular dependencies
  */
-const $t = (key: string, context = null): string => {
-    if (!$s.language_ui.i18n[$s.language_ui.selection]) {
-        $s.language_ui.i18n[$s.language_ui.selection] = {}
-    }
+function create$t(store) {
+    return (key: string, context = null): string => {
+        if (!store.state.language_ui.i18n[store.state.language_ui.selection]) {
+            store.state.language_ui.i18n[store.state.language_ui.selection] = {}
+        }
 
-    // Create a cache key that includes both the key and context
-    const cacheKey = context ? `${key}:${JSON.stringify(context)}` : key
+        // Create a cache key that includes both the key and context
+        const cacheKey = context ? `${key}:${JSON.stringify(context)}` : key
 
-    if (!$s.language_ui.i18n[$s.language_ui.selection][cacheKey]) {
-        $s.language_ui.i18n[$s.language_ui.selection][cacheKey] = i18nextT(key, context) as string
+        if (!store.state.language_ui.i18n[store.state.language_ui.selection][cacheKey]) {
+            store.state.language_ui.i18n[store.state.language_ui.selection][cacheKey] = i18nextT(key, context) as string
+        }
+        return store.state.language_ui.i18n[store.state.language_ui.selection][cacheKey]
     }
-    return $s.language_ui.i18n[$s.language_ui.selection][cacheKey]
 }
 
 export {
-    $t,
+    create$t,
     i18nFormat,
     init,
 }

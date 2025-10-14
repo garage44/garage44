@@ -3,7 +3,8 @@
 import {useState} from 'preact/hooks'
 import {route} from 'preact-router'
 import {Button, FieldText, Icon} from '@/components/elements'
-import {$s, $t, notifier} from '@/app'
+import {$s} from '@/app'
+import {$t, notifier} from '@garage44/common/app'
 import {connect} from '@/models/sfu/sfu'
 
 interface LoginProps {

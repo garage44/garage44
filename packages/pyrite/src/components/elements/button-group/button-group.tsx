@@ -1,4 +1,4 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {ComponentChildren} from 'preact'
 
 interface ButtonGroupProps {
@@ -8,7 +8,7 @@ interface ButtonGroupProps {
 
 export default function ButtonGroup({ active, children }: ButtonGroupProps) {
     return (
-        <div class={classes('c-button-group', { active: active })}>
+        <div class={classnames('c-button-group', { active: active })}>
             {children}
         </div>
     )

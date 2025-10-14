@@ -1,14 +1,14 @@
 import {
     App,
-    $s as _$s,
     store,
 } from '@garage44/common/app'
 import {h, render} from 'preact'
-import {i18nFormat} from '@garage44/common/lib/i18n.ts'
+import {i18nFormat} from '@garage44/common/lib/i18n'
 import {persistantState, volatileState} from './lib/state'
 import {Main} from '@/components/main'
 import type {StyleguideState} from './types'
-const $s = _$s as StyleguideState
+
+const $s = store.state as StyleguideState
 
 store.load(persistantState, volatileState)
 

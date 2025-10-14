@@ -1,7 +1,5 @@
 import {EventEmitter} from 'eventemitter3'
-import {logger} from '@garage44/common/lib/logger.ts'
-
-globalThis.logger = logger
+import {logger} from './logger'
 
 type MessageData = Record<string, unknown>
 

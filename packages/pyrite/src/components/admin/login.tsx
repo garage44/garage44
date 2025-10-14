@@ -1,7 +1,8 @@
 import {useState} from 'preact/hooks'
 import {route} from 'preact-router'
 import {Button, FieldText, Icon} from '@/components/elements'
-import {$s, $t, api, notifier} from '@/app'
+import {$t, api, notifier} from '@garage44/common/app'
+import {$s} from '@/app'
 
 export const Login = () => {
     const [errors, setErrors] = useState({ username: [], password: [] })

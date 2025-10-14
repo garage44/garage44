@@ -20,9 +20,10 @@
 
 import * as _protocol from './protocol.ts'
 import _commands from './commands.ts'
-import {$s, notifier} from '@/app'
-import {logger} from '@garage44/common/app'
-import {formatBytes} from '@/lib/utils.ts'
+import {notifier} from '@garage44/common/app'
+import {$s} from '@/app'
+import {logger} from '@garage44/common/lib/logger'
+import {formatBytes} from '@garage44/common/lib/utils'
 
 export const protocol = _protocol
 export const commands = _commands

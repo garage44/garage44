@@ -28,6 +28,7 @@
     "api/*",
     "lib/*",
     "public/**/*",
+    "src/**/*",
     "LICENSE.md",
     "README.md",
     "service.ts"

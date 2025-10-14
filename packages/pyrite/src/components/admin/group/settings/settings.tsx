@@ -1,4 +1,4 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {Icon} from '@/components/elements'
 import Recordings from '@/components/admin/group/recordings/recordings'
 import Stats from '@/components/admin/group/stats/stats'
@@ -7,7 +7,8 @@ import TabMisc from './tab-misc'
 import TabPermissions from './tab-permissions'
 import {Link, route} from 'preact-router'
 import {useMemo} from 'preact/hooks'
-import {$s, $t} from '@/app'
+import {$s} from '@/app'
+import {$t} from '@garage44/common/app'
 import {saveGroup} from '@/models/group'
 
 interface SettingsProps {
@@ -40,35 +41,35 @@ export default function Settings({ groupId, tabId = 'misc', path }: SettingsProp
 
             <ul class="tabs">
                 <Link
-                    class={classes('btn btn-menu tab', { active: tabId === 'misc' })}
+                    class={classnames('btn btn-menu tab', { active: tabId === 'misc' })}
                     href={routeSettings('misc')}
                 >
                     <Icon class="icon-d" name="Pirate" />
                 </Link>
 
                 <Link
-                    class={classes('btn btn-menu tab', { active: tabId === 'access' })}
+                    class={classnames('btn btn-menu tab', { active: tabId === 'access' })}
                     href={routeSettings('access')}
                 >
                     <Icon class="icon-d" name="Access" />
                 </Link>
 
                 <Link
-                    class={classes('btn btn-menu tab', { active: tabId === 'permissions' })}
+                    class={classnames('btn btn-menu tab', { active: tabId === 'permissions' })}
                     href={routeSettings('permissions')}
                 >
                     <Icon class="icon-d" name="Operator" />
                 </Link>
 
                 <Link
-                    class={classes('btn btn-menu tab', { active: tabId === 'stats' })}
+                    class={classnames('btn btn-menu tab', { active: tabId === 'stats' })}
                     href={routeSettings('stats')}
                 >
                     <Icon class="icon-d" name="Stats" />
                 </Link>
 
                 <Link
-                    class={classes('btn btn-menu tab', { active: tabId === 'recordings' })}
+                    class={classnames('btn btn-menu tab', { active: tabId === 'recordings' })}
                     href={routeSettings('recordings')}
                 >
                     <Icon class="icon-d" name="Record" />

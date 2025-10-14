@@ -9,7 +9,7 @@ import type {ExpressioState} from './types'
 import {Main} from '@/components/main/main'
 import {Notifier} from '@garage44/common/lib/notifier'
 import {WebSocketClient} from '@garage44/common/lib/ws-client'
-import {i18nFormat} from '@garage44/common/lib/i18n.ts'
+import {i18nFormat} from '@garage44/common/lib/i18n'
 import workspace from '@/.expressio.json'
 
 const ws = new WebSocketClient(`ws://${globalThis.location.hostname}:3030/ws`)

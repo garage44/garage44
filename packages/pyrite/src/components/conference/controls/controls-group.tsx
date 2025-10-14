@@ -1,8 +1,8 @@
 import {useEffect, useState, useMemo} from 'preact/hooks'
 import {Button, FieldFile, FieldSlider} from '@/components/elements'
 import {unreadMessages} from '@/models/chat'
-import {$s, $t, store} from '@/app'
-import {logger} from '@garage44/common/app'
+import {$s} from '@/app'
+import {$t, logger, store} from '@garage44/common/app'
 import * as sfu from '@/models/sfu/sfu'
 import * as media from '@/models/media'
 

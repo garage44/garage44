@@ -1,6 +1,6 @@
-import {Button} from '@garage44/common/components'
-import {classes} from '@garage44/common/lib/utils'
-import {setTouched} from '@garage44/common/lib/validation'
+import {Button} from '@/components'
+import classnames from 'classnames'
+import {setTouched} from '@/lib/validation'
 
 export function FieldText({
     autofocus = false,
@@ -18,7 +18,7 @@ export function FieldText({
     type = 'text',
     validation = null,
 }) {
-    return <div class={classes('c-field-text', 'field', className, {
+    return <div class={classnames('c-field-text', 'field', className, {
         'is-invalid': validation?.isValid === false,
         'is-touched': validation?.isTouched,
     })}>

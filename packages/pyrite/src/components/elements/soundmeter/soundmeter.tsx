@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {useEffect, useRef} from 'preact/hooks'
 
 interface SoundMeterProps {
@@ -98,7 +98,7 @@ export default function SoundMeter({ orientation = 'horizontal', stream, streamI
         <canvas
             id="meter"
             ref={meterRef}
-            class={classes('c-soundmeter', {[orientation]: true}, className)}
+            class={classnames('c-soundmeter', {[orientation]: true}, className)}
         />
     )
 }

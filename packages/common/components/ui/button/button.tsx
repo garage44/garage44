@@ -1,7 +1,7 @@
 import {useEffect, useRef} from 'preact/hooks'
-import {Icon} from '@garage44/common/components'
+import {Icon} from '@/components'
 import type {Instance as TippyInstance} from 'tippy.js'
-import {classes} from '@/lib/utils'
+import classnames from 'classnames'
 import {signal} from '@preact/signals'
 import tippy from 'tippy.js'
 
@@ -61,7 +61,7 @@ export function Button({
 
     return <button
         ref={buttonRef}
-        class={classes('c-button', `type-${type}`, `variant-${variant}`, className, {
+        class={classnames('c-button', `type-${type}`, `variant-${variant}`, className, {
             active,
             disabled,
         })}

@@ -1,10 +1,10 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {useEffect, useRef, useState, useMemo} from 'preact/hooks'
 import {Button, FieldSlider, SoundMeter} from '@/components/elements'
 import {Icon} from '@/components/elements'
 import {Reports} from './reports'
-import {$s, $t} from '@/app'
-import {logger} from '@garage44/common/app'
+import {$s} from '@/app'
+import {$t, logger} from '@garage44/common/app'
 import * as sfu from '@/models/sfu/sfu'
 
 interface StreamProps {
@@ -326,7 +326,7 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
 
     return (
         <div
-            class={classes('c-stream', {
+            class={classnames('c-stream', {
                 audio: modelValue.hasAudio && !modelValue.hasVideo,
                 enlarged: modelValue.enlarged,
                 loading: !modelValue.playing,
@@ -338,7 +338,7 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
             <video
                 ref={mediaRef}
                 autoplay={true}
-                class={classes('media', { 'media-failed': mediaFailed, mirror: modelValue.mirror })}
+                class={classnames('media', { 'media-failed': mediaFailed, mirror: modelValue.mirror })}
                 muted={modelValue.direction === 'up'}
                 playsinline={true}
                 onClick={(e) => {
@@ -381,13 +381,13 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
                         </div>
                     )}
 
-                    <div class={classes('user', { 'has-audio': audioEnabled })}>
+                    <div class={classnames('user', { 'has-audio': audioEnabled })}>
                         {modelValue.username}
                     </div>
                 </div>
             )}
 
-            <div class={classes('stream-options', { active: bar.active })}>
+            <div class={classnames('stream-options', { active: bar.active })}>
                 {pip.enabled && (
                     <Button
                         icon="Pip"

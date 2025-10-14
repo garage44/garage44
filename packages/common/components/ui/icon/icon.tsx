@@ -1,6 +1,7 @@
 import {computed, signal} from '@preact/signals'
 import {useEffect, useRef} from 'preact/hooks'
-import {classes} from '../../../lib/utils'
+import classnames from 'classnames'
+
 import tippy from 'tippy.js'
 
 const svg: Record<string, string> = {
@@ -69,7 +70,7 @@ function Icon({className = '', disabled = false, name, onClick = null, size = 'd
     }, [tip])
 
     return <svg
-        className={classes(
+        className={classnames(
             'c-icon',
             `icon-${size ? size : 'd'}`,
             `type-${type ? type : 'default'}`, {

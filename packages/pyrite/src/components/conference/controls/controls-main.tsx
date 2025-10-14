@@ -1,6 +1,7 @@
 import {Button} from '@/components/elements'
 import {useMemo} from 'preact/hooks'
-import {$s, $t, store} from '@/app'
+import {$s} from '@/app'
+import {$t, store} from '@garage44/common/app'
 import {currentGroup} from '@/models/group'
 import {connection, disconnect} from '@/models/sfu/sfu'
 

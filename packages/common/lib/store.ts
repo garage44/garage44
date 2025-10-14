@@ -1,8 +1,9 @@
 // oxlint-disable-next-line consistent-type-specifier-style
 import {type DeepSignal, deepSignal} from 'deepsignal'
-import {copyObject, mergeDeep} from '@/lib/utils'
+import {copyObject, mergeDeep} from './utils'
 
-class Store<StateType extends object = object> {
+
+export class Store<StateType extends object = object> {
 
     state: DeepSignal<StateType>
     persistantState?: StateType
@@ -42,5 +43,3 @@ class Store<StateType extends object = object> {
         localStorage.setItem('store', JSON.stringify(this.filterKeys(this.state, this.persistantState)))
     }
 }
-
-export {Store}

@@ -1,6 +1,7 @@
 import {Icon} from '@/components/elements'
 import {useEffect, useMemo} from 'preact/hooks'
-import {$s, $t} from '@/app'
+import {$t} from '@garage44/common/app'
+import {$s} from '@/app'
 
 interface SplashProps {
     header?: string

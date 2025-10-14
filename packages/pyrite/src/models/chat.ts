@@ -1,5 +1,6 @@
-import {$s, notifier} from '@/app'
-import {events, logger} from '@garage44/common/app'
+import {$s} from '@/app'
+import {events, notifier} from '@garage44/common/app'
+import {logger} from '@garage44/common/lib/logger'
 import {commands} from './sfu/sfu.ts'
 import {connection} from './sfu/sfu.ts'
 

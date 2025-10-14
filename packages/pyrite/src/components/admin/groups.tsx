@@ -1,8 +1,8 @@
 import {Splash} from '@/components/elements'
 import {useEffect} from 'preact/hooks'
 import {ComponentChildren} from 'preact'
-import {$s, $t, api} from '@/app'
-import {logger} from '@garage44/common/app'
+import {$s} from '@/app'
+import {$t, api, logger} from '@garage44/common/app'
 
 interface GroupsProps {
     groupId?: string

@@ -1,5 +1,6 @@
 import {FieldCheckbox, FieldMultiSelect, FieldNumber, FieldText} from '@/components/elements'
-import {$s, $t} from '@/app'
+import {$t} from '@garage44/common/app'
+import {$s} from '@/app'
 
 export default function TabMisc() {
     const codecs = [

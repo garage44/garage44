@@ -1,6 +1,3 @@
-import {$s} from '@/app'
-
-
 export interface Notification {
     id: number
     icon: string
@@ -20,9 +17,9 @@ export interface Notification {
 export class Notifier {
 
     notificationId = 1
-    notifications: [Notification]
+    notifications: Notification[]
 
-    constructor(notifications) {
+    init(notifications: Notification[]) {
         this.notifications = notifications
     }
 

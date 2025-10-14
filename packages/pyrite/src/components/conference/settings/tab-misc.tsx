@@ -1,6 +1,7 @@
 import {FieldSelect} from '@/components/elements'
 import {useEffect} from 'preact/hooks'
-import {$s, $t} from '@/app'
+import {$s} from '@/app'
+import {$t} from '@garage44/common/app'
 import {logger} from '@garage44/common/app'
 
 export default function TabMisc() {

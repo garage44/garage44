@@ -1,4 +1,5 @@
-import {classes, randomId} from '@/lib/utils'
+import {randomId} from '../../../lib/utils'
+import classnames from 'classnames'
 
 export const FieldCheckbox = ({
     className = '',
@@ -15,7 +16,7 @@ export const FieldCheckbox = ({
 }) => {
     const id = randomId()
 
-    return <div class={classes('c-field-checkbox', 'field', className)}>
+    return <div class={classnames('c-field-checkbox', 'field', className)}>
         <div class="wrapper">
             <input
                 checked={model}

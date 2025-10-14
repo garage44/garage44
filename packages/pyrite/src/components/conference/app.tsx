@@ -1,8 +1,8 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {useEffect, useRef, useState} from 'preact/hooks'
 import {Router, Route} from 'preact-router'
-import {$s, api, store} from '@/app'
-import {logger} from '@garage44/common/app'
+import {$s} from '@/app'
+import {api, logger, store} from '@garage44/common/app'
 import {Notifications} from '@garage44/common/components'
 import {emojiLookup} from '@/models/chat'
 import ConferenceControls from './controls/controls-main'
@@ -36,7 +36,7 @@ export const ConferenceApp = () => {
     }, [])
 
     return (
-        <div class={classes('c-conference-app app', {
+        <div class={classnames('c-conference-app app', {
             connected: $s.group.connected,
             'panel-chat-collapsed': $s.panels.chat.collapsed,
             'panel-chat-toggle': chatToggle,

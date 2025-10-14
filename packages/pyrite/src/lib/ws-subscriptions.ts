@@ -3,8 +3,8 @@
  * Uses Expressio's REST-like WebSocket API pattern (ws.post/get + ws.on for broadcasts)
  */
 
-import {$s, ws} from '@/app'
-import {events, logger} from '@garage44/common/app'
+import {$s} from '@/app'
+import {events, logger, ws} from '@garage44/common/app'
 
 /**
  * Initialize all WebSocket subscriptions

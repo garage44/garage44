@@ -1,5 +1,5 @@
-import {$s, notifier} from '@/app'
-import {$t, api} from '@garage44/common/app'
+import {$s} from '@/app'
+import {$t, api, notifier} from '@garage44/common/app'
 
 export function currentGroup() {
     const currentGroup = $s.groups.find((i) => i.name === $s.group.name)

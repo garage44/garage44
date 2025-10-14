@@ -1,7 +1,8 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {Button, ContextInput} from '@/components/elements'
 import {useState, useMemo} from 'preact/hooks'
-import {$s, $t} from '@/app'
+import {$s} from '@/app'
+import {$t} from '@garage44/common/app'
 import {currentGroup} from '@/models/group'
 import {connection} from '@/models/sfu/sfu'
 
@@ -51,7 +52,7 @@ export default function GroupsContextMenu() {
 
     return (
         <div
-            class={classes('c-general-context context-menu', {
+            class={classnames('c-general-context context-menu', {
                 active: active,
             })}
         >

@@ -3,7 +3,7 @@ import {generateRandomId, showConfig} from './utils'
 import {Logger} from '@garage44/common/lib/logger'
 import type {MessageData} from '@garage44/common/lib/ws-server'
 import path from 'node:path'
-import {tasks} from './tasks.ts'
+import {tasks} from './tasks'
 import {devContext} from '@garage44/common/lib/dev-context'
 
 const logger = new Logger()

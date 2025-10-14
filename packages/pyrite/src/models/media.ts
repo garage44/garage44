@@ -1,5 +1,5 @@
-import {$s, notifier} from '@/app'
-import {logger} from '@garage44/common/app'
+import {$s} from '@/app'
+import {logger, notifier} from '@garage44/common/app'
 import * as sfu from './sfu/sfu.ts'
 
 export let localStream

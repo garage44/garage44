@@ -1,4 +1,4 @@
-import {Icon} from '@garage44/common/components'
+import {Icon} from '@/components'
 
 export function Progress({boundaries, loading, percentage, iso6391}) {
     if (!iso6391) {

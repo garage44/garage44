@@ -1,22 +1,26 @@
-// oxlint-disable-next-line no-namespace
-import * as _i18n from '@/lib/i18n'
-import {$t} from './lib/i18n'
-import Api from '@/lib/api'
-import type {CommonState} from '@/types'
+import * as _i18n from './lib/i18n'
+import {create$t} from './lib/i18n'
+import {Api} from './lib/api'
+import type {CommonState} from './types'
+import {initializeBunchy} from '@garage44/bunchy/client'
 import {EventEmitter} from 'eventemitter3'
-import {Store} from '@/lib/store'
-import env from '@/lib/env'
-import {logger} from '@garage44/common/lib/logger.ts'
-
+import {Notifier} from './lib/notifier'
+import {Store} from './lib/store'
+import env from './lib/env'
+import {logger} from './lib/logger'
+import {WebSocketClient} from './lib/ws-client'
 logger.setLevel('debug')
 
 
+const notifier = new Notifier()
 const store = new Store<CommonState>()
 const i18n = _i18n
-const $s = store.state
+const $t = create$t(store)
 
 const api = new Api()
 const events = new EventEmitter()
+
+const ws = new WebSocketClient(`ws://${globalThis?.location?.hostname}:3030/ws`)
 
 interface InitOptions {
     bunchyPrefix?: string
@@ -25,8 +29,9 @@ interface InitOptions {
 class App {
 
     async init(Main, renderFn, hFn, translations, options: InitOptions = {}) {
-        env($s.env)
-        await i18n.init(translations)
+        env(store.state.env, store)
+        await i18n.init(translations, api, store)
+        notifier.init(store.state.notifications)
 
         try {
             renderFn(hFn(Main, {}), document.body)
@@ -39,11 +44,7 @@ class App {
         // Initialize Bunchy centrally when a prefix is provided (apps pass this in dev)
         if (options.bunchyPrefix) {
             try {
-                // Runtime check to avoid circular dependency at build time
-                if (typeof require !== 'undefined') {
-                    const bunchyModule = require('@garage44/bunchy/client')
-                    bunchyModule.initializeBunchy({logPrefix: options.bunchyPrefix})
-                }
+                initializeBunchy({logPrefix: options.bunchyPrefix})
             }
             catch (error) {
                 // Silently fail if bunchy is not available
@@ -53,15 +54,14 @@ class App {
     }
 }
 
-globalThis.$s = $s
-
 export {
-    $s,
     $t,
     api,
     App,
     events,
     logger,
     i18n,
+    notifier,
     store,
+    ws,
 }

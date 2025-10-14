@@ -1,9 +1,11 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
+
 import {Icon} from '@/components/elements'
 import TabMisc from './tab-misc'
 import TabPermissions from './tab-permissions'
 import {Link, route} from 'preact-router'
-import {$s, $t} from '@/app'
+import {$s} from '@/app'
+import {$t} from '@garage44/common/app'
 import {saveUser} from '@/models/user'
 
 interface SettingsProps {
@@ -36,13 +38,13 @@ export default function Settings({ userId, tabId = 'misc' }: SettingsProps) {
 
             <ul class="tabs">
                 <Link
-                    class={classes('btn btn-menu', { active: tabId === 'misc' })}
+                    class={classnames('btn btn-menu', { active: tabId === 'misc' })}
                     href={routeSettings('misc')}
                 >
                     <Icon class="icon-d" name="Pirate" />
                 </Link>
                 <Link
-                    class={classes('btn btn-menu tab', {
+                    class={classnames('btn btn-menu tab', {
                         active: tabId === 'permissions',
                         disabled: $s.admin.groups.length === 0,
                     })}

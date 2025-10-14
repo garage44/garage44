@@ -1,8 +1,9 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {Icon} from '@/components/elements'
 import {Link, route} from 'preact-router'
 import {useMemo, useEffect} from 'preact/hooks'
-import {$s, $t, $tc, api, notifier} from '@/app'
+import {$t, api, notifier} from '@garage44/common/app'
+import {$s} from '@/app'
 import {saveGroup} from '@/models/group'
 
 interface ContextGroupsProps {
@@ -135,11 +136,11 @@ export default function ContextGroups({ path, groupId }: ContextGroupsProps) {
             {orderedGroups.map((group) => (
                 <Link
                     key={group._name}
-                    class={classes('group item', { active: groupId === group._name })}
+                    class={classnames('group item', { active: groupId === group._name })}
                     href={groupLink(group._name)}
                 >
                     <Icon
-                        class={classes('item-icon icon-d', {
+                        class={classnames('item-icon icon-d', {
                             delete: group._delete,
                             unsaved: group._unsaved,
                         })}

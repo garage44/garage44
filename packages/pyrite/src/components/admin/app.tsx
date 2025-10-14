@@ -1,4 +1,4 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {useEffect} from 'preact/hooks'
 import {Router, Route} from 'preact-router'
 import Controls from './controls/controls'
@@ -17,7 +17,7 @@ export const AdminApp = () => {
     }, [])
 
     return (
-        <div class={classes('c-admin-app app', `theme-${$s.theme.id}`)}>
+        <div class={classnames('c-admin-app app', `theme-${$s.theme.id}`)}>
             <PanelContext>
                 <GroupsContext />
             </PanelContext>

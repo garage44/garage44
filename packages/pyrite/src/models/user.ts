@@ -1,4 +1,5 @@
-import {$s, notifier} from '@/app'
+import {$s} from '@/app'
+import {notifier} from '@garage44/common/app'
 import {$t, api, events} from '@garage44/common/app'
 
 export function _events() {

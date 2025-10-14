@@ -1,5 +1,6 @@
 import {FieldCheckbox, FieldNumber} from '@/components/elements'
-import {$s, $t} from '@/app'
+import {$s} from '@/app'
+import {$t} from '@garage44/common/app'
 
 export default function TabAccess() {
     return (

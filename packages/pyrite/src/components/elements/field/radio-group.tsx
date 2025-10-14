@@ -1,4 +1,4 @@
-import {$t} from '@/app'
+import {$t} from '@garage44/common/app'
 
 interface FieldRadioGroupProps {
     value: string

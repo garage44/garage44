@@ -1,7 +1,7 @@
 // oxlint-disable-next-line consistent-type-specifier-style
-import {type ValidationResult, setTouched} from '@garage44/common/lib/validation'
+import {type ValidationResult, setTouched} from '@/lib/validation'
 import type {Signal} from '@preact/signals'
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 
 interface FieldSelectProps {
     className?: string
@@ -26,7 +26,7 @@ export const FieldSelect = ({
     placeholder = '',
     validation,
 }:FieldSelectProps) =>
-    <div class={classes('c-field-select', 'field', className, {
+    <div class={classnames('c-field-select', 'field', className, {
         'is-invalid': validation?.isValid === false,
         'is-touched': validation?.isTouched,
         validation,

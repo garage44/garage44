@@ -335,4 +335,4 @@ class BunchyClient extends WebSocketClient {
     setupLogForwarding() { setupLoggerForwarding(this, { prefix: this.logPrefix }) }
 }
 
-export {initializeBunchy, setupLoggerForwarding, BunchyClient}
+export {initializeBunchy, setupLoggerForwarding, BunchyClient }

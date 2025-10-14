@@ -1,9 +1,10 @@
 import ChatMessage from './message'
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {useEffect, useRef, useMemo} from 'preact/hooks'
 import {Icon} from '@/components/elements'
 import Emoji from './emoji'
-import {$s, $t} from '@/app'
+import {$t} from '@garage44/common/app'
+import {$s} from '@/app'
 import {selectChannel, closeChannel, sendMessage as sendChatMessage} from '@/models/chat'
 
 export default function PanelChat() {
@@ -100,7 +101,7 @@ export default function PanelChat() {
     }, [])
 
     return (
-        <div ref={viewRef} class={classes('c-panel-chat', {[$s.env.layout]: true})}>
+        <div ref={viewRef} class={classnames('c-panel-chat', {[$s.env.layout]: true})}>
             {$s.chat.emoji.active && <Emoji onselect={addEmoji} />}
 
             <div ref={messagesRef} class="messages scroller">
@@ -114,7 +115,7 @@ export default function PanelChat() {
                     {Object.entries($s.chat.channels).map(([key, channel]) => (
                         <div
                             key={channel.id}
-                            class={classes('chat-channel', {active: channel.id === $s.chat.channel})}
+                            class={classnames('chat-channel', {active: channel.id === $s.chat.channel})}
                             onClick={() => selectChannel(channel)}
                         >
                             <div class="channel-name">
@@ -159,7 +160,7 @@ export default function PanelChat() {
 
             <div class="chat-actions">
                 <button
-                    class={classes('btn btn-menu', {
+                    class={classnames('btn btn-menu', {
                         active: $s.chat.emoji.active,
                     })}
                     onClick={() => $s.chat.emoji.active = !$s.chat.emoji.active}

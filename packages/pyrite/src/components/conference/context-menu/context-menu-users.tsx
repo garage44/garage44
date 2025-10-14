@@ -1,8 +1,8 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {ContextInput, ContextSelect, FieldFile, Icon} from '@/components/elements'
 import {useState} from 'preact/hooks'
-import {$s, $t, notifier} from '@/app'
-import {events} from '@garage44/common/app'
+import {$s} from '@/app'
+import {$t, events, notifier} from '@garage44/common/app'
 import {connection} from '@/models/sfu/sfu'
 
 interface UsersContextMenuProps {
@@ -97,7 +97,7 @@ export default function UsersContextMenu({ user }: UsersContextMenuProps) {
     }
 
     return (
-        <div class={classes('c-users-context-menu context-menu', {active: active})}>
+        <div class={classnames('c-users-context-menu context-menu', {active: active})}>
             <Icon class="icon icon-d" name="Menu" onClick={toggleMenu} />
             {active && <div class="context-actions">
                 {user.id !== $s.user.id && <button class="action" onClick={activateUserChat}>

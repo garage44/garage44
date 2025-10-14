@@ -1,6 +1,7 @@
 import {Icon} from '@/components/elements'
 import {useEffect} from 'preact/hooks'
-import {$s, $t, api} from '@/app'
+import {$s} from '@/app'
+import {api} from '@garage44/common/app'
 
 export default function TabPermissions() {
     const categories = ['op', 'presenter', 'other']

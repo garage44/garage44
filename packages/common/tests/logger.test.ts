@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import {Logger} from '@garage44/common/lib/logger.ts'
+import {Logger} from '@/lib/logger'
 
 console.log('Testing Bun-compatible Isomorphic Logger\n')
 

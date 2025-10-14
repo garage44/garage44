@@ -1,8 +1,8 @@
 // Accepts multiple arguments and types ('', [], {})
 // See https://github.com/JedWatson/classnames
-import classnames from 'classnames'
+// import classnames from 'classnames'
 
-const classes = classnames
+// const classes = classnames
 
 const copyObject = (obj) => JSON.parse(JSON.stringify(obj))
 
@@ -215,7 +215,6 @@ function throttle(func, wait, options = {trailing: true} as {trailing: boolean})
 }
 
 export {
-    classes,
     copyObject,
     flattenEnv,
     formatBytes,

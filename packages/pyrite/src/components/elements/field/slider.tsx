@@ -1,4 +1,4 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {Icon} from '@/components/elements'
 import {useState, useRef, useEffect, useMemo} from 'preact/hooks'
 
@@ -131,7 +131,7 @@ export default function FieldSlider({ value, onChange }: FieldSliderProps) {
     }, [down, positionToValue])
 
     return (
-        <div class={classes('c-field-slider', { active: down })}>
+        <div class={classnames('c-field-slider', { active: down })}>
             {value.locked && (
                 <Icon
                     class="icon icon-xs locked"

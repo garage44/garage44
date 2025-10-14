@@ -1,7 +1,7 @@
 import {EventEmitter} from 'node:events'
 import {constructMessage} from './ws-client'
 import {devContext} from './dev-context'
-import {logger} from '../app'
+import {logger} from './logger'
 import {match} from 'path-to-regexp'
 
 // Core types for the middleware system

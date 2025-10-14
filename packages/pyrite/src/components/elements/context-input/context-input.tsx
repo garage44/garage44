@@ -1,6 +1,6 @@
 import {FieldText, Icon} from '@/components/elements'
 import {useState, useMemo} from 'preact/hooks'
-import {$t} from '@/app'
+import {$t} from '@garage44/common/app'
 
 interface ContextInputProps {
     value: {

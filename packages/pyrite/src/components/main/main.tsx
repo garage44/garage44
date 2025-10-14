@@ -1,7 +1,8 @@
-import {$s, ws} from '@/app'
-import {api} from '@garage44/common/app'
+import {$s} from '../../app'
+import classnames from 'classnames'
+import {api, ws} from '@garage44/common/app'
 import {Router} from 'preact-router'
-import {classes, mergeDeep} from '@garage44/common/lib/utils'
+import {mergeDeep} from '@garage44/common/lib/utils'
 import {ConferenceApp} from '../conference/app'
 import {AdminApp} from '../admin/app'
 import {Notifications} from '@garage44/common/components'
@@ -29,7 +30,7 @@ export const Main = () => {
         return null
     }
 
-    return <div class={classes('app', {
+    return <div class={classnames('app', {
         [`theme-${$s.theme.id}`]: true,
     })}>
         <Router>
@@ -42,3 +43,4 @@ export const Main = () => {
         <Notifications notifications={$s.notifications}/>
     </div>
 }
+// test comment

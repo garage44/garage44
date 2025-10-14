@@ -1,7 +1,8 @@
 import {Button} from '@/components/elements'
 import {useMemo} from 'preact/hooks'
 import {route} from 'preact-router'
-import {$s, $t, api, store} from '@/app'
+import {$s} from '@/app'
+import {$t, api, store} from '@garage44/common/app'
 
 interface AdminControlsProps {
     path?: string

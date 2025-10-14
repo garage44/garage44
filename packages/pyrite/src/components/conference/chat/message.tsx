@@ -1,6 +1,6 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {useMemo} from 'preact/hooks'
-import {$t} from '@/app'
+import {$t} from '@garage44/common/app'
 import {emojiLookup} from '@/models/chat'
 
 const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig
@@ -67,7 +67,7 @@ export default function Message({ message }: MessageProps) {
     }
 
     return (
-        <div class={classes('message', { command: !message.nick, [message.kind]: true })}>
+        <div class={classnames('message', { command: !message.nick, [message.kind]: true })}>
             {message.kind === 'me' && (
                 <div>
                     <div class="text">

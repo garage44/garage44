@@ -1,9 +1,9 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {Icon} from '@/components/elements'
 import {Link, route} from 'preact-router'
 import {useEffect, useMemo, useRef} from 'preact/hooks'
-import {$s, $t, api} from '@/app'
-import {logger} from '@garage44/common/app'
+import {$s} from '@/app'
+import {$t, api, logger} from '@garage44/common/app'
 import {currentGroup} from '@/models/group'
 
 export default function GroupsContext() {
@@ -92,10 +92,10 @@ export default function GroupsContext() {
     }, [])
 
     return (
-        <section class={classes('c-groups-context presence', {collapsed: $s.panels.context.collapsed})}>
+        <section class={classnames('c-groups-context presence', {collapsed: $s.panels.context.collapsed})}>
             <div class="actions">
                 <div
-                    class={classes('group item unlisted-group', {
+                    class={classnames('group item unlisted-group', {
                         active: window.location.pathname !== '/' && !isListedGroup,
                     })}
                     onClick={toggleUnlisted}
@@ -113,7 +113,7 @@ export default function GroupsContext() {
             {$s.groups.map((group) => (
                 <Link
                     key={group.name}
-                    class={classes('group item', {active: currentGroupData.name === group.name})}
+                    class={classnames('group item', {active: currentGroupData.name === group.name})}
                     href={groupLink(group.name)}
                     onClick={setAutofocus}
                 >
@@ -133,7 +133,7 @@ export default function GroupsContext() {
                         )}
                     </div>
 
-                    <div class={classes('stats', {active: group.clientCount > 0})}>
+                    <div class={classnames('stats', {active: group.clientCount > 0})}>
                         {group.clientCount}
                         <Icon class="icon-d" name="User" />
                     </div>

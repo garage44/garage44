@@ -1,7 +1,6 @@
-import {$s} from '@garage44/common/app'
 import {effect} from '@preact/signals'
 
-export default function env(env) {
+export default function env(env, store = null) {
     env.ua = navigator.userAgent.toLowerCase()
 
     if (globalThis.navigator) {
@@ -40,27 +39,27 @@ export default function env(env) {
         if (!event.shiftKey) {env.shiftKey = false}
     })
 
+    if (store) {
         // Watch for theme changes and update HTML class
-    let isFirstRun = true
-    effect(() => {
-        const theme = $s.theme
+        let isFirstRun = true
+        effect(() => {
+            const theme = store.state.theme
 
-        // Skip the initial run, only react to actual changes
-        if (isFirstRun) {
-            isFirstRun = false
-            return
-        }
+            // Skip the initial run, only react to actual changes
+            if (isFirstRun) {
+                isFirstRun = false
+                return
+            }
 
-        const htmlElement = document.documentElement
+            const htmlElement = document.documentElement
 
-        // Remove existing theme classes
-        htmlElement.classList.remove('dark', 'light', 'system')
+            // Remove existing theme classes
+            htmlElement.classList.remove('dark', 'light', 'system')
 
-        // Add new theme class
-        if (theme) {
-            htmlElement.classList.add(theme)
-        }
-    })
-
-    console.log('TEHEM', $s.theme)
+            // Add new theme class
+            if (theme) {
+                htmlElement.classList.add(theme)
+            }
+        })
+    }
 }

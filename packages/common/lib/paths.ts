@@ -1,6 +1,18 @@
-import type {EnolaTag, TargetLanguage} from '@garage44/enola/types.ts'
-import {hash, keyMod, keyPath, mergeDeep} from '@garage44/common/lib/utils'
-import {logger} from '@garage44/common/app'
+import {hash, keyMod, keyPath, mergeDeep} from './utils'
+import {logger} from './logger'
+
+interface Tag {
+    source: string
+    cache?: string
+    target: Record<string, string>
+}
+
+interface TargetLanguage {
+    engine: 'anthropic' | 'deepl'
+    id: string
+    name: string
+    formality: 'default' | 'more' | 'less'
+}
 
 function collectSource(source, path, ignore_cache = false) {
     const cachedValues = []
@@ -44,7 +56,7 @@ function collectSource(source, path, ignore_cache = false) {
  * @param targetLanguages
  * @returns
  */
-function pathCreate(sourceObject:Record<string, unknown>, tagPath:string[], value:EnolaTag, targetLanguages:TargetLanguage[], translations?:Record<string, string>) {
+function pathCreate(sourceObject:Record<string, unknown>, tagPath:string[], value:Tag, targetLanguages:TargetLanguage[], translations?:Record<string, string>) {
     const {id, ref} = pathRef(sourceObject, tagPath, true)
     ref[id] = value
 

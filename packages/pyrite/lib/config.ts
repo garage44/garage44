@@ -1,4 +1,4 @@
-import {copyObject, randomId} from '@garage44/common/lib/utils.ts'
+import {copyObject, randomId} from '@garage44/common/lib/utils'
 import {logger} from '../service.ts'
 import fs from 'fs-extra'
 import {homedir} from 'node:os'

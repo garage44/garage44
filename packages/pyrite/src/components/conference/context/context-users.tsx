@@ -1,8 +1,9 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import ContextMenu from '../context-menu/context-menu-users'
 import {Icon} from '@/components/elements'
 import {useMemo} from 'preact/hooks'
-import {$s, $t} from '@/app'
+import {$t} from '@garage44/common/app'
+import {$s} from '@/app'
 
 export default function UsersContext() {
     const sortedUsers = useMemo(() => {
@@ -41,7 +42,7 @@ export default function UsersContext() {
             {sortedUsers.map((user) => (
                 <div key={user.id} class="user item">
                     <Icon
-                        class={classes('icon item-icon icon-d', className(user))}
+                        class={classnames('icon item-icon icon-d', className(user))}
                         name={user.data.raisehand ? 'Hand' : 'User'}
                     />
 

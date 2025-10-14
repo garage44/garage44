@@ -1,4 +1,4 @@
-import {classes} from '../../../lib/utils'
+import classnames from 'classnames'
 
 interface FieldUploadProps {
     className?: string
@@ -26,7 +26,7 @@ export function FieldUpload({
     transform = null,
 }: FieldUploadProps) {
     return (
-        <div class={classes('c-field-upload', 'field', className)}>
+        <div class={classnames('c-field-upload', 'field', className)}>
             {!!label && <label for="" class="label">{label}</label>}
             <div class="upload-wrapper">
                 <input

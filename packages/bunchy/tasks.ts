@@ -149,6 +149,7 @@ tasks.code_frontend = new Task('code:frontend', async function taskCodeFrontend(
         const result = await Bun.build({
             define: {
                 'process.env.NODE_ENV': `'${process.env.NODE_ENV}'`,
+                'process.env.APP_VERSION': `'${process.env.APP_VERSION || '2.0.0'}'`,
             },
             entrypoints: ['src/app.ts'],
             format: 'esm',
@@ -166,6 +167,7 @@ tasks.code_frontend = new Task('code:frontend', async function taskCodeFrontend(
             outdir: settings.dir.public,
             sourcemap: process.env.NODE_ENV === 'production' ? 'none' : 'inline',
         })
+
         if (!result.success) {
             // oxlint-disable-next-line no-console
             console.error(result.logs)

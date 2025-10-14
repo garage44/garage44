@@ -1,8 +1,10 @@
-import {classes} from '@garage44/common/lib/utils'
+import classnames from 'classnames'
 import {Icon} from '@/components/elements'
 import {Link, route} from 'preact-router'
 import {useMemo, useEffect} from 'preact/hooks'
-import {$s, $t, api, notifier} from '@/app'
+import {api, notifier} from '@garage44/common/app'
+import {$s} from '@/app'
+
 import {saveUser} from '@/models/user'
 
 interface ContextUsersProps {
@@ -106,7 +108,7 @@ export default function ContextUsers({ path, userId }: ContextUsersProps) {
     }, [$s.admin.authenticated])
 
     return (
-        <section class={classes('c-admin-users-context presence', {
+        <section class={classnames('c-admin-users-context presence', {
             collapsed: $s.panels.context.collapsed,
         })}>
             <div class="actions">
@@ -136,13 +138,13 @@ export default function ContextUsers({ path, userId }: ContextUsersProps) {
             {orderedUsers.map((user) => (
                 <Link
                     key={user.id}
-                    class={classes('user item', {
+                    class={classnames('user item', {
                         active: parseInt(userId || '0') === user.id,
                     })}
                     href={userLink(user.id)}
                 >
                     <Icon
-                        class={classes('item-icon icon-d', { delete: user._delete, unsaved: user._unsaved })}
+                        class={classnames('item-icon icon-d', { delete: user._delete, unsaved: user._unsaved })}
                         name={user._delete ? 'Trash' : 'User'}
                     />
 
