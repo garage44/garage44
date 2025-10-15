@@ -31,6 +31,7 @@ Each ADR follows this structure:
 | [ADR-010](./ADR-010-oxlint-eslint-replacement.md) | OxLint as ESLint Replacement for Enhanced TypeScript/React Linting | Accepted | 2025-01-03 |
 | [ADR-011](./ADR-011-modern-css-migration.md) | Modern CSS Migration and Unified Styleguide | Accepted | 2025-10-11 |
 | [ADR-012](./ADR-012-design-system-consolidation.md) | Design System Consolidation and Generic Layout Components | Accepted | 2025-10-15 |
+| [ADR-013](./ADR-013-theme-switching-system.md) | Theme Switching System and Reusable ThemeToggle Component | Accepted | 2025-10-15 |
 
 ## Architectural Principles
 

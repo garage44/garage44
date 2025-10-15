@@ -8,9 +8,9 @@ body {
     .panel {
         align-items: center;
         animation: fade-in 0.2s ease-in forwards;
-        background: oklch(from var(--info-1) l c h / 0.8);
-        border-right: 1px solid var(--info-2);
-        box-shadow: 0 0 var(--spacer-2) var(--spacer-1) oklch(from var(--info-0) l c h / 0.4);
+        background: oklch(from var(--primary-1) l c h / 0.8);
+        border-right: 1px solid var(--primary-2);
+        box-shadow: 0 0 var(--spacer-2) var(--spacer-1) oklch(from var(--primary-0) l c h / 0.4);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -18,7 +18,7 @@ body {
         width: 200px;
 
         .top-bar {
-            background: var(--info-1);
+            background: var(--primary-1);
             flex: 1;
             height: 100%;
             width: 100%;
@@ -29,7 +29,7 @@ body {
 
             .logo {
                 align-items: center;
-                background: var(--info-1);
+                background: var(--primary-1);
                 display: flex;
                 gap: var(--spacer-1);
                 justify-content: flex-start;
@@ -41,7 +41,7 @@ body {
                 }
 
                 .logo-text {
-                    color: var(--info-8);
+                    color: var(--primary-8);
                     font-size: 1.125rem;
                     font-weight: 500;
                     letter-spacing: 0.01em;
@@ -50,7 +50,7 @@ body {
 
             a {
                 align-items: center;
-                color: var(--info-6);
+                color: var(--primary-6);
                 display: flex;
                 gap: var(--spacer-1);
                 justify-content: flex-start;
@@ -60,20 +60,21 @@ body {
                 width: 100%;
 
                 &.active {
-                    background: var(--info-3);
-                    color: var(--info-8);
+                    background: var(--primary-3);
+                    color: var(--primary-8);
                 }
             }
         }
 
         .actions {
             display: flex;
+            gap: var(--spacer-1);
             padding: var(--spacer-1);
             width: 100%;
 
             .c-icon {
-                background: var(--info-3);
-                border: 1px solid var(--info-4);
+                background: var(--primary-3);
+                border: 1px solid var(--primary-4);
                 border-radius: 50%;
                 cursor: pointer;
                 height: var(--icon-xl);
@@ -82,7 +83,7 @@ body {
                 width: var(--icon-xl);
 
                 &:hover {
-                    background: var(--info-4);
+                    background: var(--primary-4);
                 }
             }
         }
@@ -92,7 +93,7 @@ body {
             width: 100%;
 
             .usage {
-                color: var(--info-6);
+                color: var(--primary-6);
                 display: flex;
                 flex-direction: column;
                 margin-bottom: var(--spacer-2);

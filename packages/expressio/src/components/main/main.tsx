@@ -1,7 +1,7 @@
 import {$s} from '@/app'
 import {$t, api, notifier, ws} from '@garage44/common/app'
 import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
-import {FieldSelect, Icon, Notifications, Progress} from '@garage44/common/components'
+import {FieldSelect, Icon, Notifications, Progress, ThemeToggle} from '@garage44/common/components'
 import {Router, getCurrentUrl, route} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
 import classnames from 'classnames'
@@ -136,6 +136,7 @@ export const Main = () => {
             </div>
 
             <div className="actions">
+                <ThemeToggle />
                 <Icon
                     name="logout"
                     onClick={async() => {

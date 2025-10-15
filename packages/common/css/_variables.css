@@ -1,37 +1,37 @@
 :root {
     /* ===== OKLCH FOUNDATION ===== */
-    /* Systematic color construction - simplified but consistent */
+    /* Systematic color construction - professional dark theme */
 
-            /* Lightness scale (0-1) - moderately brighter with good contrast */
-    --l-0: 0.14;   /* Dark text - ensures good contrast */
-    --l-1: 0.18;   /* Dark text/elements */
-    --l-2: 0.26;   /* Medium-dark text */
-    --l-3: 0.35;   /* Body text */
+    /* Lightness scale (0-1) - darker for professional look, good contrast */
+    --l-0: 0.12;   /* Very dark - deep backgrounds */
+    --l-1: 0.16;   /* Dark - primary backgrounds */
+    --l-2: 0.22;   /* Medium-dark - raised surfaces */
+    --l-3: 0.32;   /* Muted text/borders */
     --l-4: 0.45;   /* Secondary text */
     --l-5: 0.60;   /* Middle - balanced */
-    --l-6: 0.75;   /* Light elements */
-    --l-7: 0.85;   /* Light backgrounds */
-    --l-8: 0.95;   /* Lightest backgrounds */
+    --l-6: 0.72;   /* Light text */
+    --l-7: 0.84;   /* Very light text */
+    --l-8: 0.94;   /* Brightest text/elements */
 
-            /* Chroma scale (saturation) - moderately increased */
-    --c-0: 0.010;  /* Subtle increase for neutrals */
-    --c-1: 0.015;
-    --c-2: 0.020;
-    --c-3: 0.025;
-    --c-4: 0.030;
-    --c-5: 0.035;
-    --c-6: 0.055;  /* Moderate increase */
-    --c-7: 0.075;
-    --c-8: 0.095;
-    --c-9: 0.115;
-    --c-10: 0.135; /* Higher saturation for accents */
+    /* Chroma scale (saturation) - subtle for professional appearance */
+    --c-0: 0.008;  /* Minimal for true neutrals */
+    --c-1: 0.012;  /* Very subtle */
+    --c-2: 0.018;  /* Subtle hint of color */
+    --c-3: 0.024;  /* Noticeable but restrained */
+    --c-4: 0.030;  /* Moderate */
+    --c-5: 0.040;  /* Clear color presence */
+    --c-6: 0.055;  /* Strong but professional */
+    --c-7: 0.070;  /* Vibrant */
+    --c-8: 0.090;  /* High saturation */
+    --c-9: 0.110;  /* Very saturated */
+    --c-10: 0.130; /* Maximum for accents */
 
     /* Semantic hue values */
-    --h-surface: 240;  /* Neutral UI */
-    --h-primary: 230;  /* Brand/primary actions */
-    --h-success: 140;  /* Success states */
-    --h-danger: 15;    /* Error/danger states */
-    --h-warning: 60;   /* Warning states */
+    --h-surface: 230;  /* Unified blue-grey (matches primary) */
+    --h-primary: 230;  /* Brand blue */
+    --h-success: 140;  /* Green for success */
+    --h-danger: 15;    /* Red for errors */
+    --h-warning: 60;   /* Yellow-orange for warnings */
 
     /* ===== SEMANTIC COLOR SCALES ===== */
     /* Consistent 0-8 scale for all semantic colors */
@@ -192,16 +192,16 @@
 /* ===== LIGHT THEME ===== */
 
 :root.light {
-    /* Inverted lightness scale for light theme */
-    --l-0: 0.95;   /* Light backgrounds (was dark text) */
-    --l-1: 0.85;   /* Light elements (was dark elements) */
-    --l-2: 0.75;   /* Light surfaces (was medium-dark text) */
-    --l-3: 0.60;   /* Light secondary (was body text) */
-    --l-4: 0.45;   /* Medium - balanced (unchanged) */
-    --l-5: 0.35;   /* Dark secondary (was secondary text) */
-    --l-6: 0.26;   /* Dark elements (was light elements) */
-    --l-7: 0.18;   /* Dark surfaces (was light backgrounds) */
-    --l-8: 0.14;   /* Dark text (was lightest backgrounds) */
+    /* Inverted lightness scale for light theme - professional with excellent contrast */
+    --l-0: 0.98;   /* Brightest backgrounds */
+    --l-1: 0.96;   /* Primary backgrounds */
+    --l-2: 0.92;   /* Raised surfaces */
+    --l-3: 0.75;   /* Muted borders/disabled */
+    --l-4: 0.55;   /* Secondary text */
+    --l-5: 0.45;   /* Middle - balanced */
+    --l-6: 0.32;   /* Dark text */
+    --l-7: 0.20;   /* Very dark text */
+    --l-8: 0.12;   /* Darkest text/elements */
 
     /* Light theme specific semantic overrides */
     --input-bg: var(--surface-0);
