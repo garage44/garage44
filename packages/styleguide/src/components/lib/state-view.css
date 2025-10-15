@@ -1,55 +1,84 @@
 .c-state-view {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 4px;
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-    font-size: 13px;
-    margin-top: 16px;
-    padding: 12px;
+    background: var(--surface-8);
+    border: 1px solid var(--surface-6);
+    border-left: 3px solid var(--warning-5);
+    border-radius: var(--border-radius-d);
+    margin-top: var(--spacer-4);
+    overflow: hidden;
 }
 
 .c-state-view__header {
-    border-bottom: 1px solid #dee2e6;
-    margin-bottom: 8px;
-    padding-bottom: 4px;
+    align-items: center;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--surface-6);
+    cursor: pointer;
+    display: flex;
+    padding: var(--spacer-2) var(--spacer-3);
+    text-align: left;
+    transition: background 0.2s ease;
+    width: 100%;
+}
+
+.c-state-view__header:hover {
+    background: var(--surface-7);
+}
+
+.c-state-view__icon {
+    color: var(--warning-4);
+    display: inline-block;
+    font-size: var(--font-xs);
+    margin-right: var(--spacer-1);
+    transition: transform 0.2s ease;
 }
 
 .c-state-view__title {
-    color: #6c757d;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    align-items: center;
+    color: var(--surface-2);
+    display: flex;
+    font-size: var(--font-s);
+    font-weight: 500;
+    letter-spacing: 0.05em;
     margin: 0;
     text-transform: uppercase;
 }
 
+.c-state-view__title::before {
+    content: '🐛';
+    margin-right: var(--spacer-1);
+}
+
 .c-state-view__content {
+    background: var(--white);
+    border-top: 1px solid var(--surface-6);
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--spacer-1);
+    padding: var(--spacer-3);
 }
 
 .c-state-view__entry {
-    align-items: flex-start;
     display: flex;
-    gap: 8px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: var(--font-xs);
+    gap: var(--spacer-2);
 }
 
 .c-state-view__key {
-    color: #495057;
-    flex-shrink: 0;
-    font-weight: 500;
-    min-width: 80px;
+    color: var(--warning-3);
+    font-weight: 600;
+    min-width: 120px;
 }
 
 .c-state-view__value {
-    color: #212529;
+    color: var(--surface-2);
+    flex: 1;
     white-space: pre-wrap;
     word-break: break-all;
 }
 
 .c-state-view__value:empty::after {
-    color: #adb5bd;
+    color: var(--surface-4);
     content: '<empty>';
     font-style: italic;
 }

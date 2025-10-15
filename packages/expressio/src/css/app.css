@@ -1,7 +1,6 @@
 /* Import unified theme from common package */
 @import "../../../common/css/theme.css";
 
-@import "./_variables.css";
 @import "./_spacing.css";
 
 html, body {

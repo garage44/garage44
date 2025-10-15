@@ -8,6 +8,9 @@
  *   @import "../../../common/css/theme.css";
  */
 
+/* Design system variables (colors, spacing, typography, etc.) */
+@import "./_variables.css";
+
 /* Core design tokens and typography */
 @import "./_typography.css";
 

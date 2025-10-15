@@ -1,4 +1,5 @@
 import {h} from 'preact'
+import {useState} from 'preact/hooks'
 
 interface StateViewProps {
     state?: any
@@ -38,6 +39,8 @@ const renderValue = (value: any): string => {
 }
 
 export const StateView = ({state, title = "Component State"}: StateViewProps) => {
+    const [isOpen, setIsOpen] = useState(false)
+
     if (!state) {
         return null
     }
@@ -50,19 +53,27 @@ export const StateView = ({state, title = "Component State"}: StateViewProps) =>
     )
 
     return (
-        <div class="c-state-view">
-            <div class="c-state-view__header">
-                <h4 class="c-state-view__title">{title}</h4>
-            </div>
-            <div class="c-state-view__content">
-                {typeof state === 'object' && state !== null ? (
-                    Object.entries(state).map(([key, value]) => renderStateEntry(key, value))
-                ) : (
-                    <div class="c-state-view__entry">
-                        <span class="c-state-view__value">{renderValue(state)}</span>
-                    </div>
-                )}
-            </div>
+        <div class={`c-state-view ${isOpen ? 'open' : ''}`}>
+            <button
+                class="c-state-view__header"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <h4 class="c-state-view__title">
+                    <span class="c-state-view__icon">{isOpen ? '▼' : '▶'}</span>
+                    {title}
+                </h4>
+            </button>
+            {isOpen && (
+                <div class="c-state-view__content">
+                    {typeof state === 'object' && state !== null ? (
+                        Object.entries(state).map(([key, value]) => renderStateEntry(key, value))
+                    ) : (
+                        <div class="c-state-view__entry">
+                            <span class="c-state-view__value">{renderValue(state)}</span>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     )
 }
