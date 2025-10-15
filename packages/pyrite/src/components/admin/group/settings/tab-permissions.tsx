@@ -1,4 +1,4 @@
-import {Icon} from '@/components/elements'
+import {Icon} from '@garage44/common/components'
 import {useEffect} from 'preact/hooks'
 import {$s} from '@/app'
 import {api} from '@garage44/common/app'

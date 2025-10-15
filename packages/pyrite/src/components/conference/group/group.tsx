@@ -1,4 +1,4 @@
-import {IconLogo} from '@/components/elements'
+import {IconLogo} from '@garage44/common/components'
 import {Stream} from '../stream/stream'
 import {useEffect, useRef, useMemo} from 'preact/hooks'
 import {$s} from '@/app'

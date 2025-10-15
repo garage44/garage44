@@ -1,7 +1,6 @@
 import classnames from 'classnames'
 import {useEffect, useRef, useState, useMemo} from 'preact/hooks'
-import {Button, FieldSlider, SoundMeter} from '@/components/elements'
-import {Icon, IconLogo} from '@/components/elements'
+import {Button, FieldSlider, SoundMeter, Icon, IconLogo} from '@garage44/common/components'
 import {Reports} from './reports'
 import {$s} from '@/app'
 import {$t, logger} from '@garage44/common/app'
@@ -379,6 +378,7 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
                             <FieldSlider
                                 value={modelValue.volume?.value || 100}
                                 onChange={handleVolumeChange}
+                                IconComponent={Icon}
                             />
                         </div>
                     )}

@@ -1,4 +1,4 @@
-import {Button} from '@/components/elements'
+import {Button} from '@garage44/common/components'
 import {useMemo} from 'preact/hooks'
 import {route} from 'preact-router'
 import {$s} from '@/app'

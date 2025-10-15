@@ -1,6 +1,6 @@
 import classnames from 'classnames'
 
-import {Icon} from '@/components/elements'
+import {Icon} from '@garage44/common/components'
 import TabMisc from './tab-misc'
 import TabPermissions from './tab-permissions'
 import {Link, route} from 'preact-router'

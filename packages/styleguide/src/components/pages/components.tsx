@@ -1,13 +1,27 @@
 import {
     Button,
+    ButtonGroup,
+    Chart,
+    ContextInput,
+    ContextSelect,
     FieldCheckbox,
     FieldCheckboxGroup,
+    FieldMultiSelect,
+    FieldNumber,
+    FieldRadioGroup,
     FieldSelect,
+    FieldSlider,
     FieldText,
+    FieldTextarea,
     FieldUpload,
+    Hint,
     Icon,
+    IconChat,
+    IconLogo,
     Notifications,
+    PanelContext,
     Progress,
+    Splash,
 } from '@garage44/common/components'
 import {ComponentDemo} from '../lib/component-demo'
 import {Notifier} from '@garage44/common/lib/notifier'
@@ -20,8 +34,15 @@ const data = deepSignal({
     model: {
         checkboxGroupValue: ['item1'],
         checkboxValue: false,
+        contextInput: '',
+        contextSelectValue: 'option1',
+        multiSelectValue: [],
         notifications: [],
+        numberValue: 0,
+        radioValue: 'option1',
         selectValue: '',
+        sliderValue: {value: 50, locked: false},
+        textareaValue: '',
         textInput: '',
         uploadValue: '',
     },
@@ -203,6 +224,192 @@ export const Components = () => (
             />
             <Notifications notifications={data.model.notifications}/>
             <StateView state={{notifications: data.model.notifications}} title="Notifications State" />
+        </ComponentDemo>
+
+        <ComponentDemo title="Button Group" component="ButtonGroup">
+            <div class="demo-grid">
+                <ButtonGroup active={false}>
+                    <Button icon="settings" label="Settings" />
+                    <Button icon="info" label="Info" />
+                </ButtonGroup>
+                <ButtonGroup active={true}>
+                    <Button icon="settings" label="Settings" />
+                    <Button icon="info" label="Info" />
+                </ButtonGroup>
+            </div>
+        </ComponentDemo>
+
+        <ComponentDemo title="Chart" component="Chart">
+            <div class="demo-grid">
+                <Chart data={[10, 20, 15, 30, 25, 40, 35, 50]} name="Sample Data" />
+                <Chart data={[5, 15, 8, 22, 18, 30, 28, 40, 35, 45, 42, 50]} name="More Data" />
+            </div>
+        </ComponentDemo>
+
+        <ComponentDemo title="Hint" component="Hint">
+            <div class="demo-grid">
+                <Hint text="This is a helpful hint" />
+                <Hint text="Another hint with more information" />
+            </div>
+        </ComponentDemo>
+
+        <ComponentDemo title="Splash" component="Splash">
+            <div style={{height: '300px', background: 'var(--bg-secondary)'}}>
+                <Splash
+                    header="Welcome"
+                    instruction="This is a splash screen"
+                    IconComponent={IconLogo}
+                />
+            </div>
+        </ComponentDemo>
+
+        <ComponentDemo title="Icon Chat" component="IconChat">
+            <div class="icon-grid">
+                <div class="icon-grid__item">
+                    <svg viewBox="0 0 24 24" style={{width: '48px', height: '48px'}}>
+                        <IconChat />
+                    </svg>
+                    <span class="icon-grid__label">No unread</span>
+                </div>
+                <div class="icon-grid__item">
+                    <svg viewBox="0 0 24 24" style={{width: '48px', height: '48px'}}>
+                        <IconChat iconProps={{unread: 3}} />
+                    </svg>
+                    <span class="icon-grid__label">3 unread</span>
+                </div>
+                <div class="icon-grid__item">
+                    <svg viewBox="0 0 24 24" style={{width: '48px', height: '48px'}}>
+                        <IconChat iconProps={{unread: 10}} />
+                    </svg>
+                    <span class="icon-grid__label">10 unread</span>
+                </div>
+            </div>
+        </ComponentDemo>
+
+        <ComponentDemo title="Icon Logo" component="IconLogo">
+            <div class="icon-grid">
+                <div class="icon-grid__item">
+                    <svg viewBox="0 0 24 24" style={{width: '96px', height: '96px'}}>
+                        <IconLogo />
+                    </svg>
+                    <span class="icon-grid__label">Logo</span>
+                </div>
+            </div>
+        </ComponentDemo>
+
+        <ComponentDemo title="Field Number" component="FieldNumber">
+            <div class="demo-grid">
+                <FieldNumber
+                    label="Enter a number"
+                    value={data.model.numberValue}
+                    onChange={(v) => data.model.numberValue = v}
+                />
+                <FieldNumber
+                    label="With help text"
+                    help="Enter a numeric value"
+                    value={data.model.numberValue}
+                    onChange={(v) => data.model.numberValue = v}
+                />
+            </div>
+            <StateView state={{numberValue: data.model.numberValue}} title="Field Number State" />
+        </ComponentDemo>
+
+        <ComponentDemo title="Field Radio Group" component="FieldRadioGroup">
+            <div class="demo-grid">
+                <FieldRadioGroup
+                    label="Choose an option"
+                    value={data.model.radioValue}
+                    onChange={(v) => data.model.radioValue = v}
+                    options={[
+                        ['option1', 'Option 1'],
+                        ['option2', 'Option 2'],
+                        ['option3', 'Option 3'],
+                    ]}
+                />
+            </div>
+            <StateView state={{radioValue: data.model.radioValue}} title="Field Radio Group State" />
+        </ComponentDemo>
+
+        <ComponentDemo title="Field Slider" component="FieldSlider">
+            <div class="demo-grid">
+                <div style={{height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                    <FieldSlider
+                        value={data.model.sliderValue}
+                        onChange={(v) => data.model.sliderValue = v}
+                        IconComponent={Icon}
+                    />
+                </div>
+            </div>
+            <StateView state={{sliderValue: data.model.sliderValue}} title="Field Slider State" />
+        </ComponentDemo>
+
+        <ComponentDemo title="Field Textarea" component="FieldTextarea">
+            <div class="demo-grid">
+                <FieldTextarea
+                    label="Enter text"
+                    value={data.model.textareaValue}
+                    onChange={(v) => data.model.textareaValue = v}
+                />
+                <FieldTextarea
+                    label="With placeholder"
+                    placeholder="Type something here..."
+                    value={data.model.textareaValue}
+                    onChange={(v) => data.model.textareaValue = v}
+                />
+            </div>
+            <StateView state={{textareaValue: data.model.textareaValue}} title="Field Textarea State" />
+        </ComponentDemo>
+
+        <ComponentDemo title="Field Multi Select" component="FieldMultiSelect">
+            <div class="demo-grid">
+                <FieldMultiSelect
+                    label="Select multiple"
+                    value={data.model.multiSelectValue}
+                    onChange={(v) => data.model.multiSelectValue = v}
+                    options={[
+                        {id: 'item1', name: 'Item 1'},
+                        {id: 'item2', name: 'Item 2'},
+                        {id: 'item3', name: 'Item 3'},
+                        {id: 'item4', name: 'Item 4'},
+                    ]}
+                />
+            </div>
+            <StateView state={{multiSelectValue: data.model.multiSelectValue}} title="Field Multi Select State" />
+        </ComponentDemo>
+
+        <ComponentDemo title="Context Input" component="ContextInput">
+            <div class="demo-grid">
+                <ContextInput
+                    value={{icon: 'send', title: 'Send Message'}}
+                    submit={(text) => {
+                        console.log('Submitted:', text)
+                        data.model.contextInput = text
+                    }}
+                    FieldTextComponent={FieldText}
+                />
+            </div>
+            <StateView state={{contextInput: data.model.contextInput}} title="Context Input State" />
+        </ComponentDemo>
+
+        <ComponentDemo title="Context Select" component="ContextSelect">
+            <div class="demo-grid">
+                <ContextSelect
+                    value={data.model.contextSelectValue}
+                    icon="settings"
+                    title="Select an option"
+                    options={[
+                        {id: 'option1', name: 'Option 1'},
+                        {id: 'option2', name: 'Option 2'},
+                        {id: 'option3', name: 'Option 3'},
+                    ]}
+                    submit={(v) => {
+                        console.log('Selected:', v)
+                        data.model.contextSelectValue = v
+                    }}
+                    FieldSelectComponent={FieldSelect}
+                />
+            </div>
+            <StateView state={{contextSelectValue: data.model.contextSelectValue}} title="Context Select State" />
         </ComponentDemo>
     </div>
 )

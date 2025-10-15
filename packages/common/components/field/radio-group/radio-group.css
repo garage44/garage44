@@ -1,0 +1,16 @@
+.c-field-radio-group {
+
+    .options {
+
+        .option {
+
+            label {
+                color: var(--text-secondary);
+            }
+
+            input:checked + label {
+                color: hsl(var(--brand-h) var(--s-3) var(--dl-2));
+            }
+        }
+    }
+}

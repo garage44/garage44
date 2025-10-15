@@ -1,5 +1,5 @@
 import classnames from 'classnames'
-import {Icon} from '@/components/elements'
+import {Icon} from '@garage44/common/components'
 import {Link, route} from 'preact-router'
 import {useEffect, useMemo, useRef} from 'preact/hooks'
 import {$s} from '@/app'

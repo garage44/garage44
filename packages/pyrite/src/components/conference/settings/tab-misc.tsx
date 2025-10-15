@@ -1,4 +1,4 @@
-import {FieldSelect} from '@/components/elements'
+import {FieldSelect} from '@garage44/common/components'
 import {useEffect} from 'preact/hooks'
 import {$s} from '@/app'
 import {$t} from '@garage44/common/app'

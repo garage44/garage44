@@ -1,5 +1,5 @@
 import classnames from 'classnames'
-import {Icon} from '@/components/elements'
+import {Icon} from '@garage44/common/components'
 import Recordings from '@/components/admin/group/recordings/recordings'
 import Stats from '@/components/admin/group/stats/stats'
 import TabAccess from './tab-access'

@@ -1,5 +1,5 @@
 import classnames from 'classnames'
-import {Button, ContextInput} from '@/components/elements'
+import {Button, ContextInput, FieldText} from '@garage44/common/components'
 import {useState, useMemo} from 'preact/hooks'
 import {$s} from '@/app'
 import {$t} from '@garage44/common/app'
@@ -68,11 +68,13 @@ export default function GroupsContextMenu() {
                     value={lock}
                     revert={$s.group.locked}
                     submit={toggleLockGroup}
+                    FieldTextComponent={FieldText}
                 />}
 
                 {$s.permissions.op && <ContextInput
                     value={warning}
                     submit={sendNotification}
+                    FieldTextComponent={FieldText}
                 />}
             </div>}
         </div>

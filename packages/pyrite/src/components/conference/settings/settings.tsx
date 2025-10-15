@@ -1,4 +1,4 @@
-import {Button, Icon} from '@/components/elements'
+import {Button, Icon} from '@garage44/common/components'
 import TabDevices from './tab-devices'
 import TabMedia from './tab-media'
 import TabMisc from './tab-misc'

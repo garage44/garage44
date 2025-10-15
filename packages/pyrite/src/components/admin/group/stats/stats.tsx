@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'preact/hooks'
-import {Chart, Icon} from '@/components/elements'
+import {Chart, Icon} from '@garage44/common/components'
 import {api, logger} from '@garage44/common/app'
 import {$t} from '@garage44/common/app'
 

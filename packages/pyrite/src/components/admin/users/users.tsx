@@ -1,4 +1,4 @@
-import {Splash} from '@/components/elements'
+import {Splash} from '@garage44/common/components'
 import {useEffect} from 'preact/hooks'
 import {ComponentChildren} from 'preact'
 import {$s} from '@/app'

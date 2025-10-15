@@ -1,13 +1,14 @@
 import classnames from 'classnames'
 import {useEffect} from 'preact/hooks'
-import {Router, Route} from 'preact-router'
+import {Router, Route, Link} from 'preact-router'
 import Controls from './controls/controls'
 import GroupsContext from './context/context-groups'
-import {Notifications, PanelContext} from '@/components/elements'
+import {IconLogo, Notifications, PanelContext} from '@garage44/common/components'
 import UsersContext from './context/context-users'
 import {Groups} from './groups'
 import {Users} from './users/users'
 import {$s} from '@/app'
+import animate from '@/lib/animate'
 
 export const AdminApp = () => {
     useEffect(() => {
@@ -18,7 +19,15 @@ export const AdminApp = () => {
 
     return (
         <div class={classnames('c-admin-app app', `theme-${$s.theme.id}`)}>
-            <PanelContext>
+            <PanelContext
+                collapsed={$s.panels.context.collapsed}
+                logoHref="/admin/groups"
+                logoText="PYRITE"
+                logoVersion={process.env.APP_VERSION || '2.0.0'}
+                LogoIcon={IconLogo}
+                LinkComponent={Link}
+                animate={animate}
+            >
                 <GroupsContext />
             </PanelContext>
             <Controls />

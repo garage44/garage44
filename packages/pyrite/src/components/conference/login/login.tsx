@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'preact/hooks'
 import {route} from 'preact-router'
-import {Button, FieldCheckbox, FieldRadioGroup, FieldSelect, FieldText, Hint, Icon} from '@/components/elements'
+import {Button, FieldCheckbox, FieldRadioGroup, FieldSelect, FieldText, Hint, Icon} from '@garage44/common/components'
 import {$s, store} from '@/app'
 import {$t, notifier} from '@garage44/common/app'
 import {connect} from '@/models/sfu/sfu'

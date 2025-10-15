@@ -3,13 +3,14 @@ import {useEffect, useRef, useState} from 'preact/hooks'
 import {Router, Route} from 'preact-router'
 import {$s} from '@/app'
 import {api, logger, store} from '@garage44/common/app'
-import {Notifications} from '@garage44/common/components'
+import {IconLogo, Notifications, PanelContext} from '@garage44/common/components'
 import {emojiLookup} from '@/models/chat'
 import ConferenceControls from './controls/controls-main'
 import {GroupControls} from './controls/controls-group'
 import GroupsContext from './context/context-groups'
 import PanelChat from './chat/panel-chat'
-import {PanelContext} from '@/components/elements'
+import {Link} from 'preact-router'
+import animate from '@/lib/animate'
 import UsersContext from './context/context-users'
 import {Group} from './group/group'
 import {Login} from './login/login'
@@ -44,7 +45,15 @@ export const ConferenceApp = () => {
             [`theme-${$s.theme.id}`]: true,
         })}>
 
-            <PanelContext>
+            <PanelContext
+                collapsed={$s.panels.context.collapsed}
+                logoHref={$s.group.connected ? null : ($s.group.name ? `/admin/groups/${$s.group.name}/misc` : '/admin/groups')}
+                logoText="PYRITE"
+                logoVersion={process.env.APP_VERSION || '2.0.0'}
+                LogoIcon={IconLogo}
+                LinkComponent={Link}
+                animate={animate}
+            >
                 {$s.group.connected ? <UsersContext /> : <GroupsContext />}
             </PanelContext>
 

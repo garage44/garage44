@@ -1,6 +1,6 @@
 import classnames from 'classnames'
 import ContextMenu from '../context-menu/context-menu-users'
-import {Icon} from '@/components/elements'
+import {Icon} from '@garage44/common/components'
 import {useMemo} from 'preact/hooks'
 import {$t} from '@garage44/common/app'
 import {$s} from '@/app'

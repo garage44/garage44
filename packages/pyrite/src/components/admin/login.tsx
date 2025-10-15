@@ -1,6 +1,6 @@
 import {useState} from 'preact/hooks'
 import {route} from 'preact-router'
-import {Button, FieldText, Icon} from '@/components/elements'
+import {Button, FieldText, Icon} from '@garage44/common/components'
 import {$t, api, notifier} from '@garage44/common/app'
 import {$s} from '@/app'
 

@@ -1,5 +1,5 @@
 import {useEffect} from 'preact/hooks'
-import {Icon} from '@/components/elements'
+import {Icon} from '@garage44/common/components'
 import {api, $t} from '@garage44/common/app'
 import {$s} from '@/app'
 

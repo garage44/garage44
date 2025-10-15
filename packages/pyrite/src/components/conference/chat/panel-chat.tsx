@@ -1,7 +1,7 @@
 import ChatMessage from './message'
 import classnames from 'classnames'
 import {useEffect, useRef, useMemo} from 'preact/hooks'
-import {Icon} from '@/components/elements'
+import {Icon} from '@garage44/common/components'
 import Emoji from './emoji'
 import {$t} from '@garage44/common/app'
 import {$s} from '@/app'

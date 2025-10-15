@@ -1,4 +1,4 @@
-import {FieldSelect, Icon, Soundmeter} from '@/components/elements'
+import {FieldSelect, Icon, SoundMeter as Soundmeter} from '@garage44/common/components'
 import Sound from '@/lib/sound'
 import {Stream} from '@/components/conference/stream/stream'
 import {useState, useEffect} from 'preact/hooks'

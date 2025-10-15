@@ -1,0 +1,18 @@
+.c-context-select {
+
+    .c-field-select {
+        min-width: 200px;
+
+        .input-container {
+
+            .button-wrapper {
+                display: none;
+            }
+
+            .options {
+                margin: 0;
+                position: relative;
+            }
+        }
+    }
+}

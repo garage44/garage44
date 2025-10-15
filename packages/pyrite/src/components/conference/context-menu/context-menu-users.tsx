@@ -1,5 +1,5 @@
 import classnames from 'classnames'
-import {ContextInput, ContextSelect, FieldFile, Icon} from '@/components/elements'
+import {ContextInput, ContextSelect, FieldSelect, FieldText, FieldUpload as FieldFile, Icon} from '@garage44/common/components'
 import {useState} from 'preact/hooks'
 import {$s} from '@/app'
 import {$t, events, notifier} from '@garage44/common/app'
@@ -118,6 +118,7 @@ export default function UsersContextMenu({ user }: UsersContextMenuProps) {
                 {($s.permissions.op && user.id !== $s.user.id) && <ContextInput
                     value={warning}
                     submit={sendNotification}
+                    FieldTextComponent={FieldText}
                 />}
 
                 {($s.permissions.op && user.id !== $s.user.id) && <button class="action" onClick={muteUser}>
@@ -141,12 +142,14 @@ export default function UsersContextMenu({ user }: UsersContextMenuProps) {
                     options={statusOptions}
                     submit={setAvailability}
                     title={$t(`user.action.set_availability.${$s.user.data.availability.id}`)}
+                    FieldSelectComponent={FieldSelect}
                 />}
 
                 {(user.id !== $s.user.id && $s.permissions.op) && <ContextInput
                     value={kick}
                     required={false}
                     submit={kickUser}
+                    FieldTextComponent={FieldText}
                 />}
 
             </div>}

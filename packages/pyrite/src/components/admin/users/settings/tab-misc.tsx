@@ -1,4 +1,4 @@
-import {FieldCheckbox, FieldText} from '@/components/elements'
+import {FieldCheckbox, FieldText} from '@garage44/common/components'
 import {$s} from '@/app'
 import {$t} from '@garage44/common/app'
 
