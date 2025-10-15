@@ -73,7 +73,7 @@ export default function ControlsMain({ path }: ControlsMainProps) {
                     <Button
                         active={path?.includes('/groups')}
                         disabled={!$s.group.name && !$s.group.connected}
-                        icon={currentGroupData.locked ? 'GroupLocked' : 'Group'}
+                        icon={currentGroupData.locked ? 'grouplocked' : 'group'}
                         route={groupRoute}
                         tip={currentGroupData.locked ? `${$t('group.current')} (${$t('group.locked')})` : $t('group.current')}
                         variant="menu"
@@ -95,7 +95,7 @@ export default function ControlsMain({ path }: ControlsMainProps) {
 
                 {$s.group.connected && $s.permissions.record && (
                     <Button
-                        icon={$s.group.recording ? 'Unrecord' : 'Record'}
+                        icon={$s.group.recording ? 'unrecord' : 'record'}
                         tip={$s.group.recording ? $t('group.action.stop_recording') : $t('group.action.start_recording')}
                         variant="menu"
                         onClick={toggleRecording}
@@ -109,7 +109,7 @@ export default function ControlsMain({ path }: ControlsMainProps) {
                             placeholder: $t('group.action.lock_context'),
                             submit: toggleLockGroup,
                         }}
-                        icon={currentGroupData.locked ? 'Unlock' : 'Lock'}
+                        icon={currentGroupData.locked ? 'unlock' : 'lock'}
                         tip={currentGroupData.locked ? $t('group.action.unlock') : $t('group.action.lock')}
                         variant="menu"
                     />
@@ -117,7 +117,7 @@ export default function ControlsMain({ path }: ControlsMainProps) {
 
                 {$s.group.connected && $s.permissions.op && (
                     <Button
-                        icon="MicMute"
+                        icon="micmute"
                         tip={$t('group.action.mute_participants')}
                         variant="menu"
                         onClick={muteAllUsers}
@@ -126,7 +126,7 @@ export default function ControlsMain({ path }: ControlsMainProps) {
 
                 {$s.group.connected && $s.permissions.op && (
                     <Button
-                        icon="ChatRemove"
+                        icon="chatremove"
                         tip={$t('group.action.clear_chat')}
                         variant="menu"
                         onClick={clearChat}

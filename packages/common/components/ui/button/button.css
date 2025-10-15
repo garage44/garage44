@@ -100,4 +100,92 @@
         padding: var(--spacer-1);
         width: auto;
     }
+
+    &.variant-menu {
+        align-items: center;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
+        display: flex;
+        justify-content: center;
+        position: relative;
+
+        &::before {
+            background: var(--btn-active);
+            bottom: -2px;
+            content: "";
+            height: 2px;
+            left: 0;
+            position: absolute;
+            right: 0;
+            transform: scaleX(0);
+            transform-origin: 0 0;
+            transition: transform 150ms;
+            will-change: transform;
+        }
+
+        &.active,
+        &:hover {
+            background: var(--btn-hover);
+
+            &::before {
+                transform: scaleX(1);
+            }
+        }
+    }
+
+    &.variant-unset {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+
+        &:hover {
+            background: transparent;
+        }
+    }
+
+    /* Context menu */
+
+    .context-submit {
+        align-items: stretch;
+        background: var(--surface-3);
+        display: flex;
+        height: calc(var(--spacer-1) * 8);
+        left: calc(var(--spacer-1) * 8);
+        min-width: 0;
+        position: absolute;
+        transition: min-width 0.3s ease;
+        z-index: 10000;
+
+        .context-input {
+            border: none;
+            border-bottom: 0;
+            display: none;
+            height: calc(var(--spacer-1) * 8);
+            overflow-y: hidden;
+            padding: 0 var(--spacer-1);
+        }
+
+        .btn-context-submit {
+            align-items: center;
+            background: var(--surface-2);
+            cursor: pointer;
+            display: none;
+            visibility: hidden;
+        }
+
+        &.active {
+            min-width: 250px;
+            overflow: hidden;
+
+            .context-input {
+                display: block;
+            }
+
+            .btn-context-submit {
+                display: inline-flex;
+                visibility: visible;
+            }
+        }
+    }
 }
