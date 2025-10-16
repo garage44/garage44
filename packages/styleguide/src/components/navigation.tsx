@@ -113,6 +113,17 @@ export const Navigation = () => {
                 </li>
                 <li>
                     <button
+                        class={`styleguide__nav-link ${$s.currentRoute === '/forms' ? 'active' : ''}`}
+                        onClick={() => {
+                            $s.currentRoute = '/forms'
+                            route('/forms')
+                        }}
+                    >
+                        Forms
+                    </button>
+                </li>
+                <li>
+                    <button
                         class={`styleguide__nav-link ${$s.currentRoute === '/tokens' ? 'active' : ''}`}
                         onClick={() => {
                             $s.currentRoute = '/tokens'

@@ -17,8 +17,10 @@ const app = new App()
 // Simple mock translations for the styleguide
 const mockTranslations = {
     'nav.components': 'Components',
+    'nav.forms': 'Forms',
     'nav.tokens': 'Design Tokens',
     'styleguide.components': 'Components',
+    'styleguide.forms': 'Forms',
     'styleguide.title': 'Garage44 Common Styleguide',
     'styleguide.tokens': 'Design Tokens',
 }
