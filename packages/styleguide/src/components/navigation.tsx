@@ -80,7 +80,7 @@ export const Navigation = () => {
         <nav class="c-navigation">
             <div class="header">
                 <img src="/img/logo.png" alt="Garage44 Logo" class="logo" />
-                <div class="header-title">Common</div>
+                <div class="styleguide-title">Common</div>
                 <ThemeToggle />
             </div>
             <ul class="nav-list">
