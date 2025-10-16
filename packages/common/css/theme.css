@@ -17,4 +17,7 @@
 /* Shared component styles */
 @import "./common/_tooltip.css";
 
-/* Add future shared styles here */
+body {
+    margin: 0;
+    padding: 0;
+}

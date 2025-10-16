@@ -19,7 +19,6 @@ import {
     IconChat,
     IconLogo,
     Notifications,
-    PanelContext,
     Progress,
     Splash,
 } from '@garage44/common/components'
@@ -51,7 +50,7 @@ const data = deepSignal({
 const notifier = new Notifier(data.model.notifications)
 
 export const Components = () => (
-    <div class="styleguide-page">
+    <div class="c-components styleguide-page">
         <h1>Components</h1>
         <p>All available components from @garage44/common</p>
 
@@ -125,25 +124,25 @@ export const Components = () => (
 
         <ComponentDemo title="Field Text" component="FieldText">
             <div class="demo-grid">
-                <FieldText label="Basic Input" model={data.model.$textInput} />
-                <FieldText label="With Placeholder" placeholder="Enter text..." model={data.model.$textInput} />
-                <FieldText label="Required Field" model={data.model.$textInput} />
-                <FieldText label="Disabled" disabled model={data.model.$textInput} />
+                <FieldText help="Enter help text..." label="Basic Input" model={data.model.$textInput} />
+                <FieldText help="Enter help text..." label="With Placeholder" placeholder="Enter text..." model={data.model.$textInput} />
+                <FieldText help="Enter help text..." label="Required Field" model={data.model.$textInput} />
+                <FieldText help="Enter help text..." label="Disabled" disabled model={data.model.$textInput} />
             </div>
             <StateView state={{textInput: data.model.textInput}} title="Field Text State" />
         </ComponentDemo>
 
         <ComponentDemo title="Field Checkbox" component="FieldCheckbox">
             <div class="demo-grid">
-                <FieldCheckbox label="Basic Checkbox" model={data.model.checkboxValue} />
-                <FieldCheckbox label="Checked" model={data.model.checkboxValue} />
-                <FieldCheckbox label="Disabled" model={data.model.checkboxValue} />
+                <FieldCheckbox help="Enter help text..." label="Basic Checkbox" model={data.model.checkboxValue} />
+                <FieldCheckbox help="Enter help text..." label="Checked" model={data.model.checkboxValue} />
+                <FieldCheckbox help="Enter help text..." label="Disabled" model={data.model.checkboxValue} />
             </div>
             <StateView state={{checkboxValue: data.model.checkboxValue}} title="Field Checkbox State" />
         </ComponentDemo>
 
         <ComponentDemo title="Icon" component="Icon">
-            <div class="c-icon-grid">
+            <div class="icon-grid">
                 {Object.keys(svg).map(iconName => (
                     <div key={iconName} class="item">
                         <Icon name={iconName} />

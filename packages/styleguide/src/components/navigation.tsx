@@ -77,12 +77,24 @@ export const Navigation = () => {
     }, [isComponentsRoute])
 
     return (
-        <nav class="nav">
+        <nav class="c-navigation">
             <div class="header">
-                <h1 class="title">Garage44 Common</h1>
+                <img src="/img/logo.png" alt="Garage44 Logo" class="logo" />
+                <div class="header-title">Common</div>
                 <ThemeToggle />
             </div>
             <ul class="nav-list">
+                <li>
+                    <button
+                        class={`nav-link ${$s.currentRoute === '/tokens' ? 'active' : ''}`}
+                        onClick={() => {
+                            $s.currentRoute = '/tokens'
+                            route('/tokens')
+                        }}
+                    >
+                        Design Tokens
+                    </button>
+                </li>
                 <li>
                     <button
                         class={`nav-link ${isComponentsRoute ? 'active' : ''}`}
@@ -120,17 +132,6 @@ export const Navigation = () => {
                         }}
                     >
                         Forms
-                    </button>
-                </li>
-                <li>
-                    <button
-                        class={`nav-link ${$s.currentRoute === '/tokens' ? 'active' : ''}`}
-                        onClick={() => {
-                            $s.currentRoute = '/tokens'
-                            route('/tokens')
-                        }}
-                    >
-                        Design Tokens
                     </button>
                 </li>
             </ul>

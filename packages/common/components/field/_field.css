@@ -50,7 +50,7 @@
         &:focus {
             background: var(--surface-8);
             border-color: var(--primary-5);
-            box-shadow: 0 0 0 3px var(--primary-1), 0 2px 4px oklch(0 0 0 / 0.08);
+            box-shadow: 0 0 0 3px var(--primary-6), 0 2px 4px oklch(0 0 0 / 0.08);
             outline: none;
         }
 
@@ -74,7 +74,7 @@
 
     input:not([type="checkbox"]):not([type="radio"]),
     select {
-        height: 40px;
+        height: 32px;
     }
 
     textarea {

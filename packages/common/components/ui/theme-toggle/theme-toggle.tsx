@@ -23,7 +23,7 @@ export const ThemeToggle = () => {
     const getIcon = () => {
         if (theme === 'light') return 'sun'
         if (theme === 'dark') return 'moon'
-        return 'monitor' // system preference icon
+        return 'system' // system preference icon
     }
 
     return (

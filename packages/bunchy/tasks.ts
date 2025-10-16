@@ -215,7 +215,6 @@ tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = 
     })
 
     watch(settings.dir.src, {recursive: true}, (event, filename) => {
-        console.log('WATCH', settings.dir.src, filename)
         const extension = path.extname(filename)
 
         if (filename.startsWith('assets/')) {

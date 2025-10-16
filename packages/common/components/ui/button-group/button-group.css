@@ -1,12 +1,17 @@
 .c-button-group {
+    display: flex;
+    gap: var(--spacer-2);
     transition: background 0.3s ease;
+    width: 100%;
 
     &:hover,
     &.active {
         background: var(--text-secondary);
     }
 
-    .btn {
+    .c-button {
+        flex: 1;
+
 
         .active-group {
             opacity: 0.5;

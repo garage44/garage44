@@ -115,11 +115,13 @@ export const Forms = () => {
                         <div class="content">
                             <div class="form-row">
                                 <FieldText
+                                    help="Please enter your first name"
                                     label="First Name"
                                     model={formData.$firstName}
                                     placeholder="Enter your first name"
                                 />
                                 <FieldText
+                                    help="Please enter your last name"
                                     label="Last Name"
                                     model={formData.$lastName}
                                     placeholder="Enter your last name"
@@ -127,12 +129,14 @@ export const Forms = () => {
                             </div>
                             <div class="form-row">
                                 <FieldText
+                                    help="Please enter your email address"
                                     label="Email Address"
                                     model={formData.$email}
                                     placeholder="Enter your email"
                                     type="email"
                                 />
                                 <FieldNumber
+                                    help="Please enter your age"
                                     label="Age"
                                     value={formData.age}
                                     onChange={(v) => formData.age = v}
@@ -147,6 +151,7 @@ export const Forms = () => {
                         <div class="content">
                             <div class="form-row">
                                 <FieldText
+                                    help="Please enter your password"
                                     label="Password"
                                     model={formData.$password}
                                     placeholder="Enter your password"
@@ -154,6 +159,7 @@ export const Forms = () => {
                                 />
                                 <FieldText
                                     label="Confirm Password"
+                                    help="Please confirm your password"
                                     model={formData.$confirmPassword}
                                     placeholder="Confirm your password"
                                     type="password"
