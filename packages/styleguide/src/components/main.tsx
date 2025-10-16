@@ -7,7 +7,7 @@ import {Tokens} from './pages/tokens'
 export const Main = () => (
     <div class="styleguide">
         <Navigation />
-        <main class="styleguide__content">
+        <main class="content">
             <Router>
                 <Components path="/components" />
                 <Components path="/" default />

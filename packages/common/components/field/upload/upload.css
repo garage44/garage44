@@ -1,4 +1,6 @@
 .c-field-upload {
+    display: flex;
+    flex-direction: column;
 
     .upload-wrapper {
         position: relative;
@@ -17,26 +19,48 @@
             &:disabled {
                 cursor: not-allowed;
             }
+
+            &:focus + .file-path {
+                background: var(--surface-8);
+                border-color: var(--primary-5);
+                box-shadow: 0 0 0 3px var(--primary-1), 0 2px 4px oklch(0 0 0 / 0.08);
+            }
         }
 
         .file-path {
-            background: var(--input-background);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            color: var(--text-color);
-            min-height: 2.5rem;
-            padding: 0.5rem;
+            align-items: center;
+            background: var(--surface-8);
+            border: 1px solid var(--surface-6);
+            border-radius: var(--border-radius-s);
+            color: var(--surface-1);
+            display: flex;
+            font-size: var(--font-d);
+            min-height: 32px;
+            padding: var(--spacer-1) var(--spacer-2);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
 
             &:hover {
-                border-color: var(--border-color-hover);
+                background: var(--surface-8);
+                border-color: var(--surface-5);
+                box-shadow: 0 1px 2px oklch(0 0 0 / 0.05);
             }
+        }
+
+        &:has(input:disabled) .file-path {
+            background: var(--surface-7);
+            border-color: var(--surface-6);
+            color: var(--surface-4);
+            cursor: not-allowed;
+            opacity: 0.5;
         }
     }
 
-    .help {
-        color: var(--text-color-light);
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
+    &.is-invalid .upload-wrapper .file-path {
+        border-color: var(--danger-5);
+    }
+
+    &.is-invalid .upload-wrapper input[type="file"]:focus + .file-path {
+        box-shadow: 0 0 0 3px var(--danger-1), 0 2px 4px var(--danger-2);
     }
 }

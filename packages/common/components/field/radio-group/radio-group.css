@@ -1,16 +1,90 @@
 .c-field-radio-group {
+    display: flex;
+    flex-direction: column;
 
     .options {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacer-2);
 
         .option {
+            align-items: center;
+            display: flex;
+            gap: var(--spacer-2);
+
+            input[type="radio"] {
+                appearance: none;
+                background: var(--surface-8);
+                border: 1px solid var(--surface-6);
+                border-radius: 50%;
+                cursor: pointer;
+                flex-shrink: 0;
+                height: 20px;
+                position: relative;
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                width: 20px;
+
+                &:hover:not(:disabled) {
+                    background: var(--surface-8);
+                    border-color: var(--surface-5);
+                    box-shadow: 0 1px 2px oklch(0 0 0 / 0.05);
+                }
+
+                &:focus {
+                    border-color: var(--primary-5);
+                    box-shadow: 0 0 0 3px var(--primary-1);
+                    outline: none;
+                }
+
+                &:checked {
+                    background: var(--surface-8);
+                    border-color: var(--primary-5);
+                    box-shadow: 0 1px 3px var(--primary-3);
+
+                    &::after {
+                        background: var(--primary-5);
+                        border-radius: 50%;
+                        content: "";
+                        height: 10px;
+                        left: 50%;
+                        position: absolute;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 10px;
+                    }
+                }
+
+                &:disabled {
+                    background: var(--surface-7);
+                    border-color: var(--surface-6);
+                    cursor: not-allowed;
+                    opacity: 0.5;
+
+                    &:checked::after {
+                        background: var(--surface-4);
+                    }
+                }
+            }
 
             label {
-                color: var(--text-secondary);
+                color: var(--surface-1);
+                cursor: pointer;
+                font-size: var(--font-d);
+                user-select: none;
             }
 
             input:checked + label {
-                color: hsl(var(--brand-h) var(--s-3) var(--dl-2));
+                color: var(--surface-0);
+                font-weight: 500;
             }
+        }
+    }
+
+    &.is-invalid .options .option input[type="radio"] {
+        border-color: var(--danger-5);
+
+        &:focus {
+            box-shadow: 0 0 0 3px var(--danger-1), 0 1px 3px var(--danger-2);
         }
     }
 }

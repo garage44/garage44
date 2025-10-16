@@ -143,11 +143,11 @@ export const Components = () => (
         </ComponentDemo>
 
         <ComponentDemo title="Icon" component="Icon">
-            <div class="icon-grid">
+            <div class="c-icon-grid">
                 {Object.keys(svg).map(iconName => (
-                    <div key={iconName} class="icon-grid__item">
+                    <div key={iconName} class="item">
                         <Icon name={iconName} />
-                        <span class="icon-grid__label">{iconName}</span>
+                        <span class="label">{iconName}</span>
                     </div>
                 ))}
             </div>
@@ -264,35 +264,35 @@ export const Components = () => (
         </ComponentDemo>
 
         <ComponentDemo title="Icon Chat" component="IconChat">
-            <div class="icon-grid">
-                <div class="icon-grid__item">
+            <div class="c-icon-grid">
+                <div class="item">
                     <svg viewBox="0 0 24 24" style={{width: '48px', height: '48px'}}>
                         <IconChat />
                     </svg>
-                    <span class="icon-grid__label">No unread</span>
+                    <span class="label">No unread</span>
                 </div>
-                <div class="icon-grid__item">
+                <div class="item">
                     <svg viewBox="0 0 24 24" style={{width: '48px', height: '48px'}}>
                         <IconChat iconProps={{unread: 3}} />
                     </svg>
-                    <span class="icon-grid__label">3 unread</span>
+                    <span class="label">3 unread</span>
                 </div>
-                <div class="icon-grid__item">
+                <div class="item">
                     <svg viewBox="0 0 24 24" style={{width: '48px', height: '48px'}}>
                         <IconChat iconProps={{unread: 10}} />
                     </svg>
-                    <span class="icon-grid__label">10 unread</span>
+                    <span class="label">10 unread</span>
                 </div>
             </div>
         </ComponentDemo>
 
         <ComponentDemo title="Icon Logo" component="IconLogo">
-            <div class="icon-grid">
-                <div class="icon-grid__item">
+            <div class="c-icon-grid">
+                <div class="item">
                     <svg viewBox="0 0 24 24" style={{width: '96px', height: '96px'}}>
                         <IconLogo />
                     </svg>
-                    <span class="icon-grid__label">Logo</span>
+                    <span class="label">Logo</span>
                 </div>
             </div>
         </ComponentDemo>

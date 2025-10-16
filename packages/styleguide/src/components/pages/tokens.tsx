@@ -21,9 +21,9 @@ export const Tokens = () => (
                 <h3>{color.name}</h3>
                 <div class="color-grid">
                     {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(level => (
-                        <div key={level} class="color-swatch">
-                            <div class="color-swatch__color" style={{background: `var(--${color.id}-${level})`}}/>
-                            <div class="color-swatch__label">
+                        <div key={level} class="c-color-swatch">
+                            <div class="color" style={{background: `var(--${color.id}-${level})`}}/>
+                            <div class="label">
                                 <code>--{color.id}-{level}</code>
                             </div>
                         </div>

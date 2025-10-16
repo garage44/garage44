@@ -3,16 +3,4 @@
     flex-direction: column;
     max-width: 250px;
     min-width: 120px;
-
-    select {
-        background: var(--info-4);
-        border: none;
-        color: var(--info-8);
-        height: var(--input-height);
-
-        &:disabled {
-            background: var(--surface-4);
-            color: var(--surface-5);
-        }
-    }
 }

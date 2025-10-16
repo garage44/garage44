@@ -3,50 +3,24 @@
     flex-direction: column;
     overflow: auto;
 
-    textarea {
-        background: none;
-        border: none;
-        border-bottom: 1px solid var(--info-1);
-        color: hsl(var(--surface-h) var(--s-1) var(--dl-1));
-        font-size: 1rem;
-        outline: none;
-        transition: border 0.5s ease;
-        width: 100%;
-
-        &::placeholder {
-            font-size: var(--font-size-sm);
-        }
-
-        &[readonly] {
-            border-bottom: 1px solid transparent;
-        }
-
-        &:focus {
-            border-bottom: 1px solid hsl(var(--brand-h) var(--s-3) var(--dl-4));
-        }
-    }
-
     .icon {
+        transition: color 0.2s ease;
 
         &:hover {
+            color: var(--primary-5);
             cursor: pointer;
         }
 
         &.active {
-            color: hsl(var(--brand-h) var(--s-3) var(--dl-4));
+            color: var(--primary-5);
         }
     }
 
     .field-label {
-        font-family: var(--font-family-mono);
+        color: var(--surface-1);
+        font-size: var(--font-s);
+        font-weight: 500;
         margin: var(--spacer-1) 0;
         text-transform: capitalize;
-    }
-
-    .help {
-
-        &::first-letter {
-            text-transform: capitalize;
-        }
     }
 }

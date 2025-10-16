@@ -46,30 +46,30 @@ export const StateView = ({state, title = "Component State"}: StateViewProps) =>
     }
 
     const renderStateEntry = (key: string, value: any) => (
-        <div class="c-state-view__entry" key={key}>
-            <span class="c-state-view__key">{key}:</span>
-            <span class="c-state-view__value">{renderValue(value)}</span>
+        <div class="entry" key={key}>
+            <span class="key">{key}:</span>
+            <span class="value">{renderValue(value)}</span>
         </div>
     )
 
     return (
         <div class={`c-state-view ${isOpen ? 'open' : ''}`}>
             <button
-                class="c-state-view__header"
+                class="header"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <h4 class="c-state-view__title">
-                    <span class="c-state-view__icon">{isOpen ? '▼' : '▶'}</span>
+                <h4 class="title">
+                    <span class="icon">{isOpen ? '▼' : '▶'}</span>
                     {title}
                 </h4>
             </button>
             {isOpen && (
-                <div class="c-state-view__content">
+                <div class="content">
                     {typeof state === 'object' && state !== null ? (
                         Object.entries(state).map(([key, value]) => renderStateEntry(key, value))
                     ) : (
-                        <div class="c-state-view__entry">
-                            <span class="c-state-view__value">{renderValue(state)}</span>
+                        <div class="entry">
+                            <span class="value">{renderValue(state)}</span>
                         </div>
                     )}
                 </div>

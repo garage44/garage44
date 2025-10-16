@@ -2,7 +2,7 @@
 description: "Architecture Decision Records (ADR) consultation workflow - guides AI to maintain architectural consistency"
 globs:
   - "**/*"
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Garage44 Cursor AI Rules - ADR Consultation

@@ -6,39 +6,77 @@
     .wrapper {
         align-items: center;
         display: flex;
-        gap: var(--spacer-1);
+        gap: var(--spacer-2);
     }
 
     input[type="checkbox"] {
         appearance: none;
-        background: var(--white);
-        border: 1px solid var(--info-3);
-        border-radius: 4px;
+        background: var(--surface-8);
+        border: 1px solid var(--surface-6);
+        border-radius: var(--border-radius-xs);
         cursor: pointer;
+        flex-shrink: 0;
         height: 20px;
         position: relative;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         width: 20px;
 
+        &:hover:not(:disabled) {
+            background: var(--surface-8);
+            border-color: var(--surface-5);
+            box-shadow: 0 1px 2px oklch(0 0 0 / 0.05);
+        }
+
+        &:focus {
+            border-color: var(--primary-5);
+            box-shadow: 0 0 0 3px var(--primary-1);
+            outline: none;
+        }
+
         &:checked {
-            background: var(--info-4);
+            background: var(--primary-5);
+            border-color: var(--primary-5);
+            box-shadow: 0 1px 3px var(--primary-3);
 
             &::after {
-                border: solid var(--info-8);
+                border: solid var(--white);
                 border-width: 0 2px 2px 0;
                 content: "";
-                height: 8px;
+                height: 10px;
                 left: 6px;
                 position: absolute;
-                top: 3px;
-                transform: rotate(40deg);
-                width: 4px;
+                top: 2px;
+                transform: rotate(42deg);
+                width: 5px;
+            }
+        }
+
+        &:disabled {
+            background: var(--surface-7);
+            border-color: var(--surface-6);
+            cursor: not-allowed;
+            opacity: 0.5;
+
+            &:checked {
+                background: var(--surface-4);
+                box-shadow: none;
             }
         }
     }
 
     .label {
+        color: var(--surface-1);
         cursor: pointer;
+        font-size: var(--font-d);
         padding-bottom: 0;
         user-select: none;
+    }
+
+    &.is-invalid input[type="checkbox"] {
+        border-color: var(--danger-5);
+
+        &:focus {
+            box-shadow: 0 0 0 3px var(--danger-1), 0 1px 3px var(--danger-2);
+        }
     }
 }

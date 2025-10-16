@@ -77,15 +77,15 @@ export const Navigation = () => {
     }, [isComponentsRoute])
 
     return (
-        <nav class="styleguide__nav">
-            <div class="styleguide__header">
-                <h1 class="styleguide__title">Garage44 Common</h1>
+        <nav class="nav">
+            <div class="header">
+                <h1 class="title">Garage44 Common</h1>
                 <ThemeToggle />
             </div>
-            <ul class="styleguide__nav-list">
+            <ul class="nav-list">
                 <li>
                     <button
-                        class={`styleguide__nav-link ${isComponentsRoute ? 'active' : ''}`}
+                        class={`nav-link ${isComponentsRoute ? 'active' : ''}`}
                         onClick={() => {
                             $s.currentRoute = '/components'
                             route('/components')
@@ -94,13 +94,13 @@ export const Navigation = () => {
                         Components
                     </button>
                     {isComponentsRoute && (
-                        <ul class={`styleguide__submenu ${isComponentsRoute ? 'open' : ''}`}>
+                        <ul class={`submenu ${isComponentsRoute ? 'open' : ''}`}>
                             {components.map(componentName => {
                                 const id = componentName.toLowerCase().replaceAll(/\s+/g, '-')
                                 return (
                                     <li key={id}>
                                         <button
-                                            class={`styleguide__submenu-item ${activeComponent === id ? 'active' : ''}`}
+                                            class={`submenu-item ${activeComponent === id ? 'active' : ''}`}
                                             onClick={() => scrollToComponent(componentName)}
                                         >
                                             {componentName}
@@ -113,7 +113,7 @@ export const Navigation = () => {
                 </li>
                 <li>
                     <button
-                        class={`styleguide__nav-link ${$s.currentRoute === '/forms' ? 'active' : ''}`}
+                        class={`nav-link ${$s.currentRoute === '/forms' ? 'active' : ''}`}
                         onClick={() => {
                             $s.currentRoute = '/forms'
                             route('/forms')
@@ -124,7 +124,7 @@ export const Navigation = () => {
                 </li>
                 <li>
                     <button
-                        class={`styleguide__nav-link ${$s.currentRoute === '/tokens' ? 'active' : ''}`}
+                        class={`nav-link ${$s.currentRoute === '/tokens' ? 'active' : ''}`}
                         onClick={() => {
                             $s.currentRoute = '/tokens'
                             route('/tokens')

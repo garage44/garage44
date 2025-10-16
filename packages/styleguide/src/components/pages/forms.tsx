@@ -111,8 +111,8 @@ export const Forms = () => {
                 <form onSubmit={handleSubmit} class="form">
                     {/* Personal Information Section */}
                     <fieldset class="form-section">
-                        <legend class="form-section__header">Personal Information</legend>
-                        <div class="form-section__content">
+                        <legend class="header">Personal Information</legend>
+                        <div class="content">
                             <div class="form-row">
                                 <FieldText
                                     label="First Name"
@@ -143,8 +143,8 @@ export const Forms = () => {
 
                     {/* Account Settings Section */}
                     <fieldset class="form-section">
-                        <legend class="form-section__header">Account Settings</legend>
-                        <div class="form-section__content">
+                        <legend class="header">Account Settings</legend>
+                        <div class="content">
                             <div class="form-row">
                                 <FieldText
                                     label="Password"
@@ -170,8 +170,8 @@ export const Forms = () => {
 
                     {/* Preferences Section */}
                     <fieldset class="form-section">
-                        <legend class="form-section__header">Preferences</legend>
-                        <div class="form-section__content">
+                        <legend class="header">Preferences</legend>
+                        <div class="content">
                             <div class="form-row">
                                 <FieldRadioGroup
                                     label="Theme Preference"
@@ -214,8 +214,8 @@ export const Forms = () => {
 
                     {/* Additional Info Section */}
                     <fieldset class="form-section">
-                        <legend class="form-section__header">Additional Information</legend>
-                        <div class="form-section__content">
+                        <legend class="header">Additional Information</legend>
+                        <div class="content">
                             <div class="form-row">
                                 <FieldTextarea
                                     label="Bio"

@@ -10,28 +10,23 @@
         height: 100%;
 
         input {
-            background: var(--info-3);
-            border: 1px solid var(--info-4);
-            color: var(--info-5);
-            height: var(--input-height);
-            padding: var(--spacer-05) var(--spacer-1);
-            width: 100%;
             z-index: 1000;
-
-            &:focus {
-                border-color: var(--info-3);
-                outline: var(--spacer-025) solid var(--info-5);
-            }
         }
 
         .c-button {
-            border-radius: 0;
-            height: var(--input-height);
-            padding: 0;
+            border-radius: 0 var(--border-radius-s) var(--border-radius-s) 0;
+            height: 32px;
+            margin-left: calc(-1 * var(--border-radius-s));
+            padding: 0 var(--spacer-1);
 
             svg {
-                color: var(--info-5);
-                height: calc(var(--input-height) / 2);
+                color: var(--surface-6);
+                height: 16px;
+                transition: color 0.2s ease;
+            }
+
+            &:hover svg {
+                color: var(--primary-5);
             }
         }
     }

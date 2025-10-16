@@ -11,7 +11,7 @@
     --l-5: 0.60;   /* Middle - balanced */
     --l-6: 0.72;   /* Light text */
     --l-7: 0.84;   /* Very light text */
-    --l-8: 0.94;   /* Brightest text/elements */
+    --l-8: 0.96;   /* Brightest text/elements */
 
     /* Chroma scale (saturation) - subtle for professional appearance */
     --c-0: 0.008;  /* Minimal for true neutrals */
@@ -154,7 +154,7 @@
     /* Use these in your components for semantic meaning */
 
     /* Form controls */
-    --input-height: var(--spacer-4);
+    --input-height: 32px;
     --input-bg: var(--white);
     --input-border: var(--surface-4);
     --input-text: var(--surface-1);
@@ -209,7 +209,7 @@
     --l-5: 0.45;   /* Middle - balanced */
     --l-6: 0.32;   /* Dark text */
     --l-7: 0.20;   /* Very dark text */
-    --l-8: 0.12;   /* Darkest text/elements */
+    --l-8: 0.18;   /* Darkest text/elements */
 
     /* Light theme specific semantic overrides */
     --input-bg: var(--surface-0);
@@ -229,4 +229,7 @@
     /* Light theme table adjustments */
     --table-header-bg: var(--primary-1);
     --table-header-text: var(--primary-7);
+
+    /* Light theme form field enhancements */
+    --white: oklch(1 0 0); /* Pure white for inputs in light theme */
 }
