@@ -192,6 +192,14 @@
 /* ===== LIGHT THEME ===== */
 
 :root.light {
+    /* Warmer hue for light theme (less blue-tinted) */
+    --h-surface: 240;  /* Was unified 230 - now warmer neutral */
+
+    /* Reduced chroma for warmer, more neutral appearance */
+    --c-0: 0.005;  /* Was 0.008 - minimal saturation */
+    --c-1: 0.008;  /* Was 0.012 - very subtle */
+    --c-2: 0.012;  /* Was 0.018 - subtle hint */
+
     /* Inverted lightness scale for light theme - professional with excellent contrast */
     --l-0: 0.98;   /* Brightest backgrounds */
     --l-1: 0.96;   /* Primary backgrounds */

@@ -52,7 +52,7 @@ export const persistantState: Partial<PyriteState> = {
             collapsed: false,
         },
     },
-    theme: {id: 'system'},
+    theme: 'system',
     user: {
         authOption: 'user',
         data: {

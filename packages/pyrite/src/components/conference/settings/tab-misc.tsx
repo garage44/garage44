@@ -1,7 +1,7 @@
-import {FieldSelect} from '@garage44/common/components'
+import {FieldSelect, ThemeToggle} from '@garage44/common/components'
 import {useEffect} from 'preact/hooks'
 import {$s} from '@/app'
-import {$t} from '@garage44/common/app'
+import {$t, store} from '@garage44/common/app'
 import {logger} from '@garage44/common/app'
 
 export default function TabMisc() {
@@ -12,32 +12,24 @@ export default function TabMisc() {
         {id: 'nl', name: 'ui.settings.misc.language.dutch_label'},
     ]
 
-    const themes = [
-        {id: 'system', name: 'ui.settings.misc.theme.system_label'},
-        {id: 'light', name: 'ui.settings.misc.theme.light_label'},
-        {id: 'dark', name: 'ui.settings.misc.theme.dark_label'},
-    ]
-
     // Watch for theme changes
     useEffect(() => {
-        const themeColor = getComputedStyle(document.querySelector('.app')!).getPropertyValue('--grey-4')
-        logger.info(`setting theme color to ${themeColor}`)
+        const currentTheme = store.state.theme
+        const themeColor = getComputedStyle(document.querySelector('.app')!).getPropertyValue('--surface-3')
+        logger.info(`setting theme color to ${themeColor} for theme ${currentTheme}`)
         const metaTheme = document.querySelector('meta[name="theme-color"]')
         if (metaTheme) {
             (metaTheme as HTMLMetaElement).content = themeColor
         }
-    }, [$s.theme])
+    }, [])
 
     return (
         <section class="tab-content active">
-            <FieldSelect
-                value={$s.theme}
-                onChange={(value) => $s.theme = value}
-                help={$t('ui.settings.misc.theme_help')}
-                label={$t('ui.settings.misc.theme_label')}
-                name="language"
-                options={themes}
-            />
+            <div class="theme-toggle-wrapper">
+                <label>{$t('ui.settings.misc.theme_label')}</label>
+                <ThemeToggle />
+                <p class="help-text">{$t('ui.settings.misc.theme_help')}</p>
+            </div>
 
             <FieldSelect
                 value={$s.language}

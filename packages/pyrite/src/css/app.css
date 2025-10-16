@@ -35,8 +35,8 @@
 }
 
 html, body {
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    background: var(--surface-1);
+    color: var(--surface-8);
     font-family: var(--font-family-base);
     font-size: var(--font-size-base);
     height: 100vh;
@@ -49,8 +49,8 @@ html, body {
 }
 
 ::selection {
-    background: var(--info-5);
-    color: var(--info-8);
+    background: var(--primary-5);
+    color: var(--primary-8);
 }
 
 #app {
@@ -61,7 +61,7 @@ html, body {
 
 .scroller {
     overflow-y: auto;
-    scrollbar-color: var(--info-4) var(--info-7);
+    scrollbar-color: var(--surface-4) var(--surface-2);
     scrollbar-width: thin;
 
     &::-webkit-scrollbar {
@@ -69,15 +69,15 @@ html, body {
     }
 
     &::-webkit-scrollbar-track {
-        background: var(--info-7);
+        background: var(--surface-2);
     }
 
     &::-webkit-scrollbar-thumb {
-        background: var(--info-4);
+        background: var(--surface-4);
         border-radius: var(--radius-full);
 
         &:hover {
-            background: var(--info-3);
+            background: var(--surface-5);
         }
     }
 }

@@ -42,7 +42,6 @@ export const ConferenceApp = () => {
             'panel-chat-collapsed': $s.panels.chat.collapsed,
             'panel-chat-toggle': chatToggle,
             'panel-context-collapsed': $s.panels.context.collapsed,
-            [`theme-${$s.theme.id}`]: true,
         })}>
 
             <PanelContext

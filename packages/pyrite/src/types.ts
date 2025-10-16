@@ -94,7 +94,7 @@ export interface PyriteState extends CommonState {
         record: boolean
     }
     streams: any[]
-    theme: {id: string}
+    theme: 'light' | 'dark' | 'system'
     upMedia: {
         audio: any[]
         camera: any[]

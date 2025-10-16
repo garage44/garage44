@@ -1,5 +1,19 @@
 import {effect} from '@preact/signals'
 
+// Apply theme based on preference (light/dark/system)
+const applyTheme = (themePreference: 'light' | 'dark' | 'system') => {
+    const htmlElement = document.documentElement
+    htmlElement.classList.remove('dark', 'light')
+
+    if (themePreference === 'system') {
+        // Detect system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        htmlElement.classList.add(prefersDark ? 'dark' : 'light')
+    } else {
+        htmlElement.classList.add(themePreference)
+    }
+}
+
 export default function env(env, store = null) {
     env.ua = navigator.userAgent.toLowerCase()
 
@@ -40,26 +54,21 @@ export default function env(env, store = null) {
     })
 
     if (store) {
+        // Watch system preference changes
+        const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+        systemThemeQuery.addEventListener('change', () => {
+            if (store.state.theme === 'system') {
+                applyTheme('system')
+            }
+        })
+
+        // Apply initial theme
+        applyTheme(store.state.theme)
+
         // Watch for theme changes and update HTML class
-        let isFirstRun = true
         effect(() => {
             const theme = store.state.theme
-
-            // Skip the initial run, only react to actual changes
-            if (isFirstRun) {
-                isFirstRun = false
-                return
-            }
-
-            const htmlElement = document.documentElement
-
-            // Remove existing theme classes
-            htmlElement.classList.remove('dark', 'light', 'system')
-
-            // Add new theme class
-            if (theme) {
-                htmlElement.classList.add(theme)
-            }
+            applyTheme(theme)
         })
     }
 }

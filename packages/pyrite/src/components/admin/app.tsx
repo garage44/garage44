@@ -18,7 +18,7 @@ export const AdminApp = () => {
     }, [])
 
     return (
-        <div class={classnames('c-admin-app app', `theme-${$s.theme.id}`)}>
+        <div class="c-admin-app app">
             <PanelContext
                 collapsed={$s.panels.context.collapsed}
                 logoHref="/admin/groups"

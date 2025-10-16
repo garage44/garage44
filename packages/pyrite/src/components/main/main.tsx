@@ -30,9 +30,7 @@ export const Main = () => {
         return null
     }
 
-    return <div class={classnames('app', {
-        [`theme-${$s.theme.id}`]: true,
-    })}>
+    return <div class="app">
         <Router>
             {/* Admin routes */}
             <AdminApp path="/admin/*" />
