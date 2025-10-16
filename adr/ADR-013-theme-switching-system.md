@@ -1,7 +1,20 @@
 # ADR-013: Theme Switching System and Reusable ThemeToggle Component
 
+---
+**Metadata:**
+- **ID**: ADR-013
+- **Status**: Accepted
+- **Date**: 2025-10-15
+- **Tags**: [frontend, design-system, ux, accessibility, components]
+- **Impact Areas**: [expressio, styleguide, common]
+- **Decision Type**: architecture_pattern
+- **Related Decisions**: [ADR-011, ADR-012, ADR-014]
+- **Supersedes**: []
+- **Superseded By**: [ADR-014]
+---
+
 ## Status
-Accepted
+Accepted (Superseded by ADR-014 for unified theme system)
 
 ## Date
 2025-10-15

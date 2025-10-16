@@ -1,8 +1,21 @@
 # ADR-007: Migration from Express and Ws to Bun.serve and Bun WebSockets
 
+---
+**Metadata:**
+- **ID**: ADR-007
+- **Status**: Accepted
+- **Date**: 2025-06-02
+- **Tags**: [backend, infrastructure, migration, performance, tooling]
+- **Impact Areas**: [expressio, pyrite, common, bunchy]
+- **Decision Type**: tool_adoption
+- **Related Decisions**: [ADR-003, ADR-006]
+- **Supersedes**: []
+- **Superseded By**: []
+---
+
 ## Status
 
-**Recommended** - Migration should proceed due to Bun runtime compatibility constraints
+Accepted (Migrated from Express to Bun.serve)
 
 ## Context
 
@@ -378,6 +391,178 @@ const sessionMiddleware = (request: Request) => {
 
 The migration was completed faster than initially estimated, validating the "single day implementation" timeline proposed in the original ADR.
 
+## Decision Pattern
+
+**Pattern Name**: Migration Pattern (Framework/Tool Replacement for Runtime Compatibility)
+
+**When to Apply This Pattern:**
+- Current framework incompatible with chosen runtime
+- Runtime provides native capabilities that obviate framework need
+- Technical debt from compatibility workarounds
+- Performance improvements available from native implementation
+- Framework adds unnecessary complexity for use case
+
+**When NOT to Apply:**
+- Framework still provides significant value beyond runtime capabilities
+- Team lacks expertise with native APIs
+- Migration risk outweighs compatibility benefits
+- Production stability is critical with zero tolerance for issues
+
+**Key Questions to Ask:**
+1. Does the runtime provide native capabilities matching framework features?
+2. What's the blocker preventing upgrade to newer runtime versions?
+3. Can we maintain feature parity with native implementation?
+4. What's the migration effort vs. ongoing compatibility cost?
+5. Are there hidden dependencies on framework behaviors?
+6. How do we validate feature parity during migration?
+
+**Decision Criteria:**
+- **Runtime Compatibility**: 10/10 - Critical blocker preventing Bun upgrades
+- **Performance**: 8/10 - Native implementation faster
+- **Simplicity**: 9/10 - Reduces dependencies and complexity
+- **Migration Risk**: 6/10 - Manageable with careful testing
+- **Feature Parity**: 9/10 - Bun.serve covers Express use case
+- **Team Knowledge**: 7/10 - Learning curve for Bun-specific APIs
+
+**Success Metrics:**
+- Runtime upgrade unblocked: Can use latest Bun version
+- Performance improvement: Measurable latency reduction
+- Dependency reduction: Fewer npm packages
+- Feature parity: 100% of existing functionality working
+- Zero regressions: No functionality lost in migration
+
+## Rationale Chain
+
+**Primary Reasoning:**
+1. `ws` library has bug in newer Bun runtimes
+2. Bug forces us to stay on old Bun version
+3. Old Bun version blocks access to improvements and security updates
+4. Bun provides native WebSocket support eliminating need for `ws`
+5. If removing `ws`, might as well evaluate Express necessity
+6. Bun.serve is faster and simpler than Express for our use case
+7. Migration removes compatibility blocker and simplifies stack
+
+**Technical Debt Reasoning:**
+- **Compatibility workarounds** accumulate over time
+- **Staying on old versions** creates compounding problems
+- **Native runtime features** are typically better maintained
+- **Simplification** reduces future maintenance burden
+
+**Alternative Approaches Rejected:**
+- **Keep Express + ws**: Doesn't solve runtime compatibility issue
+- **Fix ws library**: Outside our control, not maintainable
+- **Fork ws library**: Maintenance burden too high
+- **Use different WebSocket library**: Still adds dependency, Bun native better
+
+**Trade-off Analysis:**
+- **Accepted Effort**: One-time migration (~6 hours actual)
+- **Gained Benefit**: Unblocked runtime upgrades, better performance, simpler stack
+- **Reasoning**: Short-term migration pain for long-term maintainability
+- **Mitigation**: Thorough testing, incremental rollout, feature parity validation
+
+**Assumptions:**
+- Bun.serve stable enough for production (validated: works well)
+- Native WebSocket as capable as ws library (validated: feature-complete)
+- Migration can be completed in reasonable time (validated: 6 hours)
+- No hidden Express.js dependencies (validated: custom middleware works)
+
+## AI Reasoning Prompts
+
+**When Evaluating Similar Decisions:**
+1. "Is the current framework incompatible with our runtime choice?"
+2. "Does the runtime provide native capabilities that eliminate framework need?"
+3. "What's the cost of maintaining compatibility workarounds?"
+4. "How does this align with ADR-003's Bun adoption and simplification goals?"
+5. "Can we validate feature parity before committing to migration?"
+
+**Pattern Recognition Cues:**
+- If forced to stay on old runtime version due to dependency, investigate native alternatives
+- If adding workarounds for runtime compatibility, consider migration
+- If framework usage is minimal, runtime native features might suffice
+- If performance is concern, native implementations often faster
+
+**Red Flags:**
+- ⚠️ Migrating without validating feature parity first
+- ⚠️ Not testing all WebSocket functionality after migration
+- ⚠️ Assuming Express patterns work identically in Bun.serve
+- ⚠️ Skipping session management planning
+- ⚠️ Not documenting migration learnings for future reference
+
+**Consistency Checks:**
+- Does this use Bun runtime features (ADR-003)?
+- Does this simplify toolchain (ADR-003 principle)?
+- Does this maintain WebSocket functionality (ADR-004, ADR-006)?
+- Are we following incremental migration pattern?
+- Have we maintained all existing features?
+
+## Architectural Implications
+
+**Core Principles Affected:**
+- **Developer Experience Priority**: Reinforced - Simpler stack, faster iteration
+- **Real-time First**: Maintained - WebSocket functionality preserved and improved
+- **Package Boundary Discipline**: Simplified - Fewer cross-package dependencies
+
+**System-Wide Impact:**
+- **Runtime Stack**: Fully native Bun (serve + WebSocket + bundler)
+- **Dependency Count**: Reduced by 5 packages (Express, ws, related middleware)
+- **Performance**: Improved request/response and WebSocket performance
+- **Build System**: Simplified (no Express-specific concerns)
+- **Maintenance**: Reduced surface area for compatibility issues
+
+**Coupling Changes:**
+- Removed coupling to Express.js middleware system
+- Removed coupling to ws library APIs
+- Increased coupling to Bun-specific APIs (acceptable - already on Bun)
+- Simplified coupling model overall (fewer layers)
+
+**Future Constraints:**
+- Must use Bun-compatible patterns (not Express patterns)
+- Middleware must be Bun.serve compatible
+- WebSocket handling uses Bun's API conventions
+- Enables: Full access to latest Bun features and improvements
+- Enables: Simpler architecture with fewer dependencies
+- Constrains: Bun.serve-specific deployment requirements
+
+## Evolution Log
+
+**Initial Implementation** (2025-06-02):
+- Migrated from Express + ws to Bun.serve + native WebSocket
+- Completed in ~6 hours (faster than estimated)
+- Unblocked ability to upgrade Bun runtime
+
+**Validation** (Post-migration):
+- All existing functionality working
+- Performance improvements observed
+- No regressions detected
+- Runtime upgrades now possible
+
+**Lessons Learned:**
+- ✅ Migration faster than expected (6 hours vs estimated 1 day)
+- ✅ Bun.serve API simpler than anticipated
+- ✅ Native WebSocket as capable as ws library
+- ✅ Dependency reduction significant (5 packages removed)
+- ✅ Performance improvements measurable
+- ⚠️ Session management needed custom implementation
+- ⚠️ WebSocket upgrade handling different from Express
+- ⚠️ Error handling patterns needed adjustment
+- 💡 Native APIs generally simpler than frameworks
+- 💡 Runtime compatibility blockers should be addressed quickly
+
+**Adjustment Recommendations:**
+- Document Bun.serve patterns for team
+- Create middleware helpers for common patterns
+- Build testing tools for Bun WebSocket scenarios
+- Consider this pattern for future framework evaluations
+- Prioritize runtime compatibility in dependency selection
+
+**Validation Metrics:**
+- Runtime upgrade: ✅ Successfully upgraded to latest Bun
+- Migration time: 6 hours (✅ under estimated 8 hours)
+- Feature parity: 100% (✅ all functionality working)
+- Performance: ~15-20% improvement in request handling (✅)
+- Dependency reduction: 5 packages removed (✅)
+- Regressions: 0 (✅ no functionality lost)
+
 ## References
 
 - [Bun.serve Documentation](https://bun.sh/docs/api/http)
@@ -386,3 +571,7 @@ The migration was completed faster than initially estimated, validating the "sin
 - [ws Library Documentation](https://github.com/websockets/ws)
 - [ADR-003: Bun Runtime Adoption](./ADR-003-bun-runtime-adoption.md)
 - [ADR-006: REST to WebSocket Migration](./ADR-006-rest-to-websocket-migration.md)
+
+---
+
+**Pattern**: This decision exemplifies the Migration Pattern for framework/tool replacement - driven by runtime compatibility needs, validating that native runtime features can replace external frameworks while simplifying the stack and improving performance. Demonstrates incremental migration with feature parity validation.

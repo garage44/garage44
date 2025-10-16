@@ -1,0 +1,26 @@
+# Garage44 Cursor AI Rules
+
+Organized modular rules for the Garage44 monorepo AI assistant.
+
+## Rule Organization
+
+Cursor rules are organized in the `.cursor/rules/` directory for better modularity and context-aware activation:
+
+```
+.cursor/rules/
+├── adr.mdc          # Architecture Decision Records consultation workflow
+├── backend.mdc      # Backend development (Bun.serve, WebSocket server, CLI)
+└── frontend.mdc     # Frontend development (Preact, DeepSignal, WebSocket client)
+```
+
+## Quick Reference
+
+- **Architecture & Decisions**: See `.cursor/rules/adr.mdc` and `adr/README.md`
+- **Backend Development**: See `.cursor/rules/backend.mdc`
+- **Frontend Development**: See `.cursor/rules/frontend.mdc`
+
+All rules use YAML frontmatter with glob patterns and are applied automatically based on context.
+
+---
+
+**Note**: This root `.cursorrules` file serves as an entry point. The detailed rules are in `.cursor/rules/*.mdc` for better organization and maintainability.
