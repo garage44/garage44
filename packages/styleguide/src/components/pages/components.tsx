@@ -27,6 +27,7 @@ import {Notifier} from '@garage44/common/lib/notifier'
 import {StateView} from '../lib/state-view'
 import {deepSignal} from 'deepsignal'
 import {svg} from '@garage44/common/components/ui/icon/icon'
+import './components.css'
 
 
 const data = deepSignal({

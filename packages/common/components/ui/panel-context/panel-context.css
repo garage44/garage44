@@ -166,7 +166,22 @@
     }
 
     &.collapsed {
-        max-width: 0;
-        overflow: hidden;
+        width: var(--spacer-5);
+
+        .logo {
+
+            .l-name,
+            img {
+                display: none;
+            }
+        }
+
+        .content {
+            display: none;
+        }
+
+        .collapse-toggle {
+            margin-left: auto;
+        }
     }
 }

@@ -1,57 +1,59 @@
 /* Styleguide App Styles */
-@import "@garage44/common/css/_typography.css";
-@import "@garage44/common/css/common/_tooltip.css";
+/* Import unified theme from common package */
+@import "../../../common/css/theme.css";
 
 * {
   box-sizing: border-box;
 }
 
-body {
-    background-color: var(--white);
-    color: var(--surface-1);
+html, body {
+    background: var(--surface-1);
     font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     font-size: var(--font-d);
+    height: 100vh;
     line-height: 1.6;
     margin: 0;
+    padding: 0;
 }
 
-.styleguide-container {
+/* Animations */
+@keyframes fade-in {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.fade-in {
+    animation: fade-in 0.2s ease-in forwards;
+}
+
+.styleguide-page {
     margin: 0 auto;
-    max-width: 1200px;
+    max-width: 1800px;
     padding: var(--spacer-6);
-}
 
-.component-section {
-    background: var(--white);
-    border: 1px solid var(--surface-5);
-    border-radius: var(--border-radius-l);
-    box-shadow: var(--shadow-soft);
-    margin-bottom: var(--spacer-6);
-    padding: var(--spacer-5);
-}
+    /* Grid layout for component cards on wider screens */
 
-.component-title {
-    color: var(--primary-3);
-    font-size: var(--font-xl);
-    font-weight: 600;
-    margin-bottom: var(--spacer-4);
-}
+    &.c-components {
+        display: grid;
+        gap: var(--spacer-6);
+        grid-template-columns: 1fr;
 
-.component-demo {
-    background: var(--surface-8);
-    border: 1px solid var(--surface-6);
-    border-radius: var(--border-radius-d);
-    margin-bottom: var(--spacer-4);
-    padding: var(--spacer-4);
-}
+        /* Two columns on tablets and larger */
+        @media (min-width: 1200px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
 
-.code-block {
-    background: var(--surface-0);
-    border: 1px solid var(--surface-2);
-    border-radius: var(--border-radius-d);
-    color: var(--surface-8);
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: var(--font-s);
-    overflow-x: auto;
-    padding: var(--spacer-3);
+        /* Page header spans full width */
+
+        > h1,
+        > p {
+            grid-column: 1 / -1;
+        }
+    }
 }

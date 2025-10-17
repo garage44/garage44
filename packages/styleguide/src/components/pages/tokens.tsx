@@ -1,4 +1,5 @@
 import {h} from 'preact'
+import './tokens.css'
 
 const colors = [
     {id: 'surface', name: 'Surface (Neutral)'},
@@ -117,7 +118,7 @@ export const Tokens = () => (
                     {name: '--icon-xl', px: '36px'},
                 ].map(({name, px}) => (
                     <div key={name} class="icon-size-item">
-                        <div class="icon-size-visual" style={`width: var(${name}); height: var(${name})`}></div>
+                        <div class="icon-size-visual" style={{width: `var(${name})`, height: `var(${name})`}}></div>
                         <div class="icon-size-info">
                             <code>{name}</code>
                             <div class="icon-size-value">{px}</div>
