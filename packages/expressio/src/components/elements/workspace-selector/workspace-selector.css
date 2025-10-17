@@ -10,12 +10,12 @@
         }
 
         .wrapper {
-            background: var(--info-1);
-            border: 1px solid var(--info-3);
+            background: var(--surface-1);
+            border: 1px solid var(--surface-3);
             display: flex;
 
             .options {
-                border: 1px solid var(--info-3);
+                border: 1px solid var(--surface-3);
                 display: flex;
                 flex: 1;
                 flex-direction: column;
@@ -26,8 +26,8 @@
 
                 .option {
                     align-items: center;
-                    background: var(--info-2);
-                    border: 1px solid var(--info-4);
+                    background: var(--surface-2);
+                    border: 1px solid var(--surface-4);
                     display: flex;
                     gap: var(--spacer-2);
                     height: var(--input-height);
@@ -45,8 +45,8 @@
                     }
 
                     &.existing {
-                        background: var(--info-2);
-                        border: 1px dashed var(--info-5);
+                        background: var(--surface-2);
+                        border: 1px dashed var(--surface-5);
                         color: var(--success-5);
                     }
 

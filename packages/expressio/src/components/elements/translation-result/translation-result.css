@@ -1,6 +1,6 @@
 .c-translation-result {
-    background: var(--info-2);
-    color: var(--info-3);
+    background: var(--surface-2);
+    color: var(--surface-3);
     flex-direction: column;
     font-size: var(--font-s);
     gap: var(--spacer-1);
@@ -23,22 +23,22 @@
 
         .result {
             align-items: center;
-            color: var(--info-6);
+            color: var(--surface-6);
             display: flex;
             gap: var(--spacer-1);
             overflow: hidden;
 
             .id {
-                background: var(--info-4);
-                color: var(--info-8);
+                background: var(--surface-4);
+                color: var(--surface-8);
                 padding: var(--spacer-05);
                 text-align: center;
                 width: var(--spacer-6);
             }
 
             .value {
-                background: var(--info-3);
-                color: var(--info-7);
+                background: var(--surface-3);
+                color: var(--surface-7);
                 font-style: italic;
                 padding: var(--spacer-05);
             }

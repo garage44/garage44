@@ -8,7 +8,7 @@
 
         label {
             align-items: center;
-            background: var(--info-5);
+            background: var(--surface-5);
             display: flex;
             height: 100%;
             min-width: 150px;
@@ -26,7 +26,7 @@
 
         .tag-actions {
             align-items: center;
-            background: var(--info-1);
+            background: var(--surface-1);
             display: flex;
             gap: var(--spacer-05);
             height: 100%;
@@ -41,8 +41,8 @@
             width: 100%;
 
             input {
-                background: var(--info-2);
-                color: var(--info-6);
+                background: var(--surface-2);
+                color: var(--surface-6);
                 flex: 1;
                 max-width: 100%;
                 transition: background 0.3s ease;
@@ -54,8 +54,8 @@
             width: 100%;
 
             input {
-                background-color: var(--info-3);
-                color: var(--info-7);
+                background-color: var(--surface-3);
+                color: var(--surface-7);
                 transition: background 0.3s ease;
                 width: 100%;
             }

@@ -21,7 +21,7 @@
             position: relative;
 
             &.default {
-                color: var(--info-2);
+                color: var(--surface-2);
 
                 & header {
                     align-items: center;
@@ -74,7 +74,7 @@
 
                 .time {
                     align-self: flex-end;
-                    color: var(--info-1);
+                    color: var(--surface-1);
                 }
             }
         }
@@ -82,14 +82,14 @@
 
     .chat-channels {
         background: var(--bg-primary);
-        border-bottom: 1px solid var(--info-1);
+        border-bottom: 1px solid var(--surface-1);
         display: flex;
         height: var(--spacer-8);
         width: 100%;
 
         .chat-channel {
             background: var(--bg-tertiary);
-            border: 1px solid var(--info-1);
+            border: 1px solid var(--surface-1);
             color: var(--bg-tertiary);
             display: flex;
             font-family: var(--font-family-mono);
@@ -129,7 +129,7 @@
         background: var(--bg-secondary);
 
         .btn-menu {
-            background: var(--info-1);
+            background: var(--surface-1);
             height: 30px;
 
             &.active {

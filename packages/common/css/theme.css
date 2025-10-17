@@ -17,6 +17,12 @@
 /* Shared component styles */
 @import "./common/_tooltip.css";
 
+/* Component patterns - reusable UI patterns */
+@import "./patterns/_panel.css";
+@import "./patterns/_card.css";
+@import "./patterns/_forms.css";
+@import "./patterns/_buttons.css";
+
 body {
     margin: 0;
     padding: 0;

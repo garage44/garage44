@@ -8,15 +8,15 @@
 
     .workspace-info {
         align-items: center;
-        background: var(--info-0);
-        border-bottom: 1px solid var(--info-2);
+        background: var(--surface-0);
+        border-bottom: 1px solid var(--surface-2);
         display: flex;
         gap: var(--spacer-05);
         height: var(--spacer-6);
         position: sticky;
 
         .c-icon {
-            color: var(--info-6);
+            color: var(--surface-6);
             height: var(--spacer-3);
             width: var(--spacer-3);
         }
@@ -24,7 +24,7 @@
         &.disabled {
 
             .c-icon {
-                color: var(--info-2);
+                color: var(--surface-2);
             }
         }
 
@@ -53,12 +53,12 @@
             width: 100%;
 
             .c-field-text {
-                background: var(--info-1);
+                background: var(--surface-1);
                 justify-content: center;
                 margin: 0;
 
                 input {
-                    background: var(--info-1);
+                    background: var(--surface-1);
                     height: var(--spacer-5);
                     margin-top: -1px;
                 }
@@ -66,9 +66,9 @@
 
             .c-button {
                 align-items: center;
-                background: var(--info-1);
+                background: var(--surface-1);
                 border: none;
-                color: var(--info-6);
+                color: var(--surface-6);
                 cursor: pointer;
                 display: flex;
                 gap: var(--spacer-05);
@@ -77,14 +77,14 @@
                 transition: background 0.2s;
 
                 &:hover {
-                    background: var(--info-2);
+                    background: var(--surface-2);
                 }
             }
         }
 
         .history-actions {
             align-items: center;
-            background: var(--info-1);
+            background: var(--surface-1);
             display: flex;
             height: 100%;
         }

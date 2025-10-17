@@ -30,7 +30,7 @@
             padding: var(--spacer-05);
 
             .track {
-                background: var(--info-2);
+                background: var(--surface-2);
                 margin-bottom: var(--spacer-2);
                 padding: var(--spacer-1);
             }

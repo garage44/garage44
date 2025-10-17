@@ -1,7 +1,7 @@
 .c-login {
     align-items: center;
     animation: fade-in 0.5s ease-in forwards;
-    background: linear-gradient(to bottom, var(--info-3), var(--info-0));
+    background: linear-gradient(to bottom, var(--surface-3), var(--surface-0));
     background-attachment: fixed;
     display: flex;
     height: 100vh;
@@ -39,10 +39,10 @@
     }
 
     .login-container {
-        background: oklch(from var(--info-2) l c h / 0.8);
-        border: 1px solid var(--info-2);
+        background: oklch(from var(--surface-2) l c h / 0.8);
+        border: 1px solid var(--surface-2);
         border-radius: var(--border-radius-l);
-        box-shadow: 0 0 var(--spacer-2) var(--spacer-1) oklch(from var(--info-0) l c h / 0.3);
+        box-shadow: 0 0 var(--spacer-2) var(--spacer-1) oklch(from var(--surface-0) l c h / 0.3);
         max-width: 320px;
         padding: var(--spacer-4);
         position: relative;
@@ -88,7 +88,7 @@
                 }
 
                 button {
-                    background: var(--info-2);
+                    background: var(--surface-2);
                     border: none;
                     border-radius: var(--border-radius-xs);
                     height: calc(var(--input-height) - var(--spacer-2));
@@ -114,7 +114,7 @@
                 width: 100%;
 
                 &:focus {
-                    border-color: var(--info-3);
+                    border-color: var(--surface-3);
                     outline: none;
                 }
 
@@ -125,7 +125,7 @@
         }
 
         button[type="submit"] {
-            background: var(--info-2);
+            background: var(--surface-2);
             border: none;
             border-radius: var(--border-radius-s);
             color: var(--surface-7);
@@ -138,11 +138,11 @@
             width: 100%;
 
             &:hover {
-                background: var(--info-3);
+                background: var(--surface-3);
             }
 
             &:active {
-                background: var(--info-1);
+                background: var(--surface-1);
             }
         }
     }
@@ -164,7 +164,7 @@
     --angle: 0;
     --base-size: 2.5rem;
 
-    color: var(--info-4);
+    color: var(--surface-4);
     filter: blur(var(--spacer-5));
     font-size: var(--base-size);
     opacity: 0;
@@ -194,7 +194,7 @@
     0% {
         filter: blur(var(--spacer-5));
         opacity: 0;
-        text-shadow: 0 0 var(--spacer-1) var(--info-4);
+        text-shadow: 0 0 var(--spacer-1) var(--surface-4);
         transform:
             scale(0)
             translate3d(
@@ -216,7 +216,7 @@
     60% {
         filter: blur(0);
         opacity: 1;
-        text-shadow: 0 0 var(--spacer-5) var(--info-4);
+        text-shadow: 0 0 var(--spacer-5) var(--surface-4);
         transform:
             scale(1)
             translate3d(

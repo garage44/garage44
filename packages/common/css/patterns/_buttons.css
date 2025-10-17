@@ -1,0 +1,191 @@
+/**
+ * Button Pattern
+ * Consistent button styling across all applications
+ */
+
+.btn {
+    align-items: center;
+    border: none;
+    border-radius: var(--border-radius-s);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: var(--font-d);
+    font-weight: 400;
+    gap: var(--spacer-1);
+    height: var(--input-height);
+    justify-content: center;
+    padding: 0 var(--spacer-2);
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Button variants */
+
+.btn--primary {
+    background: var(--primary-5);
+    color: var(--primary-8);
+}
+
+.btn--primary:hover:not(:disabled) {
+    background: var(--primary-6);
+}
+
+.btn--primary:active:not(:disabled) {
+    background: var(--primary-4);
+}
+
+.btn--secondary {
+    background: var(--surface-2);
+    color: var(--surface-7);
+}
+
+.btn--secondary:hover:not(:disabled) {
+    background: var(--surface-3);
+}
+
+.btn--secondary:active:not(:disabled) {
+    background: var(--surface-1);
+}
+
+.btn--success {
+    background: var(--success-5);
+    color: var(--success-8);
+}
+
+.btn--success:hover:not(:disabled) {
+    background: var(--success-6);
+}
+
+.btn--danger {
+    background: var(--danger-5);
+    color: var(--danger-8);
+}
+
+.btn--danger:hover:not(:disabled) {
+    background: var(--danger-6);
+}
+
+.btn--warning {
+    background: var(--warning-5);
+    color: var(--warning-8);
+}
+
+.btn--warning:hover:not(:disabled) {
+    background: var(--warning-6);
+}
+
+/* Ghost buttons - transparent with border */
+
+.btn--ghost {
+    background: transparent;
+    border: 1px solid var(--surface-4);
+    color: var(--surface-6);
+}
+
+.btn--ghost:hover:not(:disabled) {
+    background: var(--surface-2);
+    border-color: var(--surface-5);
+}
+
+/* Outline buttons */
+
+.btn--outline {
+    background: transparent;
+    border: 1px solid currentColor;
+}
+
+.btn--outline:hover:not(:disabled) {
+    background: oklch(from currentColor l c h / 0.1);
+}
+
+/* Icon-only buttons */
+
+.btn--icon {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    padding: var(--spacer-1);
+    width: var(--icon-xl);
+}
+
+.btn--icon-sm {
+    padding: var(--spacer-05);
+    width: var(--icon-d);
+}
+
+/* Size variants */
+
+.btn--sm {
+    font-size: var(--font-s);
+    height: calc(var(--input-height) * 0.75);
+    padding: 0 var(--spacer-1);
+}
+
+.btn--lg {
+    font-size: var(--font-l);
+    height: calc(var(--input-height) * 1.5);
+    padding: 0 var(--spacer-4);
+}
+
+/* Full width */
+
+.btn--block {
+    width: 100%;
+}
+
+/* Button group */
+
+.btn-group {
+    display: flex;
+    gap: var(--spacer-1);
+}
+
+.btn-group .btn {
+    flex: 1;
+}
+
+/* Icon button with tooltip pattern (from Expressio actions) */
+
+.icon-btn {
+    background: var(--surface-3);
+    border: 1px solid var(--surface-4);
+    border-radius: 50%;
+    cursor: pointer;
+    height: var(--icon-xl);
+    padding: 6px;
+    transition: all 0.3s ease;
+    width: var(--icon-xl);
+}
+
+.icon-btn:hover {
+    background: var(--surface-4);
+}
+
+/* Toolbar button pattern */
+
+.toolbar-btn {
+    align-items: center;
+    background: var(--surface-1);
+    border: none;
+    color: var(--surface-6);
+    cursor: pointer;
+    display: flex;
+    gap: var(--spacer-05);
+    height: var(--spacer-5);
+    justify-content: center;
+    padding: 0 var(--spacer-2);
+    transition: background 0.2s;
+}
+
+.toolbar-btn:hover {
+    background: var(--surface-2);
+}
+
+.toolbar-btn:active {
+    background: var(--surface-3);
+}
+

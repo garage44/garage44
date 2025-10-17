@@ -1,0 +1,86 @@
+/**
+ * Card Pattern
+ * Cards and containers for content grouping
+ */
+
+.card {
+    background: oklch(from var(--surface-2) l c h / 0.8);
+    border: 1px solid var(--surface-2);
+    border-radius: var(--border-radius-l);
+    box-shadow: 0 0 var(--spacer-2) var(--spacer-1) oklch(from var(--surface-0) l c h / 0.3);
+    padding: var(--spacer-4);
+}
+
+.card--solid {
+    background: var(--surface-2);
+}
+
+.card--transparent {
+    background: oklch(from var(--surface-2) l c h / 0.6);
+}
+
+.card__header {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-2);
+    justify-content: center;
+    padding: var(--spacer-2) 0;
+}
+
+.card__title {
+    color: var(--surface-8);
+    font-size: var(--font-xl);
+    font-weight: 500;
+}
+
+.card__content {
+    color: var(--surface-7);
+}
+
+.card__footer {
+    margin-top: var(--spacer-4);
+}
+
+/* Container variant for form sections */
+
+.container {
+    background-color: var(--surface-1);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-1);
+    padding: var(--spacer-1);
+}
+
+.container__section {
+    background: var(--surface-2);
+    border: 1px solid var(--surface-3);
+    padding: var(--spacer-1);
+}
+
+/* List containers */
+
+.list-container {
+    background: var(--surface-1);
+    border: 1px solid var(--surface-3);
+    display: flex;
+    flex-direction: column;
+}
+
+.list-container__item {
+    color: var(--surface-5);
+    cursor: pointer;
+    padding: var(--spacer-05) var(--spacer-1);
+    transition: all 0.2s ease;
+}
+
+.list-container__item:hover {
+    background: var(--surface-2);
+    color: var(--surface-7);
+}
+
+.list-container__item--active {
+    background: var(--surface-3);
+    color: var(--surface-8);
+}
+

@@ -4,7 +4,7 @@
     margin-bottom: 0;
 
     > .group-id {
-        color: var(--info-1);
+        color: var(--surface-1);
         font-size: var(--font-l);
         max-width: 250px;
         min-height: 152px;
@@ -18,9 +18,9 @@
         .group-field {
 
             input {
-                background: oklch(from var(--info-2) l c h / 0.4);
+                background: oklch(from var(--surface-2) l c h / 0.4);
                 border: none;
-                color: var(--info-5);
+                color: var(--surface-5);
                 font-style: italic;
                 font-weight: 500;
                 height: 100%;

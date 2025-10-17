@@ -4,7 +4,7 @@
 @import "./_spacing.css";
 
 html, body {
-    background: var(--primary-1);
+    background: var(--surface-1);
     font-family: Inter, sans-serif;
     font-size: var(--font-d);
     height: 100vh;

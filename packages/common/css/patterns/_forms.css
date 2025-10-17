@@ -1,0 +1,139 @@
+/**
+ * Form Pattern
+ * Consistent form styling across all applications
+ */
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-3);
+}
+
+.form__field {
+    margin-bottom: var(--spacer-3);
+}
+
+.form__label {
+    color: var(--surface-5);
+    display: block;
+    font-size: var(--font-s);
+    margin-bottom: var(--spacer-1);
+}
+
+.form__input {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--border-radius-s);
+    color: var(--input-text);
+    font-size: var(--font-d);
+    height: var(--input-height);
+    padding: 0 var(--spacer-2);
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.form__input:focus {
+    border-color: var(--primary-4);
+    outline: none;
+}
+
+.form__input::placeholder {
+    color: var(--input-placeholder);
+}
+
+.form__input:disabled {
+    background: var(--input-disabled-bg);
+    border-color: var(--input-disabled-border);
+    color: var(--input-disabled-text);
+    cursor: not-allowed;
+}
+
+/* Textarea variant */
+
+.form__textarea {
+    min-height: calc(var(--input-height) * 3);
+    padding: var(--spacer-1) var(--spacer-2);
+    resize: vertical;
+}
+
+/* Select variant */
+
+.form__select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-position: right var(--spacer-1) center;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    padding-right: var(--spacer-4);
+}
+
+/* Input groups for combined inputs */
+
+.form__input-group {
+    display: flex;
+    gap: var(--spacer-1);
+}
+
+.form__input-group .form__input {
+    flex: 1;
+}
+
+/* Field with button */
+
+.form__field--with-button {
+    position: relative;
+}
+
+.form__field--with-button button {
+    background: var(--surface-2);
+    border: none;
+    border-radius: var(--border-radius-xs);
+    height: calc(var(--input-height) - var(--spacer-2));
+    position: absolute;
+    right: var(--spacer-1);
+    top: 50%;
+    transform: translateY(-50%);
+    width: var(--spacer-4);
+}
+
+/* Help text */
+
+.form__help {
+    color: var(--surface-5);
+    font-size: var(--font-xs);
+    margin-top: var(--spacer-05);
+}
+
+/* Error state */
+
+.form__field--error .form__input {
+    border-color: var(--danger-4);
+}
+
+.form__error {
+    color: var(--danger-6);
+    font-size: var(--font-xs);
+    margin-top: var(--spacer-05);
+}
+
+/* Success state */
+
+.form__field--success .form__input {
+    border-color: var(--success-4);
+}
+
+/* Fieldset for grouped fields */
+
+.form__fieldset {
+    border: 1px solid var(--surface-3);
+    border-radius: var(--border-radius-s);
+    margin-bottom: var(--spacer-3);
+    padding: var(--spacer-2);
+}
+
+.form__legend {
+    color: var(--surface-6);
+    font-size: var(--font-l);
+    font-weight: 500;
+    padding: 0 var(--spacer-1);
+}

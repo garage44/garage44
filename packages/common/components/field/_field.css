@@ -2,7 +2,7 @@
     margin-bottom: var(--spacer-15);
 
     .label {
-        color: var(--surface-1);
+        color: var(--surface-7);
         font-size: var(--font-xs);
         font-weight: 500;
         letter-spacing: 0.02em;
@@ -24,10 +24,10 @@
     input:not([type="checkbox"]):not([type="radio"]),
     textarea,
     select {
-        background: var(--surface-8);
-        border: 1px solid var(--surface-6);
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
         border-radius: var(--border-radius-s);
-        color: var(--surface-0);
+        color: var(--input-text);
         font-family: inherit;
         font-size: var(--font-d);
         padding: var(--spacer-1) var(--spacer-2);
@@ -35,36 +35,34 @@
         width: 100%;
 
         &::placeholder {
-            color: var(--surface-3);
+            color: var(--input-placeholder);
             font-size: var(--font-s);
             font-weight: 400;
             opacity: 0.7;
         }
 
         &:hover:not(:disabled):not([readonly]) {
-            background: var(--surface-8);
             border-color: var(--surface-5);
             box-shadow: 0 1px 2px oklch(0 0 0 / 0.05);
         }
 
         &:focus {
-            background: var(--surface-8);
             border-color: var(--primary-5);
-            box-shadow: 0 0 0 3px var(--primary-6), 0 2px 4px oklch(0 0 0 / 0.08);
+            box-shadow: 0 0 0 3px var(--primary-2), 0 2px 4px oklch(0 0 0 / 0.08);
             outline: none;
         }
 
         &:disabled {
-            background: var(--surface-7);
-            border-color: var(--surface-6);
-            color: var(--surface-4);
+            background: var(--input-disabled-bg);
+            border-color: var(--input-disabled-border);
+            color: var(--input-disabled-text);
             cursor: not-allowed;
             opacity: 0.5;
         }
 
         &[readonly] {
-            background: var(--surface-7);
-            border-color: var(--surface-6);
+            background: var(--input-disabled-bg);
+            border-color: var(--input-disabled-border);
             cursor: default;
             opacity: 0.7;
         }
@@ -87,8 +85,8 @@
         cursor: pointer;
 
         option {
-            background: var(--surface-7);
-            color: var(--surface-1);
+            background: var(--input-bg);
+            color: var(--input-text);
             padding: var(--spacer-1);
         }
     }
@@ -127,7 +125,7 @@
     }
 
     .help {
-        color: var(--surface-3);
+        color: var(--surface-5);
         font-style: italic;
         font-weight: 400;
         opacity: 0.8;
