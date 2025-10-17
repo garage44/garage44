@@ -11,8 +11,8 @@
 
     input[type="checkbox"] {
         appearance: none;
-        background: var(--surface-8);
-        border: 1px solid var(--surface-6);
+        background: var(--surface-2);
+        border: 1px solid var(--surface-3);
         border-radius: var(--border-radius-xs);
         cursor: pointer;
         flex-shrink: 0;
