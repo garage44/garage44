@@ -1,7 +1,7 @@
 import {$s} from '@/app'
 import {$t, api, notifier, ws} from '@garage44/common/app'
 import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
-import {FieldSelect, Icon, Notifications, Progress, ThemeToggle} from '@garage44/common/components'
+import {AppLayout, FieldSelect, Icon, Notifications, PanelContext, Progress, ThemeToggle} from '@garage44/common/components'
 import {Router, getCurrentUrl, route} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
 import classnames from 'classnames'
@@ -10,6 +10,7 @@ import {Login} from '@/components/pages/login/login'
 import {deepSignal} from 'deepsignal'
 import {toIso6391} from '@garage44/enola/iso-codes'
 import {useEffect} from 'preact/hooks'
+import './main.css'
 
 const state = deepSignal({
     workspace_id: null,
@@ -69,100 +70,104 @@ export const Main = () => {
     }
 
     return <>
-        <div
-            class={classnames('panel fade-in', {
-                collapsed: $s.panel.collapsed,
-            })}
-        >
-            <div class="top-bar">
-                <div class="logo">
-                    <span style="position: absolute; visibility: hidden;">
-                        {$t('direction_helper')}
-                    </span>
-                    <img src="/public/img/logo.svg" alt="Expressio Logo"/>
-                    <span class="logo-text">Expressio</span>
-                </div>
-
-                {$s.user.admin && <Link activeClassName="active" href="/">
-                    <Icon name="settings" type="info"/>
-                    <span>{$t('menu.settings')}</span>
-                </Link>}
-
-                <div class="menu-group">
-                    <FieldSelect
-                        disabled={!$s.workspaces.length}
-                        help={$t('menu.workspaces.help')}
-                        label={$t('menu.workspaces.label')}
-                        model={state.$workspace_id}
-                        onChange={async(workspace_id) => {
-                            $s.workspace = (await ws.get(`/api/workspaces/${workspace_id}`))
-                            // Check if current route is valid for the new workspace
-                            const currentPath = getCurrentUrl()
-                            const isValidRoute = currentPath.endsWith('/settings') || currentPath.endsWith('/translations')
-
-                            // If we're not on a valid workspace route, default to settings
-                            let newRoute
-                            if (isValidRoute) {
-                                // Keep the same page type (settings/translations) but update workspace
-                                const routeSuffix = currentPath.endsWith('/settings') ? 'settings' : 'translations'
-                                newRoute = `/workspaces/${workspace_id}/${routeSuffix}`
-                            } else {
-                                newRoute = `/workspaces/${workspace_id}/settings`
-                            }
-
-                            route(newRoute)
-                        }}
-                        options={$s.workspaces.map((i) => ({id: i.workspace_id, name: i.workspace_id}))}
-                        placeholder={$t('menu.workspaces.placeholder')}
-                    />
-
-                    <Link
-                        activeClassName="active"
-                        className={classnames({disabled: !$s.workspace})}
-                        href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/settings` : ''}
-                    >
-                        <Icon name="workspace" type="info"/>
-                        <span>{$t('menu.workspace.config')}</span>
-                    </Link>
-                    <Link
-                        activeClassName="active"
-                        className={classnames({disabled: !$s.workspace})}
-                        href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/translations` : ''}
-                    >
-                        <Icon name="translate" type="info"/>
-                        <span>{$t('menu.workspace.translations')}</span>
-                    </Link>
-                </div>
-            </div>
-
-            <div className="actions">
-                <ThemeToggle />
-                <Icon
-                    name="logout"
-                    onClick={async() => {
-                        const result = await api.get('/api/logout')
-                        mergeDeep($s.user, result)
-                        route('/')
+        <AppLayout
+            sidebar={
+                <PanelContext
+                    collapsed={$s.panel.collapsed}
+                    onCollapseChange={(collapsed) => {
+                        $s.panel.collapsed = collapsed
                     }}
-                    tip={$t('menu.logout')}
-                    type="info"
-                />
-            </div>
+                    logoSrc="/public/img/logo.svg"
+                    logoText="Expressio"
+                    navigation={
+                        <>
+                            {$s.user.admin && <Link activeClassName="active" href="/">
+                                <Icon name="settings" type="info"/>
+                                <span>{$t('menu.settings')}</span>
+                            </Link>}
 
-            {!!Object.values($s.enola.engines).length && <div className="engines">
-                {Object.values($s.enola.engines).filter((i) => i.active).map((engine) =>
-                <div className="usage">
-                    {$t('menu.usage', {engine: engine.name})}
-                    <Progress
-                        boundaries={[engine.usage.count, engine.usage.limit]}
-                        loading={engine.usage.loading}
-                        percentage={engine.usage.count / engine.usage.limit}
-                        iso6391={toIso6391($s.language_ui.selection)}
-                    />
-                </div>)}
-            </div>}
-        </div>
-        <div class="view-layout fade-in">
+                            <div class="menu-group">
+                                <FieldSelect
+                                    disabled={!$s.workspaces.length}
+                                    help={$t('menu.workspaces.help')}
+                                    label={$t('menu.workspaces.label')}
+                                    model={state.$workspace_id}
+                                    onChange={async(workspace_id) => {
+                                        $s.workspace = (await ws.get(`/api/workspaces/${workspace_id}`))
+                                        // Check if current route is valid for the new workspace
+                                        const currentPath = getCurrentUrl()
+                                        const isValidRoute = currentPath.endsWith('/settings') || currentPath.endsWith('/translations')
+
+                                        // If we're not on a valid workspace route, default to settings
+                                        let newRoute
+                                        if (isValidRoute) {
+                                            // Keep the same page type (settings/translations) but update workspace
+                                            const routeSuffix = currentPath.endsWith('/settings') ? 'settings' : 'translations'
+                                            newRoute = `/workspaces/${workspace_id}/${routeSuffix}`
+                                        } else {
+                                            newRoute = `/workspaces/${workspace_id}/settings`
+                                        }
+
+                                        route(newRoute)
+                                    }}
+                                    options={$s.workspaces.map((i) => ({id: i.workspace_id, name: i.workspace_id}))}
+                                    placeholder={$t('menu.workspaces.placeholder')}
+                                />
+
+                                <Link
+                                    activeClassName="active"
+                                    className={classnames({disabled: !$s.workspace})}
+                                    href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/settings` : ''}
+                                >
+                                    <Icon name="workspace" type="info"/>
+                                    <span>{$t('menu.workspace.config')}</span>
+                                </Link>
+                                <Link
+                                    activeClassName="active"
+                                    className={classnames({disabled: !$s.workspace})}
+                                    href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/translations` : ''}
+                                >
+                                    <Icon name="translate" type="info"/>
+                                    <span>{$t('menu.workspace.translations')}</span>
+                                </Link>
+                            </div>
+                        </>
+                    }
+                    actions={
+                        <>
+                            <ThemeToggle />
+                            <Icon
+                                name="logout"
+                                onClick={async() => {
+                                    const result = await api.get('/api/logout')
+                                    mergeDeep($s.user, result)
+                                    route('/')
+                                }}
+                                tip={$t('menu.logout')}
+                                type="info"
+                            />
+                        </>
+                    }
+                    footer={
+                        !!Object.values($s.enola.engines).length && (
+                            <div class="engines">
+                                {Object.values($s.enola.engines).filter((i) => i.active).map((engine) =>
+                                    <div class="usage" key={engine.name}>
+                                        {$t('menu.usage', {engine: engine.name})}
+                                        <Progress
+                                            boundaries={[engine.usage.count, engine.usage.limit]}
+                                            loading={engine.usage.loading}
+                                            percentage={engine.usage.count / engine.usage.limit}
+                                            iso6391={toIso6391($s.language_ui.selection)}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )
+                    }
+                />
+            }
+        >
             <div class="view">
                 <Router onChange={handleRoute}>
                     {$s.user.admin && <Config path="/" />}
@@ -170,7 +175,7 @@ export const Main = () => {
                     <WorkspaceTranslations path="/workspaces/:workspace/translations" />
                 </Router>
             </div>
-        </div>
+        </AppLayout>
         <Notifications notifications={$s.notifications}/>
     </>
 }

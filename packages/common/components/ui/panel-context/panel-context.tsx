@@ -1,64 +1,64 @@
 import classnames from 'classnames'
-import {useEffect, useRef, useMemo} from 'preact/hooks'
 import {ComponentChildren} from 'preact'
 
 interface PanelContextProps {
-    children?: ComponentChildren
     collapsed: boolean
     onCollapseChange?: (collapsed: boolean) => void
     logoHref?: string
     logoText?: string
+    logoSrc?: string
     logoVersion?: string
     LogoIcon?: () => JSX.Element
     LinkComponent?: any
-    animate?: (config: any) => void
+    navigation?: ComponentChildren
+    actions?: ComponentChildren
+    footer?: ComponentChildren
 }
 
+/**
+ * PanelContext - Generic sidebar/panel component
+ *
+ * Provides a consistent panel layout with logo, navigation, actions, and footer sections.
+ * Supports collapse/expand functionality.
+ *
+ * @example
+ * <PanelContext
+ *   collapsed={false}
+ *   logoSrc="/logo.svg"
+ *   logoText="App Name"
+ *   navigation={<nav>...</nav>}
+ *   actions={<div>...</div>}
+ *   footer={<div>...</div>}
+ * />
+ */
 export const PanelContext = ({
-    children,
     collapsed,
     onCollapseChange,
     logoHref,
     logoText = '',
+    logoSrc,
     logoVersion = '',
     LogoIcon,
     LinkComponent,
-    animate
+    navigation,
+    actions,
+    footer
 }: PanelContextProps) => {
-    const panelRef = useRef<HTMLDivElement>(null)
-
-    // Watch for panel collapse changes
-    useEffect(() => {
-        if (!panelRef.current || !animate) return
-
-        const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
-        const currentWidth = panelRef.current.offsetWidth
-        const targetWidth = collapsed ? rootFontSize * 2.5 : 250 // 2.5rem = --spacer-5
-
-        animate({
-            duration: 350,
-            from: currentWidth,
-            onUpdate: (v: number) => {
-                if (panelRef.current) {
-                    panelRef.current.style.width = `${Math.floor(v)}px`
-                }
-            },
-            to: targetWidth,
-        })
-    }, [collapsed, animate])
-
     const renderLogo = () => {
         const logoContent = (
             <>
+                {logoSrc && <img src={logoSrc} alt={`${logoText} Logo`} />}
                 {LogoIcon && (
                     <svg class="icon" viewBox="0 0 24 24" height="40" width="40">
                         <LogoIcon />
                     </svg>
                 )}
-                <div class="l-name">
-                    {logoText && <div class="name">{logoText}</div>}
-                    {logoVersion && <div class="version">{logoVersion}</div>}
-                </div>
+                {logoText && (
+                    <div class="l-name">
+                        <span class="name logo-text">{logoText}</span>
+                        {logoVersion && <span class="version">{logoVersion}</span>}
+                    </div>
+                )}
             </>
         )
 
@@ -68,17 +68,32 @@ export const PanelContext = ({
                     {logoContent}
                 </LinkComponent>
             )
-        } else {
-            return <span class="logo">{logoContent}</span>
         }
+
+        return <div class="logo">{logoContent}</div>
     }
 
     return (
-        <div ref={panelRef} class={classnames('c-panel-context', {collapsed})}>
+        <div class={classnames('c-panel-context', 'fade-in', {collapsed})}>
             <header>
                 {renderLogo()}
+                {onCollapseChange && (
+                    <button
+                        class="collapse-toggle"
+                        onClick={() => onCollapseChange(!collapsed)}
+                        aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d={collapsed ? "M10 8l-4-4v8l4-4z" : "M6 8l4-4v8l-4-4z"} />
+                        </svg>
+                    </button>
+                )}
             </header>
-            {children}
+            <div class="content">
+                {navigation && <div class="navigation">{navigation}</div>}
+                {actions && <div class="actions">{actions}</div>}
+                {footer && <div class="footer">{footer}</div>}
+            </div>
         </div>
     )
 }

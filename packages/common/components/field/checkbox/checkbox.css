@@ -64,14 +64,6 @@
         }
     }
 
-    .label {
-        color: var(--surface-1);
-        cursor: pointer;
-        font-size: var(--font-d);
-        padding-bottom: 0;
-        user-select: none;
-    }
-
     &.is-invalid input[type="checkbox"] {
         border-color: var(--danger-5);
 

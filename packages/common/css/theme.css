@@ -23,7 +23,10 @@
 @import "./patterns/_forms.css";
 @import "./patterns/_buttons.css";
 
+html,
 body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    height: 100%;
     margin: 0;
     padding: 0;
 }

@@ -1,18 +1,25 @@
 .c-app-layout {
     display: flex;
-    min-height: 100vh;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
     width: 100%;
-}
 
-.c-app-layout__content {
-    flex: 1;
-    overflow-y: auto;
-}
+    &__content {
+        animation: fade-in 0.2s ease-in forwards;
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        opacity: 0;
 
-/* Responsive Design */
-@media (max-width: 768px) {
+        .view {
+            flex: 1;
+            overflow-y: scroll;
+        }
+    }
 
-    .c-app-layout {
+    /* Responsive Design */
+    @media (max-width: 768px) {
         flex-direction: column;
     }
 }

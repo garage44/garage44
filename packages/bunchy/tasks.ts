@@ -165,7 +165,7 @@ tasks.code_frontend = new Task('code:frontend', async function taskCodeFrontend(
             },
             naming: `[dir]/[name].${settings.buildId}.[ext]`,
             outdir: settings.dir.public,
-            sourcemap: process.env.NODE_ENV === 'production' ? 'none' : 'inline',
+            sourcemap: process.env.NODE_ENV === 'production' ? 'none' : 'linked',
         })
 
         if (!result.success) {
@@ -321,11 +321,12 @@ tasks.stylesComponents = new Task('styles:components', async function taskStyles
     const filename = `components.${settings.buildId}.css`
 
     try {
+        console.log("SOURCE MAP", sourcemap)
         const result = await Bun.build({
             entrypoints: [entryFile],
             external: ["*.woff2"],
             minify,
-            sourcemap: sourcemap ? 'inline' : 'none',
+            sourcemap: sourcemap ? 'linked' : 'none',
         })
 
 
