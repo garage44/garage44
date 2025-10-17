@@ -1,10 +1,12 @@
 ---
-description: "Frontend development rules for Expressio - Preact, SCSS, and WebSocket client patterns"
+description: "Frontend development rules - Preact, CSS (modern nesting), DeepSignal, and component-driven architecture"
 globs:
   - "packages/expressio/src/**"
+  - "packages/pyrite/src/**"
+  - "packages/styleguide/src/**"
   - "packages/common/components/**"
-  - "packages/common/scss/**"
-  - "**/*.scss"
+  - "packages/common/css/**"
+  - "**/*.css"
   - "**/*.tsx"
 alwaysApply: true
 ---
@@ -16,13 +18,37 @@ Frontend development guidelines for the Expressio AI-powered i18n tooling projec
 ## Tech Stack
 
 - **Framework**: Preact with JSX (`jsx: "react-jsx"`, `jsxImportSource: "preact"`)
-- **Styling**: SCSS with organized structure - NO inline styles
+- **Styling**: CSS with modern nesting - NO inline styles, NO BEM
 - **State**: DeepSignal (Proxy-based reactive objects) - NOT useState
 - **Icons**: Icon component from common library - NOT direct SVG/font icons
 - **Real-time**: WebSocket client for live updates
 - **Build**: Bun bundler with hot reload
 
 ## Component Architecture
+
+### Architecture Principles
+
+**Component-Driven Design:**
+- Each component = `.tsx` + `.css` file in `/packages/common/components/`
+- Root element uses `.c-{component-name}` convention (e.g., `.c-button`, `.c-card`)
+- Products import components (not utility classes)
+- Custom styling in products = missing reusable component that should be extracted
+- Use modern CSS nesting (no BEM)
+- Components bring their own styling automatically
+
+**Example Structure:**
+```
+/packages/common/components/ui/
+├── button/
+│   ├── button.tsx       # Component logic
+│   └── button.css       # Styles with .c-button root
+├── card/
+│   ├── card.tsx
+│   └── card.css         # Styles with .c-card root
+└── app-layout/
+    ├── app-layout.tsx
+    └── app-layout.css   # Styles with .c-app-layout root
+```
 
 ### Component Structure
 ```
@@ -163,35 +189,48 @@ class Store {
 }
 ```
 
-## SCSS Guidelines
+## CSS Guidelines
 
 ### Use Existing Variables
-```scss
-// ✅ Use predefined spacing
-.translation-item {
-    margin: $spacer-1;
-    padding: $spacer-2;
-    font-size: $font-size-base;
+```css
+/* ✅ Use predefined CSS custom properties */
+.c-translation-item {
+    margin: var(--spacer-1);
+    padding: var(--spacer-2);
+    font-size: var(--font-d);
 }
 
-// ❌ Don't use arbitrary values
+/* ❌ Don't use arbitrary values */
 .bad-item {
     margin: 1rem;
     padding: 2rem;
 }
 ```
 
-### Component-Scoped Styles
-```scss
-// translation-group.scss
-.translation-group {
-  &__item {
-    // BEM methodology
-  }
+### Component-Scoped Styles with Modern Nesting
+```css
+/* translation-group.css */
+.c-translation-group {
+    display: flex;
+    flex-direction: column;
 
-  &--expanded {
-    // Modifier styles
-  }
+    /* ✅ Use modern CSS nesting */
+    .item {
+        padding: var(--spacer-1);
+
+        &:hover {
+            background: var(--surface-2);
+        }
+    }
+
+    /* ✅ State modifiers with nesting */
+    &.expanded {
+        max-height: none;
+    }
+}
+
+/* ❌ Don't use BEM naming */
+.c-translation-group__item { /* Wrong! Use nesting instead */
 }
 ```
 
@@ -379,14 +418,19 @@ import {classes} from '@garage44/common/lib/utils'
 import {TranslationGroup} from '@/components/elements'
 
 // Relative imports
-import './translation-group.scss'
+import './translation-group.css'
 ```
 
 ### File Naming Conventions
 - Components: `translation-group.tsx`
-- Styles: `translation-group.scss`
+- Styles: `translation-group.css` (modern CSS with nesting)
 - Barrel exports: `elements.ts`
 - Hooks: `useWebSocketSubscription.ts`
+
+### CSS Class Naming
+- Root element: `.c-{component-name}` (e.g., `.c-button`, `.c-card`)
+- Child elements: Use nesting, not BEM (e.g., `.item` inside `.c-card`, not `.c-card__item`)
+- State modifiers: Use `&.modifier` nesting (e.g., `&.active`, `&.disabled`)
 
 ## Performance Optimization
 
@@ -454,7 +498,7 @@ const BadList = () => {
 
 ### Hot Reload Behavior
 - `.tsx` changes: Component hot reload
-- `.scss` changes: Style injection without reload
+- `.css` changes: Style injection without reload
 - Signal state: Preserved during development
 - WebSocket: Automatically reconnects
 
@@ -468,20 +512,24 @@ const BadList = () => {
 
 ❌ **Don't do:**
 - Use useState instead of deepSignal for component state
-- Create inline styles - use SCSS classes
+- Create inline styles - use CSS classes with modern nesting
 - Use direct SVG/font icons - use Icon component
+- Use BEM naming (`.c-button__icon`) - use nesting instead
 - Mutate props directly
 - Block the UI during translation API calls
 - Forget to handle WebSocket disconnections
 - Use .value syntax with DeepSignal (it's not needed)
 - Forget to import global state with `{$s, ws} from '@/app'`
+- Create utility CSS classes - create components instead
 
 ✅ **Do:**
 - Use deepSignal for component-level reactive state
 - Access global state through $s object
-- Use existing SCSS variables ($spacer-1, $font-size-base)
+- Use existing CSS custom properties (var(--spacer-1), var(--font-d))
 - Use Icon component from @garage44/common/components
 - Handle loading/error states gracefully
 - Access underlying signals with $ prefix for form fields
 - Use WebSocket events with `events.on('app:init', ...)` pattern
 - Test with multiple languages and character sets
+- Use modern CSS nesting in component CSS files
+- Extract reusable patterns as components, not utility classes
