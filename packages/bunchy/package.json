@@ -8,6 +8,7 @@
     "archy": "^1.0.0",
     "fs-extra": "^11.3.0",
     "glob": "^11.0.1",
+    "lightningcss": "^1.25.0",
     "lodash.template": "^4.5.0",
     "node-notifier": "^10.0.1",
     "picocolors": "^1.1.1",

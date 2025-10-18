@@ -6,8 +6,41 @@ import path from 'path'
 import template from 'lodash.template'
 import {throttle} from '@garage44/common/lib/utils'
 import {watch} from 'fs'
+import { bundle, transform } from 'lightningcss'
 
 const debounce = {options: {trailing: true}, wait: 1000}
+
+/**
+ * Normalizes sourcemap paths to be relative to the public directory
+ * @param map - The sourcemap buffer from Lightning CSS
+ * @param sourceFileDir - The directory of the source entry file
+ * @param publicDir - The public output directory
+ * @returns Normalized sourcemap as a string
+ */
+function normalizeSourceMap(map: Uint8Array, sourceFileDir: string, publicDir: string): string {
+    const sourceMapObj = JSON.parse(Buffer.from(map).toString())
+
+    // Normalize source paths to be relative to public directory
+    if (sourceMapObj.sources) {
+        sourceMapObj.sources = sourceMapObj.sources.map((source: string) => {
+            // Source paths from Lightning CSS are relative to the input file or absolute without leading /
+            // Resolve them to absolute paths first, then make relative to public dir
+            let absolutePath: string
+            if (path.isAbsolute(source)) {
+                absolutePath = source
+            } else if (source.startsWith('home/')) {
+                // Missing leading slash
+                absolutePath = '/' + source
+            } else {
+                // Relative path - resolve from the source file location
+                absolutePath = path.resolve(sourceFileDir, source)
+            }
+            return path.relative(publicDir, absolutePath)
+        })
+    }
+
+    return JSON.stringify(sourceMapObj, null, 2)
+}
 
 const runner = {
     assets: throttle(async() => {
@@ -138,7 +171,6 @@ tasks.build = new Task('build', async function taskBuild({minify = false, source
 
 
 tasks.clean = new Task('clean', async function taskClean() {
-    await fs.rm(path.join(settings.dir.workspace, 'app.js'), {force: true})
     await fs.rm(settings.dir.public, {force: true, recursive: true})
     await fs.mkdirp(settings.dir.public)
 })
@@ -169,8 +201,6 @@ tasks.code_frontend = new Task('code:frontend', async function taskCodeFrontend(
         })
 
         if (!result.success) {
-            // oxlint-disable-next-line no-console
-            console.error(result.logs)
             // Broadcast error to client
             broadcast('/tasks/error', {
                 details: result.logs,
@@ -202,6 +232,7 @@ tasks.code_frontend = new Task('code:frontend', async function taskCodeFrontend(
 
 
 tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = true} = {}) {
+    await tasks.clean.start()
     await tasks.build.start({minify, sourcemap})
 
     watch(settings.dir.common, {recursive: true}, (event, filename) => {
@@ -224,7 +255,10 @@ tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = 
         } else if (filename === 'index.html') {
             runner.html()
         } else if (extension === '.css') {
-            console.log('css', filename)
+            // This is a temporary file for the components CSS, so we don't need to process it
+            if (filename === 'components.css') {
+                return
+            }
             // Differentiate between app-level and component-level CSS files
             if (filename.startsWith('css/')) {
                 // App-level styles (src/css/*.css)
@@ -263,24 +297,32 @@ tasks.styles = new Task('styles', async function taskStyles({minify = false, sou
 
 tasks.stylesApp = new Task('styles:app', async function taskStylesApp({minify, sourcemap}) {
     const filename = `app.${settings.buildId}.css`
+    const appCssPath = path.join(settings.dir.src, 'css', 'app.css')
+
     try {
-        const result = await Bun.build({
-            entrypoints: [path.join(settings.dir.src, 'css', 'app.css')],
-            external: ["*.woff2"],
+        // Use Lightning CSS bundle API for proper @import resolution
+        const {code, map} = bundle({
+            filename: appCssPath,
             minify,
-            sourcemap: sourcemap ? 'inline' : 'none',
-          })
+            sourceMap: sourcemap,
+        })
 
-
-        let totalSize = 0
-        for (const res of result.outputs) {
-            await res.text()
-            new Response(res)
-            Bun.write(path.join(settings.dir.public, filename), res)
-            totalSize += res.size
+        // Add sourceMappingURL comment to the CSS
+        let finalCSS = code.toString()
+        if (map && sourcemap) {
+            finalCSS += `\n/*# sourceMappingURL=${filename}.map */`
         }
 
-        return {filename, size: totalSize}
+        // Write the bundled CSS
+        await fs.writeFile(path.join(settings.dir.public, filename), finalCSS)
+
+        // Write source map if generated
+        if (map && sourcemap) {
+            const normalizedMap = normalizeSourceMap(map, path.dirname(appCssPath), settings.dir.public)
+            await fs.writeFile(path.join(settings.dir.public, `${filename}.map`), normalizedMap)
+        }
+
+        return {filename, size: finalCSS.length}
 
     } catch (error) {
         console.error(error)
@@ -305,41 +347,51 @@ tasks.stylesComponents = new Task('styles:components', async function taskStyles
 
     const allImports = imports.flat()
 
-    // Create the components entry file content
-    // Use the absolute path directly since we're creating the entry file in public/
-    // This avoids path resolution issues
-    const componentImports = allImports.map((importFile) => `@import "${importFile}";`)
+    // Create the components entry file content using absolute paths
+    const componentImports = allImports.map((importFile) => {
+        return `@import "${importFile}";`
+    })
 
     const entryContent = componentImports.join('\n')
-    const entryFile = path.join(settings.dir.public, 'components.css')
+    const entryFile = path.join(settings.dir.src, 'components.css')
 
-    // Ensure the public directory exists
+    // Ensure the src directory exists
     await fs.ensureDir(path.dirname(entryFile))
 
-    // Write the temporary entry file to public dir (not src)
+    // Write the temporary entry file to src dir
     await fs.writeFile(entryFile, entryContent, 'utf8')
     const filename = `components.${settings.buildId}.css`
 
     try {
-        console.log("SOURCE MAP", sourcemap)
-        const result = await Bun.build({
-            entrypoints: [entryFile],
-            external: ["*.woff2"],
+        // Use Lightning CSS bundle API for proper @import resolution
+        const {code, map} = bundle({
+            filename: entryFile,
             minify,
-            sourcemap: sourcemap ? 'linked' : 'none',
+            sourceMap: sourcemap,
         })
 
-
-        let totalSize = 0
-        for (const res of result.outputs) {
-            await res.text()
-            new Response(res)
-            Bun.write(path.join(settings.dir.public, filename), res)
-            totalSize += res.size
+        // Add sourceMappingURL comment to the CSS
+        let finalCSS = code.toString()
+        if (map && sourcemap) {
+            finalCSS += `\n/*# sourceMappingURL=${filename}.map */`
         }
+
+        // Write the bundled CSS
+        await fs.writeFile(path.join(settings.dir.public, filename), finalCSS)
+
+        // Write source map if generated
+        if (map && sourcemap) {
+            const normalizedMap = normalizeSourceMap(map, path.dirname(entryFile), settings.dir.public)
+            await fs.writeFile(path.join(settings.dir.public, `${filename}.map`), normalizedMap)
+        }
+
         // Clean up temporary entry file
         await fs.rm(entryFile, {force: true})
-        return {filename, size: totalSize}
+
+        return {
+            filename,
+            size: finalCSS.length,
+        }
 
     } catch (error) {
         console.error(error)
