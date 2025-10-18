@@ -1,5 +1,5 @@
 .c-component-demo {
-    background: var(--surface-2);
+    background: var(--surface-7);
     border: 1px solid var(--surface-3);
     border-radius: var(--border-radius-l);
     box-shadow: 0 1px 3px oklch(from var(--surface-0) l c h / 0.1),
