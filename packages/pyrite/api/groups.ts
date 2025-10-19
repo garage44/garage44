@@ -27,7 +27,7 @@ export default function(router: any) {
 
     router.get('/api/groups', async (req: Request, params: Record<string, string>, session: any) => {
         const {groupsData, groupNames} = await loadGroups()
-        await pingGroups(groupNames)
+        // await pingGroups(groupNames) // Commented out - Galene doesn't have individual group endpoints
         return new Response(JSON.stringify(groupsData), {
             headers: { 'Content-Type': 'application/json' }
         })
@@ -35,7 +35,8 @@ export default function(router: any) {
 
     router.get('/api/groups/public', async (req: Request, params: Record<string, string>, session: any) => {
         const {groupsData, groupNames} = await loadGroups(true)
-        await pingGroups(groupNames)
+        console.log("GROUPS DATA", groupsData)
+        // await pingGroups(groupNames) // Commented out - Galene doesn't have individual group endpoints
         return new Response(JSON.stringify(groupsData), {
             headers: { 'Content-Type': 'application/json' }
         })
@@ -78,7 +79,7 @@ export default function(router: any) {
         const group = await loadGroup(groupId)
         group._name = params.param0
         group._newName = groupId
-        await pingGroups([groupId])
+        // await pingGroups([groupId]) // Commented out - Galene doesn't have individual group endpoints
         return new Response(JSON.stringify(group), {
             headers: { 'Content-Type': 'application/json' }
         })
@@ -90,7 +91,7 @@ export default function(router: any) {
         await fs.remove(groupFile)
         const {groupNames} = await loadGroups()
         await syncUsers()
-        await pingGroups([groupId])
+        // await pingGroups([groupId]) // Commented out - Galene doesn't have individual group endpoints
         return new Response(JSON.stringify(groupNames), {
             headers: { 'Content-Type': 'application/json' }
         })

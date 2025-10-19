@@ -110,8 +110,8 @@ const authMiddleware = (request: Request, session: any) => {
     }
 
     if (session.userid) {
-        const users = config.users
-        const user = users.find((user) => user.name === session.userid)
+        const {getUserByUsername} = await import('./user.ts')
+        const user = await getUserByUsername(session.userid)
         if (user) {
             return true
         }
@@ -119,9 +119,11 @@ const authMiddleware = (request: Request, session: any) => {
 
     if (process.env.GARAGE44_NO_SECURITY) {
         // Find the first admin user and set their userid in the session
-        const adminUser = config.users.find(user => user.admin)
+        const {loadUsers} = await import('./user.ts')
+        const users = await loadUsers()
+        const adminUser = users.find(user => user.permissions.admin)
         if (adminUser) {
-            session.userid = adminUser.name
+            session.userid = adminUser.username
         }
         return true
     }

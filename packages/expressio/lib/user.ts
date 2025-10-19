@@ -2,10 +2,10 @@ import {UserManager, User} from '@garage44/common/lib/user-manager'
 import {config} from './config.ts'
 import {logger} from '../service.ts'
 
-// Initialize UserManager for Pyrite
+// Initialize UserManager for Expressio
 const userManager = new UserManager({
-  configPath: '~/.pyriterc',
-  appName: 'pyrite',
+  configPath: '~/.expressiorc',
+  appName: 'expressio',
   useBcrypt: false // Start with plaintext for development
 })
 
@@ -16,7 +16,7 @@ try {
   logger.error('Failed to initialize UserManager:', err)
 }
 
-// Re-export UserManager methods with Pyrite-specific logging
+// Re-export UserManager methods with Expressio-specific logging
 export async function loadUsers() {
   try {
     return await userManager.listUsers()
@@ -113,58 +113,24 @@ export async function hasPermission(userId: string, permission: string) {
   }
 }
 
-export async function getUserGroups(userId: string) {
-  try {
-    return await userManager.getUserGroups(userId)
-  } catch (error) {
-    logger.error(`Failed to get groups for user ${userId}:`, error)
-    return {}
-  }
+// Expressio-specific helper functions
+export async function isAdmin(userId: string) {
+  return await hasPermission(userId, 'admin')
 }
 
-export async function grantGroupPermission(userId: string, groupName: string, role: string) {
+export async function getUserByUsernameOrEmail(identifier: string) {
   try {
-    return await userManager.grantGroupPermission(userId, groupName, role)
-  } catch (error) {
-    logger.error(`Failed to grant ${role} permission for user ${userId} in group ${groupName}:`, error)
-    return false
-  }
-}
+    // First try by username
+    let user = await userManager.getUserByUsername(identifier)
+    if (user) return user
 
-export async function revokeGroupPermission(userId: string, groupName: string, role: string) {
-  try {
-    return await userManager.revokeGroupPermission(userId, groupName, role)
+    // Then try by email
+    const users = await userManager.listUsers()
+    user = users.find(u => u.email === identifier) || null
+    return user
   } catch (error) {
-    logger.error(`Failed to revoke ${role} permission for user ${userId} in group ${groupName}:`, error)
-    return false
-  }
-}
-
-// Sync users to Galene groups
-export async function syncUsers() {
-  try {
-    const {syncUsersToGalene} = await import('./sync.ts')
-    return await syncUsersToGalene()
-  } catch (error) {
-    logger.error('Failed to sync users:', error)
-    throw error
-  }
-}
-
-// Legacy function for backward compatibility
-export function userTemplate(overrides: any = {}) {
-  return {
-    _unsaved: true,
-    admin: false,
-    groups: {
-      op: [],
-      other: [],
-      presenter: [],
-    },
-    id: overrides.id || `user-${Date.now()}`,
-    name: overrides.name || `user-${Date.now()}`,
-    password: overrides.password || 'password',
-    ...overrides
+    logger.error(`Failed to get user by identifier ${identifier}:`, error)
+    return null
   }
 }
 

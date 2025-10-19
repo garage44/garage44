@@ -65,10 +65,12 @@ export async function loadGroupPermissions(groupName) {
     // Permissions from a group perspective; transformed from settings.users
     const users = await loadUsers()
     for (const user of users) {
-        for (const permissionName of Object.keys(user.groups)) {
-            for (const _groupName of user.groups[permissionName]) {
+        // Handle both old format (user.groups) and new format (user.permissions.groups)
+        const userGroups = user.permissions?.groups || user.groups || {}
+        for (const permissionName of Object.keys(userGroups)) {
+            for (const _groupName of userGroups[permissionName]) {
                 if (groupName === _groupName) {
-                    permissions[permissionName].push(user.name)
+                    permissions[permissionName].push(user.username || user.name)
                 }
             }
         }
@@ -110,42 +112,92 @@ export async function loadGroup(groupName) {
     const exists = await fs.pathExists(groupFile)
     if (!exists) return null
     const groupData = JSON.parse(await fs.promises.readFile(groupFile, 'utf8'))
-    // Public access is stored as an empty user entry in the "other" section of the galene group file.
-    // However, Pyrite stores it as a boolean bit in the group object, as this "empty" user does not exist.
-    // The code below does the conversion between these two formats.
-    const public_access_idx = groupData.other.findIndex(
-        (obj) => obj && Object.keys(obj).length === 0 && Object.getPrototypeOf(obj) === Object.prototype)
-    if (public_access_idx !== -1) {
-        groupData['public-access'] = true
-        groupData.other.splice(public_access_idx, 1)
-    } else {
-        groupData['public-access'] = false
+
+    /*
+     * PYRITE GROUP LOADING - Handle Multiple Formats
+     *
+     * Pyrite must handle both:
+     * 1. Pyrite-managed groups: Have op/other/presenter arrays (synchronized)
+     * 2. Native Galene groups: Have users dictionary (created externally)
+     *
+     * For native Galene groups, we read them in read-only mode for display purposes.
+     * They won't be editable in Pyrite admin until converted/synchronized.
+     */
+
+    // Initialize arrays for Pyrite's internal format (defensive coding)
+    if (!groupData.op) groupData.op = []
+    if (!groupData.other) groupData.other = []
+    if (!groupData.presenter) groupData.presenter = []
+
+    // Detect native Galene format and extract user info for read-only display
+    let isNativeGaleneFormat = false
+    if (groupData.users && typeof groupData.users === 'object' && !Array.isArray(groupData.users)) {
+        isNativeGaleneFormat = true
+        // Extract usernames for display (but don't sync back - this is read-only)
+        for (const [username, userConfig] of Object.entries(groupData.users)) {
+            const permission = userConfig.permissions || 'other'
+            // Map for internal display only
+            if (permission === 'op' && !groupData.op.includes(username)) {
+                groupData.op.push(username)
+            } else if (permission === 'present' && !groupData.presenter.includes(username)) {
+                groupData.presenter.push(username)
+            } else if (!groupData.other.includes(username)) {
+                groupData.other.push(username)
+            }
+        }
     }
+
+    // Handle public access field
+    // Native Galene uses 'wildcard-user', Pyrite manages 'public-access' boolean
+    if (groupData['wildcard-user']) {
+        groupData['public-access'] = true
+    } else if (groupData.other) {
+        // Pyrite legacy: empty object in 'other' array means public access
+        const public_access_idx = groupData.other.findIndex(
+            (obj) => obj && typeof obj === 'object' && Object.keys(obj).length === 0 && Object.getPrototypeOf(obj) === Object.prototype
+        )
+        if (public_access_idx !== -1) {
+            groupData['public-access'] = true
+            groupData.other.splice(public_access_idx, 1)
+        } else {
+            groupData['public-access'] = false
+        }
+    }
+
+    // Load Pyrite's managed permissions from settings.users (source of truth)
     groupData._permissions = await loadGroupPermissions(groupName)
+
+    // Internal metadata
     groupData._name = groupName
     groupData._newName = groupName
     groupData._delete = false
     groupData._unsaved = false
+    groupData._isNativeGalene = isNativeGaleneFormat  // Flag for UI to show read-only state
+
     return groupData
 }
 
 export async function loadGroups(publicEndpoint = false) {
-    logger.debug(`load groups`)
+    const endpoint = `${config.sfu.url}/public-groups.json`
+    console.log(`load groups: ${endpoint}`)
     // Galene group endpoint; contains client count and locked info. Add it
     // to the more static Pyrite group info.
     let galeneGroups
     try {
-        galeneGroups = await (await fetch(`${config.sfu.url}/public-groups.json`)).json()
+        galeneGroups = await (await fetch(endpoint)).json()
+        console.log("GALENE GROUPS", galeneGroups)
     } catch (err) {
         galeneGroups = []
     }
 
     const groupsPath = path.join(config.sfu.path, 'groups')
+
+    console.log("GROUPS PATH", groupsPath)
     const files = await globby(path.join(groupsPath, '**', '*.json'))
     const groupNames = files.map((i) => {
         return i.substring(groupsPath.length+1, i.length-5)
     })
-    const fileData = await Promise.all(groupNames.map((i) => loadGroup(i, 'utf8')))
+    const fileData = await Promise.all(groupNames.map((i) => loadGroup(i)))
 
     const groupsData = []
     for (const [index, groupName] of groupNames.entries()) {
@@ -155,6 +207,7 @@ export async function loadGroups(publicEndpoint = false) {
         if (publicEndpoint) {
             // name, description, clientCount
             for (const [key, value] of Object.entries(groupData)) {
+                console.log("GROUP DATA", key, value)
                 if (key === 'public' && value === false) {
                     continue
                 }

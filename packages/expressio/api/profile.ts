@@ -17,9 +17,10 @@ export default function apiProfile(router:any) {
 
         // Check session for user context
         if (session?.userid) {
-            const user = config.users.find((user) => user.name === session.userid)
+            const {getUserByUsername} = await import('../lib/user.ts')
+            const user = await getUserByUsername(session.userid)
             if (user) {
-                if (user.admin) {
+                if (user.permissions.admin) {
                     context = adminContext()
                 } else {
                     context = userContext()
@@ -37,26 +38,24 @@ export default function apiProfile(router:any) {
     })
 
     router.post('/api/login', async (req, params, session) => {
-        const users = config.users
+        const {authenticateUser} = await import('../lib/user.ts')
         const body = await req.json()
         const username = body.username
+        const password = body.password
         let context = deniedContext()
-        const user = users.find((user) => user.name === username)
+        
+        const user = await authenticateUser(username, password)
         if (user) {
-            const password = body.password
-            if (password === user.password) {
-                // Set the user in session
-                session.userid = username
+            // Set the user in session
+            session.userid = user.username
 
-                if (user.admin) {
-                    context = adminContext()
-                } else {
-                    context = userContext()
-                }
+            if (user.permissions.admin) {
+                context = adminContext()
             } else {
-                context = deniedContext()
+                context = userContext()
             }
         }
+        
         return new Response(JSON.stringify(context), {
             headers: { 'Content-Type': 'application/json' }
         })
