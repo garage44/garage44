@@ -2,17 +2,17 @@
 
     .icon-grid {
         display: grid;
-        gap: var(--spacer-4);
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: var(--spacer-1);
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
 
         .item {
             align-items: center;
-            background: var(--surface-7);
+            background: var(--surface-1);
             border: 1px solid var(--surface-6);
             border-radius: var(--border-radius-d);
             display: flex;
             flex-direction: column;
-            padding: var(--spacer-3);
+            padding: var(--spacer-2);
             transition: all 0.2s ease;
 
             &:hover {

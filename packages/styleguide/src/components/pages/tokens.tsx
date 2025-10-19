@@ -1,5 +1,4 @@
 import {h} from 'preact'
-import './tokens.css'
 
 const colors = [
     {id: 'surface', name: 'Surface (Neutral)'},
@@ -11,7 +10,7 @@ const colors = [
 
 
 export const Tokens = () => (
-    <div class="styleguide-page">
+    <div class="c-tokens styleguide-page">
         <h1>Design Tokens</h1>
         <p>Colors, typography, spacing, and other design system values</p>
 

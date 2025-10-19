@@ -6,32 +6,6 @@
   box-sizing: border-box;
 }
 
-html, body {
-    background: var(--surface-1);
-    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    font-size: var(--font-d);
-    height: 100vh;
-    line-height: 1.6;
-    margin: 0;
-    padding: 0;
-}
-
-/* Animations */
-@keyframes fade-in {
-
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-.fade-in {
-    animation: fade-in 0.2s ease-in forwards;
-}
-
 .styleguide-page {
     margin: 0 auto;
     max-width: 1800px;

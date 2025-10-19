@@ -1,5 +1,4 @@
 import {h} from 'preact'
-import './component-demo.css'
 
 interface ComponentDemoProps {
     children: any

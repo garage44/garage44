@@ -6,7 +6,6 @@ import {useState, useEffect} from 'preact/hooks'
 import {Components} from './pages/components'
 import {Forms} from './pages/forms'
 import {Tokens} from './pages/tokens'
-import './main.css'
 
 // List of all components for the submenu
 const components = [

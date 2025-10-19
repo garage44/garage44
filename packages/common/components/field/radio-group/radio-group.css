@@ -14,8 +14,8 @@
 
             input[type="radio"] {
                 appearance: none;
-                background: var(--surface-8);
-                border: 1px solid var(--surface-6);
+                background: var(--surface-3);
+                border: 1px solid var(--surface-4);
                 border-radius: 50%;
                 cursor: pointer;
                 flex-shrink: 0;
@@ -25,7 +25,7 @@
                 width: 20px;
 
                 &:hover:not(:disabled) {
-                    background: var(--surface-8);
+                    background: var(--surface-4);
                     border-color: var(--surface-5);
                     box-shadow: 0 1px 2px oklch(0 0 0 / 0.05);
                 }
@@ -67,14 +67,14 @@
             }
 
             label {
-                color: var(--surface-1);
+                color: var(--surface-7);
                 cursor: pointer;
                 font-size: var(--font-d);
                 user-select: none;
             }
 
             input:checked + label {
-                color: var(--surface-0);
+                color: var(--primary-5);
                 font-weight: 500;
             }
         }

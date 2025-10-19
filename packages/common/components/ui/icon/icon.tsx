@@ -99,7 +99,7 @@ svg.workspace = svg.circle_edit_outline
 svg.plus_extra = svg.loupe
 svg.plus_collaped = svg.plus_circle_multiple_outline
 
-function Icon({className = '', disabled = false, name, onClick = null, size = 'd', tip = null, type = 'default'}) {
+function Icon({className = '', disabled = false, name, onClick = null, size = 'd', tip = null, type = 'default'}: {className?: string, disabled?: boolean, name: string, onClick?: ((e: any) => void) | null, size?: string, tip?: string | null, type?: string}) {
     const iconRef = useRef(null)
     const tippyInstanceRef = useRef<TippyInstance | null>(null)
     const tipSignal = signal(tip)

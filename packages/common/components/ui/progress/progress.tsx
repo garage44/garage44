@@ -12,7 +12,7 @@ export function Progress({boundaries, loading, percentage, iso6391}) {
     })
 
     return <div class="c-progress">
-        <div class="bar" style={`width:${percentage}%`}>
+        <div class="bar" style={{width: `${percentage * 100}%`}}>
             <div className="percentage">
                 {loading ? <Icon name="loading" className="rotate" size="s" /> : `${intlPercentage.format(percentage)}`}
             </div>

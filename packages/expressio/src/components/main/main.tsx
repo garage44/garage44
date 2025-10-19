@@ -10,7 +10,6 @@ import {Login} from '@/components/pages/login/login'
 import {deepSignal} from 'deepsignal'
 import {toIso6391} from '@garage44/enola/iso-codes'
 import {useEffect} from 'preact/hooks'
-import './main.css'
 
 const state = deepSignal({
     workspace_id: null,

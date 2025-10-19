@@ -16,9 +16,8 @@ import {
 } from '@garage44/common/components'
 import {Notifier} from '@garage44/common/lib/notifier'
 import {deepSignal} from 'deepsignal'
-import {h} from 'preact'
-import {useEffect} from 'preact/hooks'
-import './forms.css'
+
+
 
 // Form data model
 const formData = deepSignal({

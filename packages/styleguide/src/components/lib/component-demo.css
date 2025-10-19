@@ -1,5 +1,5 @@
 .c-component-demo {
-    background: var(--surface-7);
+    background: var(--surface-2);
     border: 1px solid var(--surface-3);
     border-radius: var(--border-radius-l);
     box-shadow: 0 1px 3px oklch(from var(--surface-0) l c h / 0.1),
@@ -48,7 +48,7 @@
     .demo-grid {
         display: flex;
         flex-direction: column;
-        gap: var(--spacer-4);
+        gap: var(--spacer-2);
     }
 
     .item-container {

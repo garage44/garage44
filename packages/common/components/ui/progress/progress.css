@@ -1,15 +1,15 @@
 .c-progress {
-    background: var(--info-2);
+    background: var(--surface-3);
     position: relative;
     width: 100%;
 
     .bar {
-        background: var(--info-5);
+        background: var(--primary-5);
         height: var(--spacer-3);
 
         .percentage {
             align-items: center;
-            color: var(--info-8);
+            color: var(--primary-1);
             display: flex;
             font-size: var(--font-s);
             font-weight: 600;

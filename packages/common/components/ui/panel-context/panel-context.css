@@ -9,7 +9,7 @@
     min-width: var(--spacer-5);
     /* opacity: 0; */
     position: relative;
-    width: 200px;
+    width: 240px;
 
     header {
         align-items: center;
@@ -111,7 +111,7 @@
                 display: flex;
                 gap: var(--spacer-1);
                 justify-content: flex-start;
-                padding: var(--spacer-1);
+                /* padding: var(--spacer-1); */
                 text-decoration: none;
                 transition: all 0.3s ease;
                 width: 100%;

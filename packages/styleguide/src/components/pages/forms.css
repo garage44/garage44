@@ -29,8 +29,8 @@
 /* Form Demo Layout */
 
 .form-demo {
-    background: var(--surface-7);
-    border: 1px solid var(--surface-6);
+    background: var(--surface-2);
+    border: 1px solid var(--surface-3);
     border-radius: var(--border-radius-l);
     box-shadow: var(--shadow-soft);
     margin: var(--spacer-6) 0;
@@ -46,7 +46,6 @@
 /* Form Sections */
 
 .form-section {
-    animation: slideInUp 0.6s ease-out;
     background: transparent;
     border: none;
     border-bottom: 1px solid var(--surface-4);
@@ -75,7 +74,7 @@
     .header {
         background: transparent;
         border-bottom: 1px solid var(--surface-4);
-        color: var(--surface-0);
+        color: var(--primary-5);
         font-size: var(--font-d);
         font-weight: 600;
         margin: 0 0 var(--spacer-2) 0;
@@ -235,23 +234,6 @@
         }
     }
 }
-
-/* Animation for form sections */
-
-@keyframes slideInUp {
-
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Responsive Design */
 
 @media (max-width: 768px) {
 

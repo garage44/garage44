@@ -300,20 +300,17 @@ tasks.stylesApp = new Task('styles:app', async function taskStylesApp({minify, s
     const appCssPath = path.join(settings.dir.src, 'css', 'app.css')
 
     try {
-        // Use Lightning CSS bundle API for proper @import resolution
         const {code, map} = bundle({
             filename: appCssPath,
             minify,
             sourceMap: sourcemap,
         })
 
-        // Add sourceMappingURL comment to the CSS
         let finalCSS = code.toString()
         if (map && sourcemap) {
             finalCSS += `\n/*# sourceMappingURL=${filename}.map */`
         }
 
-        // Write the bundled CSS
         await fs.writeFile(path.join(settings.dir.public, filename), finalCSS)
 
         // Write source map if generated

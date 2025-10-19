@@ -27,13 +27,12 @@ import {Notifier} from '@garage44/common/lib/notifier'
 import {StateView} from '../lib/state-view'
 import {deepSignal} from 'deepsignal'
 import {svg} from '@garage44/common/components/ui/icon/icon'
-import './components.css'
 
 
 const data = deepSignal({
     model: {
         checkboxGroupValue: ['item1'],
-        checkboxValue: false,
+        checkboxValue: true,
         contextInput: '',
         contextSelectValue: 'option1',
         multiSelectValue: [],
@@ -135,9 +134,21 @@ export const Components = () => (
 
         <ComponentDemo title="Field Checkbox" component="FieldCheckbox">
             <div class="demo-grid">
-                <FieldCheckbox help="Enter help text..." label="Basic Checkbox" model={data.model.checkboxValue} />
-                <FieldCheckbox help="Enter help text..." label="Checked" model={data.model.checkboxValue} />
-                <FieldCheckbox help="Enter help text..." label="Disabled" model={data.model.checkboxValue} />
+                <FieldCheckbox
+                    help="Enter help text..."
+                    label="Basic Checkbox"
+                    model={data.model.checkboxValue}
+                />
+                <FieldCheckbox
+                    help="Enter help text..."
+                    label="Checked"
+                    model={data.model.checkboxValue}
+                />
+                <FieldCheckbox
+                    help="Enter help text..."
+                    label="Disabled"
+                    model={data.model.checkboxValue}
+                />
             </div>
             <StateView state={{checkboxValue: data.model.checkboxValue}} title="Field Checkbox State" />
         </ComponentDemo>
@@ -146,8 +157,7 @@ export const Components = () => (
             <div class="icon-grid">
                 {Object.keys(svg).map(iconName => (
                     <div key={iconName} class="item">
-                        <Icon name={iconName} />
-                        <span class="label">{iconName}</span>
+                        <Icon name={iconName} tip={iconName} />
                     </div>
                 ))}
             </div>

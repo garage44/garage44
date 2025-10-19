@@ -19,7 +19,7 @@ interface AppLayoutProps {
 export const AppLayout = ({sidebar, children}: AppLayoutProps) => (
     <div class="c-app-layout">
         {sidebar}
-        <main class="c-app-layout__content">
+        <main class="content">
             {children}
         </main>
     </div>
