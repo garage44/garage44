@@ -1,5 +1,4 @@
 import {logger} from './logger'
-// import {changeLanguage, init as i18nextInit, t as i18nextT} from 'i18next'
 import i18next from 'i18next'
 import {copyObject, keyMod, keyPath} from './utils'
 import {effect} from '@preact/signals'

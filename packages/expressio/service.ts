@@ -206,6 +206,11 @@ cli.usage('Usage: $0 [task]')
             })
     }, async(argv) => {
         await initConfig(config)
+
+        // Initialize UserManager and migrate users
+        const {initializeUserManager} = await import('./lib/user.ts')
+        await initializeUserManager()
+
         // Initialize enola first
         await enola.init(config.enola, logger)
 

@@ -38,7 +38,7 @@ export function Translation({group, path}) {
                     }}
                     size="s"
                     tip={$t('translation.tip.translation_view')}
-                    type={Object.keys(group.target).length === $s.workspace.config.languages.target.length ? "success" : 'warning'}
+                    type={Object.keys(group.target).length === $s.workspace.config.languages.target.length ? 'success' : 'warning'}
                 />
                 <Icon
                     name="translate"

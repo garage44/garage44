@@ -9,7 +9,7 @@ import {useEffect} from 'preact/hooks'
 
 export function Config() {
 
-    const {validation, isValid, errors} = createValidator({
+    const {errors, isValid, validation} = createValidator({
         language_ui: [
             $s.language_ui.$selection,
             required('UI language is required'),

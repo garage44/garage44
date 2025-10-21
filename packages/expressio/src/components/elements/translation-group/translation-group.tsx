@@ -8,9 +8,9 @@ import {tag_updated} from '@/lib/ui'
 import classnames from 'classnames'
 
 interface TranslationGroupType {
+    [key: string]: unknown
     _id: string
     source?: string
-    [key: string]: unknown
 }
 
 function groupMatchesFilter(group: TranslationGroupType, id: string, filter: string): boolean {
@@ -40,11 +40,11 @@ function groupMatchesFilter(group: TranslationGroupType, id: string, filter: str
     return false
 }
 
-export function TranslationGroup({group, level = 0, path, filter = '', sort = 'asc'}: {
+export function TranslationGroup({filter = '', group, level = 0, path, sort = 'asc'}: {
+    filter?: string
     group: TranslationGroupType
     level?: number
     path: string[]
-    filter?: string
     sort?: 'asc' | 'desc'
 }) {
     // Determine if this group matches the filter

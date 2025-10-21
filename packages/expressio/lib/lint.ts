@@ -51,7 +51,7 @@ export async function lintWorkspace(workspace, lintMode: 'sync' | 'lint') {
                     sourceText = `tag_${randomId()}`
                 }
 
-                let {ref, id} = pathCreate(workspace.i18n, tagPath, {
+                let {id, ref} = pathCreate(workspace.i18n, tagPath, {
                     _id: lastKey,
                     _soft: true,
                     source: sourceText,

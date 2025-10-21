@@ -3,28 +3,30 @@ import {enola, logger, workspaces} from '../service.ts'
 
 export default function apiConfig(router) {
     // HTTP API endpoints using familiar Express-like pattern
-    router.get('/api/config', () => {
+    router.get('/api/config', async () => {
         // For now, assume admin user since we don't have session context here
         // In a real implementation, you'd get the user from the session
-        const user = config.users.find((i) => i.name === 'admin')
+        const {getUserByUsername} = await import('../lib/user.ts')
+        const user = await getUserByUsername('admin')
         return new Response(JSON.stringify({
-            enola: enola.getConfig(user.admin),
+            enola: enola.getConfig(user?.permissions.admin || false),
             language_ui: config.language_ui,
             workspaces: workspaces.workspaces.map((workspace) => ({
                 source_file: workspace.config.source_file,
                 workspace_id: workspace.config.workspace_id,
             })),
         }), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 
     router.post('/api/config', async (req) => {
         // For now, assume admin user since we don't have session context here
-        const user = config.users.find((user) => user.name === 'admin')
-        if (!user.admin) {
+        const {getUserByUsername} = await import('../lib/user.ts')
+        const user = await getUserByUsername('admin')
+        if (!user?.permissions.admin) {
             return new Response(JSON.stringify({error: 'Unauthorized'}), {
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 status: 403,
             })
         }
@@ -42,10 +44,10 @@ export default function apiConfig(router) {
         config.language_ui = body.language_ui
 
         // Get workspace names from request
-        const requestedWorkspaceIds = body.workspaces.map(w => w.workspace_id)
+        const requestedWorkspaceIds = body.workspaces.map((w) => w.workspace_id)
         // Find workspaces that need to be removed
         const redundantWorkspaces = workspaces.workspaces.filter(
-            workspace => !requestedWorkspaceIds.includes(workspace.config.workspace_id),
+            (workspace) => !requestedWorkspaceIds.includes(workspace.config.workspace_id),
         )
 
         // Remove redundant workspaces
@@ -70,7 +72,7 @@ export default function apiConfig(router) {
                 workspace_id: workspace.config.workspace_id,
             })),
         }), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 }

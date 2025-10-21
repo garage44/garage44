@@ -10,7 +10,7 @@ import path from 'node:path'
 
 // Simple HTTP router for Bun.serve that mimics Express pattern
 class Router {
-    routes: { method: string, path: RegExp, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response> }[] = [];
+    routes: {handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>; method: string; path: RegExp}[] = []
 
     get(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
         this.add('GET', path, handler)
@@ -35,13 +35,13 @@ class Router {
             handler,
             method,
             path: regex,
-        });
+        })
     }
 
     async route(req: Request, session?: any): Promise<Response | null> {
-        const url = new URL(req.url);
-        const pathname = url.pathname;
-        for (const { method, path, handler } of this.routes) {
+        const url = new URL(req.url)
+        const pathname = url.pathname
+        for (const {handler, method, path} of this.routes) {
             if (req.method === method && path.test(pathname)) {
                 // Extract params
                 const paramValues = pathname.match(path)?.slice(1) || []
@@ -67,7 +67,7 @@ const parseCookies = (request: Request) => {
     }
 
     const cookies: Record<string, string> = {}
-    cookieHeader.split(';').forEach(cookie => {
+    cookieHeader.split(';').forEach((cookie) => {
         const [name, value] = cookie.trim().split('=')
         if (name && value) {
             cookies[name] = decodeURIComponent(value)
@@ -83,16 +83,16 @@ const sessionMiddleware = (request: Request) => {
 
     if (!sessionId || !sessions.has(sessionId)) {
         const newSessionId = crypto.randomUUID()
-        const session = { userid: null }
+        const session = {userid: null}
         sessions.set(newSessionId, session)
-        return { session, sessionId: newSessionId }
+        return {session, sessionId: newSessionId}
     }
 
-    return { session: sessions.get(sessionId), sessionId }
+    return {session: sessions.get(sessionId), sessionId}
 }
 
 // Auth middleware for Bun.serve
-const authMiddleware = (request: Request, session: any) => {
+const authMiddleware = async (request: Request, session: any) => {
     const url = new URL(request.url)
 
     if (!url.pathname.startsWith('/api')) {
@@ -121,7 +121,7 @@ const authMiddleware = (request: Request, session: any) => {
         // Find the first admin user and set their userid in the session
         const {loadUsers} = await import('./user.ts')
         const users = await loadUsers()
-        const adminUser = users.find(user => user.permissions.admin)
+        const adminUser = users.find((user) => user.permissions.admin)
         if (adminUser) {
             session.userid = adminUser.username
         }
@@ -144,9 +144,14 @@ const setSessionCookie = (response: Response, sessionId: string) => {
 }
 
 // Auth middleware that can be reused across workspace routes
-const requireAdmin = (ctx, next) => {
-    const user = config.users.find((user) => user.name === ctx.session?.userid)
-    if (!user?.admin) {
+const requireAdmin = async (ctx, next) => {
+    if (!ctx.session?.userid) {
+        throw new Error('Unauthorized')
+    }
+
+    const {getUserByUsername} = await import('./user.ts')
+    const user = await getUserByUsername(ctx.session.userid)
+    if (!user?.permissions.admin) {
         throw new Error('Unauthorized')
     }
     // Add user to context for handlers
@@ -173,9 +178,9 @@ async function initMiddleware(bunchyConfig) {
         // Handle WebSocket upgrade requests
         if (url.pathname === '/ws' || url.pathname === '/bunchy') {
             logger.info(`[HTTP] ${url.pathname} hit, attempting Bun WebSocket upgrade`)
-            devContext.addHttp({ ts: Date.now(), method: 'WS_UPGRADE', url: url.pathname })
+            devContext.addHttp({method: 'WS_UPGRADE', ts: Date.now(), url: url.pathname})
             if (server && typeof server.upgrade === 'function') {
-                const success = server.upgrade(request, { data: { endpoint: url.pathname } })
+                const success = server.upgrade(request, {data: {endpoint: url.pathname}})
                 if (success) {
                     return
                 }
@@ -185,13 +190,13 @@ async function initMiddleware(bunchyConfig) {
         }
 
         logger.info(`[HTTP] ${url.pathname} miss`)
-        devContext.addHttp({ ts: Date.now(), method: request.method, url: url.pathname })
+        devContext.addHttp({method: request.method, ts: Date.now(), url: url.pathname})
 
         // Handle session and auth
-        const { session, sessionId } = sessionMiddleware(request)
+        const {session, sessionId} = sessionMiddleware(request)
 
-        if (!authMiddleware(request, session)) {
-            return new Response('Unauthorized', { status: 401 })
+        if (!(await authMiddleware(request, session))) {
+            return new Response('Unauthorized', {status: 401})
         }
 
         // Serve static files from public directory
@@ -201,7 +206,7 @@ async function initMiddleware(bunchyConfig) {
                 const file = Bun.file(filePath)
                 if (await file.exists()) {
                     logger.debug(`[HTTP] GET ${filePath}`)
-                    devContext.addHttp({ ts: Date.now(), method: 'GET', url: filePath, status: 200 })
+                    devContext.addHttp({method: 'GET', status: 200, ts: Date.now(), url: filePath})
                     return new Response(file)
                 }
             } catch (error) {
@@ -211,12 +216,12 @@ async function initMiddleware(bunchyConfig) {
         }
 
         // Try the router for HTTP API endpoints
-        const apiResponse = await router.route(request, session);
+        const apiResponse = await router.route(request, session)
         if (apiResponse) {
             logger.info('[HTTP] API route matched', url.pathname)
-            devContext.addHttp({ ts: Date.now(), method: request.method, url: url.pathname, status: apiResponse.status })
+            devContext.addHttp({method: request.method, status: apiResponse.status, ts: Date.now(), url: url.pathname})
             // Set session cookie if this is a new session
-            return setSessionCookie(apiResponse, sessionId);
+            return setSessionCookie(apiResponse, sessionId)
         }
 
         // Try the enhanced request handler (for WebSocket API, etc.)
@@ -224,7 +229,7 @@ async function initMiddleware(bunchyConfig) {
             const response = await handleRequest(request, config,logger, bunchyConfig)
             if (response) {
                 logger.info('[HTTP] Enhanced handler matched', url.pathname)
-                devContext.addHttp({ ts: Date.now(), method: request.method, url: url.pathname, status: response.status })
+                devContext.addHttp({method: request.method, status: response.status, ts: Date.now(), url: url.pathname})
                 return setSessionCookie(response, sessionId)
             }
         } catch (error) {
@@ -238,10 +243,10 @@ async function initMiddleware(bunchyConfig) {
             if (await indexFile.exists()) {
                 logger.info('[HTTP] SPA fallback for', url.pathname)
                 const response = new Response(indexFile, {
-                    headers: { 'Content-Type': 'text/html' }
+                    headers: {'Content-Type': 'text/html'},
                 })
-                devContext.addHttp({ ts: Date.now(), method: request.method, url: url.pathname, status: 200 })
-                return setSessionCookie(response, sessionId);
+                devContext.addHttp({method: request.method, status: 200, ts: Date.now(), url: url.pathname})
+                return setSessionCookie(response, sessionId)
             }
         } catch (error) {
             // index.html doesn't exist
@@ -250,14 +255,14 @@ async function initMiddleware(bunchyConfig) {
 
         // Final fallback - 404
         logger.info('[HTTP] 404 for', url.pathname)
-        const response = new Response('Not Found', { status: 404 })
-        devContext.addHttp({ ts: Date.now(), method: request.method, url: url.pathname, status: 404 })
-        return setSessionCookie(response, sessionId);
+        const response = new Response('Not Found', {status: 404})
+        devContext.addHttp({method: request.method, status: 404, ts: Date.now(), url: url.pathname})
+        return setSessionCookie(response, sessionId)
     }
 
     return {
         handleRequest: finalHandleRequest,
-        handleWebSocket
+        handleWebSocket,
     }
 }
 

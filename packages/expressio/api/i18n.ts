@@ -13,7 +13,7 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
     apiWs.post('/api/workspaces/:workspace_id/paths', async(_context, request) => {
         const {workspace_id} = request.params
         const workspace = workspaces.get(workspace_id)
-        const {path, value} = request.data as {path: string[], value: any}
+        const {path, value} = request.data as {path: string[]; value: any}
         pathCreate(workspace.i18n, path, value, workspace.config.languages.target)
         workspace.save()
     })
@@ -31,14 +31,14 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
     apiWs.put('/api/workspaces/:workspace_id/paths', async(_context, request) => {
         const {workspace_id} = request.params
         const workspace = workspaces.get(workspace_id)
-        const {old_path, new_path} = request.data
+        const {new_path, old_path} = request.data
         pathMove(workspace.i18n, old_path, new_path)
         workspace.save()
     })
     // oxlint-disable-next-line require-await
     apiWs.post('/api/workspaces/:workspace_id/collapse', async(_context, request) => {
         const {workspace_id} = request.params
-        const {path, tag_modifier, value} = request.data as {path: string[], tag_modifier?: boolean, value?: any}
+        const {path, tag_modifier, value} = request.data as {path: string[]; tag_modifier?: boolean; value?: any}
         const workspace = workspaces.get(workspace_id)
 
         // Determine which mode to use based on the request
@@ -63,7 +63,7 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
     apiWs.post('/api/workspaces/:workspace_id/translate', async(_context, request) => {
         const workspace = workspaces.get(request.params.workspace_id)
 
-        const {path, value, ignore_cache} = request.data
+        const {ignore_cache, path, value} = request.data
 
         // Expand the path to ensure it's visible in the UI
         pathToggle(workspace.i18n, path, {_collapsed: false}, 'all' as const)
@@ -111,7 +111,7 @@ export default function apiI18n(router: any) {
         const workspaceId = params.param0 // Extract workspace_id from path params
         const workspace = workspaces.get(workspaceId)
         return new Response(JSON.stringify(i18nFormat(workspace.i18n, workspace.config.languages.target)), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 }

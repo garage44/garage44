@@ -43,6 +43,7 @@ AI Decision Records (ADRs) are structured documents that capture important archi
 | [012](./ADR-012-design-system-consolidation.md) | Design System Consolidation | Architecture | Accepted | 2025-10-15 |
 | [013](./ADR-013-theme-switching-system.md) | Theme Switching System | Architecture | Accepted | 2025-10-15 |
 | [014](./ADR-014-unified-theme-system.md) | Unified Theme System | Architecture | Accepted | 2025-10-16 |
+| [015](./ADR-015-unified-authentication-flow.md) | Unified Authentication Flow | Architecture | Proposed | 2025-01-27 |
 
 ### ADRs by Decision Type
 
@@ -58,6 +59,7 @@ AI Decision Records (ADRs) are structured documents that capture important archi
 - [ADR-012](./ADR-012-design-system-consolidation.md): Design System Consolidation
 - [ADR-013](./ADR-013-theme-switching-system.md): Theme Switching
 - [ADR-014](./ADR-014-unified-theme-system.md): Unified Theme System
+- [ADR-015](./ADR-015-unified-authentication-flow.md): Unified Authentication Flow
 - Pattern: [Architecture Pattern](./guide/PATTERNS.md#architecture-pattern)
 
 **Tool Adoption/Replacement** (Developer Tooling):

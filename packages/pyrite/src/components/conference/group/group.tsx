@@ -1,7 +1,10 @@
 import {IconLogo} from '@garage44/common/components'
 import {Stream} from '../stream/stream'
-import {useEffect, useRef, useMemo} from 'preact/hooks'
+import {useEffect, useRef, useMemo, useCallback} from 'preact/hooks'
 import {$s} from '@/app'
+import {api, notifier} from '@garage44/common/app'
+import {connect} from '@/models/sfu/sfu'
+import {currentGroup} from '@/models/group'
 
 export const Group = () => {
     const viewRef = useRef<HTMLDivElement>(null)
@@ -13,7 +16,7 @@ export const Group = () => {
 
     // Computed: sortedStreams
     const sortedStreams = useMemo(() => {
-        return [...$s.streams].sort((a, b) => {
+        return [...$s.streams].toSorted((a, b) => {
             if (a.username < b.username) return -1
             if (a.username > b.username) return 1
             return 0
@@ -32,7 +35,7 @@ export const Group = () => {
      * Also, learned from this resource:
      * https://github.com/Alicunde/Videoconference-Dish-CSS-JS
      */
-    const calcLayout = () => {
+    const calcLayout = useCallback(() => {
         if (!viewRef.current) return
         const containerWidth = viewRef.current.offsetWidth
         const containerHeight = viewRef.current.offsetHeight
@@ -60,12 +63,58 @@ export const Group = () => {
         }
 
         viewRef.current.style.setProperty('--stream-width', `${layout.width}px`)
-    }
+    }, [$s.streams.length, aspectRatio])
 
     // Watch streamsCount and streamsPlayingCount
     useEffect(() => {
         requestAnimationFrame(calcLayout)
-    }, [streamsCount, streamsPlayingCount])
+    }, [streamsCount, streamsPlayingCount, calcLayout])
+
+    // Auto-connect logic
+    useEffect(() => {
+        const attemptAutoConnect = async () => {
+            if ($s.group.connected) {
+                return // Already connected
+            }
+
+            const group = currentGroup()
+            if (!group) {
+                return // No group data
+            }
+
+            try {
+                // Check if group allows anonymous access
+                if (group['allow-anonymous'] && group['public-access']) {
+                    // Connect anonymously
+                    await connect('', '')
+                } else if ($s.user.username && $s.user.password) {
+                    // Use stored credentials
+                    await connect($s.user.username, $s.user.password)
+                } else if (group['public-access'] && !group['allow-anonymous']) {
+                    // Guest access with stored username or default
+                    const username = $s.user.username || 'Guest'
+                    await connect(username, '')
+                } else {
+                    // Group requires authentication but no credentials stored
+                    notifier.notify({
+                        level: 'error',
+                        message: 'This group requires authentication. Please log in first.'
+                    })
+                    return
+                }
+            } catch (err) {
+                // Connection failed - could be auth error or network error
+                notifier.notify({
+                    level: 'error',
+                    message: err === 'not authorised' ?
+                        'Authentication failed. Please check your credentials.' :
+                        'Failed to connect to group. Please try again.'
+                })
+            }
+        }
+
+        attemptAutoConnect()
+    }, [])
 
     // Setup and cleanup
     useEffect(() => {
@@ -89,7 +138,7 @@ export const Group = () => {
                 resizeObserverRef.current.disconnect()
             }
         }
-    }, [])
+    }, [calcLayout])
 
     return (
         <div ref={viewRef} class="c-group">

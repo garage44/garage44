@@ -47,9 +47,9 @@ export function DirectoryBrowser({onSelect}) {
                 onClick={() => onSelect(state.current)}
                 tip={() => {
                     if (state.current.workspace) {
-                        return "Add directory to workspaces"
+                        return 'Add directory to workspaces'
                     }
-                    return "Create new workspace"
+                    return 'Create new workspace'
                 }}
                 type="info"
             />
@@ -62,9 +62,9 @@ export function DirectoryBrowser({onSelect}) {
                         onClick={() => loadDirectory(state.parentPath)}
                     >..</div>
                 </div>
-                {state.directories.map(dir => (
+                {state.directories.map((dir) => (
                     <div
-                        class={classnames("directory", {'is-workspace': dir.is_workspace})}
+                        class={classnames('directory', {'is-workspace': dir.is_workspace})}
                         onClick={() => loadDirectory(dir.path)}
                     >{dir.name}</div>
                 ))}

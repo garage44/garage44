@@ -17,11 +17,11 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
         // List directories
         let entries: any[] = []
         try {
-            const dirents = await fs.readdir(absPath, { withFileTypes: true })
-            entries = await Promise.all(dirents.filter(d => d.isDirectory()).map((dirent) => {
+            const dirents = await fs.readdir(absPath, {withFileTypes: true})
+            entries = await Promise.all(dirents.filter((d) => d.isDirectory()).map((dirent) => {
                 const dirPath = path.join(absPath, dirent.name)
                 // Check if this directory is a workspace root
-                const is_workspace = workspaces.workspaces.some(ws => path.dirname(ws.config.source_file) === dirPath)
+                const is_workspace = workspaces.workspaces.some((ws) => path.dirname(ws.config.source_file) === dirPath)
                 return {
                     is_workspace,
                     name: dirent.name,
@@ -35,7 +35,7 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
         // Find parent path
         const parent = path.dirname(absPath)
         // Find current workspace if any
-        const currentWorkspace = workspaces.workspaces.find(ws => path.dirname(ws.config.source_file) === absPath) || null
+        const currentWorkspace = workspaces.workspaces.find((ws) => path.dirname(ws.config.source_file) === absPath) || null
 
         return {
             current: {
@@ -74,7 +74,7 @@ export default function apiWorkspaces(router: any) {
         const engine = Object.keys(config.enola.engines)[0] || 'deepl'
         const usage = await enola.usage(engine)
         return new Response(JSON.stringify(usage), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 
@@ -113,7 +113,7 @@ export default function apiWorkspaces(router: any) {
         Object.assign(workspace.config, workspace_data.workspace.config)
         workspace.save()
         return new Response(JSON.stringify({languages: workspace.config.languages}), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 
@@ -123,7 +123,7 @@ export default function apiWorkspaces(router: any) {
         await workspaces.delete(workspaceId)
 
         return new Response(JSON.stringify({message: 'ok'}), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 
@@ -133,7 +133,7 @@ export default function apiWorkspaces(router: any) {
             const workspace = await workspaces.add(body.path)
 
             return new Response(JSON.stringify({workspace: workspace.config}), {
-                headers: { 'Content-Type': 'application/json' }
+                headers: {'Content-Type': 'application/json'},
             })
         } catch (error) {
             logger.error(`Failed to add workspace: ${error}`)

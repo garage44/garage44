@@ -20,7 +20,7 @@ export function WorkspaceSettings() {
         return null
     }
     // Updated validator usage
-    const {validation, isValid, errors} = createValidator({
+    const {errors, isValid, validation} = createValidator({
         source: [
             $s.workspace.config.languages.$source,
             required('Source language is required'),
@@ -78,7 +78,7 @@ export function WorkspaceSettings() {
                 </div>
                 <div className="options">
                     {state.target_languages.sort((a, b) => a.name.localeCompare(b.name)).map((language) => {
-                        return <div class={classnames("option", {
+                        return <div class={classnames('option', {
                             'is-invalid': !validation.value[`target_${language.id}_engine`].isValid || !validation.value[`target_${language.id}_formality`].isValid,
                             'is-touched': validation.value[`target_${language.id}_engine`].isTouched || validation.value[`target_${language.id}_formality`].isTouched,
                         })}>

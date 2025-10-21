@@ -111,6 +111,11 @@ export const Login = ({ groupId }: LoginProps) => {
         const group = currentGroup()
         setAuthOption(group)
 
+        // Pre-populate with stored credentials if available
+        if ($s.user.username) {
+            // Credentials are already in $s.user from main login
+        }
+
         ;(async () => {
             setBusy(true)
             await queryDevices()

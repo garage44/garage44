@@ -11,8 +11,8 @@ import {useEffect} from 'preact/hooks'
 
 // Define interface for the tag object
 interface TagData {
-    path: string[];
-    value: EnolaTag;
+    path: string[]
+    value: EnolaTag
 }
 
 export function WorkspaceTranslations() {
@@ -96,7 +96,7 @@ export function WorkspaceTranslations() {
         </div>
 
         <TranslationGroup
-            group={{ _id: 'root', ...$s.workspace.i18n }}
+            group={{_id: 'root', ...$s.workspace.i18n}}
             path={[]}
             filter={$s.filter}
             sort={$s.sort}
@@ -122,7 +122,7 @@ events.on('app:init', () => {
     })
 
     // Add handler for full i18n state updates
-    ws.on('/i18n/state', ({workspace_id, i18n, timestamp}) => {
+    ws.on('/i18n/state', ({i18n, timestamp, workspace_id}) => {
 
         // Only apply updates for the current workspace
         if (!$s.workspace || $s.workspace.config.workspace_id !== workspace_id) {

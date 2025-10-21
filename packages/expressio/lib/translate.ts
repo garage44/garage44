@@ -29,12 +29,12 @@ async function translate_tag(workspace, tagPath:string[], sourceText:string, per
             translations.push(translation)
             // Add delay between languages
             if (workspace.config.languages.target.indexOf(language) < workspace.config.languages.target.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, LANGUAGE_PROCESSING_DELAY))
+                await new Promise((resolve) => setTimeout(resolve, LANGUAGE_PROCESSING_DELAY))
             }
         } catch (error) {
             if (error.response?.status === 429) {
                 const retryAfter = error.response.headers['retry-after'] || 60
-                await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000))
                 const retryTranslation = await enola.translate(language.engine, ref[id], language)
                 translations.push(retryTranslation)
             } else {
@@ -68,12 +68,12 @@ async function translate_path(workspace, tagPath:string[], ignore_cache) {
             translations.push(translation)
             // Add delay between languages
             if (workspace.config.languages.target.indexOf(language) < workspace.config.languages.target.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, LANGUAGE_PROCESSING_DELAY))
+                await new Promise((resolve) => setTimeout(resolve, LANGUAGE_PROCESSING_DELAY))
             }
         } catch (error) {
             if (error.response?.status === 429) {
                 const retryAfter = error.response.headers['retry-after'] || 60
-                await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
+                await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000))
                 const retryTranslation = await enola.translateBatch(language.engine, targets, language)
                 translations.push(retryTranslation)
             } else {

@@ -159,7 +159,7 @@ export const Main = () => {
                                             percentage={engine.usage.count / engine.usage.limit}
                                             iso6391={toIso6391($s.language_ui.selection)}
                                         />
-                                    </div>
+                                    </div>,
                                 )}
                             </div>
                         )

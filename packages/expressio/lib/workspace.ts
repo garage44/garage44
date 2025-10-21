@@ -272,7 +272,7 @@ export class Workspace {
     }
 
     // Apply linting results without affecting history
-    async applyLinting(mode: "sync" | "lint"): Promise<void> {
+    async applyLinting(mode: 'sync' | 'lint'): Promise<void> {
         // Store current history operation state
         const previousHistoryState = this.isHistoryOperation
 

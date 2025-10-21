@@ -9,13 +9,13 @@ ws.on('open', function open() {
 
     // Send a test message
     const testMessage = {
-      data: 'Hello from test client',
-      type: 'test',
+        data: 'Hello from test client',
+        type: 'test',
     }
 
     console.log('Sending test message:', testMessage)
     ws.send(JSON.stringify(testMessage))
-});
+})
 
 ws.on('message', function message(data) {
     console.log('📨 Received message:', data.toString())

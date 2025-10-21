@@ -60,7 +60,6 @@ export const ConferenceApp = () => {
 
             <Router>
                 <Route path="/groups/:groupId" component={Group} />
-                <Route path="/groups/:groupId/login" component={Login} />
                 <Route default component={GroupsContext} />
             </Router>
 

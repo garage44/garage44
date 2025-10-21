@@ -18,29 +18,29 @@ export function WorkspaceSelector({workspaces}: WorkspaceSelectorProps) {
             <div class="wrapper">
                 <div className="options">
                     {workspaces.map((workspace:WorkspaceDescription) =>
-                    <div className={classnames('option', workspace.status)} key={workspace.workspace_id}>
-                        <Icon
-                            name="close"
-                            onClick={() => {
-                                workspaces.splice(0, workspaces.length, ...workspaces.filter((w) => w !== workspace))
-                            }}
-                            tip={
-                                workspace.status === 'existing' ?
-                                    $t('settings.tip.workspace_existing', {source_file: workspace.source_file}) :
-                                    $t('settings.tip.workspace_new', {source_file: workspace.source_file})
-                            }
-                            type="info"
-                        />
-                        {workspace.status === 'new' ? <FieldText
-                            autofocus={true}
-                            model={workspace.$workspace_id}
-                        /> : <div className="label">
-                            {workspace.workspace_id}
-                        </div>}
-                    </div>)}
+                        <div className={classnames('option', workspace.status)} key={workspace.workspace_id}>
+                            <Icon
+                                name="close"
+                                onClick={() => {
+                                    workspaces.splice(0, workspaces.length, ...workspaces.filter((w) => w !== workspace))
+                                }}
+                                tip={
+                                    workspace.status === 'existing' ?
+                                        $t('settings.tip.workspace_existing', {source_file: workspace.source_file}) :
+                                        $t('settings.tip.workspace_new', {source_file: workspace.source_file})
+                                }
+                                type="info"
+                            />
+                            {workspace.status === 'new' ? <FieldText
+                                autofocus={true}
+                                model={workspace.$workspace_id}
+                            /> : <div className="label">
+                                {workspace.workspace_id}
+                            </div>}
+                        </div>)}
                 </div>
                 <DirectoryBrowser
-                    onSelect={({workspace, path}) => {
+                    onSelect={({path, workspace}) => {
                         workspaces.push({
                             source_file: `${path}/.expressio.json`,
                             status: workspace ? 'existing' : 'new',

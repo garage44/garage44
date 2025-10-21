@@ -1,12 +1,12 @@
 export interface Notification {
-    id: number
-    icon: string
+    id?: number
+    icon?: string
     message: string
-    link: {
+    link?: {
         url: string
         text: string
     }
-    list: string[]
+    list?: string[]
     progress?: {
         boundaries: number[]
         percentage: number

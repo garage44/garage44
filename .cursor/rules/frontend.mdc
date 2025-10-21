@@ -88,45 +88,105 @@ export const TranslationGroup = ({ translations, onSelect }: TranslationProps) =
 // ✅ Use DeepSignal - regular JavaScript objects that are reactive
 import {deepSignal} from 'deepsignal'
 
-// Component-level state (typical pattern)
-const localState = deepSignal({
-    filter: '',
-    sort: 'asc' as 'asc' | 'desc'
+// ✅ CRITICAL: Define state OUTSIDE component to prevent infinite re-renders
+const state = deepSignal({
+    username: '',
+    password: '',
+    activeWords: [] as AnimatedWord[],
+    // ... other state properties
 })
 
 const MyComponent = () => {
-  const state = deepSignal({count: 0})
-  // No .value needed! Direct property access
+  // ✅ State is stable across renders
   return <div onClick={() => state.count++}>{state.count}</div>
 }
 
-// ✅ Real example from translations component
-const TranslationComponent = () => {
-  const localState = deepSignal({
-    filter: '',
-    sort: 'asc' as 'asc' | 'desc'
+// ❌ DON'T define state inside component - causes infinite re-renders
+const BadComponent = () => {
+  const state = deepSignal({count: 0}) // Wrong! Recreated on every render
+  return <div onClick={() => state.count++}>{state.count}</div>
+}
+
+// ✅ Real example from login component
+const LoginComponent = () => {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  // State is defined outside component - stable across renders
+  const {validation, isValid, resetTouched} = createValidator({
+    password: [state.$password, required('Password is required')],
+    username: [state.$username, required('Username is required')],
   })
 
   return <div>
-    <input
-      type="text"
-      placeholder="Filter..."
-      value={localState.filter}
-      onInput={e => localState.filter = (e.target as HTMLInputElement).value}
+    <FieldText
+      model={state.$username}  // Pass signal directly
+      label="Username"
+      validation={validation.value.username}
     />
-    <button onClick={() => localState.sort = (localState.sort === 'asc' ? 'desc' : 'asc')}>
-      Sort: {localState.sort === 'asc' ? 'A-Z' : 'Z-A'}
-    </button>
+    <FieldText
+      model={state.$password}  // Pass signal directly
+      label="Password"
+      type="password"
+      validation={validation.value.password}
+    />
   </div>
 }
 
-// ❌ Don't use useState
+// ❌ Don't use useState for component state
 const BadComponent = () => {
-  const [count, setCount] = useState(0) // Wrong!
+  const [count, setCount] = useState(0) // Wrong! Use deepSignal instead
 }
 ```
 
 ### Advanced DeepSignal Patterns
+
+**Field Component Integration:**
+```tsx
+// ✅ Field components with signals and validation
+import {FieldText, FieldSelect} from '@garage44/common/components'
+import {createValidator, required} from '@garage44/common/lib/validation'
+
+// State defined outside component (CRITICAL for stability)
+const state = deepSignal({
+    username: '',
+    password: '',
+    workspace_id: null
+})
+
+const LoginForm = () => {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  // ✅ Validation with signals
+  const {validation, isValid, resetTouched} = createValidator({
+    password: [state.$password, required('Password is required')],
+    username: [state.$username, required('Username is required')],
+  })
+
+  return (
+    <div>
+      <FieldText
+        model={state.$username}  // ✅ Pass signal directly
+        label="Username"
+        placeholder="Enter username"
+        validation={validation.value.username}
+      />
+      <FieldText
+        model={state.$password}  // ✅ Pass signal directly
+        label="Password"
+        type="password"
+        validation={validation.value.password}
+      />
+      <FieldSelect
+        model={state.$workspace_id}  // ✅ Signal for select
+        label="Workspace"
+        options={workspaces.map(w => ({id: w.id, name: w.name}))}
+      />
+    </div>
+  )
+}
+```
 
 **Accessing Underlying Signals:**
 ```tsx
@@ -144,6 +204,38 @@ const WorkspaceSelector = () => (
     options={$s.workspaces.map(i => ({id: i.workspace_id, name: i.workspace_id}))}
   />
 )
+```
+
+**useEffect with Signals:**
+```tsx
+// ✅ Proper useEffect with signals - avoid infinite loops
+const LoginComponent = () => {
+  const [loading, setLoading] = useState(false)
+
+  // State defined outside component (prevents recreation)
+  const state = deepSignal({
+    username: '',
+    password: ''
+  })
+
+  const handleKeyPress = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      handleLogin()
+    }
+  }, [loading, handleLogin])
+
+  // ✅ useEffect with minimal dependencies
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyPress)
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress)
+    }
+  }, [animated]) // ✅ Only depend on stable props, not functions
+
+  // ❌ DON'T include functions in dependency array if they depend on signals
+  // This causes infinite re-renders:
+  // }, [animated, handleKeyPress]) // Wrong!
+}
 ```
 
 **Global State Access:**
@@ -512,6 +604,8 @@ const BadList = () => {
 
 ❌ **Don't do:**
 - Use useState instead of deepSignal for component state
+- Define deepSignal state inside components (causes infinite re-renders)
+- Include functions in useEffect dependencies that depend on signals
 - Create inline styles - use CSS classes with modern nesting
 - Use direct SVG/font icons - use Icon component
 - Use BEM naming (`.c-button__icon`) - use nesting instead
@@ -521,9 +615,14 @@ const BadList = () => {
 - Use .value syntax with DeepSignal (it's not needed)
 - Forget to import global state with `{$s, ws} from '@/app'`
 - Create utility CSS classes - create components instead
+- Pass non-signal values to Field model props
+- Forget to pass validation prop to Field components
 
 ✅ **Do:**
+- Define deepSignal state OUTSIDE components for stability
 - Use deepSignal for component-level reactive state
+- Pass signals directly to Field components (model={state.$field})
+- Include validation prop in Field components
 - Access global state through $s object
 - Use existing CSS custom properties (var(--spacer-1), var(--font-d))
 - Use Icon component from @garage44/common/components
@@ -533,3 +632,4 @@ const BadList = () => {
 - Test with multiple languages and character sets
 - Use modern CSS nesting in component CSS files
 - Extract reusable patterns as components, not utility classes
+- Keep useEffect dependencies minimal and stable

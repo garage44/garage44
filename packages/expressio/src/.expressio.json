@@ -580,7 +580,15 @@
             }
         },
         "translation": {
-            "message": {},
+            "message": {
+                "translated": {
+                    "cache": "11ab93331ac681a7",
+                    "source": "Translated string",
+                    "target": {
+
+                    }
+                }
+            },
             "placeholder": {
                 "translate": {
                     "cache": "fdbb80e87a78423c",

@@ -10,11 +10,11 @@ import {tag_updated} from '@/lib/ui'
 
 // Define a more specific type for group instead of 'any'
 interface TranslationGroup {
-    _collapsed?: boolean;
-    [key: string]: unknown;
+    [key: string]: unknown
+    _collapsed?: boolean
 }
 
-export function GroupActions({className, group, path}: {className?: string, group: TranslationGroup, path: string[]}) {
+export function GroupActions({className, group, path}: {className?: string; group: TranslationGroup; path: string[]}) {
     return <div class={classnames('c-group-actions', className)}>
         <div className="collapse-toggle">
             <Icon
@@ -105,7 +105,7 @@ export function GroupActions({className, group, path}: {className?: string, grou
                 }}
                 size="s"
                 tip={$s.env.ctrlKey ? $t('translation.tip.translate_group_force') : $t('translation.tip.translate_group')}
-                type={$s.env.ctrlKey ? "danger" : "info"}
+                type={$s.env.ctrlKey ? 'danger' : 'info'}
             />
 
             {path.length > 0 && <Icon

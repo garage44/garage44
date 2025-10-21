@@ -30,7 +30,11 @@ export default function AdminControls({ path }: AdminControlsProps) {
     const logout = async () => {
         const context = await api.get('/api/logout')
         Object.assign($s.admin, context)
-        route('/admin/login')
+        // Clear stored credentials
+        $s.user.username = ''
+        $s.user.password = ''
+        store.save()
+        route('/')
     }
 
     const toggleCollapse = () => {
