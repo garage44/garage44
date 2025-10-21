@@ -62,7 +62,7 @@ if (BUN_ENV === 'development') {
     bunchyArgs(cli, bunchyConfig)
 }
 
-cli.usage('Usage: $0 [task]')
+void cli.usage('Usage: $0 [task]')
     .detectLocale(false)
     .command('import', 'Import source translations from i18next file', (yargs) =>
         yargs
@@ -89,7 +89,7 @@ cli.usage('Usage: $0 [task]')
 
         keyMod(importData, (sourceRef, id, refPath) => {
             // The last string in refPath must not be a reserved keyword (.e.g source/target)
-            const last = refPath[refPath.length - 1]
+            const last = refPath.at(-1)
             if (last === 'source' || last === 'target') {
                 logger.warn(`skipping reserved keyword: ${last} (refPath: ${refPath.join('.')})`)
                 return

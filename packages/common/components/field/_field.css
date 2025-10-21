@@ -105,15 +105,20 @@
             color: var(--danger-5);
         }
 
-        input:not([type="checkbox"]):not([type="radio"]),
-        textarea,
-        select {
-            border-color: var(--danger-5);
+        &.is-touched {
 
-            &:focus {
-                box-shadow: 0 0 0 3px var(--danger-1), 0 2px 4px var(--danger-2);
+            input:not([type="checkbox"]):not([type="radio"]),
+            textarea,
+            select {
+                border-color: var(--danger-5);
+
+                &:focus {
+                    box-shadow: 0 0 0 3px var(--danger-1), 0 2px 4px var(--danger-2);
+                }
             }
         }
+
+
     }
 
     .help,

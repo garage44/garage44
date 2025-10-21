@@ -1,7 +1,8 @@
-import {useEffect, useState, useCallback} from 'preact/hooks'
+import {useEffect, useState, useCallback, useMemo} from 'preact/hooks'
 import {Button, FieldText} from '@garage44/common/components'
 import {deepSignal} from 'deepsignal'
 import {createValidator, required} from '@garage44/common/lib/validation'
+import {$t} from '@/app'
 
 const TRANSLATIONS = [
     'Expression', // English
@@ -47,25 +48,26 @@ const TRANSLATIONS = [
     'Biểu hiện', // Vietnamese
 ]
 
-const ANIMATION_DURATION = 3000
-const MIN_SPAWN_DELAY = 1000
+const ANIMATION_DURATION = 7000
+const MIN_SPAWN_DELAY = 500
 const MAX_SPAWN_DELAY = 3000
-const MAX_CONCURRENT_WORDS = 8
+const MAX_CONCURRENT_WORDS = 12
 
 interface AnimatedWord {
-    id: number
-    text: string
-    position: {x: number, y: number}
-    scale: number
-    opacity: number
     angle: number
     distance: number
+    id: number
+    opacity: number
+    position: {x: number; y: number}
+    scale: number
+    text: string
 }
 
 interface LoginProps {
-    title?: string
     animated?: boolean
+    logo?: string
     onLogin: (username: string, password: string) => Promise<string | null>
+    title?: string
 }
 
 const state = deepSignal({
@@ -78,16 +80,15 @@ const state = deepSignal({
     username: '',
 })
 
-export const Login = ({ title = 'Login', animated = true, onLogin }: LoginProps) => {
+export const Login = ({animated = true, logo, onLogin, title = 'Login'}: LoginProps) => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
-
-
-    const {validation, isValid, resetTouched} = createValidator({
+    // Memoize the validator to prevent re-creation on every render
+    const {isValid, resetTouched, validation} = useMemo(() => createValidator({
         password: [state.$password, required('Password is required')],
         username: [state.$username, required('Username is required')],
-    })
+    }), [])
 
     const clearTimers = () => {
         if (state.animationFrame) {
@@ -115,7 +116,7 @@ export const Login = ({ title = 'Login', animated = true, onLogin }: LoginProps)
 
     const spawnWord = () => {
         const text = TRANSLATIONS[Math.floor(Math.random() * TRANSLATIONS.length)]
-        const {x, y, angle} = getRandomPosition()
+        const {angle, x, y} = getRandomPosition()
         const scale = 10.2 + Math.random() * 0.4
         const distance = 1
 
@@ -133,7 +134,7 @@ export const Login = ({ title = 'Login', animated = true, onLogin }: LoginProps)
 
         // Just remove word after animation, don't schedule next
         const timeoutId = window.setTimeout(() => {
-            state.activeWords = state.activeWords.filter(w => w.id !== newWord.id)
+            state.activeWords = state.activeWords.filter((w) => w.id !== newWord.id)
         }, ANIMATION_DURATION)
 
         state.timeoutIds = [...state.timeoutIds, timeoutId]
@@ -176,7 +177,7 @@ export const Login = ({ title = 'Login', animated = true, onLogin }: LoginProps)
         } finally {
             setLoading(false)
         }
-    }, [isValid, onLogin, resetTouched, state])
+    }, [isValid, onLogin, resetTouched])
 
     const handleKeyPress = useCallback((e: KeyboardEvent) => {
         if (e.key === 'Enter' && !loading) {
@@ -201,68 +202,68 @@ export const Login = ({ title = 'Login', animated = true, onLogin }: LoginProps)
         }
     }, [animated])
 
-    return (
-        <div class="c-login" onKeyPress={handleKeyPress}>
-            {animated && (
-                <div class="words-container">
-                    {state.activeWords.map((word) => (
-                        <div
-                            key={word.id}
-                            class="floating-translation fade-in"
-                            style={{
-                                '--angle': `${word.angle}rad`,
-                                left: `${word.position.x}px`,
-                                top: `${word.position.y}px`,
-                            }}
-                        >
-                            {word.text}
-                        </div>
-                    ))}
+    return <div class="c-login" onKeyPress={handleKeyPress}>
+        {animated && <div class="words-container">
+            {state.activeWords.map((word) => (
+                <div
+                    key={word.id}
+                    class="floating-translation fade-in"
+                    style={{
+                        '--angle': `${word.angle}rad`,
+                        left: `${word.position.x}px`,
+                        top: `${word.position.y}px`,
+                    }}
+                >
+                    {word.text}
                 </div>
-            )}
+            ))}
+        </div>}
 
-            <div class="login-container">
-                <div class="logo">
-                    <div class="logo-text">{title}</div>
-                </div>
+        <div class="login-container">
+            <div style="position: absolute; visibility: hidden;">
+                {$t('direction_helper')}
+            </div>
+            <div class="logo">
+                {logo && <img src={logo} alt="Logo" />}
+                <div class="logo-text">{title}</div>
+            </div>
 
-                <div class="field">
-                    <FieldText
-                        model={state.$username}
-                        label="Username"
-                        placeholder="Enter your username"
-                        validation={validation.value.username}
-                    />
-                </div>
+            <div class="field">
+                <FieldText
+                    help="Enter your username"
+                    model={state.$username}
+                    label="Username"
+                    placeholder="Enter your username"
+                    validation={validation.value.username}
+                />
+            </div>
 
-                <div class="field">
-                    <FieldText
-                        model={state.$password}
-                        label="Password"
-                        placeholder="Enter your password"
-                        type="password"
-                        validation={validation.value.password}
-                    />
-                </div>
+            <div class="field">
+                <FieldText
+                    help="Enter your password"
+                    model={state.$password}
+                    label="Password"
+                    placeholder="Enter your password"
+                    type="password"
+                    validation={validation.value.password}
+                />
+            </div>
 
-                {error && (
-                    <div class="error-message">
-                        {error}
-                    </div>
-                )}
+            {error && <div class="error-message">
+                {error}
+            </div>}
 
-                <div class="actions">
-                    <Button
-                        disabled={loading || !isValid.value}
-                        icon="login"
-                        tip="Login"
-                        variant="menu"
-                        onClick={handleLogin}
-                    >
-                        {loading ? 'Logging in...' : 'Login'}
-                    </Button>
-                </div>
+            <div class="actions">
+                <Button
+                    disabled={loading || !isValid.value}
+                    icon="login"
+                    tip="Login"
+                    variant="menu"
+                    onClick={handleLogin}
+                >
+                    {loading ? 'Logging in...' : 'Login'}
+                </Button>
             </div>
         </div>
-    )
+    </div>
 }

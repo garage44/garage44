@@ -1,4 +1,5 @@
 import {ComponentChildren} from 'preact'
+import {$t} from '@/app'
 
 interface AppLayoutProps {
     children: ComponentChildren
@@ -16,8 +17,9 @@ interface AppLayoutProps {
  *   <YourMainContent />
  * </AppLayout>
  */
-export const AppLayout = ({sidebar, children}: AppLayoutProps) => (
+export const AppLayout = ({children, sidebar}: AppLayoutProps) => (
     <div class="c-app-layout">
+        <div style="position: absolute; visibility: hidden;">{$t('direction_helper')}</div>
         {sidebar}
         <main class="content">
             {children}

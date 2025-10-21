@@ -1,4 +1,3 @@
-// oxlint-disable-next-line no-duplicate-imports
 import {batch, computed, signal} from '@preact/signals'
 import type {Signal} from '@preact/signals'
 
@@ -30,17 +29,17 @@ function setTouched(modelRef: ModelRef, touched = true) {
 // Combine multiple validation rules into one
 const and = (...rules: ValidationRule[]): ValidationRule => ({
     // Use first failing message, or empty string if all pass
-    message: rules.find(rule => !rule.test)?.message || '',
+    message: rules.find((rule) => !rule.test)?.message || '',
     // All rules must pass
-    test: (value) => rules.every(rule => rule.test(value)),
+    test: (value) => rules.every((rule) => rule.test(value)),
 })
 
 // Add a new interface for validation result
 interface ValidationResult {
-    isValid: boolean
     errors: string[]
     isDirty: boolean
     isTouched: boolean
+    isValid: boolean
 }
 
 // Add this helper function to aggregate validation errors
@@ -100,7 +99,8 @@ function createValidator<TValidations extends Record<string, ValidationEntry>>(v
         return result
     })
 
-    const isValid = computed(() => Object.values(validationState.value).every(validator => validator.isValid))
+
+    const isValid = computed(() => Object.values(validationState.value).every((validator) => validator.isValid))
     const errors = computed(() => {
         // Only compute errors when form is invalid
         if (isValid.value) {
@@ -111,12 +111,12 @@ function createValidator<TValidations extends Record<string, ValidationEntry>>(v
 
     // Check if any field is marked as dirty
     const isDirty = computed(() =>
-        Object.values(validationState.value).some(validator => validator.isDirty),
+        Object.values(validationState.value).some((validator) => validator.isDirty),
     )
 
     // Check if any field has been touched
     const isTouched = computed(() =>
-        Object.values(validationState.value).some(validator => validator.isTouched),
+        Object.values(validationState.value).some((validator) => validator.isTouched),
     )
 
     // Function to reset the initial values and mark form as clean

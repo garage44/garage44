@@ -106,7 +106,6 @@ export async function authenticateUser(username: string, password: string) {
         logger.info(`Available users in UserManager: ${allUsers.map((u) => u.username).join(', ')}`)
 
         const result = await userManager.authenticate(username, password)
-        console.log('AUTH RESULT', result)
         if (result) {
             logger.info(`Authentication successful for user: ${username}`)
         } else {
