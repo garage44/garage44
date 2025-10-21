@@ -1,13 +1,15 @@
 import {config} from './config.ts'
 import {logger} from '../service.ts'
 import fs from 'fs-extra'
-import {globby} from 'globby'
+import {Glob} from 'bun'
 import path from 'node:path'
 
 export async function loadRecordings(groupId) {
     logger.debug(`load recordings from group: ${groupId}`)
     const recordingsPath = path.join(config.sfu.path, 'recordings')
-    const files = await globby(path.join(recordingsPath, groupId, '*.webm'))
+    const glob = new Glob('*.webm')
+    const scanPath = path.join(recordingsPath, groupId)
+    const files = Array.from(glob.scanSync(scanPath)).map((f) => path.join(scanPath, f))
     const fileStats = await Promise.all(files.map((i) => fs.stat(i, 'utf8')))
     const fileNames = files.map((i) => {
         return i.replace(path.join(recordingsPath, groupId), '').replace('.webm', '').replace('/', '')

@@ -2,14 +2,21 @@ import {keyMod, keyPath, randomId} from '@garage44/common/lib/utils.ts'
 import {pathCreate, pathDelete} from '@garage44/common/lib/paths.ts'
 import {enola} from '../service.ts'
 import fs from 'fs-extra'
-import {glob} from 'glob'
+import {Glob} from 'bun'
 import path from 'node:path'
 import {translate_tag} from './translate.ts'
 
 export async function lintWorkspace(workspace, lintMode: 'sync' | 'lint') {
     // oxlint-disable-next-line no-template-curly-in-string
     const scan_target = workspace.config.sync.dir.replace('${workspaceFolder}', path.dirname(workspace.config.source_file))
-    const files = await glob(scan_target)
+
+    // Extract base directory and pattern for Bun's Glob
+    const firstGlobChar = scan_target.search(/[*?{[]/)
+    const baseDir = firstGlobChar === -1 ? scan_target : scan_target.slice(0, scan_target.lastIndexOf('/', firstGlobChar))
+    const pattern = firstGlobChar === -1 ? '**/*' : scan_target.slice(baseDir.length + 1)
+
+    const glob = new Glob(pattern)
+    const files = Array.from(glob.scanSync(baseDir)).map((f) => path.join(baseDir, f))
 
     const files_content = await Promise.all(files.map((file) => fs.readFile(file, 'utf8')))
     const tagRegex = /\$t\('([^']+)'(?:\s*,\s*{[^}]*})?\)/g

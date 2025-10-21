@@ -1,7 +1,7 @@
 import {broadcast, settings} from './index.ts'
 import {Task} from './task.ts'
 import fs from 'fs-extra'
-import {glob} from 'glob'
+import {Glob} from 'bun'
 import path from 'path'
 import template from 'lodash.template'
 import {throttle} from '@garage44/common/lib/utils'
@@ -343,12 +343,14 @@ tasks.stylesApp = new Task('styles:app', async function taskStylesApp({minify, s
 
 tasks.stylesComponents = new Task('styles:components', async function taskStylesComponents({minify, sourcemap}) {
     // Create a temporary components entry file that imports all component CSS files
-    const imports = await glob([
-        path.join(settings.dir.common, '**', '*.css'),
-        path.join(settings.dir.components, '**', '*.css'),
-    ])
+    // Bun's Glob handles multiple patterns by creating separate instances
+    const glob1 = new Glob('**/*.css')
+    const glob2 = new Glob('**/*.css')
 
-    const allImports = imports.flat()
+    const imports1 = Array.from(glob1.scanSync(settings.dir.common)).map((f) => path.join(settings.dir.common, f))
+    const imports2 = Array.from(glob2.scanSync(settings.dir.components)).map((f) => path.join(settings.dir.components, f))
+
+    const allImports = [...imports1, ...imports2]
 
     // Create the components entry file content using absolute paths
     const componentImports = allImports.map((importFile) => {

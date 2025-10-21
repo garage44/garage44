@@ -13,15 +13,14 @@
     "@garage44/enola": "workspace:^",
     "classnames": "catalog:",
     "deepsignal": "catalog:",
-    "figlet": "^1.8.0",
-    "fs-extra": "^11.3.2",
-    "glob": "^11.0.3",
-    "picocolors": "^1.1.1",
+    "figlet": "catalog:",
+    "fs-extra": "catalog:",
+    "i18next": "^25.6.0",
+    "picocolors": "catalog:",
     "preact": "catalog:",
     "preact-router": "catalog:",
-    "rc": "^1.2.8",
-    "ws": "^8.18.1",
-    "yargs": "^18.0.0"
+    "rc": "catalog:",
+    "yargs": "catalog:"
   },
   "files": [
     "api/*",

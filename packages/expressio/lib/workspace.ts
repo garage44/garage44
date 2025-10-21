@@ -9,7 +9,7 @@ import {
 
 import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import fs from 'fs-extra'
-import {glob} from 'glob'
+import {Glob} from 'bun'
 import {lintWorkspace} from './lint.ts'
 import {logger} from '../service.ts'
 import path from 'node:path'
@@ -260,7 +260,14 @@ export class Workspace {
         // oxlint-disable-next-line no-template-curly-in-string
         const scan_target = this.config.sync.dir.replace('${workspaceFolder}', path.dirname(this.config.source_file))
         logger.info(`[workspace-${this.config.workspace_id}] watch ${scan_target}`)
-        const files = await glob(scan_target)
+
+        // Extract base directory and pattern for Bun's Glob
+        const firstGlobChar = scan_target.search(/[*?{[]/)
+        const baseDir = firstGlobChar === -1 ? scan_target : scan_target.slice(0, scan_target.lastIndexOf('/', firstGlobChar))
+        const pattern = firstGlobChar === -1 ? '**/*' : scan_target.slice(baseDir.length + 1)
+
+        const glob = new Glob(pattern)
+        const files = Array.from(glob.scanSync(baseDir)).map((f) => path.join(baseDir, f))
 
         logger.info(`[workspace-${this.config.workspace_id}] watching ${files.length} files`)
 

@@ -14,7 +14,6 @@
     "deepsignal": "catalog:",
     "figlet": "^1.8.0",
     "fs-extra": "^11.3.2",
-    "globby": "^15.0.0",
     "picocolors": "^1.1.1",
     "preact": "catalog:",
     "preact-router": "catalog:",

@@ -2,7 +2,7 @@ import {config} from './config.ts'
 import {logger} from '../service.ts'
 import {dictionary} from './utils.ts'
 import fs from 'fs-extra'
-import {globby} from 'globby'
+import {Glob} from 'bun'
 import path from 'node:path'
 import {uniqueNamesGenerator} from 'unique-names-generator'
 import {loadUsers, saveUsers} from './user.ts'
@@ -154,7 +154,7 @@ export async function loadGroup(groupName) {
     } else if (groupData.other) {
         // Pyrite legacy: empty object in 'other' array means public access
         const public_access_idx = groupData.other.findIndex(
-            (obj) => obj && typeof obj === 'object' && Object.keys(obj).length === 0 && Object.getPrototypeOf(obj) === Object.prototype
+            (obj) => obj && typeof obj === 'object' && Object.keys(obj).length === 0 && Object.getPrototypeOf(obj) === Object.prototype,
         )
         if (public_access_idx !== -1) {
             groupData['public-access'] = true
@@ -185,15 +185,16 @@ export async function loadGroups(publicEndpoint = false) {
     let galeneGroups
     try {
         galeneGroups = await (await fetch(endpoint)).json()
-        console.log("GALENE GROUPS", galeneGroups)
+        console.log('GALENE GROUPS', galeneGroups)
     } catch (err) {
         galeneGroups = []
     }
 
     const groupsPath = path.join(config.sfu.path, 'groups')
 
-    console.log("GROUPS PATH", groupsPath)
-    const files = await globby(path.join(groupsPath, '**', '*.json'))
+    console.log('GROUPS PATH', groupsPath)
+    const glob = new Glob('**/*.json')
+    const files = Array.from(glob.scanSync(groupsPath)).map((f) => path.join(groupsPath, f))
     const groupNames = files.map((i) => {
         return i.substring(groupsPath.length+1, i.length-5)
     })
@@ -207,7 +208,6 @@ export async function loadGroups(publicEndpoint = false) {
         if (publicEndpoint) {
             // name, description, clientCount
             for (const [key, value] of Object.entries(groupData)) {
-                console.log("GROUP DATA", key, value)
                 if (key === 'public' && value === false) {
                     continue
                 }
