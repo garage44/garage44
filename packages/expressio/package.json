@@ -11,7 +11,6 @@
     "@garage44/bunchy": "workspace:^",
     "@garage44/common": "workspace:^",
     "@garage44/enola": "workspace:^",
-    "chokidar": "^4.0.3",
     "classnames": "catalog:",
     "deepsignal": "catalog:",
     "figlet": "^1.8.0",

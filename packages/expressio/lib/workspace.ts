@@ -13,7 +13,7 @@ import {glob} from 'glob'
 import {lintWorkspace} from './lint.ts'
 import {logger} from '../service.ts'
 import path from 'node:path'
-import {watch} from 'chokidar'
+import {watch} from 'node:fs'
 
 export class Workspace {
     private wsManager?: WebSocketServerManager
@@ -43,7 +43,7 @@ export class Workspace {
     private isHistoryOperation = false
 
     // Flag to prevent recursive history additions
-    private watcher: any
+    private watchers: Array<{close(): void}> = []
     // Add transaction tracking with smarter time-based grouping
     private pendingChanges = false
     private batchUpdateInProgress = false
@@ -65,6 +65,7 @@ export class Workspace {
     // ms to consider related operations as a single action
 
     // Add a proxy handler for tracking object changes
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private createDeepProxy(obj: any, onChange: () => void) {
         return new Proxy(obj, {
             deleteProperty: (target, prop) => {
@@ -249,7 +250,10 @@ export class Workspace {
 
     async unwatch() {
         logger.info(`[workspace-${this.config.workspace_id}] unwatch workspace`)
-        await this.watcher.close()
+        for (const watcher of this.watchers) {
+            watcher.close()
+        }
+        this.watchers = []
     }
 
     async watch() {
@@ -257,16 +261,21 @@ export class Workspace {
         const scan_target = this.config.sync.dir.replace('${workspaceFolder}', path.dirname(this.config.source_file))
         logger.info(`[workspace-${this.config.workspace_id}] watch ${scan_target}`)
         const files = await glob(scan_target)
-        this.watcher = watch(files as string[])
-        this.watcher.on('ready', () => {
-            const watched = this.watcher.getWatched()
-            const fileCount = Object.values(watched)
-                .reduce((sum, files) => sum + (files as string[]).length, 0)
-            logger.info(`[workspace-${this.config.workspace_id}] watching ${fileCount} files`)
-        })
-        this.watcher.on('change', async() => {
-            await this.applyLinting('sync')
-        })
+
+        logger.info(`[workspace-${this.config.workspace_id}] watching ${files.length} files`)
+
+        // Create watchers for each file
+        for (const file of files) {
+            try {
+                const watcher = watch(file, async (eventType, filename) => {
+                    logger.debug(`[workspace-${this.config.workspace_id}] file changed: ${filename} (${eventType})`)
+                    await this.applyLinting('sync')
+                })
+                this.watchers.push(watcher)
+            } catch (error) {
+                logger.warn(`[workspace-${this.config.workspace_id}] failed to watch file ${file}: ${error}`)
+            }
+        }
 
         await this.applyLinting('sync')
     }
