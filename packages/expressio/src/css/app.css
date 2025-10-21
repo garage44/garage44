@@ -1,8 +1,6 @@
 /* Import unified theme from common package */
 @import "../../../common/css/theme.css";
 
-@import "./_spacing.css";
-
 html, body {
     background: var(--surface-1);
     font-family: Inter, sans-serif;

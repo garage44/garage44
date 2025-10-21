@@ -134,7 +134,7 @@ export async function lintWorkspace(workspace, lintMode: 'sync' | 'lint') {
             return {
                 create_tags: [...fileGroups.entries()].map(([file, groups]) => ({file, groups})),
                 delete_tags: Object.entries(groupedDeleteTags)
-                    .sort(([first], [second]) => first.split('.').length - second.split('.').length)
+                    .toSorted(([first], [second]) => first.split('.').length - second.split('.').length)
                     .map(([group, tags]) => ({group, tags})),
             }
         }

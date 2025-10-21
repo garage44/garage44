@@ -77,7 +77,7 @@ export function WorkspaceSettings() {
                     {$t('settings.label.target_languages')}
                 </div>
                 <div className="options">
-                    {state.target_languages.sort((a, b) => a.name.localeCompare(b.name)).map((language) => {
+                    {state.target_languages.toSorted((a, b) => a.name.localeCompare(b.name)).map((language) => {
                         return <div class={classnames('option', {
                             'is-invalid': !validation.value[`target_${language.id}_engine`].isValid || !validation.value[`target_${language.id}_formality`].isValid,
                             'is-touched': validation.value[`target_${language.id}_engine`].isTouched || validation.value[`target_${language.id}_formality`].isTouched,
@@ -143,7 +143,7 @@ export function WorkspaceSettings() {
                         notifier.notify({message: 'Please fix validation errors', type: 'error'})
                         return
                     }
-                    store.save(persistantState)
+                    store.save()
                     const selectedLanguages = state.target_languages
                         .filter((language) => language.selected)
                         .map((language) => {
@@ -158,7 +158,7 @@ export function WorkspaceSettings() {
                     await api.post(`/api/workspaces/${$s.workspace.config.workspace_id}`, {
                         workspace: $s.workspace,
                     })
-                    notify({message: $t('notifications.settings_updated'), type: 'info'})
+                    notifier.notify({message: $t('notifications.settings_updated'), type: 'info'})
                 }}
                 disabled={!isValid.value}
                 tip={errors.value}

@@ -66,7 +66,7 @@ export function TranslationGroup({filter = '', group, level = 0, path, sort = 'a
             // Otherwise, only show entries that match or have matching descendants
             return groupMatchesFilter(subGroup as TranslationGroupType, id, filter)
         })
-        .sort(([idA], [idB]) => sort === 'asc' ? idA.localeCompare(idB) : idB.localeCompare(idA))
+        .toSorted(([idA], [idB]) => sort === 'asc' ? idA.localeCompare(idB) : idB.localeCompare(idA))
 
     // If filter is active, auto-expand groups with matches
     const autoExpand = !!filter

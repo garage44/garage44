@@ -1,7 +1,7 @@
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
- Copyright (C) 2025 Jeroen van Veen, Inc. <https://garage44.org>
+ Copyright (C) 2025 Jeroen van Veen <https://garage44.org>
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
 
@@ -18,7 +18,7 @@ share and change all versions of a program--to make sure it remains free
 software for all its users.
 
   When we speak of free software, we are referring to freedom, not
-price.  Our General Public Licenses are designed to make sure that you
+price. Our General Public Licenses are designed to make sure that you
 have the freedom to distribute copies of free software (and charge for
 them if you wish), that you receive source code or can get it if you
 want it, that you can change the software or use pieces of it in new

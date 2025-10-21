@@ -17,12 +17,12 @@ function updateStylesheet(filename: string, publicPath: string) {
     pendingStylesheetUpdates.add(filename)
 
     // Get all stylesheet links
-    const allLinks = [...document.querySelectorAll(`link[rel=stylesheet]`)]
+    const allLinks = [...document.querySelectorAll('link[rel=stylesheet]')]
         .map((link) => link as HTMLLinkElement)
 
     // Find matching stylesheet by base name (without hash)
     const baseFileName = filename.split('.')[0] // Extract 'app' from 'app.axuasllor.css'
-    const linkElements = allLinks.filter(link => {
+    const linkElements = allLinks.filter((link) => {
         const href = link.href
         // Match /public/app.*.css or /public/components.*.css pattern
         const pattern = new RegExp(`/public/${baseFileName}\\.[^/]*\\.css`)
@@ -42,7 +42,7 @@ function updateStylesheet(filename: string, publicPath: string) {
     // When the new stylesheet loads, remove all old ones
     newLink.onload = () => {
         // Remove all matching old stylesheets
-        linkElements.forEach(oldLink => {
+        linkElements.forEach((oldLink) => {
             oldLink.remove()
         })
         pendingStylesheetUpdates.delete(filename)
@@ -230,18 +230,22 @@ function hideExceptionPage() {
 }
 
 // Helper function to initialize Bunchy with configurable log forwarding
-function initializeBunchy(options: { logPrefix?: string } = {}) { return new BunchyClient(options) }
+function initializeBunchy(options: {logPrefix?: string} = {}) {
+    return new BunchyClient(options) 
+}
 
-function setupLoggerForwarding(client: WebSocketClient, options: { prefix?: string } = {}) {
+function setupLoggerForwarding(client: WebSocketClient, options: {prefix?: string} = {}) {
     const prefix = options.prefix || 'B'
     // Set up log forwarding for the browser logger
     if (typeof (logger as any).setLogForwarder === 'function') {
-        // eslint-disable-next-line no-console
+         
         console.log('[Bunchy] Setting up log forwarder with prefix:', prefix)
         let isForwarding = false
         ;(logger as any).setLogForwarder((logLevel: any, msg: string, args: any[]) => {
             // Prevent recursive forwarding caused by logs emitted during forwarding (e.g., ws-client debug)
-            if (isForwarding) { return }
+            if (isForwarding) {
+                return 
+            }
             // Only forward if we're connected
             if ((client as any).isConnected && (client as any).isConnected()) {
                 const serializedArgs = args.map((arg) => {
@@ -263,7 +267,7 @@ function setupLoggerForwarding(client: WebSocketClient, options: { prefix?: stri
                         timestamp: new Date().toISOString(),
                     })
                     .catch((error: any) => {
-                        // eslint-disable-next-line no-console
+                         
                         console.warn('[Bunchy] Failed to forward log:', error)
                     })
                     .finally(() => {
@@ -272,7 +276,7 @@ function setupLoggerForwarding(client: WebSocketClient, options: { prefix?: stri
             }
         })
     } else {
-        // eslint-disable-next-line no-console
+         
         console.warn('[Bunchy] logger.setLogForwarder is not available')
     }
 }
@@ -280,7 +284,7 @@ function setupLoggerForwarding(client: WebSocketClient, options: { prefix?: stri
 class BunchyClient extends WebSocketClient {
     private logPrefix: string
 
-    constructor(options: { logPrefix?: string } = {}) {
+    constructor(options: {logPrefix?: string} = {}) {
         // Use the full path to prevent WebSocketClient from appending /ws
         // The endpoint should match the path provided in the server configuration
         const url = `ws://${globalThis.location.hostname}:${(globalThis as any).location.port}/bunchy`
@@ -293,7 +297,7 @@ class BunchyClient extends WebSocketClient {
         // Set up route handlers BEFORE connecting to avoid race condition
         this.setupRouter()
         // Use generic helper to attach forwarding
-        setupLoggerForwarding(this, { prefix: this.logPrefix })
+        setupLoggerForwarding(this, {prefix: this.logPrefix})
 
         // Small delay to ensure handlers are fully registered before connecting
         setTimeout(() => {
@@ -314,25 +318,27 @@ class BunchyClient extends WebSocketClient {
         })
 
         this.onRoute('/tasks/styles/app', (data) => {
-            const {filename, publicPath} = data as {filename: string, publicPath: string}
+            const {filename, publicPath} = data as {filename: string; publicPath: string}
             hideExceptionPage()
             updateStylesheet(filename, publicPath)
         })
 
         this.onRoute('/tasks/styles/components', (data) => {
-            const {filename, publicPath} = data as {filename: string, publicPath: string}
+            const {filename, publicPath} = data as {filename: string; publicPath: string}
             hideExceptionPage()
             updateStylesheet(filename, publicPath)
         })
 
         this.onRoute('/tasks/error', (data) => {
-            const {task, error, details, timestamp} = data as {task: string, error: string, details: string, timestamp: string}
+            const {details, error, task, timestamp} = data as {details: string; error: string; task: string; timestamp: string}
             showExceptionPage(task, error, details, timestamp)
         })
     }
 
     // Backwards compatible method (delegates to generic function)
-    setupLogForwarding() { setupLoggerForwarding(this, { prefix: this.logPrefix }) }
+    setupLogForwarding() {
+        setupLoggerForwarding(this, {prefix: this.logPrefix}) 
+    }
 }
 
-export {initializeBunchy, setupLoggerForwarding, BunchyClient }
+export {initializeBunchy, setupLoggerForwarding, BunchyClient}

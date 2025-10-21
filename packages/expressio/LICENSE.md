@@ -1,7 +1,7 @@
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
- Copyright (C) 2025 Jeroen van Veen, Inc. <https://garage44.org>
+ Copyright (C) 2025 Jeroen van Veen <https://garage44.org>
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
 

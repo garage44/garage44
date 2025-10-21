@@ -31,7 +31,7 @@ const runtime = {
 
 function welcomeBanner() {
     return `
-${pc.blue(figlet.textSync("Expressio"))}\n
+${pc.blue(figlet.textSync('Expressio'))}\n
  ${pc.white(pc.bold('I18n for humans, through AI...'))}
  ${pc.gray(`v${runtime.version}`)}
 `
@@ -47,7 +47,7 @@ const workspaces = new Workspaces()
 const BUN_ENV = process.env.BUN_ENV || 'production'
 
 const cli = yargs(hideBin(process.argv))
-cli.scriptName("expressio")
+cli.scriptName('expressio')
 
 if (BUN_ENV === 'development') {
     bunchyConfig = {
@@ -185,7 +185,7 @@ cli.usage('Usage: $0 [task]')
         }
 
         // oxlint-disable-next-line no-console
-        console.log(`\n✔ No issues found`)
+        console.log('\n✔ No issues found')
         process.exit(0)
     })
     .command('start', 'Start the Expressio service', (yargs) => {
@@ -252,7 +252,7 @@ cli.usage('Usage: $0 [task]')
                     return new Response(JSON.stringify(devContext.snapshot({
                         version: runtime.version,
                         workspace: 'expressio',
-                    })), { headers: { 'Content-Type': 'application/json' } })
+                    })), {headers: {'Content-Type': 'application/json'}})
                 }
                 return handleRequest(req, server)
             },

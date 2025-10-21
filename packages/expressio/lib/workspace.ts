@@ -65,7 +65,7 @@ export class Workspace {
     // ms to consider related operations as a single action
 
     // Add a proxy handler for tracking object changes
-    private createDeepProxy(obj: any, onChange: () => void): any {
+    private createDeepProxy(obj: any, onChange: () => void) {
         return new Proxy(obj, {
             deleteProperty: (target, prop) => {
                 if (prop in target && !this.isHistoryOperation) {
@@ -200,7 +200,7 @@ export class Workspace {
 
         // Augment with state keys
         keyMod(i18n, (_srcRef, _id, refPath) => {
-            const key = refPath[refPath.length - 1]
+            const key = refPath.at(-1)
             const sourceRef = keyPath(i18n, refPath)
 
             if (typeof sourceRef === 'object') {

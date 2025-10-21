@@ -30,25 +30,18 @@
     "./lib/logger.ts": "./lib/logger.browser.ts"
   },
   "dependencies": {
-    "@preact/signals": "^2.0.2",
+    "@preact/signals": "catalog:",
     "bufferutil": "^4.0.9",
-    "classnames": "^2.5.1",
+    "classnames": "catalog:",
     "cookie-parser": "^1.4.7",
-    "deepsignal": "^1.6.0",
+    "deepsignal": "catalog:",
     "i18next": "^25.6.0",
     "path-to-regexp": "^8.2.0",
-    "preact": "10.26.5",
-    "preact-router": "^4.1.2",
+    "preact": "catalog:",
+    "preact-router": "catalog:",
     "preact-transitioning": "^1.5.2",
     "tippy.js": "^6.3.7",
     "ws": "^8.18.1",
     "yargs": "^17.7.2"
-  },
-  "devDependencies": {
-    "@types/node": "^22.13.14",
-    "@types/ws": "^8.5.10",
-    "bun-types": "^1.2.7",
-    "oxlint": "^0.16.6",
-    "stylelint": "^16.17.0"
   }
 }

@@ -52,15 +52,6 @@ export default [
             '@stylistic/quotes': ['error', 'single', {avoidEscape: true}],
             // Stylistic rules
             '@stylistic/semi': ['error', 'never'],
-            '@typescript-eslint/naming-convention': ['error', {
-                filter: {
-                    match: false,
-                    regex: '^(__.*__|Content-Type)$',
-                },
-                format: ['snake_case'],
-                leadingUnderscore: 'allow',
-                selector: 'objectLiteralProperty',
-            }],
             '@typescript-eslint/no-explicit-any': 'warn',
             // TypeScript rules
             '@typescript-eslint/no-unused-vars': ['warn', {argsIgnorePattern: '^_'}],

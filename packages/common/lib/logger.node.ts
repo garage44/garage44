@@ -1,4 +1,4 @@
-type LogLevel = 'error' | 'warn' | 'info' | 'success' | 'verbose' | 'debug' | 'remote';
+type LogLevel = 'error' | 'warn' | 'info' | 'success' | 'verbose' | 'debug' | 'remote'
 
 const LEVELS: Record<LogLevel, number> = {
     debug: 5,
@@ -26,13 +26,13 @@ export class Logger {
     private level: LogLevel
     private fileStream?: any
 
-    constructor({ level = 'info', file }: { level?: LogLevel; file?: string } = {}) {
+    constructor({file, level = 'info' }: {file?: string; level?: LogLevel} = {}) {
         this.level = level
         if (file) {
             const fs = require('fs')
             const path = require('path')
-            fs.mkdirSync(path.dirname(file), { recursive: true })
-            this.fileStream = fs.createWriteStream(file, { flags: 'a' })
+            fs.mkdirSync(path.dirname(file), {recursive: true})
+            this.fileStream = fs.createWriteStream(file, {flags: 'a'})
         }
     }
 
@@ -69,7 +69,7 @@ export class Logger {
             return `${color}[${levelStr[0]}]${COLORS.reset} ${lightGreen}[${ts}] ${msg}${COLORS.reset}`
         }
 
-                if (level === 'info') {
+        if (level === 'info') {
             // Keep prefix color, but make timestamp and message text pastel blue
             const pastelBlue = '\u001B[38;5;153m' // pastel blue
             return `${color}[${levelStr[0]}]${COLORS.reset} ${pastelBlue}[${ts}] ${msg}${COLORS.reset}`
@@ -85,7 +85,9 @@ export class Logger {
     }
 
     private logToFile(msg: string) {
-        if (this.fileStream) {this.fileStream.write(msg + '\n')}
+        if (this.fileStream) {
+            this.fileStream.write(msg + '\n')
+        }
     }
 
     log(level: LogLevel, msg: string, ...args: any[]) {
@@ -105,21 +107,39 @@ export class Logger {
         this.logToFile(formatted.replaceAll(new RegExp(`${ESC}\\[[0-9;]*m`, 'g'), ''))
     }
 
-    error(msg: string, ...args: any[]) {this.log('error', msg, ...args)}
-    warn(msg: string, ...args: any[]) {this.log('warn', msg, ...args)}
-    info(msg: string, ...args: any[]) {this.log('info', msg, ...args)}
-    remote(msg: string, ...args: any[]) {this.log('remote', msg, ...args)}
-    success(msg: string, ...args: any[]) {this.log('success', msg, ...args)}
-    verbose(msg: string, ...args: any[]) {this.log('verbose', msg, ...args)}
-    debug(msg: string, ...args: any[]) {this.log('debug', msg, ...args)}
+    error(msg: string, ...args: any[]) {
+        this.log('error', msg, ...args)
+    }
+    warn(msg: string, ...args: any[]) {
+        this.log('warn', msg, ...args)
+    }
+    info(msg: string, ...args: any[]) {
+        this.log('info', msg, ...args)
+    }
+    remote(msg: string, ...args: any[]) {
+        this.log('remote', msg, ...args)
+    }
+    success(msg: string, ...args: any[]) {
+        this.log('success', msg, ...args)
+    }
+    verbose(msg: string, ...args: any[]) {
+        this.log('verbose', msg, ...args)
+    }
+    debug(msg: string, ...args: any[]) {
+        this.log('debug', msg, ...args)
+    }
 
-    setLevel(level: LogLevel) {this.level = level}
+    setLevel(level: LogLevel) {
+        this.level = level
+    }
     close() {
-        if (this.fileStream) {this.fileStream.end()}
+        if (this.fileStream) {
+            this.fileStream.end()
+        }
     }
 }
 
 // Provide a shared logger instance for Node/Bun environments
 const logger = new Logger()
 
-export { logger }
+export {logger}

@@ -1,6 +1,6 @@
 import {$s} from '@/app'
 import {$t, api, notifier, ws} from '@garage44/common/app'
-import {Login as CommonLogin, Notifications} from '@garage44/common/components'
+import {Login as CommonLogin} from '@garage44/common/components'
 import {mergeDeep} from '@garage44/common/lib/utils'
 
 export const Login = () => {
@@ -18,7 +18,7 @@ export const Login = () => {
                     list: [],
                     message: $t('notifications.logged_in'),
                     type: 'info',
-                } as any)
+                })
                 const config = await api.get('/api/config')
                 mergeDeep($s, {
                     enola: config.enola,
@@ -36,16 +36,16 @@ export const Login = () => {
                 list: [],
                 message: $t('notifications.logged_in_fail'),
                 type: 'warning',
-            } as any)
+            })
             return $t('notifications.logged_in_fail')
-        } catch (error) {
+        } catch (_error) {
             notifier.notify({
                 icon: 'warning',
                 link: {text: '', url: ''},
                 list: [],
                 message: $t('notifications.logged_in_fail'),
                 type: 'warning',
-            } as any)
+            })
             return $t('notifications.logged_in_fail')
         }
     }

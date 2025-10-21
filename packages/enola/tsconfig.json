@@ -12,6 +12,10 @@
         "jsxImportSource": "preact",
         "moduleResolution": "bundler",
         "noEmit": true,
+        "paths": {
+            "@/*": ["./*"],
+            "@garage44/common/*": ["../common/*"]
+        },
         "skipLibCheck": true,
         "sourceMap": true,
         "target": "ES2023",

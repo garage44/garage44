@@ -11,7 +11,7 @@ export const FieldCheckbox = ({
     className?: string
     help?: string
     label: string
-    model: boolean
+    model: Signal<boolean>
     onInput?: (value: boolean) => void
 }) => {
     const id = randomId()

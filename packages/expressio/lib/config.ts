@@ -31,9 +31,18 @@ const config = rc('expressio', {
     },
     users: [
         {
-            admin: true,
-            name: 'admin',
-            password: 'admin',
+            password: {
+                key: 'admin',
+                type: 'plaintext',
+            },
+            permissions: {
+                admin: true,
+            },
+            profile: {
+                displayName: 'Admin',
+            },
+            updatedAt: new Date().toISOString(),
+            username: 'admin',
         },
     ],
     workspaces: [],

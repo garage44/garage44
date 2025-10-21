@@ -16,13 +16,13 @@ const COLORS = {
     success: 'color: #27ae60',
     verbose: 'color: #1abc9c',
     warn: 'color: #f1c40f',
-};
+}
 
 class Logger {
     private level: LogLevel
     private logForwarder?: (level: LogLevel, msg: string, args: any[]) => void
 
-    constructor({ level = 'info' }: { level?: LogLevel } = {}) {
+    constructor({level = 'info' }: {level?: LogLevel} = {}) {
         this.level = level
     }
 
@@ -77,22 +77,37 @@ class Logger {
             const purpleStyle = 'color:rgb(166, 32, 184)'
             const prefix = `%c[${levelStr[0]}]%c [${ts}] ${msg}`
             console.warn(prefix, style, purpleStyle, ...args)
-        }
-        else {
+        } else {
             const prefix = `%c[${levelStr[0]}]%c [${ts}]`
             if (level === 'verbose') {
                 console.log(`${prefix} ${msg}`, style, '', ...args)
             }
         }
     }
-    error(msg: string, ...args: any[]) { this.log('error', msg, ...args); }
-    warn(msg: string, ...args: any[]) { this.log('warn', msg, ...args); }
-    info(msg: string, ...args: any[]) { this.log('info', msg, ...args); }
-    remote(msg: string, ...args: any[]) { this.log('remote', msg, ...args); }
-    success(msg: string, ...args: any[]) { this.log('success', msg, ...args); }
-    verbose(msg: string, ...args: any[]) { this.log('verbose', msg, ...args); }
-    debug(msg: string, ...args: any[]) { this.log('debug', msg, ...args); }
-    setLevel(level: LogLevel) { this.level = level; }
+    error(msg: string, ...args: any[]) {
+        this.log('error', msg, ...args) 
+    }
+    warn(msg: string, ...args: any[]) {
+        this.log('warn', msg, ...args) 
+    }
+    info(msg: string, ...args: any[]) {
+        this.log('info', msg, ...args) 
+    }
+    remote(msg: string, ...args: any[]) {
+        this.log('remote', msg, ...args) 
+    }
+    success(msg: string, ...args: any[]) {
+        this.log('success', msg, ...args) 
+    }
+    verbose(msg: string, ...args: any[]) {
+        this.log('verbose', msg, ...args) 
+    }
+    debug(msg: string, ...args: any[]) {
+        this.log('debug', msg, ...args) 
+    }
+    setLevel(level: LogLevel) {
+        this.level = level 
+    }
     close() {}
 }
 

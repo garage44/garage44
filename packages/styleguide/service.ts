@@ -22,7 +22,7 @@ if (BUN_ENV === 'development') {
 }
 
 const cli = yargs(hideBin(process.argv))
-cli.scriptName("styleguide")
+cli.scriptName('styleguide')
 
 if (BUN_ENV === 'development') {
     bunchyArgs(cli, bunchyConfig)
@@ -41,7 +41,7 @@ cli.usage('Usage: $0 [task]')
                 describe: 'Port to bind the server to',
                 type: 'number',
             })
-        , async(argv) => {
+    , async(argv) => {
         // Create WebSocket manager for Bunchy live reloading
         const bunchyManager = new WebSocketServerManager({
             endpoint: '/bunchy',
@@ -64,13 +64,13 @@ cli.usage('Usage: $0 [task]')
                 return new Response(JSON.stringify(devContext.snapshot({
                     version: bunchyConfig?.version,
                     workspace: 'styleguide',
-                })), { headers: { 'Content-Type': 'application/json' } })
+                })), {headers: {'Content-Type': 'application/json'}})
             }
 
             // Handle WebSocket upgrade requests
             if (url.pathname === '/bunchy') {
                 if (server && typeof server.upgrade === 'function') {
-                    const success = server.upgrade(req, { data: { endpoint: url.pathname } })
+                    const success = server.upgrade(req, {data: {endpoint: url.pathname}})
                     if (success) {
                         return
                     }
@@ -110,7 +110,7 @@ cli.usage('Usage: $0 [task]')
             }
 
             // Create 404 response and apply SPA fallback
-            const notFoundResponse = new Response('Not Found', { status: 404 })
+            const notFoundResponse = new Response('Not Found', {status: 404})
             return await withSpaFallback(notFoundResponse, req, import.meta.dir)
         }
 

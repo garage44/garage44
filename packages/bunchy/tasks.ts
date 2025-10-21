@@ -6,7 +6,7 @@ import path from 'path'
 import template from 'lodash.template'
 import {throttle} from '@garage44/common/lib/utils'
 import {watch} from 'fs'
-import { bundle, transform } from 'lightningcss'
+import {bundle, transform} from 'lightningcss'
 
 const debounce = {options: {trailing: true}, wait: 1000}
 
@@ -112,6 +112,7 @@ const runner = {
 
 // Add this interface before the tasks declaration
 interface Tasks {
+    [key: string]: Task
     assets: Task
     build: Task
     clean: Task
@@ -121,7 +122,6 @@ interface Tasks {
     styles: Task
     stylesApp: Task
     stylesComponents: Task
-    [key: string]: Task
 }
 
 // Update the tasks declaration
@@ -130,6 +130,12 @@ const tasks: Tasks = {} as Tasks
 
 tasks.assets = new Task('assets', async function taskAssets() {
     await fs.ensureDir(path.join(settings.dir.public, 'fonts'))
+    // const i18nextDir = path.join(settings.dir.node_modules, 'i18next')
+    // await Bun.build({
+    //     entrypoints: ['node_modules/.bun/i18next@25.6.0/node_modules/i18next'],
+    //     format: 'esm',
+    //     outdir: path.join(node_modules/.bun/i18next@25.6.0/node_modules/i18next, 'i18n'),
+    // })
 
     const copyOperations = [
         // Copy fonts from common package (shared across all projects)
@@ -180,15 +186,15 @@ tasks.code_frontend = new Task('code:frontend', async function taskCodeFrontend(
     try {
         const result = await Bun.build({
             define: {
-                'process.env.NODE_ENV': `'${process.env.NODE_ENV}'`,
                 'process.env.APP_VERSION': `'${process.env.APP_VERSION || '2.0.0'}'`,
+                'process.env.NODE_ENV': `'${process.env.NODE_ENV}'`,
             },
             entrypoints: ['src/app.ts'],
             format: 'esm',
             jsx: {
-                runtime: 'classic',
                 factory: 'h',
                 importSource: 'preact',
+                runtime: 'classic',
             },
             minify: {
                 identifiers: false,

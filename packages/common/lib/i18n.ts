@@ -27,7 +27,6 @@ function i18nFormat(i18n, targetLanguages) {
     return i18nextFormatted
 }
 
-console.log(i18next)
 
 async function init(translations = null, api = null, store = null) {
     let resources = null
@@ -48,8 +47,10 @@ async function init(translations = null, api = null, store = null) {
 
     i18next.init({
         debug: process.env.NODE_ENV !== 'production',
+
         fallbackLng: 'eng-gbr',
         interpolation: {
+
             escapeValue: false,
         },
         lng: store?.state.language_ui.selection || 'eng-gbr',

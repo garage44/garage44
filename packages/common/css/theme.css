@@ -13,6 +13,7 @@
 
 /* Core design tokens and typography */
 @import "./_typography.css";
+@import "./_spacing.css";
 
 /* Shared component styles */
 @import "./common/_tooltip.css";

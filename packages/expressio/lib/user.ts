@@ -1,5 +1,4 @@
 import {UserManager, User} from '@garage44/common/lib/user-manager'
-import {config} from './config.ts'
 import {logger} from '../service.ts'
 
 // Initialize UserManager for Expressio
@@ -107,6 +106,7 @@ export async function authenticateUser(username: string, password: string) {
         logger.info(`Available users in UserManager: ${allUsers.map((u) => u.username).join(', ')}`)
 
         const result = await userManager.authenticate(username, password)
+        console.log('AUTH RESULT', result)
         if (result) {
             logger.info(`Authentication successful for user: ${username}`)
         } else {

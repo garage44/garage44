@@ -89,7 +89,7 @@ export function Config() {
                 disabled={!isValid?.value}
                 label={$t('config.label.update_config')}
                 onClick={async() => {
-                    store.save(persistantState)
+                    store.save()
                     await api.post('/api/config', {
                         enola: $s.enola,
                         language_ui: $s.language_ui.selection,

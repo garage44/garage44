@@ -1,11 +1,11 @@
 import WebSocket from 'ws'
 
-console.log('Attempting to connect to ws://localhost:3030/bunchy...');
+console.log('Attempting to connect to ws://localhost:3030/bunchy...')
 
-const ws = new WebSocket('ws://localhost:3030/bunchy');
+const ws = new WebSocket('ws://localhost:3030/bunchy')
 
 ws.on('open', function open() {
-  console.log('✅ Bunchy WebSocket connection established!');
+    console.log('✅ Bunchy WebSocket connection established!')
 
     // Send a test message
     const testMessage = {
@@ -14,7 +14,7 @@ ws.on('open', function open() {
     }
     console.log('Sending test message:', testMessage)
     ws.send(JSON.stringify(testMessage))
-});
+})
 
 ws.on('message', function message(data) {
     console.log('📨 Received message:', data.toString())

@@ -15,7 +15,7 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
         const absPath = path.isAbsolute(reqPath) ? reqPath : path.resolve(process.cwd(), reqPath)
 
         // List directories
-        let entries: any[] = []
+        let entries = []
         try {
             const dirents = await fs.readdir(absPath, {withFileTypes: true})
             entries = await Promise.all(dirents.filter((d) => d.isDirectory()).map((dirent) => {
@@ -50,7 +50,7 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
         }
     })
 
-    api.get('/api/workspaces/:workspace_id', (context, req) => {
+    api.get('/api/workspaces/:workspace_id', async (context, req) => {
         const workspaceId = req.params.workspace_id
         const ws = workspaces.get(workspaceId)
         if (!ws) {
@@ -67,7 +67,7 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
 }
 
 // Default export for backward compatibility
-export default function apiWorkspaces(router: any) {
+export default function apiWorkspaces(router) {
     // HTTP API endpoints using familiar Express-like pattern
     router.get('/api/workspaces/:workspace_id/usage', async () => {
         // Get the first available engine for usage
@@ -78,7 +78,7 @@ export default function apiWorkspaces(router: any) {
         })
     })
 
-    router.post('/api/workspaces/:workspace_id', async (req: any, params: any) => {
+    router.post('/api/workspaces/:workspace_id', async (req, params) => {
         const workspaceId = params.param0
         const workspace_data = await req.json()
 
@@ -117,7 +117,7 @@ export default function apiWorkspaces(router: any) {
         })
     })
 
-    router.delete('/api/workspaces/:workspace_id', async (req: any, params: any) => {
+    router.delete('/api/workspaces/:workspace_id', async (req, params) => {
         const workspaceId = params.param0
         logger.info(`Deleting workspace: ${workspaceId}`)
         await workspaces.delete(workspaceId)
@@ -127,7 +127,7 @@ export default function apiWorkspaces(router: any) {
         })
     })
 
-    router.post('/api/workspaces', async (req: any) => {
+    router.post('/api/workspaces', async (req) => {
         try {
             const body = await req.json()
             const workspace = await workspaces.add(body.path)

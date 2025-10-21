@@ -38,7 +38,7 @@ class Router {
         })
     }
 
-    async route(req: Request, session?: any): Promise<Response | null> {
+    async route(req: Request, session?: Record<string, string>): Promise<Response | null> {
         const url = new URL(req.url)
         const pathname = url.pathname
         for (const {handler, method, path} of this.routes) {
@@ -92,7 +92,7 @@ const sessionMiddleware = (request: Request) => {
 }
 
 // Auth middleware for Bun.serve
-const authMiddleware = async (request: Request, session: any) => {
+const authMiddleware = async (request: Request, session: Record<string, string>) => {
     const url = new URL(request.url)
 
     if (!url.pathname.startsWith('/api')) {

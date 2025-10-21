@@ -1,9 +1,8 @@
 import {adminContext, deniedContext, userContext} from '@garage44/common/lib/profile.ts'
-import {config} from '../lib/config.ts'
 import {logger} from '../service.ts'
 import {authenticateUser} from '../lib/user.ts'
 
-export default function apiProfile(router:any) {
+export default function apiProfile(router) {
     // HTTP API endpoints using familiar Express-like pattern
     router.get('/api/context', async (req, params, session) => {
         let context = null
@@ -45,7 +44,6 @@ export default function apiProfile(router:any) {
         const password = body.password
 
         let context = deniedContext()
-
         const user = await authenticateUser(username, password)
         if (user) {
             // Set the user in session
