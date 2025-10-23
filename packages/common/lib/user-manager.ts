@@ -39,11 +39,15 @@ export class UserManager {
     }
 
     async initialize(): Promise<void> {
+        console.log(`[UserManager] Initializing UserManager for ${this.appName} (config: ${this.configPath})`)
         const users = await this.loadUsers()
+        console.log(`[UserManager] Loaded ${users.length} users from ${this.configPath}`)
 
         if (users.length === 0) {
-            console.log('No users found, creating default admin user...')
+            console.log(`[UserManager] No users found, creating default admin user...`)
             await this.createDefaultAdmin()
+        } else {
+            console.log(`[UserManager] Existing users: ${users.map(u => u.username).join(', ')}`)
         }
     }
 
@@ -164,24 +168,36 @@ export class UserManager {
     }
 
     async authenticate(username: string, password: string): Promise<User | null> {
+        console.log(`[UserManager] Authenticating user: ${username} (config: ${this.configPath})`)
         const user = await this.getUserByUsername(username)
-        if (!user) return null
+        
+        if (!user) {
+            console.log(`[UserManager] User not found: ${username}`)
+            return null
+        }
 
+        console.log(`[UserManager] User found: ${username}, password type: ${user.password.type}`)
         const isValid = await this.validatePassword(user, password)
+        console.log(`[UserManager] Password validation result for ${username}: ${isValid}`)
+        
         return isValid ? user : null
     }
 
     async validatePassword(user: User, password: string): Promise<boolean> {
         if (user.password.type === 'plaintext') {
-            return user.password.key === password
+            const isMatch = user.password.key === password
+            console.log(`[UserManager] Plaintext password comparison for ${user.username}: stored="${user.password.key}", provided="${password}", match=${isMatch}`)
+            return isMatch
         }
 
         if (user.password.type === 'bcrypt') {
             // For now, just compare plaintext for development
             // TODO: Implement proper bcrypt validation
+            console.log(`[UserManager] Bcrypt password comparison for ${user.username} (using plaintext comparison for now)`)
             return user.password.key === password
         }
 
+        console.log(`[UserManager] Unknown password type for ${user.username}: ${user.password.type}`)
         return false
     }
 

@@ -213,7 +213,7 @@ export const createFinalHandler = (config: {
             let context = null
 
             if (process.env.GARAGE44_NO_SECURITY) {
-                context = config.contextFunctions.adminContext()
+                context = await Promise.resolve(config.contextFunctions.adminContext())
                 return new Response(JSON.stringify(context), {
                     headers: {'Content-Type': 'application/json'},
                 })
@@ -224,9 +224,9 @@ export const createFinalHandler = (config: {
                 const user = await userManager.getUserByUsername((session as {userid: string}).userid)
                 if (user) {
                     if (user.permissions?.admin) {
-                        context = config.contextFunctions.adminContext()
+                        context = await Promise.resolve(config.contextFunctions.adminContext())
                     } else {
-                        context = config.contextFunctions.userContext()
+                        context = await Promise.resolve(config.contextFunctions.userContext())
                     }
                 } else {
                     context = config.contextFunctions.deniedContext()
@@ -245,19 +245,31 @@ export const createFinalHandler = (config: {
             const username = body.username
             const password = body.password
 
-            let context = config.contextFunctions.deniedContext()
+            console.log(`[AUTH] Login attempt for user: ${username}`)
+
+            let context = await Promise.resolve(config.contextFunctions.deniedContext())
             const user = await userManager.authenticate(username, password)
+
             if (user) {
+                console.log(`[AUTH] Authentication successful for user: ${username}`)
+                console.log(`[AUTH] User permissions: ${JSON.stringify(user.permissions)}`)
+
                 // Set the user in session
-                (session as {userid: string}).userid = user.username
+                ;(session as {userid: string}).userid = user.username
+                console.log(`[AUTH] Session userid set to: ${user.username}`)
 
                 if (user.permissions?.admin) {
-                    context = config.contextFunctions.adminContext()
+                    console.log(`[AUTH] User ${username} is admin, granting admin context`)
+                    context = await Promise.resolve(config.contextFunctions.adminContext())
                 } else {
-                    context = config.contextFunctions.userContext()
+                    console.log(`[AUTH] User ${username} is regular user, granting user context`)
+                    context = await Promise.resolve(config.contextFunctions.userContext())
                 }
+            } else {
+                console.log(`[AUTH] Authentication failed for user: ${username}`)
             }
 
+            console.log(`[AUTH] Returning context: ${JSON.stringify(context)}`)
             return new Response(JSON.stringify(context), {
                 headers: {'Content-Type': 'application/json'},
             })

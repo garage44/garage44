@@ -1,6 +1,7 @@
 import {createFinalHandler} from '@garage44/common/lib/middleware'
 import {createComplexAuthContext} from '@garage44/common/lib/profile.ts'
 import {devContext} from '@garage44/common/lib/dev-context'
+import {UserManager} from '@garage44/common/lib/user-manager'
 import {logger, runtime} from '../service.ts'
 import apiChat from '../api/chat.ts'
 import apiDashboard from '../api/dashboard.ts'
@@ -114,16 +115,18 @@ async function initMiddleware(_bunchyConfig) {
 
     const publicPath = path.join(runtime.service_dir, 'public')
 
+    // Create UserManager for Pyrite first (needed for context)
+    const userManager = new UserManager({
+        appName: 'pyrite',
+        configPath: '~/.pyriterc',
+        useBcrypt: false,
+    })
+    await userManager.initialize()
+
     // Create complex auth context for Pyrite (needs groups and users data)
     const contextFunctions = await createComplexAuthContext({
         loadGroups,
-        loadUsers: () => {
-            // Simple user loading from config file
-            return Bun.file('~/.pyriterc').text().then((text) => {
-                const config = JSON.parse(text)
-                return config.users || []
-            })
-        },
+        loadUsers: () => userManager.listUsers(),
     })
 
     // Create unified final handler with built-in authentication API
