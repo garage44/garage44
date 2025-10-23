@@ -203,6 +203,9 @@ export const Login = ({animated = true, logo, onLogin, title = 'Login'}: LoginPr
     }, [animated])
 
     return <div class="c-login" onKeyPress={handleKeyPress}>
+        <div style="position: absolute; visibility: hidden;">
+            {$t('direction_helper')}
+        </div>
         {animated && <div class="words-container">
             {state.activeWords.map((word) => (
                 <div
@@ -220,9 +223,7 @@ export const Login = ({animated = true, logo, onLogin, title = 'Login'}: LoginPr
         </div>}
 
         <div class="login-container">
-            <div style="position: absolute; visibility: hidden;">
-                {$t('direction_helper')}
-            </div>
+
             <div class="logo">
                 {logo && <img src={logo} alt="Logo" />}
                 <div class="logo-text">{title}</div>
