@@ -203,7 +203,7 @@ export const Login = ({animated = true, logo, onLogin, title = 'Login'}: LoginPr
     }, [animated])
 
     return <div class="c-login" onKeyPress={handleKeyPress}>
-        <div style="position: absolute; visibility: hidden;">
+        <div style={{position: 'absolute', visibility: 'hidden'}}>
             {$t('direction_helper')}
         </div>
         {animated && <div class="words-container">
