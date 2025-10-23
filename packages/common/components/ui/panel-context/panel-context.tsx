@@ -2,17 +2,17 @@ import classnames from 'classnames'
 import {ComponentChildren} from 'preact'
 
 interface PanelContextProps {
-    collapsed: boolean
-    onCollapseChange?: (collapsed: boolean) => void
-    logoHref?: string
-    logoText?: string
-    logoSrc?: string
-    logoVersion?: string
-    LogoIcon?: () => JSX.Element
-    LinkComponent?: any
-    navigation?: ComponentChildren
     actions?: ComponentChildren
+    collapsed: boolean
     footer?: ComponentChildren
+    LinkComponent?: any
+    logoHref?: string
+    LogoIcon?: () => JSX.Element
+    logoSrc?: string
+    logoText?: string
+    logoVersion?: string
+    navigation?: ComponentChildren
+    onCollapseChange?: (collapsed: boolean) => void
 }
 
 /**
@@ -32,17 +32,17 @@ interface PanelContextProps {
  * />
  */
 export const PanelContext = ({
-    collapsed,
-    onCollapseChange,
-    logoHref,
-    logoText = '',
-    logoSrc,
-    logoVersion = '',
-    LogoIcon,
-    LinkComponent,
-    navigation,
     actions,
-    footer
+    collapsed,
+    footer,
+    LinkComponent,
+    logoHref,
+    LogoIcon,
+    logoSrc,
+    logoText = '',
+    logoVersion = '',
+    navigation,
+    onCollapseChange,
 }: PanelContextProps) => {
     const renderLogo = () => {
         const logoContent = (
@@ -84,7 +84,7 @@ export const PanelContext = ({
                         aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
                     >
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d={collapsed ? "M10 8l-4-4v8l4-4z" : "M6 8l4-4v8l-4-4z"} />
+                            <path d={collapsed ? 'M10 8l-4-4v8l4-4z' : 'M6 8l4-4v8l-4-4z'} />
                         </svg>
                     </button>
                 )}

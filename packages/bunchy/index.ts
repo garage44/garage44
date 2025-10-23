@@ -20,8 +20,8 @@ interface Settings {
         bunchy: string
         common: string
         components: string
-        public: string
         css: string
+        public: string
         src: string
         workspace: string
     }
@@ -29,7 +29,7 @@ interface Settings {
 }
 
 const settings = {} as Settings
-const tooling = {} as {css: (options: {entrypoint: string, minify?: boolean, outFile: string, sourcemap?: boolean}) => Promise<string>}
+const tooling = {} as {css: (options: {entrypoint: string; minify?: boolean; outFile: string; sourcemap?: boolean}) => Promise<string>}
 
 function applySettings(config) {
     Object.assign(settings, {
@@ -40,7 +40,7 @@ function applySettings(config) {
             common: config.common,
             components: path.resolve(path.join(config.workspace, 'src', 'components')),
             css: path.resolve(path.join(config.workspace, 'src', 'css')),
-            public: path.resolve(path.join(config.workspace, `public`)),
+            public: path.resolve(path.join(config.workspace, 'public')),
             src: path.resolve(path.join(config.workspace, 'src')),
             workspace: config.workspace,
         },
@@ -79,7 +79,7 @@ async function bunchyService(server, config, wsManager?) {
             if (url.pathname === '/dev/snapshot') {
                 return new Response(JSON.stringify(devContext.snapshot({
                     version: settings.version,
-                })), { headers: { 'Content-Type': 'application/json' } })
+                })), {headers: {'Content-Type': 'application/json'}})
             }
         } catch {}
         return originalFetch.call(server, request, ...rest)
@@ -129,7 +129,9 @@ const connections = {
     add: (ws) => logger.info('[bunchy] WebSocket connection added'),
     delete: (ws) => logger.info('[bunchy] WebSocket connection removed'),
     has: (ws) => false,
-    get size() { return 0 },
+    get size() {
+        return 0 
+    },
 } as Set<WebSocket>
 
 // For backward compatibility, re-export broadcast from the manager
@@ -147,13 +149,13 @@ function setupLogForwarding(wsManager: any, logPrefix: string) {
     logger.info(`[bunchy] Setting up log forwarding route with prefix: ${logPrefix}`)
 
     wsManager.api.post('/logs/forward', async (ctx, req) => {
-        const { level, message, args, timestamp, source } = req.data as {
+        const {args, level, message, source, timestamp} = req.data as {
+            args: string[]
             level: string
             message: string
-            args: string[]
-            timestamp: string
-            source: string
             prefix?: string
+            source: string
+            timestamp: string
         }
 
         // Format the log message for server output
@@ -161,7 +163,9 @@ function setupLogForwarding(wsManager: any, logPrefix: string) {
         const formattedArgs = args && args.length > 0 ? args : []
 
         // Log using the server logger with appropriate level
-        try { devContext.addLog('remote', `${formattedMessage} ${formattedArgs.join(' ')}`) } catch {}
+        try {
+            devContext.addLog('remote', `${formattedMessage} ${formattedArgs.join(' ')}`) 
+        } catch {}
         switch (level) {
             case 'error':
                 logger.remote(formattedMessage, ...formattedArgs)
@@ -185,7 +189,7 @@ function setupLogForwarding(wsManager: any, logPrefix: string) {
                 logger.remote(formattedMessage, ...formattedArgs)
         }
 
-        return { status: 'ok' }
+        return {status: 'ok'}
     })
 }
 

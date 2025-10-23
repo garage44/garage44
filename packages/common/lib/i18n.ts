@@ -1,5 +1,6 @@
 import {logger} from './logger'
-import i18next from 'i18next'
+// This is a workaround to avoid i18next import errors on succesive builds.
+import i18next from '@/lib/i18next'
 import {copyObject, keyMod, keyPath} from './utils'
 import {effect} from '@preact/signals'
 

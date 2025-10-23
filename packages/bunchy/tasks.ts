@@ -6,7 +6,7 @@ import path from 'path'
 import template from 'lodash.template'
 import {throttle} from '@garage44/common/lib/utils'
 import {watch} from 'fs'
-import {bundle, transform} from 'lightningcss'
+import {bundle} from 'lightningcss'
 
 const debounce = {options: {trailing: true}, wait: 1000}
 
@@ -130,12 +130,6 @@ const tasks: Tasks = {} as Tasks
 
 tasks.assets = new Task('assets', async function taskAssets() {
     await fs.ensureDir(path.join(settings.dir.public, 'fonts'))
-    // const i18nextDir = path.join(settings.dir.node_modules, 'i18next')
-    // await Bun.build({
-    //     entrypoints: ['node_modules/.bun/i18next@25.6.0/node_modules/i18next'],
-    //     format: 'esm',
-    //     outdir: path.join(node_modules/.bun/i18next@25.6.0/node_modules/i18next, 'i18n'),
-    // })
 
     const copyOperations = [
         // Copy fonts from common package (shared across all projects)
@@ -243,7 +237,6 @@ tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = 
 
     watch(settings.dir.common, {recursive: true}, (event, filename) => {
         const extension = path.extname(filename)
-
         if (extension === '.ts' || extension === '.tsx') {
             runner.code_frontend()
         } else if (extension === '.css') {

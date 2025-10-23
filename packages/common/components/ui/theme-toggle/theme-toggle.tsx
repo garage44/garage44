@@ -20,15 +20,13 @@ export const ThemeToggle = () => {
         store.state.theme = themes[nextIndex]
     }
 
-    const getIcon = () => {
-        if (theme === 'light') return 'sun'
-        if (theme === 'dark') return 'moon'
-        return 'system' // system preference icon
-    }
-
     return (
         <Button
-            icon={getIcon()}
+            icon={(() => {
+                if (theme === 'light') return 'sun'
+                if (theme === 'dark') return 'moon'
+                return 'system' // system preference icon
+            })()}
             onClick={cycleTheme}
             variant="toggle"
             tip={`Theme: ${theme}`}
