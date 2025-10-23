@@ -24,6 +24,7 @@ export interface ButtonProps {
     label?: string
     onClick?: (event: MouseEvent) => void
     route?: string
+    size?: 's' | 'm' | 'l'
     tip?: string
     type?: 'default' | 'success' | 'info' | 'warning' | 'danger'
     variant?: 'default' | 'toggle' | 'menu' | 'unset'
@@ -41,6 +42,7 @@ export function Button({
     label = '',
     onClick,
     route = null,
+    size = 'm',
     tip = '',
     type = 'default',
     variant = 'default',
@@ -114,6 +116,7 @@ export function Button({
         'c-button',
         `type-${type}`,
         `variant-${variant}`,
+        `size-${size}`,
         className,
         classProp,
         {
