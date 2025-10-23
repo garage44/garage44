@@ -1,6 +1,4 @@
-import {v4 as uuidv4} from 'uuid'
 import fs from 'fs-extra'
-import path from 'node:path'
 import {homedir} from 'node:os'
 
 export interface User {
@@ -53,7 +51,7 @@ export class UserManager {
         const defaultUser: User = {
             createdAt: new Date().toISOString(),
             email: 'admin@localhost',
-            id: uuidv4(),
+            id: crypto.randomUUID(),
             password: {
                 key: 'admin',
                 type: 'plaintext',
@@ -102,7 +100,7 @@ export class UserManager {
         const user: User = {
             createdAt: new Date().toISOString(),
             email: userData.email,
-            id: uuidv4(),
+            id: crypto.randomUUID(),
             password: userData.password || {
                 key: 'password',
                 type: 'plaintext',
