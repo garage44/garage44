@@ -46,7 +46,7 @@ export const Main = () => {
                     return 'No permission'
                 }
             } else {
-                notifier.notify({ level: 'info', message: 'Login successful' })
+                notifier.notify({level: 'info', message: 'Login successful'})
                 ws.connect()
                 return null // Success
             }
@@ -60,7 +60,12 @@ export const Main = () => {
     }
 
     if (!$s.admin.authenticated) {
-        return <Login title="Pyrite" animated={true} onLogin={handleLogin} />
+        return <Login
+            animated={true}
+            logo='/public/img/logo.svg'
+            title="Pyrite"
+            onLogin={handleLogin}
+        />
     }
 
     return <div class="app">

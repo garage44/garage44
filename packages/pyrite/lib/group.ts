@@ -201,14 +201,12 @@ export async function loadGroups(publicEndpoint = false) {
     let galeneGroups
     try {
         galeneGroups = await (await fetch(endpoint)).json()
-        console.log('GALENE GROUPS', galeneGroups)
     } catch (err) {
         galeneGroups = []
     }
 
     const groupsPath = path.join(config.sfu.path, 'groups')
 
-    console.log('GROUPS PATH', groupsPath)
     const glob = new Glob('**/*.json')
     const files = Array.from(glob.scanSync(groupsPath)).map((f) => path.join(groupsPath, f))
     const groupNames = files.map((i) => {

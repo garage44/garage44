@@ -35,7 +35,6 @@ export default function(router: any) {
 
     router.get('/api/groups/public', async (req: Request, params: Record<string, string>, session: any) => {
         const {groupNames, groupsData} = await loadGroups(true)
-        console.log('GROUPS DATA', groupsData)
         // await pingGroups(groupNames) // Commented out - Galene doesn't have individual group endpoints
         return new Response(JSON.stringify(groupsData), {
             headers: {'Content-Type': 'application/json'},

@@ -245,21 +245,13 @@ export const createFinalHandler = (config: {
             const username = body.username
             const password = body.password
 
-            console.log(`[AUTH] Login attempt for user: ${username}`)
-
             let context = await Promise.resolve(config.contextFunctions.deniedContext())
             const user = await userManager.authenticate(username, password)
 
-            if (user) {
-                console.log(`[AUTH] Authentication successful for user: ${username}`)
-                console.log(`[AUTH] User permissions: ${JSON.stringify(user.permissions)}`)
-
-                // Set the user in session
+            if (user) {                // Set the user in session
                 ;(session as {userid: string}).userid = user.username
-                console.log(`[AUTH] Session userid set to: ${user.username}`)
 
                 if (user.permissions?.admin) {
-                    console.log(`[AUTH] User ${username} is admin, granting admin context`)
                     context = await Promise.resolve(config.contextFunctions.adminContext())
                 } else {
                     console.log(`[AUTH] User ${username} is regular user, granting user context`)
@@ -269,7 +261,6 @@ export const createFinalHandler = (config: {
                 console.log(`[AUTH] Authentication failed for user: ${username}`)
             }
 
-            console.log(`[AUTH] Returning context: ${JSON.stringify(context)}`)
             return new Response(JSON.stringify(context), {
                 headers: {'Content-Type': 'application/json'},
             })
