@@ -1,13 +1,20 @@
+import {UserManager} from '@garage44/common/lib/user-manager'
 import {config, saveConfig} from '../lib/config.ts'
 import {enola, logger, workspaces} from '../service.ts'
+
+// Create UserManager for API routes
+const userManager = new UserManager({
+    appName: 'expressio',
+    configPath: '~/.expressiorc',
+    useBcrypt: false,
+})
 
 export default function apiConfig(router) {
     // HTTP API endpoints using familiar Express-like pattern
     router.get('/api/config', async () => {
         // For now, assume admin user since we don't have session context here
         // In a real implementation, you'd get the user from the session
-        const {getUserByUsername} = await import('../lib/user.ts')
-        const user = await getUserByUsername('admin')
+        const user = await userManager.getUserByUsername('admin')
         return new Response(JSON.stringify({
             enola: enola.getConfig(user?.permissions.admin || false),
             language_ui: config.language_ui,
@@ -22,8 +29,7 @@ export default function apiConfig(router) {
 
     router.post('/api/config', async (req) => {
         // For now, assume admin user since we don't have session context here
-        const {getUserByUsername} = await import('../lib/user.ts')
-        const user = await getUserByUsername('admin')
+        const user = await userManager.getUserByUsername('admin')
         if (!user?.permissions.admin) {
             return new Response(JSON.stringify({error: 'Unauthorized'}), {
                 headers: {'Content-Type': 'application/json'},

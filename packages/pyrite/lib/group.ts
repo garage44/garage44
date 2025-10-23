@@ -1,13 +1,29 @@
 import {config} from './config.ts'
 import {logger} from '../service.ts'
 import {dictionary} from './utils.ts'
+import {UserManager} from '@garage44/common/lib/user-manager'
 import fs from 'fs-extra'
 import {Glob} from 'bun'
 import path from 'node:path'
 import {uniqueNamesGenerator} from 'unique-names-generator'
-import {loadUsers, saveUsers} from './user.ts'
 
 const ROLES = ['op', 'other', 'presenter']
+
+// Create UserManager for Pyrite
+const userManager = new UserManager({
+    appName: 'pyrite',
+    configPath: '~/.pyriterc',
+    useBcrypt: false,
+})
+
+// Helper functions to use UserManager
+const loadUsers = () => userManager.listUsers()
+const saveUsers = async (users) => {
+    // Save users by updating each user individually
+    for (const user of users) {
+        await userManager.updateUser(user.id || user.username || user.name, user)
+    }
+}
 
 // Public group data Exposed on /api/groups/public
 const PUBLIC_GROUP_FIELDS = [

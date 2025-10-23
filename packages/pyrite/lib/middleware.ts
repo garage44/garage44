@@ -1,15 +1,15 @@
-import {createMiddleware, createFinalHandler} from '@garage44/common/lib/middleware'
+import {createFinalHandler} from '@garage44/common/lib/middleware'
+import {createComplexAuthContext} from '@garage44/common/lib/profile.ts'
 import {devContext} from '@garage44/common/lib/dev-context'
 import {logger, runtime} from '../service.ts'
 import apiChat from '../api/chat.ts'
 import apiDashboard from '../api/dashboard.ts'
 import apiGroups from '../api/groups.ts'
 import apiI18n from '../api/i18n.ts'
-import apiProfile from '../api/profile.ts'
 import apiRecordings from '../api/recordings.ts'
 import apiUsers from '../api/users.ts'
 import {config} from '../lib/config.ts'
-import {getUserByUsername} from './user.ts'
+import {loadGroups} from './group.js'
 import path from 'node:path'
 
 // Simple HTTP router for Bun.serve that mimics Express pattern
@@ -89,26 +89,15 @@ async function proxySFUWebSocket(request: Request, server: any) {
     }
 }
 
-// Create unified middleware for Pyrite
-const unifiedMiddleware = createMiddleware({
-    customWebSocketHandlers: [{
-        handler: proxySFUWebSocket,
-        path: '/sfu',
-    }],
-    endpointAllowList: ['/api/context', '/api/i18n', '/api/login', '/api/chat/emoji', '/api/groups/public'],
-    getUserByUsername,
-    packageName: 'pyrite',
-    sessionCookieName: 'pyrite-session',
-})
 
 // Auth middleware that can be reused across routes
-const requireAdmin = (ctx, next) => {
-    const user = config.users.find((user) => user.name === ctx.session?.userid)
-    if (!user?.admin) {
+const requireAdmin = async (ctx, next) => {
+    if (!ctx.session?.userid) {
         throw new Error('Unauthorized')
     }
-    // Add user to context for handlers
-    ctx.user = user
+
+    // User lookup will be handled by middleware's UserManager
+    // The authentication check is done by the middleware layer
     return next(ctx)
 }
 
@@ -120,21 +109,37 @@ async function initMiddleware(_bunchyConfig) {
     await apiDashboard(router)
     await apiGroups(router)
     await apiI18n(router)
-    await apiProfile(router)
     await apiRecordings(router)
     await apiUsers(router)
 
     const publicPath = path.join(runtime.service_dir, 'public')
 
-    // Create unified final handler with Pyrite-specific MIME types
+    // Create complex auth context for Pyrite (needs groups and users data)
+    const contextFunctions = await createComplexAuthContext({
+        loadGroups,
+        loadUsers: () => {
+            // Simple user loading from config file
+            return Bun.file('~/.pyriterc').text().then((text) => {
+                const config = JSON.parse(text)
+                return config.users || []
+            })
+        },
+    })
+
+    // Create unified final handler with built-in authentication API
     const finalHandleRequest = createFinalHandler({
+        configPath: '~/.pyriterc',
+        contextFunctions: {
+            adminContext: contextFunctions.adminContext,
+            deniedContext: contextFunctions.deniedContext,
+            userContext: contextFunctions.userContext,
+        },
         customWebSocketHandlers: [{
             handler: proxySFUWebSocket,
             path: '/sfu',
         }],
         devContext,
-        endpointAllowList: ['/api/context', '/api/i18n', '/api/login', '/api/chat/emoji', '/api/groups/public'],
-        getUserByUsername,
+        endpointAllowList: ['/api/i18n', '/api/chat/emoji', '/api/groups/public', '/api/login'],
         logger,
         mimeTypes: {
             '.css': 'text/css',
@@ -158,7 +163,7 @@ async function initMiddleware(_bunchyConfig) {
 
     return {
         handleRequest: finalHandleRequest,
-        handleWebSocket: unifiedMiddleware.handleWebSocket,
+        handleWebSocket: () => {}, // WebSocket handling is done in common middleware
     }
 }
 

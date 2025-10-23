@@ -1,5 +1,5 @@
 import {groupTemplate, loadGroup, loadGroups, pingGroups, saveGroup, syncGroup} from '../lib/group.ts'
-import {syncUsers} from '../lib/user.ts'
+import {syncUsers} from '../lib/sync.ts'
 import {config} from '../lib/config.ts'
 import fs from 'fs-extra'
 import path from 'path'
@@ -26,25 +26,25 @@ export function registerGroupsWebSocketApiRoutes(wsManager: WebSocketServerManag
 export default function(router: any) {
 
     router.get('/api/groups', async (req: Request, params: Record<string, string>, session: any) => {
-        const {groupsData, groupNames} = await loadGroups()
+        const {groupNames, groupsData} = await loadGroups()
         // await pingGroups(groupNames) // Commented out - Galene doesn't have individual group endpoints
         return new Response(JSON.stringify(groupsData), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 
     router.get('/api/groups/public', async (req: Request, params: Record<string, string>, session: any) => {
-        const {groupsData, groupNames} = await loadGroups(true)
-        console.log("GROUPS DATA", groupsData)
+        const {groupNames, groupsData} = await loadGroups(true)
+        console.log('GROUPS DATA', groupsData)
         // await pingGroups(groupNames) // Commented out - Galene doesn't have individual group endpoints
         return new Response(JSON.stringify(groupsData), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 
     router.get('/api/groups/template', async (req: Request, params: Record<string, string>, session: any) => {
         return new Response(JSON.stringify(groupTemplate()), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 
@@ -53,20 +53,20 @@ export default function(router: any) {
         // Basic path traversal protection
         if (groupId.match(/\.\.\//g) !== null) {
             return new Response(JSON.stringify({error: 'invalid group id'}), {
-                headers: { 'Content-Type': 'application/json' },
-                status: 400
+                headers: {'Content-Type': 'application/json'},
+                status: 400,
             })
         }
 
         const groupData = await loadGroup(groupId)
         if (!groupData) {
             return new Response(JSON.stringify(groupTemplate(groupId)), {
-                headers: { 'Content-Type': 'application/json' }
+                headers: {'Content-Type': 'application/json'},
             })
         }
 
         return new Response(JSON.stringify(groupData), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 
@@ -81,7 +81,7 @@ export default function(router: any) {
         group._newName = groupId
         // await pingGroups([groupId]) // Commented out - Galene doesn't have individual group endpoints
         return new Response(JSON.stringify(group), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 
@@ -93,7 +93,7 @@ export default function(router: any) {
         await syncUsers()
         // await pingGroups([groupId]) // Commented out - Galene doesn't have individual group endpoints
         return new Response(JSON.stringify(groupNames), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 }

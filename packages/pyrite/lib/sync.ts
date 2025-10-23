@@ -1,9 +1,16 @@
 import {GroupManager} from '@garage44/common/lib/group-manager'
-import {userManager} from './user.ts'
+import {UserManager} from '@garage44/common/lib/user-manager'
 import {config} from './config.ts'
 import {logger} from '../service.ts'
 import fs from 'fs-extra'
 import path from 'node:path'
+
+// Create UserManager for Pyrite
+const userManager = new UserManager({
+    appName: 'pyrite',
+    configPath: '~/.pyriterc',
+    useBcrypt: false,
+})
 
 // Initialize GroupManager for Pyrite
 const groupManager = new GroupManager({
@@ -19,14 +26,14 @@ const groupManager = new GroupManager({
 export async function syncUsersToGalene() {
   try {
     logger.info('Starting user sync to Galene...')
-    
+
     const users = await userManager.listUsers()
     const groups = await loadGroupsFromDisk()
-    
+
     for (const group of groups) {
       await updateGroupWithUsers(group.name, users)
     }
-    
+
     logger.info(`Synced ${users.length} users to ${groups.length} groups`)
   } catch (error) {
     logger.error('Failed to sync users to Galene:', error)

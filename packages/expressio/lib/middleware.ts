@@ -1,11 +1,10 @@
-import {createMiddleware, createFinalHandler} from '@garage44/common/lib/middleware'
+import {createFinalHandler} from '@garage44/common/lib/middleware'
+import {adminContext, deniedContext, userContext} from '@garage44/common/lib/profile.ts'
 import {devContext} from '@garage44/common/lib/dev-context'
 import {logger, runtime} from '../service.ts'
 import apiConfig from '../api/config.ts'
 import apiI18n from '../api/i18n.ts'
-import apiProfile from '../api/profile.ts'
 import apiWorkspaces from '../api/workspaces'
-import {getUserByUsername} from './user.ts'
 import path from 'node:path'
 
 // Simple HTTP router for Bun.serve that mimics Express pattern
@@ -56,13 +55,6 @@ class Router {
     }
 }
 
-// Create unified middleware for Expressio
-const unifiedMiddleware = createMiddleware({
-    endpointAllowList: ['/api/context', '/api/translations', '/api/login'],
-    getUserByUsername,
-    packageName: 'expressio',
-    sessionCookieName: 'expressio-session',
-})
 
 // Auth middleware that can be reused across workspace routes
 const requireAdmin = async (ctx, next) => {
@@ -70,13 +62,8 @@ const requireAdmin = async (ctx, next) => {
         throw new Error('Unauthorized')
     }
 
-    const {getUserByUsername} = await import('./user.ts')
-    const user = await getUserByUsername(ctx.session.userid)
-    if (!user?.permissions.admin) {
-        throw new Error('Unauthorized')
-    }
-    // Add user to context for handlers
-    ctx.user = user
+    // User lookup will be handled by middleware's UserManager
+    // The authentication check is done by the middleware layer
     return next(ctx)
 }
 
@@ -87,18 +74,23 @@ async function initMiddleware(_bunchyConfig) {
     // Register HTTP API endpoints using familiar Express-like pattern
     await apiI18n(router)
     await apiConfig(router)
-    await apiProfile(router)
     await apiWorkspaces(router)
 
     const publicPath = path.join(runtime.service_dir, 'public')
 
-    // Create unified final handler
+    // Create unified final handler with built-in authentication API
     const finalHandleRequest = createFinalHandler({
+        configPath: '~/.expressiorc',
+        contextFunctions: {
+            adminContext,
+            deniedContext,
+            userContext,
+        },
         customWebSocketHandlers: undefined,
         devContext,
-        endpointAllowList: ['/api/context', '/api/translations', '/api/login'],
-        getUserByUsername,
+        endpointAllowList: ['/api/translations', '/api/login'],
         logger,
+        mimeTypes: undefined,
         packageName: 'expressio',
         publicPath,
         router,
@@ -107,7 +99,7 @@ async function initMiddleware(_bunchyConfig) {
 
     return {
         handleRequest: finalHandleRequest,
-        handleWebSocket: unifiedMiddleware.handleWebSocket,
+        handleWebSocket: () => {}, // WebSocket handling is done in common middleware
     }
 }
 

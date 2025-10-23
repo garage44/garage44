@@ -1,4 +1,41 @@
-import {loadUser, loadUsers, saveUser, saveUsers, syncUsers, userTemplate} from '../lib/user.ts'
+import {UserManager} from '@garage44/common/lib/user-manager'
+import {logger} from '../service.ts'
+import {syncUsers} from '../lib/sync.ts'
+
+// Create UserManager for Pyrite
+const userManager = new UserManager({
+    appName: 'pyrite',
+    configPath: '~/.pyriterc',
+    useBcrypt: false,
+})
+
+// Helper functions using UserManager
+const loadUser = (userId: string) => userManager.getUser(userId)
+const loadUsers = () => userManager.listUsers()
+const saveUser = (userId: string, data: any) => userManager.updateUser(userId, data)
+const saveUsers = async (users) => {
+    for (const user of users) {
+        await userManager.updateUser(user.id || user.username || user.name, user)
+    }
+}
+
+// User template function
+function userTemplate() {
+    return {
+        id: '',
+        username: '',
+        password: {key: '', type: 'plaintext'},
+        permissions: {
+            admin: false,
+            groups: {}
+        },
+        profile: {
+            displayName: ''
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    }
+}
 import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 
 export function registerUsersWebSocketApiRoutes(wsManager: WebSocketServerManager) {

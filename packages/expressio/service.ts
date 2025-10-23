@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 import {URL, fileURLToPath} from 'node:url'
+import {UserManager} from '@garage44/common/lib/user-manager'
 import {WebSocketServerManager, createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
 import {bunchyArgs, bunchyService} from '@garage44/bunchy'
 import {config, initConfig} from './lib/config.ts'
@@ -208,8 +209,12 @@ void cli.usage('Usage: $0 [task]')
         await initConfig(config)
 
         // Initialize UserManager and migrate users
-        const {initializeUserManager} = await import('./lib/user.ts')
-        await initializeUserManager()
+        const userManager = new UserManager({
+            appName: 'expressio',
+            configPath: '~/.expressiorc',
+            useBcrypt: false,
+        })
+        await userManager.initialize()
 
         // Initialize enola first
         await enola.init(config.enola, logger)
