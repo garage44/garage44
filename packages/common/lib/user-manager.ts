@@ -32,10 +32,22 @@ export class UserManager {
     private appName: string
     private useBcrypt: boolean
 
-    constructor(config: UserManagerConfig) {
+    constructor() {
+        // Initialize with defaults, will be configured via init()
+        this.configPath = ''
+        this.appName = ''
+        this.useBcrypt = false
+    }
+
+    async init(config: UserManagerConfig) {
         this.configPath = config.configPath.replace('~', homedir())
         this.appName = config.appName
         this.useBcrypt = config.useBcrypt ?? false
+
+        const users = await this.loadUsers()
+        if (users.length === 0) {
+            await this.createDefaultAdmin()
+        }
     }
 
     async initialize() {

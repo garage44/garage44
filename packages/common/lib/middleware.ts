@@ -172,18 +172,8 @@ export const createFinalHandler = (config: {
         route: (request: Request, session: unknown) => Promise<Response | null>
     }
     sessionCookieName: string
+    userManager: UserManager
 }) => {
-    // Create UserManager for this package
-    const userManager = new UserManager({
-        appName: config.packageName,
-        configPath: config.configPath,
-        useBcrypt: false,
-    })
-
-    // Initialize UserManager
-    userManager.initialize().catch((err) => {
-        config.logger.info(`Failed to initialize UserManager: ${err}`)
-    })
 
     const unifiedMiddleware = createMiddleware({
         configPath: config.configPath,
@@ -191,7 +181,7 @@ export const createFinalHandler = (config: {
         endpointAllowList: config.endpointAllowList,
         packageName: config.packageName,
         sessionCookieName: config.sessionCookieName,
-    }, userManager)
+    }, config.userManager)
 
     return async (request: Request, server?: unknown): Promise<Response | undefined> => {
         const url = new URL(request.url)
@@ -221,7 +211,7 @@ export const createFinalHandler = (config: {
 
             // Check session for user context
             if ((session as {userid?: string})?.userid) {
-                const user = await userManager.getUserByUsername((session as {userid: string}).userid)
+                const user = await config.userManager.getUserByUsername((session as {userid: string}).userid)
                 if (user) {
                     if (user.permissions?.admin) {
                         context = await Promise.resolve(config.contextFunctions.adminContext())
@@ -246,7 +236,7 @@ export const createFinalHandler = (config: {
             const password = body.password
 
             let context = await Promise.resolve(config.contextFunctions.deniedContext())
-            const user = await userManager.authenticate(username, password)
+            const user = await config.userManager.authenticate(username, password)
 
             if (user) {                // Set the user in session
                 ;(session as {userid: string}).userid = user.username

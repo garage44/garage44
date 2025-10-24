@@ -1,20 +1,18 @@
 #!/usr/bin/env bun
 import {URL, fileURLToPath} from 'node:url'
-import {UserManager} from '@garage44/common/lib/user-manager'
-import {WebSocketServerManager, createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
+import {createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
 import {bunchyArgs, bunchyService} from '@garage44/bunchy'
 import {config, initConfig} from './lib/config.ts'
 import {keyMod, padLeft} from '@garage44/common/lib/utils.ts'
 import {Enola} from '@garage44/enola'
 import {Workspace} from './lib/workspace.ts'
 import {Workspaces} from './lib/workspaces.ts'
-import figlet from 'figlet'
+import {createRuntime, createWelcomeBanner, setupBunchyConfig, createWebSocketManagers, service, loggerTransports} from '@garage44/common/service'
 import fs from 'fs-extra'
 import {hideBin} from 'yargs/helpers'
 import {i18nFormat} from '@garage44/common/lib//i18n.ts'
 import {initMiddleware} from './lib/middleware.ts'
 import {lintWorkspace} from './lib/lint.ts'
-import {loggerTransports} from '@garage44/common/lib/service.ts'
 import path from 'node:path'
 import {pathCreate} from '@garage44/common/lib/paths'
 import pc from 'picocolors'
@@ -23,19 +21,12 @@ import {registerWorkspacesWebSocketApiRoutes} from './api/workspaces.ts'
 import yargs from 'yargs'
 import {devContext} from '@garage44/common/lib/dev-context'
 
-const expressioDir = fileURLToPath(new URL('.', import.meta.url))
+export const serviceDir = fileURLToPath(new URL('.', import.meta.url))
 
-const runtime = {
-    service_dir: expressioDir,
-    version: JSON.parse((await fs.readFile(path.join(expressioDir, 'package.json'), 'utf8'))).version,
-}
+const runtime = createRuntime(serviceDir, path.join(serviceDir, 'package.json'))
 
 function welcomeBanner() {
-    return `
-${pc.blue(figlet.textSync('Expressio'))}\n
- ${pc.white(pc.bold('I18n for humans, through AI...'))}
- ${pc.gray(`v${runtime.version}`)}
-`
+    return createWelcomeBanner('Expressio', 'I18n for humans, through AI...', runtime.version)
 }
 
 // In case we start in development mode.
@@ -51,14 +42,7 @@ const cli = yargs(hideBin(process.argv))
 cli.scriptName('expressio')
 
 if (BUN_ENV === 'development') {
-    bunchyConfig = {
-        common: path.resolve(runtime.service_dir, '../', 'common'),
-        logPrefix: 'B',
-        // reload_ignore: ['/tasks/code_frontend'],
-        reload_ignore: [],
-        version: runtime.version,
-        workspace: runtime.service_dir,
-    }
+    bunchyConfig = setupBunchyConfig(runtime.service_dir, 'B', runtime.version)
 
     bunchyArgs(cli, bunchyConfig)
 }
@@ -208,13 +192,8 @@ void cli.usage('Usage: $0 [task]')
     }, async(argv) => {
         await initConfig(config)
 
-        // Initialize UserManager and migrate users
-        const userManager = new UserManager({
-            appName: 'expressio',
-            configPath: '~/.expressiorc',
-            useBcrypt: false,
-        })
-        await userManager.initialize()
+        // Initialize common service (including UserManager)
+        await service.init({appName: 'expressio', configPath: '~/.expressiorc', useBcrypt: false})
 
         // Initialize enola first
         await enola.init(config.enola, logger)
@@ -222,22 +201,12 @@ void cli.usage('Usage: $0 [task]')
         // Initialize middleware and WebSocket server
         const {handleRequest} = await initMiddleware(bunchyConfig)
 
-        // Create WebSocket managers directly
-        const wsManager = new WebSocketServerManager({
-            authOptions: config.authOptions,
-            endpoint: '/ws',
-            sessionMiddleware: config.sessionMiddleware,
-        })
+        // Create WebSocket managers
+        const {bunchyManager, wsManager} = createWebSocketManagers(config.authOptions, config.sessionMiddleware)
 
         // Set the WebSocket manager for workspaces and then initialize
         workspaces.setWebSocketManager(wsManager)
         await workspaces.init(config.workspaces)
-
-        const bunchyManager = new WebSocketServerManager({
-            authOptions: config.authOptions,
-            endpoint: '/bunchy',
-            sessionMiddleware: config.sessionMiddleware,
-        })
 
         // Map of endpoint to manager for the handler
         const wsManagers = new Map([

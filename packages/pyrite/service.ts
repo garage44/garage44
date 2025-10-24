@@ -1,16 +1,13 @@
 #!/usr/bin/env bun
 import {URL, fileURLToPath} from 'node:url'
-import {WebSocketServerManager, createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
+import {createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
 import {bunchyArgs, bunchyService} from '@garage44/bunchy'
 import {config, initConfig} from './lib/config.ts'
 import {devContext} from '@garage44/common/lib/dev-context'
-import figlet from 'figlet'
-import fs from 'fs-extra'
+import {createRuntime, createWelcomeBanner, setupBunchyConfig, createWebSocketManagers, service, loggerTransports} from '@garage44/common/service'
 import {hideBin} from 'yargs/helpers'
 import {initMiddleware} from './lib/middleware.ts'
-import {loggerTransports} from '@garage44/common/lib/service'
 import path from 'node:path'
-import pc from 'picocolors'
 import {registerChatWebSocket} from './api/ws-chat'
 import {registerGroupsWebSocket} from './api/ws-groups'
 import {registerPresenceWebSocket} from './api/ws-presence'
@@ -18,17 +15,10 @@ import yargs from 'yargs'
 
 const pyriteDir = fileURLToPath(new URL('.', import.meta.url))
 
-const runtime = {
-    service_dir: pyriteDir,
-    version: JSON.parse((await fs.readFile(path.join(pyriteDir, 'package.json'), 'utf8'))).version,
-}
+const runtime = createRuntime(pyriteDir, path.join(pyriteDir, 'package.json'))
 
 function welcomeBanner() {
-    return `
-${pc.cyan(figlet.textSync("Pyrite"))}\n
- ${pc.white(pc.bold('Video conferencing powered by Galène...'))}
- ${pc.gray(`v${runtime.version}`)}
-`
+    return createWelcomeBanner('Pyrite', 'Video conferencing powered by Galène...', runtime.version)
 }
 
 // In case we start in development mode.
@@ -39,21 +29,15 @@ const logger = loggerTransports(config.logger, 'service')
 const BUN_ENV = process.env.BUN_ENV || 'production'
 
 const cli = yargs(hideBin(process.argv))
-cli.scriptName("pyrite")
+cli.scriptName('pyrite')
 
 if (BUN_ENV === 'development') {
-    bunchyConfig = {
-        common: path.resolve(runtime.service_dir, '../', 'common'),
-        logPrefix: 'P',
-        reload_ignore: [],
-        version: runtime.version,
-        workspace: runtime.service_dir,
-    }
+    bunchyConfig = setupBunchyConfig(runtime.service_dir, 'P', runtime.version)
 
     bunchyArgs(cli, bunchyConfig)
 }
 
-cli.usage('Usage: $0 [task]')
+void cli.usage('Usage: $0 [task]')
     .detectLocale(false)
     .command('start', 'Start the Pyrite service', (yargs) => {
         // oxlint-disable-next-line no-console
@@ -74,21 +58,14 @@ cli.usage('Usage: $0 [task]')
     }, async(argv) => {
         await initConfig(config)
 
+        // Initialize common service (including UserManager)
+        await service.init({appName: 'pyrite', configPath: '~/.pyriterc', useBcrypt: false})
+
         // Initialize middleware and WebSocket server
         const {handleRequest} = await initMiddleware(bunchyConfig)
 
         // Create WebSocket managers
-        const wsManager = new WebSocketServerManager({
-            authOptions: config.authOptions,
-            endpoint: '/ws',
-            sessionMiddleware: config.sessionMiddleware,
-        })
-
-        const bunchyManager = new WebSocketServerManager({
-            authOptions: config.authOptions,
-            endpoint: '/bunchy',
-            sessionMiddleware: config.sessionMiddleware,
-        })
+        const {bunchyManager, wsManager} = createWebSocketManagers(config.authOptions, config.sessionMiddleware)
 
         // Map of endpoint to manager for the handler
         const wsManagers = new Map([
@@ -111,7 +88,7 @@ cli.usage('Usage: $0 [task]')
                     return new Response(JSON.stringify(devContext.snapshot({
                         version: runtime.version,
                         workspace: 'pyrite',
-                    })), { headers: { 'Content-Type': 'application/json' } })
+                    })), {headers: {'Content-Type': 'application/json'}})
                 }
                 return handleRequest(req, server)
             },

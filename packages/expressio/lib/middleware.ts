@@ -1,6 +1,7 @@
 import {createFinalHandler} from '@garage44/common/lib/middleware'
 import {adminContext, deniedContext, userContext} from '@garage44/common/lib/profile.ts'
 import {devContext} from '@garage44/common/lib/dev-context'
+import {userManager} from '@garage44/common/service'
 import {logger, runtime} from '../service.ts'
 import apiConfig from '../api/config.ts'
 import apiI18n from '../api/i18n.ts'
@@ -95,6 +96,7 @@ async function initMiddleware(_bunchyConfig) {
         publicPath,
         router,
         sessionCookieName: 'expressio-session',
+        userManager,
     })
 
     return {
