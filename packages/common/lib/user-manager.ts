@@ -1,5 +1,4 @@
-import fs from 'fs-extra'
-import {homedir} from 'node:os'
+import {Database} from 'bun:sqlite'
 
 export interface User {
     createdAt: string
@@ -28,29 +27,30 @@ export interface UserManagerConfig {
 }
 
 export class UserManager {
-    private configPath: string
+    private db: Database | null = null
     private appName: string
     private useBcrypt: boolean
 
     constructor() {
         // Initialize with defaults, will be configured via init()
-        this.configPath = ''
         this.appName = ''
         this.useBcrypt = false
     }
 
-    async init(config: UserManagerConfig) {
-        this.configPath = config.configPath.replace('~', homedir())
+    async init(database: Database, config: UserManagerConfig) {
+        this.db = database
         this.appName = config.appName
         this.useBcrypt = config.useBcrypt ?? false
 
-        const users = await this.loadUsers()
-        if (users.length === 0) {
+        // Check if we need to create default admin user
+        const userCount = database.query<{count: number}, []>('SELECT COUNT(*) as count FROM users').get()
+        if (!userCount || userCount.count === 0) {
             await this.createDefaultAdmin()
         }
     }
 
     async initialize() {
+        if (!this.db) throw new Error('Database not initialized')
         const users = await this.loadUsers()
         if (users.length === 0) {
             await this.createDefaultAdmin()
@@ -58,10 +58,15 @@ export class UserManager {
     }
 
     private async createDefaultAdmin() {
+        if (!this.db) throw new Error('Database not initialized')
+
+        const now = Date.now()
+        const adminId = crypto.randomUUID()
+
         const defaultUser: User = {
             createdAt: new Date().toISOString(),
             email: 'admin@localhost',
-            id: crypto.randomUUID(),
+            id: adminId,
             password: {
                 key: 'admin',
                 type: 'plaintext',
@@ -77,38 +82,72 @@ export class UserManager {
             username: 'admin',
         }
 
-        await this.createUser(defaultUser)
+        const stmt = this.db.prepare(`
+            INSERT INTO users (id, username, password_hash, permissions, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `)
+
+        stmt.run(
+            adminId,
+            defaultUser.username,
+            defaultUser.password.key,
+            JSON.stringify(defaultUser.permissions),
+            now,
+            now,
+        )
     }
 
     async loadUsers(): Promise<User[]> {
-        if (!await fs.pathExists(this.configPath)) {
-            return []
-        }
+        if (!this.db) throw new Error('Database not initialized')
 
-        const config = JSON.parse(await fs.readFile(this.configPath, 'utf8'))
-        return config.users || []
+        const stmt = this.db.prepare(`
+            SELECT id, username, password_hash, permissions, created_at, updated_at
+            FROM users
+            ORDER BY created_at ASC
+        `)
+
+        const rows = stmt.all() as Array<{
+            created_at: number
+            id: number
+            password_hash: string
+            permissions: string
+            updated_at: number
+            username: string
+        }>
+
+        return rows.map((row) => ({
+            createdAt: new Date(row.created_at).toISOString(),
+            id: row.id.toString(),
+            password: {
+                key: row.password_hash,
+                type: 'plaintext' as const,
+            },
+            permissions: JSON.parse(row.permissions),
+            profile: {
+                avatar: null,
+                displayName: row.username,
+            },
+            updatedAt: new Date(row.updated_at).toISOString(),
+            username: row.username,
+        }))
     }
 
-    async saveUsers(users: User[]) {
-        const config = await this.loadConfig()
-        config.users = users
-        await fs.writeFile(this.configPath, JSON.stringify(config, null, 2))
-    }
-
-    private async loadConfig() {
-        if (await fs.pathExists(this.configPath)) {
-            return JSON.parse(await fs.readFile(this.configPath, 'utf8'))
-        }
-        return {}
-    }
 
     async createUser(userData: Partial<User>): Promise<User> {
-        const users = await this.loadUsers()
+        if (!this.db) throw new Error('Database not initialized')
+
+        const now = Date.now()
+        const userId = crypto.randomUUID()
+
+        const stmt = this.db.prepare(`
+            INSERT INTO users (id, username, password_hash, permissions, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `)
 
         const user: User = {
             createdAt: new Date().toISOString(),
             email: userData.email,
-            id: crypto.randomUUID(),
+            id: userId,
             password: userData.password || {
                 key: 'password',
                 type: 'plaintext',
@@ -125,46 +164,127 @@ export class UserManager {
             username: userData.username!,
         }
 
-        users.push(user)
-        await this.saveUsers(users)
+        stmt.run(
+            userId,
+            user.username,
+            user.password.key,
+            JSON.stringify(user.permissions),
+            now,
+            now,
+        )
+
         return user
     }
 
     async updateUser(userId: string, updates: Partial<User>): Promise<User | null> {
-        const users = await this.loadUsers()
-        const userIndex = users.findIndex((u) => u.id === userId)
+        if (!this.db) throw new Error('Database not initialized')
 
-        if (userIndex === -1) return null
+        const user = await this.getUser(userId)
+        if (!user) return null
 
-        users[userIndex] = {
-            ...users[userIndex],
+        const updatedUser = {
+            ...user,
             ...updates,
-            id: users[userIndex].id, // Don't allow changing ID
+            id: user.id, // Don't allow changing ID
             updatedAt: new Date().toISOString(),
         }
 
-        await this.saveUsers(users)
-        return users[userIndex]
+        const stmt = this.db.prepare(`
+            UPDATE users
+            SET username = ?, password_hash = ?, permissions = ?, updated_at = ?
+            WHERE id = ?
+        `)
+
+        stmt.run(
+            updatedUser.username,
+            updatedUser.password.key,
+            JSON.stringify(updatedUser.permissions),
+            Date.now(),
+            userId,
+        )
+
+        return updatedUser
     }
 
     async deleteUser(userId: string): Promise<boolean> {
-        const users = await this.loadUsers()
-        const filteredUsers = users.filter((u) => u.id !== userId)
+        if (!this.db) throw new Error('Database not initialized')
 
-        if (filteredUsers.length === users.length) return false
+        const stmt = this.db.prepare('DELETE FROM users WHERE id = ?')
+        const result = stmt.run(userId)
 
-        await this.saveUsers(filteredUsers)
-        return true
+        return result.changes > 0
     }
 
     async getUser(userId: string): Promise<User | null> {
-        const users = await this.loadUsers()
-        return users.find((u) => u.id === userId) || null
+        if (!this.db) throw new Error('Database not initialized')
+
+        const stmt = this.db.prepare(`
+            SELECT id, username, password_hash, permissions, created_at, updated_at
+            FROM users WHERE id = ?
+        `)
+
+        const row = stmt.get(userId) as {
+            created_at: number
+            id: number
+            password_hash: string
+            permissions: string
+            updated_at: number
+            username: string
+        } | null
+
+        if (!row) return null
+
+        return {
+            createdAt: new Date(row.created_at).toISOString(),
+            id: row.id.toString(),
+            password: {
+                key: row.password_hash,
+                type: 'plaintext' as const,
+            },
+            permissions: JSON.parse(row.permissions),
+            profile: {
+                avatar: null,
+                displayName: row.username,
+            },
+            updatedAt: new Date(row.updated_at).toISOString(),
+            username: row.username,
+        }
     }
 
     async getUserByUsername(username: string): Promise<User | null> {
-        const users = await this.loadUsers()
-        return users.find((u) => u.username === username) || null
+        if (!this.db) throw new Error('Database not initialized')
+
+        const stmt = this.db.prepare(`
+            SELECT id, username, password_hash, permissions, created_at, updated_at
+            FROM users WHERE username = ?
+        `)
+
+        const row = stmt.get(username) as {
+            created_at: number
+            id: number
+            password_hash: string
+            permissions: string
+            updated_at: number
+            username: string
+        } | null
+
+        if (!row) return null
+
+        return {
+            createdAt: new Date(row.created_at).toISOString(),
+            id: row.id.toString(),
+            password: {
+                key: row.password_hash,
+                type: 'plaintext' as const,
+            },
+            permissions: JSON.parse(row.permissions),
+            profile: {
+                avatar: null,
+                displayName: row.username,
+            },
+            updatedAt: new Date(row.updated_at).toISOString(),
+            username: row.username,
+        }
     }
 
     async listUsers(): Promise<User[]> {

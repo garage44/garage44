@@ -28,47 +28,50 @@ export const initWebSocketSubscriptions = () => {
 const initChatSubscriptions = () => {
     // Listen for incoming chat messages (broadcast from backend)
     events.on('app:init', () => {
-        ws.on('/chat/:groupId/message', (data) => {
-            const {groupId, message, nick, kind, timestamp} = data
-
-            // Only process messages for the current group
-            if ($s.group.name !== groupId) return
+        // Listen for new messages in channels
+        ws.on('message', (message) => {
+            // Check if this is a channel message broadcast
+            if (message.url && message.url.startsWith('/channels/') && message.url.endsWith('/messages')) {
+                const data = message.data
+                const {channelId, userId, username, message: messageText, timestamp, kind} = data
 
             // Find or create the chat channel
-            const channelId = kind === 'me' ? 'main' : nick
-            if (!$s.chat.channels[channelId]) {
-                $s.chat.channels[channelId] = {
-                    id: channelId,
+            const channelKey = channelId.toString()
+            if (!$s.chat.channels[channelKey]) {
+                $s.chat.channels[channelKey] = {
+                    id: channelKey,
                     messages: [],
-                    name: nick,
                     unread: 0,
                 }
             }
 
-            // Add message to channel
-            $s.chat.channels[channelId].messages.push({
-                kind,
-                message,
-                nick,
-                time: timestamp,
-            })
+                // Add message to channel
+                $s.chat.channels[channelKey].messages.push({
+                    kind,
+                    message: messageText,
+                    nick: username,
+                    time: timestamp,
+                })
 
-            // Increment unread count if not the active channel
-            if ($s.chat.channel !== channelId) {
-                $s.chat.channels[channelId].unread++
+                // Increment unread count if not the active channel
+                if ($s.chat.activeChannelId !== channelId) {
+                    $s.chat.channels[channelKey].unread++
+                }
             }
         })
 
         // Listen for typing indicators (broadcast from backend)
-        ws.on('/chat/:groupId/typing', (data) => {
-            const {userId, typing} = data
+        ws.on('message', (message) => {
+            // Check if this is a typing indicator broadcast
+            if (message.url && message.url.startsWith('/channels/') && message.url.endsWith('/typing')) {
+                const data = message.data
+                const {userId, typing} = data
 
-            if ($s.group.name !== data.groupId) return
-
-            // Update user typing state
-            const user = $s.users.find(u => u.id === userId)
-            if (user) {
-                user.typing = typing
+                // Update user typing state
+                const user = $s.users.find(u => u.id === userId)
+                if (user) {
+                    user.typing = typing
+                }
             }
         })
     })

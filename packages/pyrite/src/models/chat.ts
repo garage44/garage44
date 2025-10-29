@@ -1,11 +1,9 @@
 import {$s} from '@/app'
-import {events, notifier} from '@garage44/common/app'
+import {events, notifier, ws} from '@garage44/common/app'
 import {logger} from '@garage44/common/lib/logger'
-import {commands} from './sfu/sfu.ts'
-import {connection} from './sfu/sfu.ts'
 
 export function _events() {
-    // TODO: Implement reactivity for panels.chat collapsed state
+    // Implement reactivity for panels.chat collapsed state
     // When chat panel is opened, clear unread count
 
     events.on('channel', ({action, channelId, channel = null}) => {
@@ -57,8 +55,18 @@ export function clearChat() {
  * @param {*} kind
  * @param {*} message
  */
-export async function onMessage(sourceId, destinationId, nick, time, privileged, history, kind, message) {
-    if (!kind) kind = 'default'
+export async function onMessage(messageData: {
+    sourceId: string
+    destinationId: string
+    nick: string
+    time: number
+    privileged: boolean
+    history: boolean
+    kind: string
+    message: string
+}) {
+    const {sourceId, destinationId, nick, time, privileged, history, kind: messageKind, message} = messageData
+    const kind = messageKind || 'default'
     let channelId
     // Incoming message for the main channel
     if (!destinationId) {
@@ -99,22 +107,61 @@ export async function onMessage(sourceId, destinationId, nick, time, privileged,
 
 export const emojiLookup = new Set()
 
-export function selectChannel(channel) {
-    if (typeof channel === 'string') {
-        channel = $s.chat.channels[channel]
+export function selectChannel(channelId: number | string) {
+    if (typeof channelId === 'number') {
+        $s.chat.activeChannelId = channelId
+        $s.chat.channel = channelId.toString()
+    } else {
+        $s.chat.activeChannelId = null
+        $s.chat.channel = channelId
     }
-    $s.chat.channel = channel.id
-    channel.unread = 0
+
+    // Clear unread count for the selected channel
+    if ($s.chat.channels[$s.chat.channel]) {
+        $s.chat.channels[$s.chat.channel].unread = 0
+    }
+
+    // Load channel history if not already loaded
+    if (typeof channelId === 'number') {
+        loadChannelHistory(channelId)
+    }
 }
 
-export function sendMessage(message) {
-    const isCommand = (message[0] === '/')
-    let me = false
+export async function loadChannelHistory(channelId: number) {
+    try {
+        const response = await ws.get(`/channels/${channelId}/messages`)
+        if (response.success) {
+            const channelKey = channelId.toString()
+            if (!$s.chat.channels[channelKey]) {
+                $s.chat.channels[channelKey] = {
+                    id: channelKey,
+                    messages: [],
+                    unread: 0
+                }
+            }
+            $s.chat.channels[channelKey].messages = response.messages
+        }
+    } catch (error) {
+        logger.error('[Chat] Error loading channel history:', error)
+    }
+}
+
+export async function sendMessage(message: string) {
+    if (!$s.chat.activeChannelId) {
+        notifier.notify({
+            level: 'error',
+            message: 'No channel selected'
+        })
+        return
+    }
+
+    const isCommand = message[0] === '/'
+    let kind = 'message'
 
     if (isCommand) {
         if (message.length > 1 && message[1] === '/') {
             message = message.slice(1)
-            me = false
+            kind = 'message'
         } else {
             let cmd, rest
             let space = message.indexOf(' ')
@@ -126,50 +173,36 @@ export function sendMessage(message) {
                 rest = message.slice(space + 1)
             }
 
-            message = ''
-
             if (cmd === 'me') {
                 message = rest
-                me = true
+                kind = 'me'
             } else {
-                let c = commands[cmd]
-                if (!c) {
-                    notifier.notify({
-                        level: 'error',
-                        message: `Uknown command /${cmd}, type /help for help`,
-                    })
-                    return
-                }
-                if (c.predicate) {
-                    const message = c.predicate()
-                    if (message) {
-                        notifier.notify({level: 'error', message})
-                        return
-                    }
-                }
-                try {
-                    c.f(cmd, rest)
-                } catch (e) {
-                    notifier.notify({level: 'error', message: e})
-                }
+                notifier.notify({
+                    level: 'error',
+                    message: `Unknown command /${cmd}, type /help for help`,
+                })
                 return
             }
         }
     }
 
-    // Sending to the main channel uses an empty string;
-    // a direct message uses the user (connection) id.
-    if ($s.chat.channel === 'main') {
-        connection.chat(me ? 'me' : '', '', message)
-    } else {
-        // A direct message is not replayed locally through
-        // onChat, so we need to add the message ourselves.
-        connection.chat(me ? 'me' : '', $s.chat.channel, message)
-        $s.chat.channels[$s.chat.channel].messages.push({
-            kind: 'default',
+    try {
+        const response = await ws.post(`/channels/${$s.chat.activeChannelId}/messages`, {
             message,
-            nick: $s.user.username,
-            time: Date.now(),
+            kind
+        })
+
+        if (!response.success) {
+            notifier.notify({
+                level: 'error',
+                message: response.error || 'Failed to send message'
+            })
+        }
+    } catch (error) {
+        logger.error('[Chat] Error sending message:', error)
+        notifier.notify({
+            level: 'error',
+            message: 'Failed to send message'
         })
     }
 }

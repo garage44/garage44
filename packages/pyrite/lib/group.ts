@@ -1,7 +1,7 @@
 import {config} from './config.ts'
 import {logger} from '../service.ts'
 import {dictionary} from './utils.ts'
-import {UserManager} from '@garage44/common/lib/user-manager'
+import {userManager} from '@garage44/common/service'
 import fs from 'fs-extra'
 import {Glob} from 'bun'
 import path from 'node:path'
@@ -9,14 +9,7 @@ import {uniqueNamesGenerator} from 'unique-names-generator'
 
 const ROLES = ['op', 'other', 'presenter']
 
-// Create UserManager for Pyrite
-const userManager = new UserManager({
-    appName: 'pyrite',
-    configPath: '~/.pyriterc',
-    useBcrypt: false,
-})
-
-// Helper functions to use UserManager
+// Helper functions to use UserManager from service
 const loadUsers = () => userManager.listUsers()
 const saveUsers = async (users) => {
     // Save users by updating each user individually

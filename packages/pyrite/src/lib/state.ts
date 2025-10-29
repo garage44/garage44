@@ -77,7 +77,9 @@ export const volatileState: Partial<PyriteState> = {
         user: null,
         users: [],
     },
+    channels: [],
     chat: {
+        activeChannelId: null,
         channel: '',
         channels: {
             main: {

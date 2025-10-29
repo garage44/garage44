@@ -180,8 +180,8 @@ export const userManager = new UserManager()
 
 // Service initialization
 export const service = {
-    async init(config: {appName: string; configPath: string; useBcrypt?: boolean}) {
-        await userManager.init(config)
+    async init(config: {appName: string; configPath: string; useBcrypt?: boolean}, database?: any) {
+        await userManager.init(database, config)
     },
 }
 

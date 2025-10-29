@@ -11,6 +11,9 @@ const $s = store.state as unknown as DeepSignal<PyriteState>
 
 store.load(persistantState, volatileState)
 
+// Initialize WebSocket subscriptions
+initWebSocketSubscriptions()
+
 const app = new App()
 
 

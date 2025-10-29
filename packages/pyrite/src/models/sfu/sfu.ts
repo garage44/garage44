@@ -144,18 +144,25 @@ export async function connect(username, password) {
     connection.onusermessage = onUserMessage
     connection.onfiletransfer = onFileTransfer
 
-    let url = `ws${location.protocol === 'https:' ? 's' : ''}://${location.host}/ws`
-    logger.info(`connecting websocket ${url}`)
+    // Temporarily disabled Galene WebSocket connection
+    // let url = `ws${location.protocol === 'https:' ? 's' : ''}://${location.host}/ws`
+    // logger.info(`connecting websocket ${url}`)
 
-    try {
-        await connection.connect(url)
-        // Share initial status with other users.
-        connection.userAction('setdata', connection.id, $s.user.data)
-    } catch (e) {
-        notifier.notify({
-            level: 'error',
-            message: e.message ? e.message : "Couldn't connect to " + url,
-        })
+    // try {
+    //     await connection.connect(url)
+    //     // Share initial status with other users.
+    //     connection.userAction('setdata', connection.id, $s.user.data)
+    // } catch (e) {
+    //     notifier.notify({
+    //         level: 'error',
+    //         message: e.message ? e.message : "Couldn't connect to " + url,
+    //     })
+    // }
+
+    // Mock successful connection for now
+    logger.info('Galene WebSocket connection disabled - using mock connection')
+    if (connection.onconnected) {
+        connection.onconnected()
     }
 
     return new Promise((resolve, reject) => {

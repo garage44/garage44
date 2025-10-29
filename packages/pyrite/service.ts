@@ -11,6 +11,8 @@ import path from 'node:path'
 import {registerChatWebSocket} from './api/ws-chat'
 import {registerGroupsWebSocket} from './api/ws-groups'
 import {registerPresenceWebSocket} from './api/ws-presence'
+import {registerChannelsWebSocket} from './api/ws-channels'
+import {initDatabase, initializeDefaultData} from './lib/database.ts'
 import yargs from 'yargs'
 
 const pyriteDir = fileURLToPath(new URL('.', import.meta.url))
@@ -58,10 +60,14 @@ void cli.usage('Usage: $0 [task]')
     }, async(argv) => {
         await initConfig(config)
 
-        // Initialize common service (including UserManager)
-        await service.init({appName: 'pyrite', configPath: '~/.pyriterc', useBcrypt: false})
+        // Initialize database
+        const database = initDatabase()
+        initializeDefaultData()
 
-        // Initialize middleware and WebSocket server
+        // Initialize common service (including UserManager) with database
+        await service.init({appName: 'pyrite', configPath: '~/.pyriterc', useBcrypt: false}, database)
+
+        // Initialize middleware and WebSocket server (after UserManager is initialized)
         const {handleRequest} = await initMiddleware(bunchyConfig)
 
         // Create WebSocket managers
@@ -79,6 +85,7 @@ void cli.usage('Usage: $0 [task]')
         registerChatWebSocket(wsManager)
         registerGroupsWebSocket(wsManager)
         registerPresenceWebSocket(wsManager)
+        registerChannelsWebSocket(wsManager)
 
         // Start Bun.serve server
         const server = Bun.serve({

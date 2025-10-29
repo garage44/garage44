@@ -4,6 +4,7 @@ import {devContext} from '@garage44/common/lib/dev-context'
 import {userManager} from '@garage44/common/service'
 import {logger, runtime} from '../service.ts'
 import apiChat from '../api/chat.ts'
+import apiChannels from '../api/channels.ts'
 import apiDashboard from '../api/dashboard.ts'
 import apiGroups from '../api/groups.ts'
 import apiI18n from '../api/i18n.ts'
@@ -107,6 +108,7 @@ async function initMiddleware(_bunchyConfig) {
 
     // Register HTTP API endpoints using familiar Express-like pattern
     await apiChat(router)
+    await apiChannels(router)
     await apiDashboard(router)
     await apiGroups(router)
     await apiI18n(router)

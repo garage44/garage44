@@ -5,60 +5,205 @@
  */
 
 import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
+import {ChannelManager} from '../lib/channel-manager.ts'
+import {getDatabase} from '../lib/database.ts'
+import {logger} from '../service.ts'
+
+let channelManager: ChannelManager | null = null
 
 export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
     const api = wsManager.api
 
+    // Initialize channel manager
+    if (!channelManager) {
+        channelManager = new ChannelManager(getDatabase())
+    }
+
+    logger.info('[Chat WebSocket] Registering chat API routes...')
+
     /**
-     * Broadcast chat message to all connected clients in a group
-     * POST /api/chat/:groupId/message
+     * Send a message to a channel
+     * POST /channels/:channelId/messages
      */
-    api.post('/api/chat/:groupId/message', async (context, request) => {
-        const {groupId} = request.params
-        const {message, nick, kind = 'message'} = request.data
+    api.post('/channels/:channelId/messages', async (context, request) => {
+        try {
+            const {channelId} = request.params
+            const channelIdNum = parseInt(channelId, 10)
+            const {kind = 'message', message} = request.data
 
-        // Broadcast to all clients
-        wsManager.broadcast(`/chat/${groupId}/message`, {
-            groupId,
-            message,
-            nick,
-            kind,
-            timestamp: Date.now(),
-        })
+            if (isNaN(channelIdNum)) {
+                return {
+                    error: 'Invalid channel ID',
+                    success: false,
+                }
+            }
 
-        return {success: true}
+            if (!message || typeof message !== 'string') {
+                return {
+                    error: 'Message is required',
+                    success: false,
+                }
+            }
+
+            // Get user ID and username from session/context - placeholder for now
+            const userId = 1
+            const username = 'admin'
+
+            // Check if user can access channel
+            const canAccess = await channelManager!.canAccessChannel(channelIdNum, userId)
+            if (!canAccess) {
+                return {
+                    error: 'Access denied',
+                    success: false,
+                }
+            }
+
+            // Save message to database
+            const db = getDatabase()
+            const now = Date.now()
+
+            const insertMessage = db.prepare(`
+                INSERT INTO messages (channel_id, user_id, username, message, timestamp, kind)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `)
+
+            const result = insertMessage.run(channelIdNum, userId, username, message, now, kind)
+            const messageId = result.lastInsertRowid
+
+            const messageData = {
+                channelId: channelIdNum,
+                id: messageId,
+                kind,
+                message,
+                timestamp: now,
+                userId,
+                username,
+            }
+
+            // Broadcast to all clients in the channel
+            wsManager.broadcast(`/channels/${channelId}/messages`, messageData)
+
+            const response = {
+                message: messageData,
+                success: true,
+            }
+            return response
+        } catch (error) {
+            logger.error('[Chat API] Error sending message:', error)
+            return {
+                error: error.message,
+                success: false,
+            }
+        }
     })
 
     /**
      * Send typing indicator
-     * POST /api/chat/:groupId/typing
+     * POST /api/channels/:channelId/typing
      */
-    api.post('/api/chat/:groupId/typing', async (context, request) => {
-        const {groupId} = request.params
-        const {userId, typing} = request.data
+    api.post('/channels/:channelId/typing', async (context, request) => {
+        try {
+            const {channelId} = request.params
+            const channelIdNum = parseInt(channelId, 10)
+            const {typing} = request.data
 
-        // Broadcast to all clients in group
-        wsManager.broadcast(`/chat/${groupId}/typing`, {
-            userId,
-            typing,
-        })
+            if (isNaN(channelIdNum)) {
+                return {
+                    error: 'Invalid channel ID',
+                    success: false,
+                }
+            }
 
-        return {success: true}
+            // Get user ID from session/context - placeholder for now
+            const userId = 1
+
+            // Check if user can access channel
+            if (!channelManager!.canAccessChannel(channelIdNum, userId)) {
+                return {
+                    error: 'Access denied',
+                    success: false,
+                }
+            }
+
+            // Broadcast to all clients in the channel
+            wsManager.broadcast(`/channels/${channelId}/typing`, {
+                timestamp: Date.now(),
+                typing,
+                userId,
+            })
+
+            return {success: true}
+        } catch (error) {
+            logger.error('[Chat API] Error sending typing indicator:', error)
+            return {
+                error: error.message,
+                success: false,
+            }
+        }
     })
 
     /**
-     * Get chat history for a group
-     * GET /api/chat/:groupId/history
+     * Get chat history for a channel
+     * GET /api/channels/:channelId/messages
      */
-    api.get('/api/chat/:groupId/history', async (context, request) => {
-        const {groupId} = request.params
-        const {limit = 100} = request.data || {}
+    api.get('/channels/:channelId/messages', async (context, request) => {
+        try {
+            const {channelId} = request.params
+            const channelIdNum = parseInt(channelId, 10)
+            const {limit = 100} = request.data || {}
 
-        // In the current architecture, chat history is managed by SFU
-        // This is a placeholder for future chat persistence
-        return {
-            groupId,
-            messages: [], // Would load from database/storage
+            if (isNaN(channelIdNum)) {
+                return {
+                    error: 'Invalid channel ID',
+                    success: false,
+                }
+            }
+
+            // Get user ID from session/context - placeholder for now
+            const userId = 1
+
+            // Check if user can access channel
+            if (!channelManager!.canAccessChannel(channelIdNum, userId)) {
+                return {
+                    error: 'Access denied',
+                    success: false,
+                }
+            }
+
+            // Load messages from database
+            const db = getDatabase()
+            const stmt = db.prepare(`
+                SELECT id, channel_id, user_id, username, message, timestamp, kind
+                FROM messages
+                WHERE channel_id = ?
+                ORDER BY timestamp DESC
+                LIMIT ?
+            `)
+
+            const messages = stmt.all(channelIdNum, limit) as Array<{
+                channel_id: number
+                id: number
+                kind: string
+                message: string
+                timestamp: number
+                user_id: number
+                username: string
+            }>
+
+            // Reverse to get chronological order
+            messages.reverse()
+
+            return {
+                channelId: channelIdNum,
+                messages,
+                success: true,
+            }
+        } catch (error) {
+            logger.error('[Chat API] Error getting message history:', error)
+            return {
+                error: error.message,
+                success: false,
+            }
         }
     })
 }

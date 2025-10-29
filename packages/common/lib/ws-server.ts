@@ -123,6 +123,7 @@ class WebSocketServerManager extends EventEmitter {
     }
 
     registerApi(method: HttpMethod, route: string, handler: ApiHandler, middlewares: Middleware[] = []) {
+        logger.debug(`[WS] Registering route: ${method} ${route}`)
         const matchFn = match(route, {decode: decodeURIComponent})
         this.routeHandlers.push({
             handler: this.composeMiddleware([...this.globalMiddlewares, ...middlewares], handler),
@@ -262,11 +263,13 @@ class WebSocketServerManager extends EventEmitter {
             }
 
             // Find matching route handler
+            let matched = false
             for (const {matchFn, handler, method: handlerMethod} of this.routeHandlers) {
                 const matchResult = matchFn(url)
 
                 // Check both URL pattern match AND matching HTTP method
                 if (matchResult !== false && handlerMethod === method) {
+                    matched = true
                     try {
                         const request: ApiRequest = {
                             data,
@@ -287,6 +290,10 @@ class WebSocketServerManager extends EventEmitter {
                     }
                     break
                 }
+            }
+
+            if (!matched) {
+                logger.debug(`[WS] No route matched for: ${method} ${url}`)
             }
         } catch (error) {
             logger.error('Error processing WebSocket message:', error)

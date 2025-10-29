@@ -1,6 +1,16 @@
 // Pyrite TypeScript types
 import type {CommonState} from '@garage44/common/types'
 
+export interface Channel {
+    id: number
+    name: string
+    description: string
+    galene_group: string
+    created_at: number
+    member_count?: number
+    unread_count?: number
+}
+
 export interface PyriteState extends CommonState {
     admin: {
         authenticated: boolean | null
@@ -10,7 +20,9 @@ export interface PyriteState extends CommonState {
         user: any
         users: any[]
     }
+    channels: Channel[]
     chat: {
+        activeChannelId: number | null
         channel: string
         channels: {
             [key: string]: {

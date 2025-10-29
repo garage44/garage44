@@ -61,7 +61,7 @@ class WebSocketClient extends EventEmitter {
         this.activeSubscriptions.add(topic)
     }
 
-        // URL-based message routing method
+    // URL-based message routing method
     onRoute(url: string, handler: (data: MessageData) => void) {
         if (!this.eventHandlers[url]) {
             this.eventHandlers[url] = []
@@ -71,10 +71,12 @@ class WebSocketClient extends EventEmitter {
 
     // Remove URL-based handler
     offRoute(url: string, handler?: (data: MessageData) => void) {
-        if (!this.eventHandlers[url]) {return}
+        if (!this.eventHandlers[url]) {
+            return
+        }
 
         if (handler) {
-            this.eventHandlers[url] = this.eventHandlers[url].filter(h => h !== handler)
+            this.eventHandlers[url] = this.eventHandlers[url].filter((h) => h !== handler)
         } else {
             delete this.eventHandlers[url]
         }
@@ -128,13 +130,15 @@ class WebSocketClient extends EventEmitter {
                 const message = JSON.parse(event.data)
 
                 // Handle request-response messages first
-                if (this.handleResponse(message)) {return}
+                if (this.handleResponse(message)) {
+                    return
+                }
 
                 this.emit('message', message)
 
                 // Handle route-specific handlers
                 if (message.url && this.eventHandlers[message.url]) {
-                    this.eventHandlers[message.url].forEach(handler => handler(message.data))
+                    this.eventHandlers[message.url].forEach((handler) => handler(message.data))
                 }
 
                 // Emit on the URL as an event
@@ -143,7 +147,7 @@ class WebSocketClient extends EventEmitter {
                 }
 
                 // Pass to generic message listeners
-                this.messageListeners.forEach(listener => listener(event))
+                this.messageListeners.forEach((listener) => listener(event))
             } catch (error) {
                 logger.error('[WS] failed to parse message', error)
             }
@@ -209,7 +213,7 @@ class WebSocketClient extends EventEmitter {
 
     removeEventListener(type: string, listener: EventListener) {
         if (type === 'message') {
-            this.messageListeners = this.messageListeners.filter(l => l !== listener)
+            this.messageListeners = this.messageListeners.filter((l) => l !== listener)
         } else if (this.ws) {
             this.ws.removeEventListener(type, listener)
         }
@@ -234,7 +238,7 @@ class WebSocketClient extends EventEmitter {
                         this.ws.send(JSON.stringify(wsMessage))
                     }
                 } else {
-                    logger.debug(`[WS] sending queued non-request message`)
+                    logger.debug('[WS] sending queued non-request message')
                     this.send(message.url, message.data)
                 }
             }
@@ -243,7 +247,10 @@ class WebSocketClient extends EventEmitter {
 
     private handleResponse(message: WebSocketMessage) {
         if (!message.id) {
-            logger.debug(`[WS] message has no id, not a response`)
+            // Only log this for messages that look like responses (have method field)
+            if (message.method) {
+                logger.debug('[WS] message has no id, not a response')
+            }
             return false
         }
 

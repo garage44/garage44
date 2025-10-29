@@ -45,8 +45,7 @@ class App {
         if (options.bunchyPrefix) {
             try {
                 initializeBunchy({logPrefix: options.bunchyPrefix})
-            }
-            catch (error) {
+            } catch (error) {
                 // Silently fail if bunchy is not available
                 console.warn('[App] Bunchy not available for development features:', error.message)
             }
