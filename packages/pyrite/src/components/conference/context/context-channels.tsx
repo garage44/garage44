@@ -5,6 +5,7 @@ import {useEffect, useMemo, useRef} from 'preact/hooks'
 import {$s} from '@/app'
 import {$t, ws, logger} from '@garage44/common/app'
 import type {Channel} from '../../types.ts'
+import './context-channels.css'
 
 export default function ChannelsContext() {
     const intervalRef = useRef<number | null>(null)
@@ -85,47 +86,75 @@ export default function ChannelsContext() {
                     </div>
                 </button>
             </div>
-            {$s.channels.map((channel) => (
-                <Link
-                    key={channel.id}
-                    class={classnames('channel item', {active: currentChannel?.id === channel.id})}
-                    href={channelLink(channel.id)}
-                    onClick={() => {
-                        $s.chat.activeChannelId = channel.id
-                        setAutofocus()
-                    }}
-                >
-                    <Icon
-                        class="icon item-icon icon-d"
-                        name="chat"
-                    />
+            {$s.channels.map((channel) => {
+                const channelKey = channel.id.toString()
+                const channelData = $s.chat.channels[channelKey]
+                const unreadCount = channelData?.unread || 0
+                const hasUnread = unreadCount > 0
 
-                    <div class="flex-column">
-                        <div class="name">
-                            #{channel.name}
-                        </div>
-                        {channel.description && (
-                            <div class="item-properties">
-                                {channel.description}
+                return (
+                    <Link
+                        key={channel.id}
+                        class={classnames('channel item', {
+                            active: currentChannel?.id === channel.id,
+                            'has-unread': hasUnread,
+                        })}
+                        href={channelLink(channel.id)}
+                        onClick={() => {
+                            $s.chat.activeChannelId = channel.id
+                            setAutofocus()
+                        }}
+                    >
+                        <div class="flex-column">
+                            <div class="name">
+                                #{channel.name}
                             </div>
-                        )}
-                    </div>
-
-                    <div class={classnames('stats', {active: channel.member_count > 0})}>
-                        {channel.member_count || 0}
-                        <Icon class="icon-d" name="user" />
-                    </div>
-                </Link>
-            ))}
+                            {channel.description && (
+                                <div class="item-properties">
+                                    {channel.description}
+                                </div>
+                            )}
+                        </div>
+                    </Link>
+                )
+            })}
 
             {!$s.channels.length && (
                 <div class="channel item no-presence">
-                    <Icon class="item-icon icon-d" name="chat" />
                     <div class="name">
                         {$t('channel.no_channels')}
                     </div>
                 </div>
             )}
+
+            {/* People List Section */}
+            <div class="people-section">
+                <div class="people-header">
+                    <span class="people-title">People</span>
+                </div>
+                <div class="people-list">
+                    {$s.users.map((user) => {
+                        const isOnline = user.data?.availability?.id !== 'away' && user.data?.availability?.id !== 'busy'
+                        const statusClass = classnames('status-indicator', {
+                            away: user.data?.availability?.id === 'away',
+                            busy: user.data?.availability?.id === 'busy',
+                            online: isOnline,
+                        })
+
+                        return (
+                            <div key={user.id} class="person item">
+                                <span class={statusClass}></span>
+                                <span class="person-name">
+                                    {user.username || $t('user.anonymous')}
+                                    {$s.users[0]?.id === user.id && (
+                                        <span class="you-label"> ({$t('user.you')})</span>
+                                    )}
+                                </span>
+                            </div>
+                        )
+                    })}
+                </div>
+            </div>
         </section>
     )
 }
