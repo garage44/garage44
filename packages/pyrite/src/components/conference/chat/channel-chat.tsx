@@ -3,9 +3,9 @@ import classnames from 'classnames'
 import {useEffect, useRef, useMemo} from 'preact/hooks'
 import {Icon} from '@garage44/common/components'
 import Emoji from './emoji'
-import {$t, logger} from '@garage44/common/app'
+import {logger} from '@garage44/common/app'
 import {$s} from '@/app'
-import {sendMessage as sendChatMessage, loadChannelHistory} from '@/models/chat'
+import {sendMessage as sendChatMessage} from '@/models/chat'
 
 const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -23,36 +23,30 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
     const chatInputRef = useRef<HTMLTextAreaElement>(null)
     const resizeObserverRef = useRef<ResizeObserver | null>(null)
 
-    // Get current channel from state
-    const currentChannel = useMemo(() => {
-        const channel = $s.channels.find(c => c.id === channelId)
-        logger.debug(`[ChannelChat] Looking for channel ${channelId}, found:`, channel)
-        return channel
-    }, [channelId])
+    // Get current channel from state - access directly for DeepSignal reactivity
+    // Access $s.channels in render so Preact tracks it reactively
+    const currentChannel = $s.channels.find((c) => c.id === channelId)
 
-    // Get messages for this channel
-    const channelMessages = useMemo(() => {
-        const channelKey = channelId.toString()
-        if ($s.chat.channels[channelKey]) {
-            return $s.chat.channels[channelKey].messages
+    // Only log when channel is found to avoid spam
+    useEffect(() => {
+        if (currentChannel) {
+            logger.debug(`[ChannelChat] Looking for channel ${channelId}, found:`, currentChannel)
         }
-        return []
-    }, [channelId])
+    }, [currentChannel, channelId])
+
+    // Get channel key - needed for accessing messages
+    const channelKey = channelId.toString()
+
+    // Access messages directly from DeepSignal - this is reactive
+    // Accessing $s.chat.channels[channelKey] in render makes it reactive
+    const channelData = $s.chat.channels[channelKey]
+    const messages = channelData?.messages || []
 
     const formattedMessage = useMemo(() => {
         const trimmed = $s.chat.message.trim()
         logger.debug('[ChannelChat] Message state:', $s.chat.message, 'Trimmed:', trimmed)
         return trimmed
     }, [$s.chat.message])
-
-    const sortedMessages = useMemo(() => {
-        const channelKey = channelId.toString()
-        if ($s.chat.channels[channelKey]) {
-            const messages = $s.chat.channels[channelKey].messages
-            return messages.toSorted((a, b) => a.time - b.time)
-        }
-        return []
-    }, [channelId])
 
     const addEmoji = (e: MouseEvent, emoji: string) => {
         const message = $s.chat.message.split('')
@@ -95,12 +89,19 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
         }
     }
 
-    // Watch channel messages and scroll to bottom
+    // Watch channel messages and scroll to bottom when messages change
+    // Access messages.length here to make this reactive to DeepSignal changes
+    const messageCount = messages.length
     useEffect(() => {
-        if (messagesRef.current) {
-            messagesRef.current.scrollTop = messagesRef.current.scrollHeight
+        if (messagesRef.current && messageCount > 0) {
+            // Small delay to ensure DOM has updated
+            setTimeout(() => {
+                if (messagesRef.current) {
+                    messagesRef.current.scrollTop = messagesRef.current.scrollHeight
+                }
+            }, 0)
         }
-    }, [channelMessages.length])
+    }, [messageCount])
 
     // Setup resize observer and initial scroll
     useEffect(() => {
@@ -125,14 +126,16 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
     // Set active channel when component mounts
     useEffect(() => {
         $s.chat.activeChannelId = channelId
-    }, [channelId])
-
-    // Load channel history when channel changes
-    useEffect(() => {
-        if (currentChannel) {
-            loadChannelHistory(currentChannel.id)
+        // Pre-create channel entry if it doesn't exist for immediate UI feedback
+        const channelKey = channelId.toString()
+        if (!$s.chat.channels[channelKey]) {
+            $s.chat.channels[channelKey] = {
+                id: channelKey,
+                messages: [],
+                unread: 0,
+            }
         }
-    }, [currentChannel])
+    }, [channelId])
 
     if (!currentChannel) {
         return (
@@ -150,13 +153,11 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
         <div ref={viewRef} class={classnames('c-channel-chat', {[$s.env.layout]: true})}>
             {/* Channel Header */}
             <div class="channel-header">
-                <div class="channel-info">
-                    <Icon class="icon icon-s" name="chat" />
-                    <h1>{currentChannel.name}</h1>
-                    {currentChannel.description && (
-                        <p class="channel-description">{currentChannel.description}</p>
-                    )}
-                </div>
+                <Icon className="icon icon-s" name="chat" />
+                <h1>{currentChannel.name}</h1>
+                {currentChannel.description && (
+                    <p class="channel-description">{currentChannel.description}</p>
+                )}
             </div>
 
             {/* Emoji Picker */}
@@ -164,16 +165,25 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
 
             {/* Messages */}
             <div ref={messagesRef} class="messages scroller">
-                {sortedMessages.length === 0 ? (
-                    <div class="no-messages">
-                        <Icon class="icon icon-l" name="chat" />
-                        <p>No messages yet. Start the conversation!</p>
-                    </div>
-                ) : (
-                    sortedMessages.map((message, index) => (
+                {(() => {
+                    // Access messages directly in render for DeepSignal reactivity
+                    const channelData = $s.chat.channels[channelKey]
+                    const msgs = channelData?.messages || []
+                    const sorted = msgs.length > 0 ? [...msgs].sort((a, b) => a.time - b.time) : []
+
+                    if (sorted.length === 0) {
+                        return (
+                            <div class="no-messages">
+                                <Icon class="icon icon-l" name="chat" />
+                                <p>No messages yet. Start the conversation!</p>
+                            </div>
+                        )
+                    }
+
+                    return sorted.map((message, index) => (
                         <ChatMessage key={index} message={message} />
                     ))
-                )}
+                })()}
             </div>
 
             {/* Message Input */}

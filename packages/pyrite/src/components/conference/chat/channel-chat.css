@@ -1,0 +1,28 @@
+.c-channel-chat {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+
+    .channel-header {
+        align-items: center;
+        display: flex;
+        gap: var(--spacer-1);
+        height: 60px;
+    }
+
+    .messages {
+        background: var(--surface-2);
+        flex: 1;
+
+        .message {
+
+            .header {
+
+            }
+        }
+    }
+
+    .send {
+        background: #ff0;
+    }
+}

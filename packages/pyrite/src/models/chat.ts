@@ -127,22 +127,54 @@ export function selectChannel(channelId: number | string) {
     }
 }
 
+// Track ongoing load requests to prevent duplicates
+const loadingChannels = new Set<number>()
+
 export async function loadChannelHistory(channelId: number) {
+    // Prevent duplicate requests for the same channel
+    if (loadingChannels.has(channelId)) {
+        logger.debug(`[Chat] Already loading history for channel ${channelId}`)
+        return
+    }
+
     try {
-        const response = await ws.get(`/channels/${channelId}/messages`)
-        if (response.success) {
-            const channelKey = channelId.toString()
-            if (!$s.chat.channels[channelKey]) {
-                $s.chat.channels[channelKey] = {
-                    id: channelKey,
-                    messages: [],
-                    unread: 0
-                }
+        loadingChannels.add(channelId)
+        const channelKey = channelId.toString()
+
+        // Pre-create channel entry if it doesn't exist for immediate UI feedback
+        if (!$s.chat.channels[channelKey]) {
+            $s.chat.channels[channelKey] = {
+                id: channelKey,
+                messages: [],
+                unread: 0
             }
-            $s.chat.channels[channelKey].messages = response.messages
+        }
+
+        logger.debug(`[Chat] Loading history for channel ${channelId}`)
+        const response = await ws.get(`/channels/${channelId}/messages`)
+
+        if (response && response.success && response.messages) {
+            // Transform database message format to frontend format
+            // DB format: {id, channel_id, user_id, username, message, timestamp, kind}
+            // Frontend format: {kind, message, nick, time}
+            const transformedMessages = response.messages.map((msg: any) => ({
+                kind: msg.kind || 'message',
+                message: msg.message,
+                nick: msg.username,
+                time: msg.timestamp,
+            }))
+
+            logger.debug(`[Chat] Loaded ${transformedMessages.length} messages for channel ${channelId}`)
+
+            // Assign entire array to trigger DeepSignal reactivity
+            $s.chat.channels[channelKey].messages = transformedMessages
+        } else {
+            logger.warn(`[Chat] No messages in response for channel ${channelId}:`, response)
         }
     } catch (error) {
         logger.error('[Chat] Error loading channel history:', error)
+    } finally {
+        loadingChannels.delete(channelId)
     }
 }
 

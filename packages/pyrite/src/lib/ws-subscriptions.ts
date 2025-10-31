@@ -28,49 +28,75 @@ export const initWebSocketSubscriptions = () => {
 const initChatSubscriptions = () => {
     // Listen for incoming chat messages (broadcast from backend)
     events.on('app:init', () => {
-        // Listen for new messages in channels
+        // Use onRoute for dynamic channel message broadcasts
+        // Since URLs are dynamic (/channels/1/messages, /channels/2/messages, etc.),
+        // we use the generic message handler but with better pattern matching
         ws.on('message', (message) => {
+            if (!message || !message.url) return
+
             // Check if this is a channel message broadcast
-            if (message.url && message.url.startsWith('/channels/') && message.url.endsWith('/messages')) {
+            const messageUrlMatch = message.url.match(/^\/channels\/(\d+)\/messages$/)
+            if (messageUrlMatch) {
+                const channelId = parseInt(messageUrlMatch[1], 10)
                 const data = message.data
-                const {channelId, userId, username, message: messageText, timestamp, kind} = data
 
-            // Find or create the chat channel
-            const channelKey = channelId.toString()
-            if (!$s.chat.channels[channelKey]) {
-                $s.chat.channels[channelKey] = {
-                    id: channelKey,
-                    messages: [],
-                    unread: 0,
+                if (!data || typeof channelId !== 'number' || isNaN(channelId)) {
+                    logger.warn('[Chat WS] Invalid message data:', message)
+                    return
                 }
-            }
 
-                // Add message to channel
-                $s.chat.channels[channelKey].messages.push({
-                    kind,
+                const {userId, username, message: messageText, timestamp, kind} = data
+
+                if (!messageText || !username) {
+                    logger.warn('[Chat WS] Missing required message fields:', data)
+                    return
+                }
+
+                logger.debug(`[Chat WS] Received message for channel ${channelId}:`, {username, messageText})
+
+                // Find or create the chat channel
+                const channelKey = channelId.toString()
+                if (!$s.chat.channels[channelKey]) {
+                    $s.chat.channels[channelKey] = {
+                        id: channelKey,
+                        messages: [],
+                        unread: 0,
+                    }
+                    logger.debug(`[Chat WS] Created channel entry for ${channelKey}`)
+                }
+
+                // Add message to channel - DeepSignal will trigger reactivity
+                const newMessage = {
+                    kind: kind || 'message',
                     message: messageText,
                     nick: username,
-                    time: timestamp,
-                })
+                    time: timestamp || Date.now(),
+                }
+
+                // Push to array - DeepSignal tracks array mutations
+                $s.chat.channels[channelKey].messages.push(newMessage)
+
+                logger.debug(`[Chat WS] Added message to channel ${channelKey}, total messages: ${$s.chat.channels[channelKey].messages.length}`)
 
                 // Increment unread count if not the active channel
                 if ($s.chat.activeChannelId !== channelId) {
                     $s.chat.channels[channelKey].unread++
                 }
             }
-        })
 
-        // Listen for typing indicators (broadcast from backend)
-        ws.on('message', (message) => {
             // Check if this is a typing indicator broadcast
-            if (message.url && message.url.startsWith('/channels/') && message.url.endsWith('/typing')) {
+            const typingUrlMatch = message.url.match(/^\/channels\/(\d+)\/typing$/)
+            if (typingUrlMatch) {
+                const channelId = parseInt(typingUrlMatch[1], 10)
                 const data = message.data
-                const {userId, typing} = data
+                const {userId, typing} = data || {}
 
-                // Update user typing state
-                const user = $s.users.find(u => u.id === userId)
-                if (user) {
-                    user.typing = typing
+                if (userId) {
+                    // Update user typing state
+                    const user = $s.users.find(u => u.id === userId)
+                    if (user) {
+                        user.typing = typing
+                    }
                 }
             }
         })
