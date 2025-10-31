@@ -66,66 +66,48 @@ export default function ChannelsContext() {
 
     return (
         <section class={classnames('c-channels-context presence', {collapsed: $s.panels.context.collapsed})}>
-            <div class="actions">
-                <button
-                    class={classnames('channel item unlisted-channel', {
-                        active: window.location.pathname !== '/' && !currentChannel,
-                    })}
-                    onClick={() => {
-                        if (!$s.chat.activeChannelId || currentChannel) {
-                            $s.chat.activeChannelId = null
-                        } else if (!currentChannel) {
-                            $s.chat.activeChannelId = null
-                        }
-                    }}
-                    aria-label="Toggle unlisted channel"
-                >
-                    <Icon class="icon item-icon icon-d" name="chat" />
-                    <div class="flex-column">
-                        <div class="name">...</div>
-                    </div>
-                </button>
-            </div>
-            {$s.channels.map((channel) => {
-                const channelKey = channel.id.toString()
-                const channelData = $s.chat.channels[channelKey]
-                const unreadCount = channelData?.unread || 0
-                const hasUnread = unreadCount > 0
+            <div class="channels-list">
+                {$s.channels.map((channel) => {
+                    const channelKey = channel.id.toString()
+                    const channelData = $s.chat.channels[channelKey]
+                    const unreadCount = channelData?.unread || 0
+                    const hasUnread = unreadCount > 0
 
-                return (
-                    <Link
-                        key={channel.id}
-                        class={classnames('channel item', {
-                            active: currentChannel?.id === channel.id,
-                            'has-unread': hasUnread,
-                        })}
-                        href={channelLink(channel.id)}
-                        onClick={() => {
-                            $s.chat.activeChannelId = channel.id
-                            setAutofocus()
-                        }}
-                    >
-                        <div class="flex-column">
-                            <div class="name">
-                                #{channel.name}
-                            </div>
-                            {channel.description && (
-                                <div class="item-properties">
-                                    {channel.description}
+                    return (
+                        <Link
+                            key={channel.id}
+                            class={classnames('channel item', {
+                                active: currentChannel?.id === channel.id,
+                                'has-unread': hasUnread,
+                            })}
+                            href={channelLink(channel.id)}
+                            onClick={() => {
+                                $s.chat.activeChannelId = channel.id
+                                setAutofocus()
+                            }}
+                        >
+                            <div class="flex-column">
+                                <div class="name">
+                                    #{channel.name}
                                 </div>
-                            )}
-                        </div>
-                    </Link>
-                )
-            })}
+                                {channel.description && (
+                                    <div class="item-properties">
+                                        {channel.description}
+                                    </div>
+                                )}
+                            </div>
+                        </Link>
+                    )
+                })}
 
-            {!$s.channels.length && (
-                <div class="channel item no-presence">
-                    <div class="name">
-                        {$t('channel.no_channels')}
+                {!$s.channels.length && (
+                    <div class="channel item no-presence">
+                        <div class="name">
+                            {$t('channel.no_channels')}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* People List Section */}
             <div class="people-section">

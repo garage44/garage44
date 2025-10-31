@@ -1,99 +1,47 @@
 import classnames from 'classnames'
 import {ComponentChildren} from 'preact'
+import './panel-context.css'
 
 interface PanelContextProps {
-    actions?: ComponentChildren
-    collapsed: boolean
-    footer?: ComponentChildren
-    LinkComponent?: any
-    logoHref?: string
-    LogoIcon?: () => JSX.Element
-    logoSrc?: string
-    logoText?: string
-    logoVersion?: string
-    navigation?: ComponentChildren
+    children: ComponentChildren
+    collapsed?: boolean
     onCollapseChange?: (collapsed: boolean) => void
 }
 
 /**
- * PanelContext - Generic sidebar/panel component
+ * PanelContext - Generic right sidebar/panel component
  *
- * Provides a consistent panel layout with logo, navigation, actions, and footer sections.
+ * Provides a consistent right-side panel layout for contextual content.
  * Supports collapse/expand functionality.
+ * Width adapts based on content and collapsed state.
  *
  * @example
- * <PanelContext
- *   collapsed={false}
- *   logoSrc="/logo.svg"
- *   logoText="App Name"
- *   navigation={<nav>...</nav>}
- *   actions={<div>...</div>}
- *   footer={<div>...</div>}
- * />
+ * <PanelContext collapsed={false} onCollapseChange={(c) => {...}}>
+ *   <VideoControls />
+ *   <VideoStrip streams={streams} />
+ * </PanelContext>
  */
 export const PanelContext = ({
-    actions,
-    collapsed,
-    footer,
-    LinkComponent,
-    logoHref,
-    LogoIcon,
-    logoSrc,
-    logoText = '',
-    logoVersion = '',
-    navigation,
+    children,
+    collapsed = false,
     onCollapseChange,
 }: PanelContextProps) => {
-    const renderLogo = () => {
-        const logoContent = (
-            <>
-                {logoSrc && <img src={logoSrc} alt={`${logoText} Logo`} />}
-                {LogoIcon && (
-                    <svg class="icon" viewBox="0 0 24 24" height="40" width="40">
-                        <LogoIcon />
-                    </svg>
-                )}
-                {logoText && (
-                    <div class="l-name">
-                        <span class="name logo-text">{logoText}</span>
-                        {logoVersion && <span class="version">{logoVersion}</span>}
-                    </div>
-                )}
-            </>
-        )
-
-        if (LinkComponent && logoHref) {
-            return (
-                <LinkComponent class="logo" href={logoHref}>
-                    {logoContent}
-                </LinkComponent>
-            )
-        }
-
-        return <div class="logo">{logoContent}</div>
-    }
-
     return (
-        <div class={classnames('c-panel-context', 'fade-in', {collapsed})}>
-            <header>
-                {renderLogo()}
-                {onCollapseChange && (
-                    <button
-                        class="collapse-toggle"
-                        onClick={() => onCollapseChange(!collapsed)}
-                        aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d={collapsed ? 'M10 8l-4-4v8l4-4z' : 'M6 8l4-4v8l-4-4z'} />
-                        </svg>
-                    </button>
-                )}
-            </header>
+        <aside class={classnames('c-panel-context', 'fade-in', {collapsed})} style={{gridColumn: 'context'}}>
+            {onCollapseChange && (
+                <button
+                    class="collapse-toggle"
+                    onClick={() => onCollapseChange(!collapsed)}
+                    aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
+                >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d={collapsed ? 'M6 8l4-4v8l-4-4z' : 'M10 8l-4-4v8l4-4z'} />
+                    </svg>
+                </button>
+            )}
             <div class="content">
-                {navigation && <div class="navigation">{navigation}</div>}
-                {actions && <div class="actions">{actions}</div>}
-                {footer && <div class="footer">{footer}</div>}
+                {children}
             </div>
-        </div>
+        </aside>
     )
 }

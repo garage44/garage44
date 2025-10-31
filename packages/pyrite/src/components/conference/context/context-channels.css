@@ -1,10 +1,42 @@
 .c-channels-context.presence {
     display: flex;
     flex-direction: column;
+    flex: 1;
     height: 100%;
+    min-height: 0;
+    overflow: hidden;
 
     .actions {
-        padding-left: 0;
+        flex-shrink: 0;
+        padding: 0;
+    }
+
+    /* Channels list wrapper - scrollable area */
+    .channels-list {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0;
+
+        /* Custom scrollbar styling */
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: var(--surface-3);
+            border-radius: 3px;
+
+            &:hover {
+                background: var(--surface-4);
+            }
+        }
     }
 
     /* Channel Items - Slack-style clean design */
@@ -60,11 +92,13 @@
         }
     }
 
+
     /* People Section - Slack-style user list */
     .people-section {
         border-top: 1px solid var(--surface-2);
         display: flex;
         flex-direction: column;
+        flex-shrink: 0;
         margin-top: auto;
         padding-top: var(--spacer-2);
 

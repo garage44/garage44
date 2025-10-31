@@ -1,15 +1,26 @@
 .c-app-layout {
     background: var(--surface-1);
-    display: flex;
-    height: 100%;
+    display: grid;
+    grid-template-columns:
+        [menu] minmax(min-content, 240px)
+        [content] 1fr
+        [context] minmax(64px, auto);
+    height: 100vh;
     overflow: hidden;
     position: relative;
     width: 100%;
 
+    /* Two-column layout when context not provided */
+    &:not(:has(.c-panel-context)) {
+        grid-template-columns:
+            [menu] minmax(min-content, 240px)
+            [content] 1fr;
+    }
+
     > .content {
         display: flex;
-        flex: 1;
         flex-direction: column;
+        grid-column: content;
 
         .view {
             flex: 1;
@@ -19,6 +30,10 @@
 
     /* Responsive Design */
     @media (max-width: 768px) {
-        flex-direction: column;
+        grid-template-columns: [content] 1fr;
+
+        &:has(.c-panel-context) {
+            grid-template-columns: [content] 1fr [context] minmax(64px, auto);
+        }
     }
 }

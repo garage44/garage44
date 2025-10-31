@@ -1,5 +1,5 @@
 import {$s} from '@/app'
-import {AppLayout, Icon, PanelContext, ThemeToggle} from '@garage44/common/components'
+import {AppLayout, Icon, PanelMenu, ThemeToggle} from '@garage44/common/components'
 import {Link} from 'preact-router/match'
 import {Router} from 'preact-router'
 import {useState, useEffect} from 'preact/hooks'
@@ -81,8 +81,8 @@ export const Main = () => {
 
     return (
         <AppLayout
-            sidebar={
-                <PanelContext
+            menu={
+                <PanelMenu
                     collapsed={$s.panel.collapsed}
                     onCollapseChange={(collapsed) => {
                         $s.panel.collapsed = collapsed

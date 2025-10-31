@@ -1,7 +1,7 @@
 import {$s} from '@/app'
 import {$t, api, notifier, ws} from '@garage44/common/app'
 import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
-import {AppLayout, FieldSelect, Icon, Notifications, PanelContext, Progress, ThemeToggle} from '@garage44/common/components'
+import {AppLayout, FieldSelect, Icon, Notifications, PanelMenu, Progress, ThemeToggle} from '@garage44/common/components'
 import {Router, getCurrentUrl, route} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
 import classnames from 'classnames'
@@ -70,8 +70,8 @@ export const Main = () => {
 
     return <>
         <AppLayout
-            sidebar={
-                <PanelContext
+            menu={
+                <PanelMenu
                     collapsed={$s.panel.collapsed}
                     onCollapseChange={(collapsed) => {
                         $s.panel.collapsed = collapsed

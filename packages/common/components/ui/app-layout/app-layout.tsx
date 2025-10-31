@@ -3,26 +3,28 @@ import {$t} from '@/app'
 
 interface AppLayoutProps {
     children: ComponentChildren
-    sidebar: ComponentChildren
+    menu?: ComponentChildren
+    context?: ComponentChildren
 }
 
 /**
  * AppLayout - Generic application layout component
  *
- * Provides a consistent sidebar + main content layout pattern
- * used across all Garage44 applications.
+ * Provides a consistent CSS Grid layout pattern with menu (left), content (center), and optional context (right).
+ * Used across all Garage44 applications.
  *
  * @example
- * <AppLayout sidebar={<Sidebar {...props} />}>
+ * <AppLayout menu={<PanelMenu {...props} />} context={<PanelContext />}>
  *   <YourMainContent />
  * </AppLayout>
  */
-export const AppLayout = ({children, sidebar}: AppLayoutProps) => (
+export const AppLayout = ({children, menu, context}: AppLayoutProps) => (
     <div class="c-app-layout">
         <div style={{position: 'absolute', visibility: 'hidden'}}>{$t('direction_helper')}</div>
-        {sidebar}
+        {menu}
         <main class="content">
             {children}
         </main>
+        {context}
     </div>
 )

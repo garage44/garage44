@@ -1,94 +1,39 @@
 .c-panel-context {
     animation: fade-in 0.2s ease-in forwards;
     background: oklch(from var(--surface-1) l c h / 0.8);
-    border-right: 1px solid var(--surface-2);
+    border-left: 1px solid var(--surface-2);
     box-shadow: 0 0 var(--spacer-2) var(--spacer-1) oklch(from var(--surface-0) l c h / 0.4);
     display: flex;
     flex-direction: column;
     height: 100vh;
-    min-width: var(--spacer-5);
-    /* opacity: 0; */
+    min-width: 64px;
     position: relative;
-    width: 240px;
+    transition: width 0.3s ease;
+    width: auto;
 
-    header {
+    .collapse-toggle {
         align-items: center;
-        background: var(--surface-1);
+        background: transparent;
+        border: none;
+        color: var(--surface-6);
+        cursor: pointer;
         display: flex;
-        font-weight: 500;
-        padding: var(--spacer-05) var(--spacer-1);
-        position: relative;
+        height: var(--spacer-4);
+        justify-content: center;
+        padding: var(--spacer-05);
+        position: absolute;
+        right: var(--spacer-05);
+        top: var(--spacer-05);
+        transition: color 0.2s ease;
+        width: var(--spacer-4);
+        z-index: 10;
 
-        a.logo {
-            cursor: pointer;
-        }
-
-        .logo {
-            align-items: center;
+        &:hover {
             color: var(--surface-8);
-            display: flex;
-            flex: 1;
-            gap: var(--spacer-1);
-            height: 100%;
-            justify-content: flex-start;
-            text-decoration: none;
-
-            img {
-                height: var(--spacer-6);
-                width: auto;
-            }
-
-            svg {
-                color: var(--primary-5);
-                margin-inline-end: var(--spacer-1);
-            }
-
-            .icon {
-                height: 50px;
-                transform: scale(1.25);
-                width: 50px;
-            }
         }
 
-        .l-name {
-
-            .name {
-                color: var(--surface-8);
-                font-size: 1.125rem;
-                font-weight: 500;
-                letter-spacing: 0.01em;
-                width: 100%;
-            }
-
-            .version {
-                bottom: var(--spacer-1);
-                color: var(--surface-5);
-                font-size: var(--font-xs);
-                font-style: italic;
-                position: absolute;
-            }
-        }
-
-        .collapse-toggle {
-            align-items: center;
-            background: transparent;
-            border: none;
-            color: var(--surface-6);
-            cursor: pointer;
-            display: flex;
-            height: var(--spacer-4);
-            justify-content: center;
-            padding: var(--spacer-05);
-            transition: color 0.2s ease;
-            width: var(--spacer-4);
-
-            &:hover {
-                color: var(--surface-8);
-            }
-
-            svg {
-                display: block;
-            }
+        svg {
+            display: block;
         }
     }
 
@@ -98,90 +43,16 @@
         flex: 1;
         flex-direction: column;
         height: 100%;
-        justify-content: space-between;
+        overflow-y: auto;
         width: 100%;
-
-        .navigation {
-            flex: 1;
-            width: 100%;
-
-            a {
-                align-items: center;
-                color: var(--surface-6);
-                display: flex;
-                gap: var(--spacer-1);
-                justify-content: flex-start;
-                /* padding: var(--spacer-1); */
-                text-decoration: none;
-                transition: all 0.3s ease;
-                width: 100%;
-
-                &.active {
-                    background: var(--surface-3);
-                    color: var(--surface-8);
-                }
-
-                &.disabled {
-                    cursor: not-allowed;
-                    opacity: 0.5;
-                    pointer-events: none;
-                }
-
-                &:hover:not(.disabled):not(.active) {
-                    background: var(--surface-2);
-                }
-            }
-
-            .menu-group {
-                margin-top: var(--spacer-2);
-            }
-        }
-
-        .actions {
-            display: flex;
-            gap: var(--spacer-1);
-            padding: var(--spacer-1);
-            width: 100%;
-
-            .c-icon {
-                background: var(--surface-3);
-                border: 1px solid var(--surface-4);
-                border-radius: 50%;
-                cursor: pointer;
-                height: var(--icon-xl);
-                padding: 6px;
-                transition: all 0.3s ease;
-                width: var(--icon-xl);
-
-                &:hover {
-                    background: var(--surface-4);
-                }
-            }
-        }
-
-        .footer {
-            padding: var(--spacer-1);
-            width: 100%;
-        }
     }
 
     &.collapsed {
-        width: var(--spacer-5);
-
-        .logo {
-
-            .l-name,
-            img {
-                display: none;
-            }
-        }
+        min-width: 64px;
+        width: 64px;
 
         .content {
             display: none;
-        }
-
-        .collapse-toggle {
-            margin-left: auto;
         }
     }
 }
