@@ -1,0 +1,6 @@
+.c-menu-group {
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--spacer-2);
+    width: 100%;
+}

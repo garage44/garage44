@@ -1,0 +1,42 @@
+.c-menu-item {
+    align-items: center;
+    background: transparent;
+    border: none;
+    color: var(--surface-6);
+    cursor: pointer;
+    display: flex;
+    gap: var(--spacer-1);
+    justify-content: flex-start;
+    padding: var(--spacer-1);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    width: 100%;
+
+    &.active {
+        background: var(--surface-3);
+        color: var(--surface-8);
+    }
+
+    &.disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    &:hover:not(.disabled):not(.active) {
+        background: var(--surface-2);
+    }
+
+    &.collapsed {
+        justify-content: center;
+        padding: var(--spacer-1);
+
+        span {
+            display: none;
+        }
+    }
+
+    .c-icon {
+        flex-shrink: 0;
+    }
+}

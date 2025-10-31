@@ -1,13 +1,6 @@
-import {UserManager} from '@garage44/common/lib/user-manager'
+import {userManager} from '@garage44/common/service'
 import {config, saveConfig} from '../lib/config.ts'
 import {enola, logger, workspaces} from '../service.ts'
-
-// Create UserManager for API routes
-const userManager = new UserManager({
-    appName: 'expressio',
-    configPath: '~/.expressiorc',
-    useBcrypt: false,
-})
 
 export default function apiConfig(router) {
     // HTTP API endpoints using familiar Express-like pattern

@@ -11,6 +11,7 @@ const persistentState = {
 const volatileState = {
     env: {
         layout: 'desktop',
+        url: '',
     },
     language_ui: {
         /** Stores the calls to i18next.t, allowing to reactively update $t */

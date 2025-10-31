@@ -8,6 +8,7 @@ import {Enola} from '@garage44/enola'
 import {Workspace} from './lib/workspace.ts'
 import {Workspaces} from './lib/workspaces.ts'
 import {createRuntime, createWelcomeBanner, setupBunchyConfig, createWebSocketManagers, service, loggerTransports} from '@garage44/common/service'
+import {initDatabase} from '@garage44/common/lib/database'
 import fs from 'fs-extra'
 import {hideBin} from 'yargs/helpers'
 import {i18nFormat} from '@garage44/common/lib//i18n.ts'
@@ -192,8 +193,11 @@ void cli.usage('Usage: $0 [task]')
     }, async(argv) => {
         await initConfig(config)
 
-        // Initialize common service (including UserManager)
-        await service.init({appName: 'expressio', configPath: '~/.expressiorc', useBcrypt: false})
+        // Initialize database (creates users table)
+        const database = initDatabase(undefined, 'expressio', logger)
+
+        // Initialize common service (including UserManager) with database
+        await service.init({appName: 'expressio', configPath: '~/.expressiorc', useBcrypt: false}, database)
 
         // Initialize enola first
         await enola.init(config.enola, logger)

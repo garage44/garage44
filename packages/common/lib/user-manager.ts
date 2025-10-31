@@ -108,7 +108,7 @@ export class UserManager {
 
         const rows = stmt.all() as Array<{
             created_at: number
-            id: number
+            id: string
             password_hash: string
             permissions: string
             updated_at: number
@@ -117,7 +117,7 @@ export class UserManager {
 
         return rows.map((row) => ({
             createdAt: new Date(row.created_at).toISOString(),
-            id: row.id.toString(),
+            id: row.id,
             password: {
                 key: row.password_hash,
                 type: 'plaintext' as const,
@@ -225,7 +225,7 @@ export class UserManager {
 
         const row = stmt.get(userId) as {
             created_at: number
-            id: number
+            id: string
             password_hash: string
             permissions: string
             updated_at: number
@@ -236,7 +236,7 @@ export class UserManager {
 
         return {
             createdAt: new Date(row.created_at).toISOString(),
-            id: row.id.toString(),
+            id: row.id,
             password: {
                 key: row.password_hash,
                 type: 'plaintext' as const,
@@ -261,7 +261,7 @@ export class UserManager {
 
         const row = stmt.get(username) as {
             created_at: number
-            id: number
+            id: string
             password_hash: string
             permissions: string
             updated_at: number
@@ -272,7 +272,7 @@ export class UserManager {
 
         return {
             createdAt: new Date(row.created_at).toISOString(),
-            id: row.id.toString(),
+            id: row.id,
             password: {
                 key: row.password_hash,
                 type: 'plaintext' as const,

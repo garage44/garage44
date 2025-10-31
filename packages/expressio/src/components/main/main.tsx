@@ -1,11 +1,9 @@
 import {$s} from '@/app'
 import {$t, api, notifier, ws} from '@garage44/common/app'
 import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
-import {AppLayout, FieldSelect, Icon, Notifications, PanelMenu, Progress, ThemeToggle} from '@garage44/common/components'
+import {AppLayout, FieldSelect, MenuGroup, MenuItem, Notifications, PanelMenu, Progress, UserMenu} from '@garage44/common/components'
 import {Router, getCurrentUrl, route} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
-import classnames from 'classnames'
-import {Link} from 'preact-router/match'
 import {Login} from '@/components/pages/login/login'
 import {deepSignal} from 'deepsignal'
 import {toIso6391} from '@garage44/enola/iso-codes'
@@ -17,7 +15,7 @@ const state = deepSignal({
 
 export const Main = () => {
     useEffect(() => {
-        (async() => {
+        ;(async() => {
             const context = await api.get('/api/context')
             mergeDeep($s.user, context)
 
@@ -44,6 +42,9 @@ export const Main = () => {
         return <Login />
     }
     const handleRoute = async({url}: {url: string}) => {
+        // Update URL in global state for reactive access
+        $s.env.url = url
+
         // Don't process if we're already on the root path
         if (url === '/') {
             $s.workspace = null
@@ -79,73 +80,78 @@ export const Main = () => {
                     logoSrc="/public/img/logo.svg"
                     logoText="Expressio"
                     navigation={
-                        <>
-                            {$s.user.admin && <Link activeClassName="active" href="/">
-                                <Icon name="settings" type="info"/>
-                                <span>{$t('menu.settings')}</span>
-                            </Link>}
 
-                            <div class="menu-group">
-                                <FieldSelect
-                                    disabled={!$s.workspaces.length}
-                                    help={$t('menu.workspaces.help')}
-                                    label={$t('menu.workspaces.label')}
-                                    model={state.$workspace_id}
-                                    onChange={async(workspace_id) => {
-                                        $s.workspace = (await ws.get(`/api/workspaces/${workspace_id}`))
-                                        // Check if current route is valid for the new workspace
-                                        const currentPath = getCurrentUrl()
-                                        const isValidRoute = currentPath.endsWith('/settings') || currentPath.endsWith('/translations')
+                        <MenuGroup collapsed={$s.panel.collapsed}>
+                            {$s.user.admin && <MenuItem
+                                active={$s.env.url === '/'}
+                                collapsed={$s.panel.collapsed}
+                                href="/"
+                                icon="settings"
+                                iconType="info"
+                                text={$t('menu.settings')}
+                            />}
+                            <FieldSelect
+                                disabled={!$s.workspaces.length}
+                                help={$t('menu.workspaces.help')}
+                                label={$t('menu.workspaces.label')}
+                                model={state.$workspace_id}
+                                onChange={async(workspace_id) => {
+                                    $s.workspace = (await ws.get(`/api/workspaces/${workspace_id}`))
+                                    // Check if current route is valid for the new workspace
+                                    const currentPath = getCurrentUrl()
+                                    const isValidRoute = currentPath.endsWith('/settings') || currentPath.endsWith('/translations')
 
-                                        // If we're not on a valid workspace route, default to settings
-                                        let newRoute
-                                        if (isValidRoute) {
-                                            // Keep the same page type (settings/translations) but update workspace
-                                            const routeSuffix = currentPath.endsWith('/settings') ? 'settings' : 'translations'
-                                            newRoute = `/workspaces/${workspace_id}/${routeSuffix}`
-                                        } else {
-                                            newRoute = `/workspaces/${workspace_id}/settings`
-                                        }
+                                    // If we're not on a valid workspace route, default to settings
+                                    let newRoute
+                                    if (isValidRoute) {
+                                        // Keep the same page type (settings/translations) but update workspace
+                                        const routeSuffix = currentPath.endsWith('/settings') ? 'settings' : 'translations'
+                                        newRoute = `/workspaces/${workspace_id}/${routeSuffix}`
+                                    } else {
+                                        newRoute = `/workspaces/${workspace_id}/settings`
+                                    }
 
-                                        route(newRoute)
-                                    }}
-                                    options={$s.workspaces.map((i) => ({id: i.workspace_id, name: i.workspace_id}))}
-                                    placeholder={$t('menu.workspaces.placeholder')}
-                                />
+                                    route(newRoute)
+                                }}
+                                options={$s.workspaces.map((i) => ({id: i.workspace_id, name: i.workspace_id}))}
+                                placeholder={$t('menu.workspaces.placeholder')}
+                            />
 
-                                <Link
-                                    activeClassName="active"
-                                    className={classnames({disabled: !$s.workspace})}
-                                    href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/settings` : ''}
-                                >
-                                    <Icon name="workspace" type="info"/>
-                                    <span>{$t('menu.workspace.config')}</span>
-                                </Link>
-                                <Link
-                                    activeClassName="active"
-                                    className={classnames({disabled: !$s.workspace})}
-                                    href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/translations` : ''}
-                                >
-                                    <Icon name="translate" type="info"/>
-                                    <span>{$t('menu.workspace.translations')}</span>
-                                </Link>
-                            </div>
-                        </>
+                            <MenuItem
+                                active={$s.env.url.endsWith('/settings')}
+                                collapsed={$s.panel.collapsed}
+                                disabled={!$s.workspace}
+                                href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/settings` : ''}
+                                icon="workspace"
+                                iconType="info"
+                                text={$t('menu.workspace.config')}
+                            />
+                            <MenuItem
+                                active={$s.env.url.endsWith('/translations')}
+                                collapsed={$s.panel.collapsed}
+                                disabled={!$s.workspace}
+                                href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/translations` : ''}
+                                icon="translate"
+                                iconType="info"
+                                text={$t('menu.workspace.translations')}
+                            />
+                        </MenuGroup>
                     }
                     actions={
-                        <>
-                            <ThemeToggle />
-                            <Icon
-                                name="logout"
-                                onClick={async() => {
-                                    const result = await api.get('/api/logout')
-                                    mergeDeep($s.user, result)
-                                    route('/')
-                                }}
-                                tip={$t('menu.logout')}
-                                type="info"
-                            />
-                        </>
+                        <UserMenu
+                            collapsed={$s.panel.collapsed}
+                            onLogout={async() => {
+                                const result = await api.get('/api/logout')
+                                mergeDeep($s.user, result)
+                                route('/')
+                            }}
+                            user={{
+                                profile: {
+                                    avatar: $s.user.profile?.avatar || null,
+                                    displayName: $s.user.profile?.displayName || $s.user.username || 'User',
+                                },
+                            }}
+                        />
                     }
                     footer={
                         !!Object.values($s.enola.engines).length && (

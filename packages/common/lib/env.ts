@@ -1,4 +1,5 @@
 import {effect} from '@preact/signals'
+import {store} from '../app'
 
 // Apply theme based on preference (light/dark/system)
 const applyTheme = (themePreference: 'light' | 'dark' | 'system') => {
@@ -14,7 +15,7 @@ const applyTheme = (themePreference: 'light' | 'dark' | 'system') => {
     }
 }
 
-export default function env(env, store = null) {
+export default function env(env, _storeParam = null) {
     env.ua = navigator.userAgent.toLowerCase()
 
     if (globalThis.navigator) {
@@ -36,6 +37,18 @@ export default function env(env, store = null) {
         env.layout = event.matches ? 'tablet' : 'desktop'
     })
 
+    // Initialize URL from current location and listen to browser navigation
+    if (typeof window !== 'undefined') {
+        env.url = window.location.pathname
+
+        // Listen to browser back/forward navigation
+        window.addEventListener('popstate', () => {
+            if (store && store.state) {
+                store.state.env.url = window.location.pathname
+            }
+        })
+    }
+
     document.addEventListener('keydown', (event) => {
         if (event.altKey) {
             env.altKey = true
@@ -48,12 +61,18 @@ export default function env(env, store = null) {
         }
     })
     document.addEventListener('keyup', (event) => {
-        if (!event.altKey) {env.altKey = false}
-        if (!event.ctrlKey) {env.ctrlKey = false}
-        if (!event.shiftKey) {env.shiftKey = false}
+        if (!event.altKey) {
+            env.altKey = false
+        }
+        if (!event.ctrlKey) {
+            env.ctrlKey = false
+        }
+        if (!event.shiftKey) {
+            env.shiftKey = false
+        }
     })
 
-    if (store) {
+    if (store && store.state) {
         // Watch system preference changes
         const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)')
         systemThemeQuery.addEventListener('change', () => {

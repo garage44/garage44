@@ -15,6 +15,7 @@ interface CommonState {
         isFirefox: boolean
         layout: 'desktop' | 'mobile' | 'tablet'
         shiftKey: boolean
+        url: string
     }
     language_ui: {
         selection: string

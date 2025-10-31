@@ -1,0 +1,40 @@
+.c-context-menu {
+    position: relative;
+
+    .anchor {
+        cursor: pointer;
+    }
+
+    .menu {
+        background: var(--surface-1);
+        border: 1px solid var(--surface-3);
+        border-radius: var(--radius-md);
+        box-shadow: 0 var(--spacer-1) var(--spacer-2) oklch(from var(--surface-0) l c h / 0.3);
+        display: flex;
+        flex-direction: column;
+        min-width: 180px;
+        padding: var(--spacer-05);
+        position: absolute;
+        z-index: 1000;
+
+        &.top {
+            bottom: 100%;
+            margin-bottom: var(--spacer-1);
+        }
+
+        &.bottom {
+            top: 100%;
+            margin-top: var(--spacer-1);
+        }
+
+        &.left {
+            right: 100%;
+            margin-right: var(--spacer-1);
+        }
+
+        &.right {
+            left: 100%;
+            margin-left: var(--spacer-1);
+        }
+    }
+}
