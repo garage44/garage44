@@ -20,7 +20,7 @@ const pyriteDir = fileURLToPath(new URL('.', import.meta.url))
 const runtime = createRuntime(pyriteDir, path.join(pyriteDir, 'package.json'))
 
 function welcomeBanner() {
-    return createWelcomeBanner('Pyrite', 'Video conferencing powered by Galène...', runtime.version)
+    return createWelcomeBanner('Pyrite', 'Open communication platform for the modern workplace...', runtime.version)
 }
 
 // In case we start in development mode.

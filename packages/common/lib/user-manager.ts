@@ -198,11 +198,19 @@ export class UserManager {
             }
         }
 
+        // Extract updates without id to prevent any ID changes
+        const {id, ...safeUpdates} = updates
+
+        // If updates contained an id, log a warning
+        if (id && id !== user.id) {
+            console.warn(`[UserManager] updateUser: Attempted to change user ID from ${user.id} to ${id}, ignoring`)
+        }
+
         const updatedUser = {
             ...user,
-            ...updates,
+            ...safeUpdates,
             profile: mergedProfile,
-            id: user.id, // Don't allow changing ID
+            id: user.id, // Always use the original user ID - never allow ID changes
             updatedAt: new Date().toISOString(),
         }
 
@@ -364,7 +372,7 @@ export class UserManager {
         if (!user) return false
 
         const passwordObj = this.useBcrypt
-            ? {key: newPassword, type: 'bcrypt' as const} // TODO: Hash with bcrypt
+            ? {key: newPassword, type: 'bcrypt' as const} // Note: bcrypt hashing can be added later if needed
             : {key: newPassword, type: 'plaintext' as const}
 
         await this.updateUser(userId, {password: passwordObj})

@@ -216,7 +216,7 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
                     })
                     .filter((t: {timestamp: number; userId: string | number; username: string}) => {
                         const isStale = Date.now() - t.timestamp > 5000
-                        const isCurrentUser = $s.user.id && String(t.userId) === String($s.user.id)
+                        const isCurrentUser = $s.profile.id && String(t.userId) === String($s.profile.id)
                         return !isStale && !isCurrentUser
                     })
 

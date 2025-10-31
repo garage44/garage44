@@ -6,6 +6,7 @@ import {userManager} from '@garage44/common/service'
 import {logger, runtime} from '../service.ts'
 import apiConfig from '../api/config.ts'
 import apiI18n from '../api/i18n.ts'
+import apiUsers from '../api/users.ts'
 import apiWorkspaces from '../api/workspaces'
 import path from 'node:path'
 
@@ -85,6 +86,7 @@ async function initMiddleware(_bunchyConfig) {
     // Register HTTP API endpoints using familiar Express-like pattern
     await apiI18n(router)
     await apiConfig(router)
+    await apiUsers(router)
     await apiWorkspaces(router)
 
     const publicPath = path.join(runtime.service_dir, 'public')

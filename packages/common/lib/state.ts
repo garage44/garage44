@@ -1,4 +1,5 @@
 const persistentState = {
+    beta: true,
     language_ui: {
         selection: 'eng-gbr',
     },
@@ -26,10 +27,10 @@ const volatileState = {
         ],
     },
     notifications: [] as unknown[],
-    user: {
-        admin: false,
-        authenticated: null,
-        password: '',
+    profile: {
+        avatar: 'placeholder-1.png',
+        displayName: '',
+        id: null,
         username: '',
     },
 }

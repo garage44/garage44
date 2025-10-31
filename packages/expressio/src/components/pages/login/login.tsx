@@ -1,5 +1,5 @@
 import {$s} from '@/app'
-import {$t, api, notifier, ws} from '@garage44/common/app'
+import {$t, api, logger, notifier, ws} from '@garage44/common/app'
 import {Login as CommonLogin} from '@garage44/common/components'
 import {mergeDeep} from '@garage44/common/lib/utils'
 
@@ -20,9 +20,20 @@ export const Login = () => {
                     type: 'info',
                 })
                 const config = await api.get('/api/config')
+                // result from login already includes full profile from /api/context
+                // Explicitly set user data from result to override any stale localStorage data
+                const userState = $s.user as any
+                userState.admin = result.admin || false
+                userState.authenticated = result.authenticated || false
+                if (result.id) userState.id = result.id
+                if (result.username) userState.username = result.username
+                if (result.profile) {
+                    if (!userState.profile) userState.profile = {}
+                    userState.profile.avatar = result.profile.avatar || 'placeholder-1.png'
+                    userState.profile.displayName = result.profile.displayName || result.username || 'User'
+                }
                 mergeDeep($s, {
                     enola: config.enola,
-                    user: result,
                     workspaces: config.workspaces,
                 }, {usage: {loading: false}})
 

@@ -1,9 +1,8 @@
-import {FieldSelect, ThemeToggle} from '@garage44/common/components'
+import {AvatarUpload, FieldSelect, ThemeToggle} from '@garage44/common/components'
 import {useEffect} from 'preact/hooks'
 import {$s} from '@/app'
 import {$t, store} from '@garage44/common/app'
 import {logger} from '@garage44/common/app'
-import AvatarUpload from './avatar-upload'
 
 export default function TabMisc() {
     const languages = [
@@ -26,7 +25,7 @@ export default function TabMisc() {
 
     return (
         <section class="tab-content active">
-            <AvatarUpload />
+            <AvatarUpload state={$s} />
 
             <div class="theme-toggle-wrapper">
                 <label>{$t('ui.settings.misc.theme_label')}</label>

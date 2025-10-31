@@ -48,7 +48,7 @@ export default function ChannelsContext() {
 
         // Don't redirect if we're on a protected route (settings, login, etc.)
         const protectedRoutes = ['/settings', '/login']
-        if (protectedRoutes.some(route => currentPath.startsWith(route))) {
+        if (protectedRoutes.some((route) => currentPath.startsWith(route))) {
             return
         }
 
@@ -149,19 +149,17 @@ export default function ChannelsContext() {
 
                         return chatUsers.map(([userId, userInfo]) => {
                             const avatarUrl = getAvatarUrl(userInfo.avatar, userId)
-                            const isCurrentUser = $s.user.id === userId || $s.admin.user?.id === userId
+                            const isCurrentUser = $s.profile.id === userId
 
-                            return (
-                                <div key={userId} class="person item">
-                                    <img src={avatarUrl} alt={userInfo.username} class="person-avatar" />
-                                    <span class="person-name">
-                                        {userInfo.username || $t('user.anonymous')}
-                                        {isCurrentUser && (
-                                            <span class="you-label"> ({$t('user.you')})</span>
-                                        )}
-                                    </span>
-                                </div>
-                            )
+                            return <div key={userId} class="person item">
+                                <img src={avatarUrl} alt={userInfo.username} class="person-avatar" />
+                                <span class="person-name">
+                                    {userInfo.username || $t('user.anonymous')}
+                                    {isCurrentUser && (
+                                        <span class="you-label"> ({$t('user.you')})</span>
+                                    )}
+                                </span>
+                            </div>
                         })
                     })()}
                 </div>

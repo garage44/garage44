@@ -1,6 +1,6 @@
 import {$s} from '@/app'
 import {$t, api, notifier, ws} from '@garage44/common/app'
-import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
+import {Config, Profile, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
 import {AppLayout, FieldSelect, MenuGroup, MenuItem, Notifications, PanelMenu, Progress, UserMenu} from '@garage44/common/components'
 import {Router, getCurrentUrl, route} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
@@ -17,7 +17,18 @@ export const Main = () => {
     useEffect(() => {
         ;(async() => {
             const context = await api.get('/api/context')
-            mergeDeep($s.user, context)
+            // Context now includes full user profile (id, username, profile.avatar, profile.displayName)
+            // Explicitly set user data from context to override any stale localStorage data
+            const userState = $s.user as any
+            userState.admin = context.admin || false
+            userState.authenticated = context.authenticated || false
+            if (context.id) userState.id = context.id
+            if (context.username) userState.username = context.username
+            if (context.profile) {
+                if (!userState.profile) userState.profile = {}
+                userState.profile.avatar = context.profile.avatar || 'placeholder-1.png'
+                userState.profile.displayName = context.profile.displayName || context.username || 'User'
+            }
 
             if (context.authenticated) {
                 ws.connect()
@@ -145,10 +156,12 @@ export const Main = () => {
                                 mergeDeep($s.user, result)
                                 route('/')
                             }}
+                            settingsHref="/profile"
                             user={{
+                                id: ($s.user as any).id,
                                 profile: {
-                                    avatar: $s.user.profile?.avatar || null,
-                                    displayName: $s.user.profile?.displayName || $s.user.username || 'User',
+                                    avatar: ($s.user as any).profile?.avatar || null,
+                                    displayName: ($s.user as any).profile?.displayName || ($s.user as any).username || 'User',
                                 },
                             }}
                         />
@@ -176,6 +189,7 @@ export const Main = () => {
             <div class="view">
                 <Router onChange={handleRoute}>
                     {$s.user.admin && <Config path="/" />}
+                    <Profile path="/profile" />
                     <WorkspaceSettings path="/workspaces/:workspace/settings" />
                     <WorkspaceTranslations path="/workspaces/:workspace/translations" />
                 </Router>

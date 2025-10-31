@@ -1,7 +1,13 @@
+import {
+    persistentState as commonPersistantState,
+    volatileState as commonVolatileState,
+} from '@garage44/common/lib/state'
+import {mergeDeep} from '@garage44/common/lib/utils'
+
 // Pyrite state management using DeepSignal pattern
 import type {PyriteState} from '../types.ts'
 
-export const persistantState: Partial<PyriteState> = {
+export const persistantState: Partial<PyriteState> = mergeDeep({
     chat: {
         emoji: {
             list: [],
@@ -27,7 +33,6 @@ export const persistantState: Partial<PyriteState> = {
     },
     language: {id: null},
     language_ui: {
-        selection: 'eng-gbr',
         i18n: {},
         options: [
             {id: 'deu', name: 'Deutsch'},
@@ -35,6 +40,7 @@ export const persistantState: Partial<PyriteState> = {
             {id: 'fra', name: 'Français'},
             {id: 'nld', name: 'Nederlands'},
         ],
+        selection: 'eng-gbr',
     },
     loading: true,
     media: {
@@ -52,29 +58,11 @@ export const persistantState: Partial<PyriteState> = {
             collapsed: false,
         },
     },
-    profile: {
-        id: null,
-        username: '',
-        displayName: '',
-        avatar: 'placeholder-1.png',
-    },
     theme: 'system',
-    user: {
-        authOption: 'user',
-        data: {
-            availability: {id: 'available', name: ''},
-            mic: true,
-            raisehand: false,
-        },
-        id: null,
-        name: '',
-        username: '',
-        password: '',
-    },
-}
+}, commonPersistantState)
 
 // State is always overwritten by these properties
-export const volatileState: Partial<PyriteState> = {
+export const volatileState: Partial<PyriteState> = mergeDeep({
     admin: {
         authenticated: null,
         group: null,
@@ -135,12 +123,6 @@ export const volatileState: Partial<PyriteState> = {
         present: true,
         record: false,
     },
-    profile: {
-        id: null,
-        username: '',
-        displayName: '',
-        avatar: 'placeholder-1.png',
-    },
     streams: [],
     upMedia: {
         audio: [],
@@ -149,4 +131,4 @@ export const volatileState: Partial<PyriteState> = {
         video: [],
     },
     users: [],
-}
+}, commonVolatileState)

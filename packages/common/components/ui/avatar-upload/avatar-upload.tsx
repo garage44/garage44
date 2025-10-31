@@ -1,15 +1,78 @@
 import {useRef, useState, useEffect} from 'preact/hooks'
 import {Icon} from '@garage44/common/components'
-import {$s} from '@/app'
 import {api, notifier, logger} from '@garage44/common/app'
 import {getAvatarUrl} from '@garage44/common/lib/avatar'
 import './avatar-upload.css'
+
+interface AvatarUploadProps {
+    /**
+     * Function to get avatar from global state
+     * @default (state) => state?.profile?.avatar || state?.user?.profile?.avatar || 'placeholder-1.png'
+     */
+    getAvatar?: (state: any) => string
+    /**
+     * Function to get user ID from global state
+     * @default (state) => state?.profile?.id || state?.user?.id || null
+     */
+    getUserId?: (state: any) => string | null
+    /**
+     * Function to update avatar in global state
+     * @default (state, avatar, userId) => { if (state?.profile) state.profile.avatar = avatar; if (state?.user?.profile) state.user.profile.avatar = avatar }
+     */
+    setAvatar?: (state: any, avatar: string, userId: string | null) => void
+    /**
+     * Function to update profile in global state
+     * @default (state, user) => { updates both state.profile and state.user.profile if available }
+     */
+    setProfile?: (state: any, user: any) => void
+    /**
+     * Global state object (typically $s from app)
+     * Used to get/set profile information
+     */
+    state?: any
+    /**
+     * Path to user endpoint (e.g., '/api/users/me')
+     * @default '/api/users/me'
+     */
+    userEndpoint?: string
+}
 
 /**
  * Avatar Upload Component
  * Allows users to upload a new avatar image
  */
-export default function AvatarUpload() {
+export function AvatarUpload({
+    getAvatar = (s) => s?.profile?.avatar || s?.user?.profile?.avatar || 'placeholder-1.png',
+    getUserId = (s) => s?.profile?.id || s?.user?.id || null,
+    setAvatar = (s, avatar: string, userId: string | null) => {
+        if (s?.profile) {
+            s.profile.avatar = avatar
+        }
+        if (s?.user?.profile) {
+            s.user.profile.avatar = avatar
+        }
+    },
+    setProfile = (s, user: any) => {
+        // Update profile state if it exists
+        if (s?.profile && user?.id) {
+            s.profile.id = user.id
+            s.profile.username = user.username || ''
+            s.profile.displayName = user.profile?.displayName || user.username || 'User'
+            s.profile.avatar = user.profile?.avatar || 'placeholder-1.png'
+        }
+        // Update user.profile state if it exists
+        if (s?.user && user?.id) {
+            s.user.id = user.id
+            if (!s.user.profile) {
+                s.user.profile = {}
+            }
+            s.user.profile.avatar = user.profile?.avatar || 'placeholder-1.png'
+            s.user.profile.displayName = user.profile?.displayName || user.username || 'User'
+        }
+    },
+    state = null,
+    userEndpoint = '/api/users/me',
+}: AvatarUploadProps = {}) {
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [uploading, setUploading] = useState(false)
     const [preview, setPreview] = useState<string | null>(null)
@@ -17,15 +80,13 @@ export default function AvatarUpload() {
     // Load current user info on mount if profile is not set
     useEffect(() => {
         (async () => {
-            if (!$s.profile.id) {
+            const userId = state ? getUserId(state) : null
+            if (!userId) {
                 try {
-                    const user = await api.get('/api/users/me')
-                    logger.debug('[AvatarUpload] Received user from /api/users/me:', user)
-                    if (user?.id) {
-                        $s.profile.id = user.id
-                        $s.profile.username = user.username || ''
-                        $s.profile.displayName = user.profile?.displayName || user.username || 'User'
-                        $s.profile.avatar = user.profile?.avatar || 'placeholder-1.png'
+                    const user = await api.get(userEndpoint)
+                    logger.debug('[AvatarUpload] Received user from API:', user)
+                    if (user?.id && state) {
+                        setProfile(state, user)
                     } else {
                         logger.warn('[AvatarUpload] User response missing id:', user)
                         notifier.notify({
@@ -87,7 +148,8 @@ export default function AvatarUpload() {
             return
         }
 
-        if (!$s.profile.id) {
+        const userId = state ? getUserId(state) : null
+        if (!userId) {
             notifier.notify({
                 level: 'error',
                 message: 'Could not determine current user. Please try again.',
@@ -104,7 +166,7 @@ export default function AvatarUpload() {
             formData.append('avatar', file)
 
             // Upload via fetch (multipart/form-data)
-            const response = await fetch(`/api/users/${$s.profile.id}/avatar`, {
+            const response = await fetch(`/api/users/${userId}/avatar`, {
                 body: formData,
                 credentials: 'same-origin',
                 method: 'POST',
@@ -118,7 +180,7 @@ export default function AvatarUpload() {
             }
 
             // Reload user data from API to ensure everything is in sync
-            const userResponse = await fetch('/api/users/me', {
+            const userResponse = await fetch(userEndpoint, {
                 credentials: 'same-origin',
             })
 
@@ -131,61 +193,19 @@ export default function AvatarUpload() {
                 // Use the avatar from the API response (authoritative source)
                 finalAvatar = userData.profile?.avatar || result.avatar
 
-                // Update global profile state
-                $s.profile.id = userData.id
-                $s.profile.username = userData.username || ''
-                $s.profile.displayName = userData.profile?.displayName || userData.username || 'User'
-                $s.profile.avatar = finalAvatar
-
-                // Ensure $s.user.id is set for backward compatibility
-                if (!$s.user.id) {
-                    $s.user.id = userData.id
-                    logger.info(`[AvatarUpload] Set $s.user.id to: ${userData.id}`)
+                // Update profile state
+                if (state) {
+                    setProfile(state, userData)
                 }
 
-                // Update global users state - ensure entry exists
-                if (!$s.chat.users) {
-                    $s.chat.users = {}
-                }
-
-                // Update for the user ID (multiple entries for backward compatibility)
-                if (userData.id) {
-                    $s.chat.users[userData.id] = {
-                        avatar: finalAvatar,
-                        username: $s.profile.username,
-                    }
-                    logger.info(`[AvatarUpload] Updated $s.chat.users[${userData.id}] with avatar: ${finalAvatar}`)
-                }
-
-                logger.info(`[AvatarUpload] Updated $s.profile.avatar to: ${finalAvatar}`)
+                logger.info(`[AvatarUpload] Updated avatar to: ${finalAvatar}`)
             } else {
                 logger.warn('[AvatarUpload] Failed to reload user data from API, using result.avatar')
                 // Fallback: update with result.avatar
-                if ($s.profile.id) {
-                    $s.profile.avatar = result.avatar
-                }
-                if (!$s.chat.users) {
-                    $s.chat.users = {}
-                }
-                if ($s.profile.id) {
-                    if ($s.chat.users[$s.profile.id]) {
-                        $s.chat.users[$s.profile.id].avatar = result.avatar
-                    } else {
-                        $s.chat.users[$s.profile.id] = {
-                            avatar: result.avatar,
-                            username: $s.profile.username || 'User',
-                        }
-                    }
+                if (state) {
+                    setAvatar(state, result.avatar, userId)
                 }
             }
-
-            // Update admin user state if available
-            if ($s.admin.user?.id === $s.profile.id) {
-                $s.admin.user.profile.avatar = finalAvatar
-                logger.info(`[AvatarUpload] Updated $s.admin.user.profile.avatar to: ${finalAvatar}`)
-            }
-
-            logger.info(`[AvatarUpload] Updated $s.profile.avatar to: ${finalAvatar}`)
 
             // Clear preview and file input
             setPreview(null)
@@ -206,9 +226,10 @@ export default function AvatarUpload() {
         }
     }
 
-    // Get current avatar for display from global profile state
-    const currentAvatar = $s.profile.avatar || 'placeholder-1.png'
-    const currentAvatarUrl = getAvatarUrl(currentAvatar, $s.profile.id || undefined)
+    // Get current avatar for display
+    const currentAvatar = state ? getAvatar(state) : 'placeholder-1.png'
+    const userId = state ? getUserId(state) : null
+    const currentAvatarUrl = getAvatarUrl(currentAvatar, userId || undefined)
 
     return (
         <div class="c-avatar-upload">

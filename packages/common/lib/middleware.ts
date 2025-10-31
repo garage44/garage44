@@ -57,7 +57,7 @@ const authMiddleware = async (request: Request, session: unknown, userManager: U
     }
 
     // Allow authentication endpoints to pass through to handlers
-    if (url.pathname === '/api/context' || url.pathname === '/api/login' || url.pathname === '/api/logout') {
+    if (url.pathname === '/api/context' || url.pathname === '/api/login' || url.pathname === '/api/logout' || url.pathname === '/api/users/me') {
         return true
     }
 
@@ -248,7 +248,23 @@ export const createFinalHandler = (config: {
             let context = null
 
             if (process.env.GARAGE44_NO_SECURITY) {
-                context = await Promise.resolve(config.contextFunctions.adminContext())
+                const baseContext = await Promise.resolve(config.contextFunctions.adminContext())
+                // Get user profile for admin
+                const users = await config.userManager.listUsers()
+                const adminUser = users.find((user) => user.permissions?.admin)
+                if (adminUser) {
+                    context = {
+                        ...baseContext,
+                        id: adminUser.id,
+                        username: adminUser.username,
+                        profile: {
+                            avatar: adminUser.profile.avatar || 'placeholder-1.png',
+                            displayName: adminUser.profile.displayName || adminUser.username,
+                        },
+                    }
+                } else {
+                    context = baseContext
+                }
                 return new Response(JSON.stringify(context), {
                     headers: {'Content-Type': 'application/json'},
                 })
@@ -258,10 +274,19 @@ export const createFinalHandler = (config: {
             if ((finalSession as {userid?: string})?.userid) {
                 const user = await config.userManager.getUserByUsername((finalSession as {userid: string}).userid)
                 if (user) {
-                    if (user.permissions?.admin) {
-                        context = await Promise.resolve(config.contextFunctions.adminContext())
-                    } else {
-                        context = await Promise.resolve(config.contextFunctions.userContext())
+                    const baseContext = user.permissions?.admin
+                        ? await Promise.resolve(config.contextFunctions.adminContext())
+                        : await Promise.resolve(config.contextFunctions.userContext())
+
+                    // Include full user profile in context
+                    context = {
+                        ...baseContext,
+                        id: user.id,
+                        username: user.username,
+                        profile: {
+                            avatar: user.profile.avatar || 'placeholder-1.png',
+                            displayName: user.profile.displayName || user.username,
+                        },
                     }
                 } else {
                     context = config.contextFunctions.deniedContext()
@@ -275,6 +300,38 @@ export const createFinalHandler = (config: {
             })
         }
 
+        // Handle /api/users/me - get current user profile
+        if (url.pathname === '/api/users/me' && request.method === 'GET') {
+            const username = (finalSession as {userid?: string}).userid
+
+            if (!username) {
+                return new Response(JSON.stringify({error: 'not authenticated'}), {
+                    headers: {'Content-Type': 'application/json'},
+                    status: 401,
+                })
+            }
+
+            const user = await config.userManager.getUserByUsername(username)
+            if (!user) {
+                return new Response(JSON.stringify({error: 'user not found'}), {
+                    headers: {'Content-Type': 'application/json'},
+                    status: 404,
+                })
+            }
+
+            // Return user data in the format expected by the frontend
+            return new Response(JSON.stringify({
+                id: user.id,
+                username: user.username,
+                profile: {
+                    avatar: user.profile.avatar || 'placeholder-1.png',
+                    displayName: user.profile.displayName || user.username,
+                },
+            }), {
+                headers: {'Content-Type': 'application/json'},
+            })
+        }
+
         if (url.pathname === '/api/login' && request.method === 'POST') {
             const body = await request.json()
             const username = body.username
@@ -283,14 +340,23 @@ export const createFinalHandler = (config: {
             let context = await Promise.resolve(config.contextFunctions.deniedContext())
             const user = await config.userManager.authenticate(username, password)
 
-            if (user) {                // Set the user in session
+            if (user) {
+                // Set the user in session
                 ;(session as {userid: string}).userid = user.username
 
-                if (user.permissions?.admin) {
-                    context = await Promise.resolve(config.contextFunctions.adminContext())
-                } else {
-                    console.log(`[AUTH] User ${username} is regular user, granting user context`)
-                    context = await Promise.resolve(config.contextFunctions.userContext())
+                const baseContext = user.permissions?.admin
+                    ? await Promise.resolve(config.contextFunctions.adminContext())
+                    : await Promise.resolve(config.contextFunctions.userContext())
+
+                // Include full user profile in context
+                context = {
+                    ...baseContext,
+                    id: user.id,
+                    username: user.username,
+                    profile: {
+                        avatar: user.profile.avatar || 'placeholder-1.png',
+                        displayName: user.profile.displayName || user.username,
+                    },
                 }
             } else {
                 console.log(`[AUTH] Authentication failed for user: ${username}`)
@@ -340,7 +406,7 @@ export const createFinalHandler = (config: {
         }
 
         // Try the router for HTTP API endpoints
-        const apiResponse = await config.router.route(request, finalSession)
+        const apiResponse = await config.router.route(request, finalSession as Record<string, string>)
         if (apiResponse) {
             config.logger.info(`[HTTP] API route matched ${url.pathname}`)
             config.devContext.addHttp({method: request.method, status: apiResponse.status, ts: Date.now(), url: url.pathname})
