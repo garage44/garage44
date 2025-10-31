@@ -29,6 +29,7 @@ export interface PyriteState extends CommonState {
                 id: string
                 messages: any[]
                 unread: number
+                members?: Record<string, {avatar: string}>
                 typing?: {
                     [userId: string]: {
                         userId: string | number
@@ -45,6 +46,8 @@ export interface PyriteState extends CommonState {
         }
         message: string
         width: number
+        // Global users map: userId -> {username, avatar}
+        users?: Record<string, {username: string; avatar: string}>
     }
     devices: {
         audio: {
@@ -95,6 +98,12 @@ export interface PyriteState extends CommonState {
     loading: boolean
     login: {
         autofocus: boolean
+    }
+    profile: {
+        id: string | null
+        username: string
+        displayName: string
+        avatar: string
     }
     media: {
         accept: {id: string, name: string}

@@ -19,10 +19,11 @@ export interface Channel {
 
 export interface ChannelMember {
     channel_id: number
-    user_id: number
+    user_id: string
     role: 'member' | 'admin'
     joined_at: number
-    username?: string
+    username: string
+    avatar: string
 }
 
 export class ChannelManager {
@@ -35,7 +36,7 @@ export class ChannelManager {
     /**
      * Create a new channel
      */
-    async createChannel(name: string, description: string, galeneGroup: string, creatorId: number): Promise<Channel> {
+    async createChannel(name: string, description: string, galeneGroup: string, creatorId: string): Promise<Channel> {
         const now = Date.now()
 
         const insertChannel = this.db.prepare(`
@@ -102,7 +103,7 @@ export class ChannelManager {
     /**
      * List channels that a user is a member of
      */
-    listUserChannels(userId: number): Channel[] {
+    listUserChannels(userId: string): Channel[] {
         const stmt = this.db.prepare(`
             SELECT c.*, COUNT(cm.user_id) as member_count
             FROM channels c
@@ -170,7 +171,7 @@ export class ChannelManager {
     /**
      * Add a user to a channel
      */
-    async addMember(channelId: number, userId: number, role: 'member' | 'admin' = 'member'): Promise<boolean> {
+    async addMember(channelId: number, userId: string, role: 'member' | 'admin' = 'member'): Promise<boolean> {
         const now = Date.now()
 
         const stmt = this.db.prepare(`
@@ -187,7 +188,7 @@ export class ChannelManager {
     /**
      * Remove a user from a channel
      */
-    async removeMember(channelId: number, userId: number): Promise<boolean> {
+    async removeMember(channelId: number, userId: string): Promise<boolean> {
         const stmt = this.db.prepare(`
             DELETE FROM channel_members
             WHERE channel_id = ? AND user_id = ?
@@ -208,7 +209,7 @@ export class ChannelManager {
      */
     getChannelMembers(channelId: number): ChannelMember[] {
         const stmt = this.db.prepare(`
-            SELECT cm.*, u.username
+            SELECT cm.*, u.username, u.avatar
             FROM channel_members cm
             INNER JOIN users u ON cm.user_id = u.id
             WHERE cm.channel_id = ?
@@ -221,7 +222,7 @@ export class ChannelManager {
     /**
      * Check if user is member of channel
      */
-    isMember(channelId: number, userId: number): boolean {
+    isMember(channelId: number, userId: string): boolean {
         const stmt = this.db.prepare(`
             SELECT 1 FROM channel_members
             WHERE channel_id = ? AND user_id = ?
@@ -233,7 +234,7 @@ export class ChannelManager {
     /**
      * Get user's role in channel
      */
-    getUserRole(channelId: number, userId: number): 'member' | 'admin' | null {
+    getUserRole(channelId: number, userId: string): 'member' | 'admin' | null {
         const stmt = this.db.prepare(`
             SELECT role FROM channel_members
             WHERE channel_id = ? AND user_id = ?
@@ -246,7 +247,7 @@ export class ChannelManager {
     /**
      * Check if user can access channel (is member)
      */
-    canAccessChannel(channelId: number, userId: number): boolean {
+    canAccessChannel(channelId: number, userId: string): boolean {
         return this.isMember(channelId, userId)
     }
 

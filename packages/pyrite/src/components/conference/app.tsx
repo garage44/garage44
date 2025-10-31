@@ -12,6 +12,7 @@ import {VideoStrip} from './video/video-strip'
 import {Link} from 'preact-router'
 import {Channel} from './channel/channel'
 import {Login} from './login/login'
+import ProfileSettings from './settings/profile-settings'
 
 export const ConferenceApp = () => {
     useEffect(() => {
@@ -27,6 +28,30 @@ export const ConferenceApp = () => {
             }
             for (const emoji of $s.chat.emoji.list) {
                 emojiLookup.add(emoji.codePointAt())
+            }
+
+            // Load current user info to populate $s.profile and $s.user.id
+            try {
+                const userData = await api.get('/api/users/me')
+                if (userData?.id) {
+                    $s.user.id = userData.id
+                    $s.profile.id = userData.id
+                    $s.profile.username = userData.username || ''
+                    $s.profile.displayName = userData.profile?.displayName || userData.username || 'User'
+                    $s.profile.avatar = userData.profile?.avatar || 'placeholder-1.png'
+
+                    // Ensure chat.users entry exists for backward compatibility
+                    if (!$s.chat.users) {
+                        $s.chat.users = {}
+                    }
+                    $s.chat.users[userData.id] = {
+                        avatar: $s.profile.avatar,
+                        username: $s.profile.username,
+                    }
+                    logger.info(`[ConferenceApp] Loaded user: ${userData.id}, avatar: ${$s.profile.avatar}`)
+                }
+            } catch (error) {
+                logger.warn('[ConferenceApp] Failed to load current user:', error)
             }
         })()
     }, [])
@@ -50,9 +75,12 @@ export const ConferenceApp = () => {
                             <UserMenu
                                 collapsed={$s.panels.context.collapsed}
                                 onLogout={handleLogout}
+                                settingsHref="/settings"
                                 user={{
+                                    id: $s.profile.id || undefined,
                                     profile: {
-                                        displayName: $s.user.username || $s.user.name || 'User',
+                                        displayName: $s.profile.displayName || 'User',
+                                        avatar: $s.profile.avatar || undefined,
                                     },
                                 }}
                             />
@@ -89,6 +117,7 @@ export const ConferenceApp = () => {
                 <Router>
                     <Route path="/channels/:channelId" component={Channel} />
                     <Route path="/login" component={Login} />
+                    <Route path="/settings" component={ProfileSettings} />
                     <Route default component={() => (
                         <div class="c-welcome">
                             <IconLogo />

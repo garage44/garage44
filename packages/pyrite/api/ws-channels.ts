@@ -5,11 +5,23 @@
  */
 
 import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
+import {userManager} from '@garage44/common/service'
 import {ChannelManager} from '../lib/channel-manager.ts'
 import {getDatabase} from '../lib/database.ts'
 import {logger} from '../service.ts'
 
 let channelManager: ChannelManager | null = null
+
+/**
+ * Helper function to get user ID from WebSocket context
+ */
+async function getUserIdFromContext(context: {session?: {userid?: string}}): Promise<string | null> {
+    if (!context.session?.userid) {
+        return null
+    }
+    const user = await userManager.getUserByUsername(context.session.userid)
+    return user?.id || null
+}
 
 export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => {
     const api = wsManager.api
@@ -23,20 +35,46 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
      * List channels that the user has access to
      * GET /api/channels
      */
-    api.get('/channels', async (_context, _request) => {
+    api.get('/channels', async (context, _request) => {
         try {
-            // Get user ID from session/context - placeholder for now
-            const userId = 1
+            // Get user ID from context (context.session.userid contains username)
+            let userId: string | null = null
+            logger.debug(`[Channels API] Getting channels, session.userid: ${context.session?.userid}`)
+
+            if (context.session?.userid) {
+                const user = await userManager.getUserByUsername(context.session.userid)
+                if (user) {
+                    userId = user.id
+                    logger.debug(`[Channels API] Found user: ${user.username}, ID: ${userId}`)
+                } else {
+                    logger.warn(`[Channels API] User not found for username: ${context.session.userid}`)
+                }
+            } else {
+                logger.warn('[Channels API] No session.userid found in context')
+            }
+
+            // If no authenticated user, return empty channels
+            if (!userId) {
+                logger.warn('[Channels API] No authenticated user, returning empty channels')
+                return {
+                    channels: [],
+                    success: true,
+                }
+            }
 
             const allChannels = await channelManager!.listChannels()
+            logger.debug(`[Channels API] Found ${allChannels.length} total channels`)
             const accessibleChannels = []
 
             for (const channel of allChannels) {
-                if (await channelManager!.canAccessChannel(channel.id, userId)) {
+                const canAccess = channelManager!.canAccessChannel(channel.id, userId)
+                logger.debug(`[Channels API] Channel ${channel.id} (${channel.name}): canAccess=${canAccess}`)
+                if (canAccess) {
                     accessibleChannels.push(channel)
                 }
             }
 
+            logger.info(`[Channels API] Returning ${accessibleChannels.length} accessible channels for user ${userId}`)
             return {
                 channels: accessibleChannels,
                 success: true,
@@ -65,8 +103,21 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 }
             }
 
-            // Get user ID from session/context and check admin permissions - placeholder for now
-            const creatorId = 1
+            // Get user ID from context (context.session.userid contains username)
+            let creatorId: string | null = null
+            if (context.session?.userid) {
+                const user = await userManager.getUserByUsername(context.session.userid)
+                if (user) {
+                    creatorId = user.id
+                }
+            }
+
+            if (!creatorId) {
+                return {
+                    error: 'Authentication required',
+                    success: false,
+                }
+            }
 
             const channel = await channelManager!.createChannel(name, description || '', galeneGroup, creatorId)
 
@@ -105,8 +156,15 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 }
             }
 
-            // Get user ID from session/context - placeholder for now
-            const userId = 1
+            // Get user ID from context
+            const userId = await getUserIdFromContext(context)
+
+            if (!userId) {
+                return {
+                    error: 'Authentication required',
+                    success: false,
+                }
+            }
 
             if (!channelManager!.canAccessChannel(channelIdNum, userId)) {
                 return {
@@ -154,10 +212,10 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 }
             }
 
-            // Get user ID from session/context and check admin permissions - placeholder for now
-            const userId = 1
+            // Get user ID from context
+            const userId = await getUserIdFromContext(context)
 
-            if (!channelManager!.canAccessChannel(channelIdNum, userId)) {
+            if (!userId || !channelManager!.canAccessChannel(channelIdNum, userId)) {
                 return {
                     error: 'Access denied',
                     success: false,
@@ -208,10 +266,10 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 }
             }
 
-            // Get user ID from session/context and check admin permissions - placeholder for now
-            const userId = 1
+            // Get user ID from context
+            const userId = await getUserIdFromContext(context)
 
-            if (!channelManager!.canAccessChannel(channelIdNum, userId)) {
+            if (!userId || !channelManager!.canAccessChannel(channelIdNum, userId)) {
                 return {
                     error: 'Access denied',
                     success: false,
@@ -381,8 +439,15 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 }
             }
 
-            // Get user ID from session/context - placeholder for now
-            const userId = 1
+            // Get user ID from context
+            const userId = await getUserIdFromContext(context)
+
+            if (!userId) {
+                return {
+                    error: 'Authentication required',
+                    success: false,
+                }
+            }
 
             if (!channelManager!.canAccessChannel(channelIdNum, userId)) {
                 return {

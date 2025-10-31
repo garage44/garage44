@@ -130,6 +130,43 @@ export function selectChannel(channelId: number | string) {
 // Track ongoing load requests to prevent duplicates
 const loadingChannels = new Set<number>()
 
+/**
+ * Load all users globally from all accessible channels
+ */
+export async function loadGlobalUsers() {
+    try {
+        if (!$s.channels.length) return
+
+        // Initialize global users map if needed
+        if (!$s.chat.users) {
+            $s.chat.users = {}
+        }
+
+        // Load members from all channels
+        for (const channel of $s.channels) {
+            const membersResponse = await ws.get(`/channels/${channel.id}/members`)
+            if (membersResponse && membersResponse.success && membersResponse.members) {
+                for (const member of membersResponse.members) {
+                    // Store user globally: userId -> {username, avatar}
+                    if (!$s.chat.users[member.user_id]) {
+                        $s.chat.users[member.user_id] = {
+                            username: member.username,
+                            avatar: member.avatar,
+                        }
+                    }
+                    // Update if exists (in case avatar changed)
+                    else {
+                        $s.chat.users[member.user_id].avatar = member.avatar
+                        $s.chat.users[member.user_id].username = member.username
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        logger.error('[Chat] Error loading global users:', error)
+    }
+}
+
 export async function loadChannelHistory(channelId: number) {
     // Prevent duplicate requests for the same channel
     if (loadingChannels.has(channelId)) {
@@ -151,23 +188,50 @@ export async function loadChannelHistory(channelId: number) {
         }
 
         logger.debug(`[Chat] Loading history for channel ${channelId}`)
+
+        // Load channel members first to get avatars
+        const membersResponse = await ws.get(`/channels/${channelId}/members`)
+        const members: Record<string, {avatar: string}> = {}
+
+        if (membersResponse && membersResponse.success && membersResponse.members) {
+            for (const member of membersResponse.members) {
+                members[member.user_id] = {avatar: member.avatar}
+
+                // Also update global users
+                if (!$s.chat.users) {
+                    $s.chat.users = {}
+                }
+                $s.chat.users[member.user_id] = {
+                    username: member.username,
+                    avatar: member.avatar,
+                }
+            }
+        }
+
         const response = await ws.get(`/channels/${channelId}/messages`)
 
         if (response && response.success && response.messages) {
             // Transform database message format to frontend format
             // DB format: {id, channel_id, user_id, username, message, timestamp, kind}
-            // Frontend format: {kind, message, nick, time}
+            // Frontend format: {kind, message, nick, time, user_id}
             const transformedMessages = response.messages.map((msg: any) => ({
                 kind: msg.kind || 'message',
                 message: msg.message,
                 nick: msg.username,
                 time: msg.timestamp,
+                user_id: msg.user_id,
             }))
 
             logger.debug(`[Chat] Loaded ${transformedMessages.length} messages for channel ${channelId}`)
 
             // Assign entire array to trigger DeepSignal reactivity
             $s.chat.channels[channelKey].messages = transformedMessages
+
+            // Store members for avatar lookup
+            if (!$s.chat.channels[channelKey].members) {
+                $s.chat.channels[channelKey].members = {}
+            }
+            Object.assign($s.chat.channels[channelKey].members, members)
         } else {
             logger.warn(`[Chat] No messages in response for channel ${channelId}:`, response)
         }

@@ -1,4 +1,5 @@
 import {Database} from 'bun:sqlite'
+import {getPlaceholderAvatar} from './avatar.ts'
 
 export interface User {
     createdAt: string
@@ -13,7 +14,7 @@ export interface User {
         groups?: Record<string, string[]>
     }
     profile: {
-        avatar?: string | null
+        avatar: string
         displayName: string
     }
     updatedAt: string
@@ -75,7 +76,7 @@ export class UserManager {
                 admin: true,
             },
             profile: {
-                avatar: null,
+                avatar: 'placeholder-1.png',
                 displayName: 'Administrator',
             },
             updatedAt: new Date().toISOString(),
@@ -83,8 +84,8 @@ export class UserManager {
         }
 
         const stmt = this.db.prepare(`
-            INSERT INTO users (id, username, password_hash, permissions, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO users (id, username, password_hash, permissions, avatar, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `)
 
         stmt.run(
@@ -92,6 +93,7 @@ export class UserManager {
             defaultUser.username,
             defaultUser.password.key,
             JSON.stringify(defaultUser.permissions),
+            'placeholder-1.png',
             now,
             now,
         )
@@ -101,12 +103,13 @@ export class UserManager {
         if (!this.db) throw new Error('Database not initialized')
 
         const stmt = this.db.prepare(`
-            SELECT id, username, password_hash, permissions, created_at, updated_at
+            SELECT id, username, password_hash, permissions, avatar, created_at, updated_at
             FROM users
             ORDER BY created_at ASC
         `)
 
         const rows = stmt.all() as Array<{
+            avatar: string
             created_at: number
             id: string
             password_hash: string
@@ -124,7 +127,7 @@ export class UserManager {
             },
             permissions: JSON.parse(row.permissions),
             profile: {
-                avatar: null,
+                avatar: row.avatar,
                 displayName: row.username,
             },
             updatedAt: new Date(row.updated_at).toISOString(),
@@ -139,9 +142,12 @@ export class UserManager {
         const now = Date.now()
         const userId = crypto.randomUUID()
 
+        // Always assign placeholder avatar if not provided
+        const avatar = userData.profile?.avatar || getPlaceholderAvatar(userId)
+
         const stmt = this.db.prepare(`
-            INSERT INTO users (id, username, password_hash, permissions, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO users (id, username, password_hash, permissions, avatar, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `)
 
         const user: User = {
@@ -157,7 +163,7 @@ export class UserManager {
                 groups: {},
             },
             profile: {
-                avatar: userData.profile?.avatar || null,
+                avatar: avatar,
                 displayName: userData.profile?.displayName || userData.username!,
             },
             updatedAt: new Date().toISOString(),
@@ -169,6 +175,7 @@ export class UserManager {
             user.username,
             user.password.key,
             JSON.stringify(user.permissions),
+            avatar,
             now,
             now,
         )
@@ -182,27 +189,62 @@ export class UserManager {
         const user = await this.getUser(userId)
         if (!user) return null
 
+        // Deep merge profile if it's being updated
+        let mergedProfile = user.profile
+        if (updates.profile) {
+            mergedProfile = {
+                ...user.profile,
+                ...updates.profile,
+            }
+        }
+
         const updatedUser = {
             ...user,
             ...updates,
+            profile: mergedProfile,
             id: user.id, // Don't allow changing ID
             updatedAt: new Date().toISOString(),
         }
 
         const stmt = this.db.prepare(`
             UPDATE users
-            SET username = ?, password_hash = ?, permissions = ?, updated_at = ?
+            SET username = ?, password_hash = ?, permissions = ?, avatar = ?, updated_at = ?
             WHERE id = ?
         `)
 
-        stmt.run(
+        const avatarValue = updatedUser.profile.avatar
+        const updatedAtValue = Date.now()
+
+        console.log(`[UserManager] updateUser: Updating user ${userId}`)
+        console.log(`[UserManager] updateUser: Avatar value: ${avatarValue}`)
+        console.log(`[UserManager] updateUser: Profile object:`, JSON.stringify(updatedUser.profile))
+        console.log(`[UserManager] updateUser: WHERE id = ${userId}`)
+
+        const result = stmt.run(
             updatedUser.username,
             updatedUser.password.key,
             JSON.stringify(updatedUser.permissions),
-            Date.now(),
+            avatarValue,
+            updatedAtValue,
             userId,
         )
 
+        console.log(`[UserManager] updateUser: UPDATE result - changes: ${result.changes}`)
+
+        // Verify the update affected at least one row
+        if (result.changes === 0) {
+            console.warn(`[UserManager] updateUser: No rows updated for userId ${userId}`)
+            // Check if the user exists
+            const checkUser = this.db.prepare('SELECT id FROM users WHERE id = ?').get(userId)
+            if (!checkUser) {
+                console.error(`[UserManager] updateUser: User ${userId} does not exist in database`)
+            } else {
+                console.warn(`[UserManager] updateUser: User exists but UPDATE affected 0 rows`)
+            }
+            return null
+        }
+
+        console.log(`[UserManager] updateUser: Successfully updated user ${userId} with avatar ${avatarValue}`)
         return updatedUser
     }
 
@@ -219,11 +261,12 @@ export class UserManager {
         if (!this.db) throw new Error('Database not initialized')
 
         const stmt = this.db.prepare(`
-            SELECT id, username, password_hash, permissions, created_at, updated_at
+            SELECT id, username, password_hash, permissions, avatar, created_at, updated_at
             FROM users WHERE id = ?
         `)
 
         const row = stmt.get(userId) as {
+            avatar: string
             created_at: number
             id: string
             password_hash: string
@@ -243,7 +286,7 @@ export class UserManager {
             },
             permissions: JSON.parse(row.permissions),
             profile: {
-                avatar: null,
+                avatar: row.avatar,
                 displayName: row.username,
             },
             updatedAt: new Date(row.updated_at).toISOString(),
@@ -255,11 +298,12 @@ export class UserManager {
         if (!this.db) throw new Error('Database not initialized')
 
         const stmt = this.db.prepare(`
-            SELECT id, username, password_hash, permissions, created_at, updated_at
+            SELECT id, username, password_hash, permissions, avatar, created_at, updated_at
             FROM users WHERE username = ?
         `)
 
         const row = stmt.get(username) as {
+            avatar: string
             created_at: number
             id: string
             password_hash: string
@@ -279,7 +323,7 @@ export class UserManager {
             },
             permissions: JSON.parse(row.permissions),
             profile: {
-                avatar: null,
+                avatar: row.avatar,
                 displayName: row.username,
             },
             updatedAt: new Date(row.updated_at).toISOString(),

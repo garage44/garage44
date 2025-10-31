@@ -151,6 +151,14 @@
                     background: var(--surface-2);
                 }
 
+                .person-avatar {
+                    border-radius: var(--border-radius-d);
+                    flex-shrink: 0;
+                    height: 24px;
+                    object-fit: cover;
+                    width: 24px;
+                }
+
                 .status-indicator {
                     border-radius: 50%;
                     flex-shrink: 0;

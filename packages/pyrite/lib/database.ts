@@ -119,41 +119,58 @@ function createPyriteTables() {
 export function initializeDefaultData() {
     if (!db) throw new Error('Database not initialized')
 
-    // Check if we have any channels
-    const channelCount = db.query<{count: number}, []>('SELECT COUNT(*) as count FROM channels').get()
+    try {
+        // Check if we have any channels
+        const channelCountStmt = db.prepare('SELECT COUNT(*) as count FROM channels')
+        const channelCount = channelCountStmt.get() as {count: number} | undefined
 
-    if (!channelCount || channelCount.count === 0) {
-        logger.info('[Database] Initializing Pyrite default data...')
+        if (!channelCount || channelCount.count === 0) {
+            logger.info('[Database] Initializing Pyrite default data...')
 
-        // Get the admin user ID (created by UserManager)
-        const adminUserQuery = db.prepare('SELECT id, username FROM users WHERE username = ?')
-        const adminUser = adminUserQuery.get('admin') as {id: string; username: string} | undefined
+            // Get the admin user ID (created by UserManager)
+            const adminUserQuery = db.prepare('SELECT id, username FROM users WHERE username = ?')
+            const adminUser = adminUserQuery.get('admin') as {id: string; username: string} | undefined
 
-        if (!adminUser) {
-            logger.warn('[Database] Admin user not found, skipping Pyrite default data initialization')
-            return
+            if (!adminUser) {
+                logger.warn('[Database] Admin user not found, skipping Pyrite default data initialization')
+                logger.warn('[Database] Available users:', db.prepare('SELECT id, username FROM users').all())
+                return
+            }
+
+            logger.info(`[Database] Found admin user: ${adminUser.username} (${adminUser.id})`)
+
+            const now = Date.now()
+
+            // Create default "general" channel
+            const channelInsert = db.prepare(`
+                INSERT INTO channels (name, description, galene_group, created_at)
+                VALUES (?, ?, ?, ?)
+            `)
+            const channelResult = channelInsert.run('general', 'General discussion channel', 'general', now)
+            const channelId = channelResult.lastInsertRowid as number
+
+            if (!channelId || channelId <= 0) {
+                logger.error('[Database] Failed to create general channel - no channel ID returned')
+                return
+            }
+
+            logger.info(`[Database] Created general channel (id: ${channelId})`)
+
+            // Add admin to general channel
+            const memberInsert = db.prepare(`
+                INSERT INTO channel_members (channel_id, user_id, role, joined_at)
+                VALUES (?, ?, ?, ?)
+            `)
+            memberInsert.run(channelId, adminUser.id, 'admin', now)
+
+            logger.info(`[Database] Added admin user (${adminUser.username}) to general channel`)
+            logger.info('[Database] Pyrite default data initialization completed successfully')
+        } else {
+            logger.info(`[Database] Channels already exist (${channelCount.count}), skipping default data initialization`)
         }
-
-        const now = Date.now()
-
-        // Create default "general" channel
-        const channelInsert = db.prepare(`
-            INSERT INTO channels (name, description, galene_group, created_at)
-            VALUES (?, ?, ?, ?)
-        `)
-        const channelResult = channelInsert.run('general', 'General discussion channel', 'general', now)
-        const channelId = channelResult.lastInsertRowid
-
-        logger.info(`[Database] Created general channel (id: ${channelId})`)
-
-        // Add admin to general channel
-        const memberInsert = db.prepare(`
-            INSERT INTO channel_members (channel_id, user_id, role, joined_at)
-            VALUES (?, ?, ?, ?)
-        `)
-        memberInsert.run(channelId, adminUser.id, 'admin', now)
-
-        logger.info(`[Database] Added admin user (${adminUser.username}) to general channel`)
+    } catch (error) {
+        logger.error('[Database] Error initializing Pyrite default data:', error)
+        throw error
     }
 }
 

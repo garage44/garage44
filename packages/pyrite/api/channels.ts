@@ -1,6 +1,7 @@
 import {Router} from '../lib/middleware.ts'
 import {ChannelManager} from '../lib/channel-manager.ts'
 import {getDatabase} from '../lib/database.ts'
+import {userManager} from '@garage44/common/service'
 import {logger} from '../service.ts'
 
 let channelManager: ChannelManager | null = null
@@ -17,14 +18,30 @@ export default async function apiChannels(router: Router) {
      */
     router.get('/api/channels', async (req, params, session) => {
         try {
-            // Get user ID from session/context - placeholder for now
-            const userId = 1
+            // Get user ID from session (session.userid contains username)
+            let userId: string | null = null
+            if (session?.userid) {
+                const user = await userManager.getUserByUsername(session.userid)
+                if (user) {
+                    userId = user.id
+                }
+            }
+
+            // If no authenticated user, return empty channels
+            if (!userId) {
+                return new Response(JSON.stringify({
+                    success: true,
+                    channels: []
+                }), {
+                    headers: { 'Content-Type': 'application/json' }
+                })
+            }
 
             const allChannels = await channelManager!.listChannels()
             const accessibleChannels = []
 
             for (const channel of allChannels) {
-                if (await channelManager!.canAccessChannel(channel.id, userId)) {
+                if (channelManager!.canAccessChannel(channel.id, userId)) {
                     accessibleChannels.push(channel)
                 }
             }
@@ -65,10 +82,16 @@ export default async function apiChannels(router: Router) {
                 })
             }
 
-            // Get user ID from session/context - placeholder for now
-            const userId = 1
+            // Get user ID from session (session.userid contains username)
+            let userId: string | null = null
+            if (session?.userid) {
+                const user = await userManager.getUserByUsername(session.userid)
+                if (user) {
+                    userId = user.id
+                }
+            }
 
-            if (!channelManager!.canAccessChannel(channelId, userId)) {
+            if (!userId || !channelManager!.canAccessChannel(channelId, userId)) {
                 return new Response(JSON.stringify({
                     success: false,
                     error: 'Access denied'
@@ -108,4 +131,3 @@ export default async function apiChannels(router: Router) {
         }
     })
 }
-

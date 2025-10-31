@@ -62,10 +62,14 @@ void cli.usage('Usage: $0 [task]')
 
         // Initialize database
         const database = initDatabase()
-        initializeDefaultData()
 
         // Initialize common service (including UserManager) with database
+        // This creates the default admin user if it doesn't exist
         await service.init({appName: 'pyrite', configPath: '~/.pyriterc', useBcrypt: false}, database)
+
+        // Initialize Pyrite-specific default data (channels, etc.)
+        // Must run AFTER service.init() so that the admin user exists
+        initializeDefaultData()
 
         // Initialize middleware and WebSocket server (after UserManager is initialized)
         const {handleRequest} = await initMiddleware(bunchyConfig)

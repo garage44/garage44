@@ -1,29 +1,35 @@
 import classnames from 'classnames'
 import {Icon} from '@garage44/common/components'
+import {getAvatarUrl} from '@garage44/common/lib/avatar'
 import {Link, route} from 'preact-router'
 import {useEffect, useMemo, useRef} from 'preact/hooks'
 import {$s} from '@/app'
 import {$t, ws, logger} from '@garage44/common/app'
+import {loadGlobalUsers} from '@/models/chat'
 import type {Channel} from '../../types.ts'
 import './context-channels.css'
+
+// Helper function outside component to avoid recreation
+const channelLink = (channelId: number) => {
+    return `/channels/${channelId}`
+}
 
 export default function ChannelsContext() {
     const intervalRef = useRef<number | null>(null)
 
+    // DeepSignal is reactive - no need for useMemo dependencies
     const currentChannel = useMemo(() => {
         if (!$s.chat.activeChannelId) return null
         return $s.channels.find((c) => c.id === $s.chat.activeChannelId)
-    }, [$s.chat.activeChannelId, $s.channels])
-
-    const channelLink = (channelId: number) => {
-        return `/channels/${channelId}`
-    }
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     const pollChannels = async () => {
         try {
             const response = await ws.get('/channels')
             if (response.success) {
                 $s.channels = response.channels as Channel[]
+                // Load all users globally after channels are loaded
+                await loadGlobalUsers()
             }
         } catch (error) {
             logger.error('[ChannelsContext] Error polling channels:', error)
@@ -37,20 +43,34 @@ export default function ChannelsContext() {
     const updateRoute = () => {
         $s.login.autofocus = false
 
+        // Get current pathname to avoid redirecting away from valid routes
+        const currentPath = window.location.pathname
+
+        // Don't redirect if we're on a protected route (settings, login, etc.)
+        const protectedRoutes = ['/settings', '/login']
+        if (protectedRoutes.some(route => currentPath.startsWith(route))) {
+            return
+        }
+
         if ($s.chat.activeChannelId) {
             // Update the channel route when the user sets the active channel
             route(`/channels/${$s.chat.activeChannelId}`, true)
-        } else {
-            // By default show the splash page when no channel is selected
+        } else if (currentPath === '/' || currentPath.startsWith('/channels/')) {
+            // Only redirect to home if we're already on home or a channel route
+            // This prevents redirecting away from /settings or other routes
             route('/', true)
         }
     }
 
-    // Watch active channel changes
+    // Watch active channel changes - but only update route when channel changes, not on initial mount
     useEffect(() => {
-        logger.debug(`updating channel route: ${$s.chat.activeChannelId}`)
-        updateRoute()
-    }, [$s.chat.activeChannelId])
+        // Don't call updateRoute on mount - let the router handle the current URL
+        // Only update route when activeChannelId actually changes
+        if ($s.chat.activeChannelId !== null && $s.chat.activeChannelId !== undefined) {
+            logger.debug(`updating channel route: ${$s.chat.activeChannelId}`)
+            updateRoute()
+        }
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Setup polling
     useEffect(() => {
@@ -115,26 +135,35 @@ export default function ChannelsContext() {
                     <span class="people-title">People</span>
                 </div>
                 <div class="people-list">
-                    {$s.users.map((user) => {
-                        const isOnline = user.data?.availability?.id !== 'away' && user.data?.availability?.id !== 'busy'
-                        const statusClass = classnames('status-indicator', {
-                            away: user.data?.availability?.id === 'away',
-                            busy: user.data?.availability?.id === 'busy',
-                            online: isOnline,
-                        })
+                    {(() => {
+                        // Get all chat users from global users map
+                        const chatUsers = $s.chat.users ? Object.entries($s.chat.users) : []
 
-                        return (
-                            <div key={user.id} class="person item">
-                                <span class={statusClass}></span>
-                                <span class="person-name">
-                                    {user.username || $t('user.anonymous')}
-                                    {$s.users[0]?.id === user.id && (
-                                        <span class="you-label"> ({$t('user.you')})</span>
-                                    )}
-                                </span>
-                            </div>
-                        )
-                    })}
+                        if (chatUsers.length === 0) {
+                            return (
+                                <div class="person item no-presence">
+                                    <span class="person-name">No users found</span>
+                                </div>
+                            )
+                        }
+
+                        return chatUsers.map(([userId, userInfo]) => {
+                            const avatarUrl = getAvatarUrl(userInfo.avatar, userId)
+                            const isCurrentUser = $s.user.id === userId || $s.admin.user?.id === userId
+
+                            return (
+                                <div key={userId} class="person item">
+                                    <img src={avatarUrl} alt={userInfo.username} class="person-avatar" />
+                                    <span class="person-name">
+                                        {userInfo.username || $t('user.anonymous')}
+                                        {isCurrentUser && (
+                                            <span class="you-label"> ({$t('user.you')})</span>
+                                        )}
+                                    </span>
+                                </div>
+                            )
+                        })
+                    })()}
                 </div>
             </div>
         </section>

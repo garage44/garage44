@@ -205,11 +205,20 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
                 // Get typing indicators for this channel
                 const typingUsers = channelData?.typing ? Object.values(channelData.typing) : []
                 // Filter out current user's typing indicator and stale indicators (older than 5 seconds)
-                const otherTypingUsers = typingUsers.filter((t: {timestamp: number; userId: string | number; username: string}) => {
-                    const isStale = Date.now() - t.timestamp > 5000
-                    const isCurrentUser = $s.user.id && String(t.userId) === String($s.user.id)
-                    return !isStale && !isCurrentUser
-                })
+                // Also enrich with username from global users if missing
+                const otherTypingUsers = typingUsers
+                    .map((t: {timestamp: number; userId: string | number; username: string}) => {
+                        // Use username from global users if not provided
+                        if (!t.username && $s.chat.users?.[String(t.userId)]) {
+                            t.username = $s.chat.users[String(t.userId)].username
+                        }
+                        return t
+                    })
+                    .filter((t: {timestamp: number; userId: string | number; username: string}) => {
+                        const isStale = Date.now() - t.timestamp > 5000
+                        const isCurrentUser = $s.user.id && String(t.userId) === String($s.user.id)
+                        return !isStale && !isCurrentUser
+                    })
 
                 if (sorted.length === 0 && otherTypingUsers.length === 0) {
                     return (
@@ -223,7 +232,7 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
                 return (
                     <>
                         {sorted.map((message, index) => (
-                            <ChatMessage key={index} message={message} />
+                            <ChatMessage key={index} message={message} channelId={channelId} />
                         ))}
                         {otherTypingUsers.length > 0 && (
                             <div class="typing-indicator">

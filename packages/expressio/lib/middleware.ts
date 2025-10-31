@@ -1,5 +1,6 @@
 import {createFinalHandler} from '@garage44/common/lib/middleware'
 import {adminContext, deniedContext, userContext} from '@garage44/common/lib/profile.ts'
+import {createAvatarRoutes} from '@garage44/common/lib/avatar-routes'
 import {devContext} from '@garage44/common/lib/dev-context'
 import {userManager} from '@garage44/common/service'
 import {logger, runtime} from '../service.ts'
@@ -71,6 +72,15 @@ const requireAdmin = async (ctx, next) => {
 
 async function initMiddleware(_bunchyConfig) {
     const router = new Router()
+
+    // Register common avatar routes (placeholder images and uploaded avatars)
+    const avatarRoutes = createAvatarRoutes({
+        appName: 'expressio',
+        logger,
+        runtime,
+    })
+    avatarRoutes.registerPlaceholderRoute(router)
+    avatarRoutes.registerAvatarRoute(router)
 
     // Register HTTP API endpoints using familiar Express-like pattern
     await apiI18n(router)

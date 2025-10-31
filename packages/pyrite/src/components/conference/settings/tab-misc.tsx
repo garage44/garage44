@@ -3,6 +3,7 @@ import {useEffect} from 'preact/hooks'
 import {$s} from '@/app'
 import {$t, store} from '@garage44/common/app'
 import {logger} from '@garage44/common/app'
+import AvatarUpload from './avatar-upload'
 
 export default function TabMisc() {
     const languages = [
@@ -25,6 +26,8 @@ export default function TabMisc() {
 
     return (
         <section class="tab-content active">
+            <AvatarUpload />
+
             <div class="theme-toggle-wrapper">
                 <label>{$t('ui.settings.misc.theme_label')}</label>
                 <ThemeToggle />
@@ -32,11 +35,9 @@ export default function TabMisc() {
             </div>
 
             <FieldSelect
-                value={$s.language}
-                onChange={(value) => $s.language = value}
+                model={$s.language.$id}
                 help={$t('ui.settings.misc.language_help')}
                 label={$t('ui.settings.misc.language_label')}
-                name="language"
                 options={languages}
             />
         </section>

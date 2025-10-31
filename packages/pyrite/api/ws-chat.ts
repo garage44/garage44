@@ -5,11 +5,26 @@
  */
 
 import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
+import {userManager} from '@garage44/common/service'
 import {ChannelManager} from '../lib/channel-manager.ts'
 import {getDatabase} from '../lib/database.ts'
 import {logger} from '../service.ts'
 
 let channelManager: ChannelManager | null = null
+
+/**
+ * Helper function to get user ID from WebSocket context
+ */
+async function getUserIdFromContext(context: {session?: {userid?: string}}): Promise<{userId: string | null; username: string | null}> {
+    if (!context.session?.userid) {
+        return {userId: null, username: null}
+    }
+    const user = await userManager.getUserByUsername(context.session.userid)
+    return {
+        userId: user?.id || null,
+        username: user?.username || null,
+    }
+}
 
 export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
     const api = wsManager.api
@@ -45,13 +60,18 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
                 }
             }
 
-            // Get user ID and username from session/context - placeholder for now
-            const userId = 1
-            const username = 'admin'
+            // Get user ID and username from context
+            const {userId, username} = await getUserIdFromContext(context)
+
+            if (!userId || !username) {
+                return {
+                    error: 'Authentication required',
+                    success: false,
+                }
+            }
 
             // Check if user can access channel
-            const canAccess = await channelManager!.canAccessChannel(channelIdNum, userId)
-            if (!canAccess) {
+            if (!channelManager!.canAccessChannel(channelIdNum, userId)) {
                 return {
                     error: 'Access denied',
                     success: false,
@@ -114,22 +134,25 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
                 }
             }
 
-            // Get user ID from session/context - placeholder for now
-            const userId = 1
+            // Get user ID from context
+            const {userId} = await getUserIdFromContext(context)
 
-            // Check if user can access channel
-            if (!channelManager!.canAccessChannel(channelIdNum, userId)) {
+            if (!userId || !channelManager!.canAccessChannel(channelIdNum, userId)) {
                 return {
                     error: 'Access denied',
                     success: false,
                 }
             }
 
+            // Get username from context
+            const {username} = await getUserIdFromContext(context)
+
             // Broadcast to all clients in the channel
             wsManager.broadcast(`/channels/${channelId}/typing`, {
                 timestamp: Date.now(),
                 typing,
                 userId,
+                username: username || 'Unknown',
             })
 
             return {success: true}
@@ -159,11 +182,10 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
                 }
             }
 
-            // Get user ID from session/context - placeholder for now
-            const userId = 1
+            // Get user ID from context
+            const {userId} = await getUserIdFromContext(context)
 
-            // Check if user can access channel
-            if (!channelManager!.canAccessChannel(channelIdNum, userId)) {
+            if (!userId || !channelManager!.canAccessChannel(channelIdNum, userId)) {
                 return {
                     error: 'Access denied',
                     success: false,
@@ -186,7 +208,7 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
                 kind: string
                 message: string
                 timestamp: number
-                user_id: number
+                user_id: string // TEXT/UUID, not number
                 username: string
             }>
 

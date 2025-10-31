@@ -1,6 +1,7 @@
 import {ContextMenu} from '../context-menu/context-menu'
 import {MenuItem} from '../menu-item/menu-item'
 import {store} from '@garage44/common/app'
+import {getAvatarUrl} from '@garage44/common/lib/avatar'
 import classnames from 'classnames'
 import './user-menu.css'
 
@@ -8,9 +9,11 @@ interface UserMenuProps {
     className?: string
     collapsed?: boolean
     onLogout?: () => void
+    settingsHref?: string
     user?: {
+        id?: string
         profile?: {
-            avatar?: string | null
+            avatar?: string
             displayName?: string
         }
     }
@@ -38,20 +41,17 @@ export const UserMenu = ({
     className = '',
     collapsed = false,
     onLogout,
+    settingsHref,
     user,
 }: UserMenuProps) => {
     const displayName = user?.profile?.displayName || 'User'
-    const initials = displayName
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
 
-    const avatarContent = user?.profile?.avatar ? (
-        <img alt={displayName} class="avatar-img" src={user.profile.avatar} />
-    ) : (
-        <div class="avatar-initials">{initials}</div>
+    // Avatar is always set (never null), use avatar URL helper
+    const avatar = user?.profile?.avatar || 'placeholder-1.png'
+    const avatarUrl = getAvatarUrl(avatar, user?.id)
+
+    const avatarContent = (
+        <img alt={displayName} class="avatar-img" src={avatarUrl} />
     )
 
     return (
@@ -70,6 +70,15 @@ export const UserMenu = ({
                     <div class="menu-avatar">{avatarContent}</div>
                     <div class="menu-name">{displayName}</div>
                 </div>
+            )}
+            {settingsHref && (
+                <MenuItem
+                    collapsed={collapsed}
+                    href={settingsHref}
+                    icon="settings"
+                    iconType="info"
+                    text="Settings"
+                />
             )}
             <MenuItem
                 collapsed={collapsed}

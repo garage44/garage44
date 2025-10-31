@@ -118,7 +118,24 @@ export const createMiddleware = (config: MiddlewareConfig, userManager: UserMana
             // Handle WebSocket upgrade requests
             if (url.pathname === '/ws' || url.pathname === '/bunchy') {
                 if (server && typeof (server as {upgrade?: unknown}).upgrade === 'function') {
-                    const success = (server as {upgrade: (req: Request, data: unknown) => boolean}).upgrade(request, {data: {endpoint: url.pathname}})
+                    // Get session before upgrade so it's available in WebSocket handlers
+                    const {session} = sessionMiddleware(request, config.sessionCookieName)
+
+                    // Populate session with admin user if GARAGE44_NO_SECURITY is enabled
+                    if (process.env.GARAGE44_NO_SECURITY && !(session as {userid?: string}).userid) {
+                        const users = await userManager.listUsers()
+                        const adminUser = users.find((user) => user.permissions?.admin)
+                        if (adminUser) {
+                            (session as {userid: string}).userid = adminUser.username
+                        }
+                    }
+
+                    const success = (server as {upgrade: (req: Request, data: unknown) => boolean}).upgrade(request, {
+                        data: {
+                            endpoint: url.pathname,
+                            session,
+                        },
+                    })
                     if (success) {
                         return
                     }
@@ -189,14 +206,42 @@ export const createFinalHandler = (config: {
         config.logger.info(`[HTTP] ${url.pathname} miss`)
         config.devContext.addHttp({method: request.method, ts: Date.now(), url: url.pathname})
 
+        // Get session early and populate it if needed (before unified middleware)
+        let {session, sessionId} = unifiedMiddleware.sessionMiddleware(request)
+
+        // Populate session with admin user if GARAGE44_NO_SECURITY is enabled
+        if (process.env.GARAGE44_NO_SECURITY && !(session as {userid?: string}).userid) {
+            const users = await config.userManager.listUsers()
+            const adminUser = users.find((user) => user.permissions?.admin)
+            if (adminUser) {
+                (session as {userid: string}).userid = adminUser.username
+                // Session is stored in Map, modifying it in place persists automatically
+                // But ensure it's set back in case of reference issues
+                sessions.set(sessionId, session)
+                config.logger.debug(`[Middleware] Populated session ${sessionId} with userid: ${adminUser.username}`)
+            }
+        }
+
         // Use unified middleware for session/auth and custom handlers
+        // Pass the populated session to unified middleware by ensuring it uses the same session
         const unifiedResponse = await unifiedMiddleware.handleRequest(request, server, config.logger, null)
         if (unifiedResponse) {
             return unifiedResponse
         }
 
-        // Get session for API routing
-        const {session, sessionId} = unifiedMiddleware.sessionMiddleware(request)
+        // Re-get session after unified middleware to ensure we have the latest version
+        const {session: finalSession, sessionId: finalSessionId} = unifiedMiddleware.sessionMiddleware(request)
+
+        // Populate session with admin user if GARAGE44_NO_SECURITY is enabled (again, in case unified middleware created a new session)
+        if (process.env.GARAGE44_NO_SECURITY && !(finalSession as {userid?: string}).userid) {
+            const users = await config.userManager.listUsers()
+            const adminUser = users.find((user) => user.permissions?.admin)
+            if (adminUser) {
+                (finalSession as {userid: string}).userid = adminUser.username
+                sessions.set(finalSessionId, finalSession)
+                config.logger.debug(`[Middleware] Re-populated session ${finalSessionId} with userid: ${adminUser.username}`)
+            }
+        }
 
         // Handle /api/context - requires authentication to check session state
         if (url.pathname === '/api/context') {
@@ -210,8 +255,8 @@ export const createFinalHandler = (config: {
             }
 
             // Check session for user context
-            if ((session as {userid?: string})?.userid) {
-                const user = await config.userManager.getUserByUsername((session as {userid: string}).userid)
+            if ((finalSession as {userid?: string})?.userid) {
+                const user = await config.userManager.getUserByUsername((finalSession as {userid: string}).userid)
                 if (user) {
                     if (user.permissions?.admin) {
                         context = await Promise.resolve(config.contextFunctions.adminContext())
@@ -295,12 +340,12 @@ export const createFinalHandler = (config: {
         }
 
         // Try the router for HTTP API endpoints
-        const apiResponse = await config.router.route(request, session)
+        const apiResponse = await config.router.route(request, finalSession)
         if (apiResponse) {
             config.logger.info(`[HTTP] API route matched ${url.pathname}`)
             config.devContext.addHttp({method: request.method, status: apiResponse.status, ts: Date.now(), url: url.pathname})
             // Set session cookie if this is a new session
-            return unifiedMiddleware.setSessionCookie(apiResponse, sessionId)
+            return unifiedMiddleware.setSessionCookie(apiResponse, finalSessionId)
         }
 
         // SPA fallback - serve index.html for all other routes
@@ -323,7 +368,7 @@ export const createFinalHandler = (config: {
         config.logger.info(`[HTTP] 404 for ${url.pathname}`)
         const response = new Response('Not Found', {status: 404})
         config.devContext.addHttp({method: request.method, status: 404, ts: Date.now(), url: url.pathname})
-        return unifiedMiddleware.setSessionCookie(response, sessionId)
+        return unifiedMiddleware.setSessionCookie(response, finalSessionId)
     }
 }
 

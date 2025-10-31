@@ -130,6 +130,7 @@ const tasks: Tasks = {} as Tasks
 
 tasks.assets = new Task('assets', async function taskAssets() {
     await fs.ensureDir(path.join(settings.dir.public, 'fonts'))
+    await fs.ensureDir(path.join(settings.dir.public, 'img'))
 
     const copyOperations = [
         // Copy fonts from common package (shared across all projects)
@@ -137,7 +138,12 @@ tasks.assets = new Task('assets', async function taskAssets() {
             from: path.join(settings.dir.common, 'fonts'),
             to: path.join(settings.dir.public, 'fonts'),
         },
-        // Copy local assets if they exist
+        // Copy images from common package (shared placeholder avatars)
+        {
+            from: path.join(settings.dir.common, 'assets', 'img'),
+            to: path.join(settings.dir.public, 'img'),
+        },
+        // Copy local assets if they exist (app-specific images)
         {
             from: path.join(settings.dir.assets, 'img'),
             to: path.join(settings.dir.public, 'img'),

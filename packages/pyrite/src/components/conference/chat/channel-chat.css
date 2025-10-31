@@ -131,10 +131,39 @@
                 margin-bottom: var(--spacer-05);
 
                 .author {
+                    align-items: center;
                     color: var(--primary-6);
+                    display: flex;
                     font-size: var(--font-d);
                     font-weight: 600;
+                    gap: var(--spacer-1);
                     line-height: 1.4;
+
+                    .avatar {
+                        border-radius: var(--border-radius-d);
+                        flex-shrink: 0;
+                        height: 32px;
+                        object-fit: cover;
+                        width: 32px;
+                    }
+
+                    .avatar-initials {
+                        align-items: center;
+                        background: var(--primary-4);
+                        border-radius: var(--border-radius-d);
+                        color: var(--surface-8);
+                        display: flex;
+                        flex-shrink: 0;
+                        font-size: var(--font-xs);
+                        font-weight: 600;
+                        height: 32px;
+                        justify-content: center;
+                        width: 32px;
+                    }
+
+                    .username {
+                        color: inherit;
+                    }
                 }
 
                 .time {

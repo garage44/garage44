@@ -1,7 +1,9 @@
 import classnames from 'classnames'
 import {useMemo} from 'preact/hooks'
 import {$t} from '@garage44/common/app'
+import {getAvatarUrl} from '@garage44/common/lib/avatar'
 import {emojiLookup} from '@/models/chat'
+import {$s} from '@/app'
 
 const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig
 
@@ -16,10 +18,12 @@ interface MessageProps {
         nick?: string
         time: number
         kind: string
+        user_id?: string
     }
+    channelId?: number
 }
 
-export default function Message({ message }: MessageProps) {
+export default function Message({ message, channelId }: MessageProps) {
     const messageModel = useMemo(() => {
         let messageData: MessageBlock[] = []
         let textBlock: MessageBlock = { type: 'text', value: '' }
@@ -66,6 +70,32 @@ export default function Message({ message }: MessageProps) {
         return date.toLocaleTimeString()
     }
 
+    // Get avatar from global users or channel members (fallback)
+    let avatarUrl: string | null = null
+    if (message.user_id) {
+        // Try global users first (available across all channels)
+        if ($s.chat.users?.[message.user_id]) {
+            avatarUrl = getAvatarUrl($s.chat.users[message.user_id].avatar, message.user_id)
+        } else if (channelId) {
+            // Fallback to channel members for backward compatibility
+            const channelKey = channelId.toString()
+            const channel = $s.chat.channels[channelKey]
+            if (channel?.members?.[message.user_id]) {
+                avatarUrl = getAvatarUrl(channel.members[message.user_id].avatar, message.user_id)
+            }
+        }
+    }
+
+    // Get initials for fallback
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map(n => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
+    }
+
     return (
         <div class={classnames('message', { command: !message.nick, [message.kind]: true })}>
             {message.kind === 'me' && (
@@ -84,7 +114,12 @@ export default function Message({ message }: MessageProps) {
                     {message.nick && (
                         <header>
                             <div class="author">
-                                {message.nick}
+                                {avatarUrl ? (
+                                    <img src={avatarUrl} alt={message.nick} class="avatar" />
+                                ) : (
+                                    <div class="avatar-initials">{getInitials(message.nick)}</div>
+                                )}
+                                <span class="username">{message.nick}</span>
                             </div>
                             <div class="time">
                                 {formatTime(message.time)}

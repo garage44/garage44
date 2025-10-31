@@ -45,14 +45,14 @@ const initChatSubscriptions = () => {
                     return
                 }
 
-                const {userId, username, message: messageText, timestamp, kind} = data
+                const {kind, message: messageText, timestamp, userId, username} = data
 
                 if (!messageText || !username) {
                     logger.warn('[Chat WS] Missing required message fields:', data)
                     return
                 }
 
-                logger.debug(`[Chat WS] Received message for channel ${channelId}:`, {username, messageText})
+                logger.debug(`[Chat WS] Received message for channel ${channelId}:`, {messageText, username})
 
                 // Find or create the chat channel
                 const channelKey = channelId.toString()
@@ -65,12 +65,37 @@ const initChatSubscriptions = () => {
                     logger.debug(`[Chat WS] Created channel entry for ${channelKey}`)
                 }
 
+                // Ensure user is in global users map for avatar lookup
+                if (userId && username) {
+                    if (!$s.chat.users) {
+                        $s.chat.users = {}
+                    }
+                    // Get avatar from channel members if available, or use placeholder
+                    const channelKey = channelId.toString()
+                    const channel = $s.chat.channels[channelKey]
+                    const memberAvatar = channel?.members?.[userId]?.avatar
+
+                    if (!$s.chat.users[userId]) {
+                        $s.chat.users[userId] = {
+                            avatar: memberAvatar || 'placeholder-1.png',
+                            username,
+                        }
+                    } else {
+                        // Update username/avatar if they changed
+                        $s.chat.users[userId].username = username
+                        if (memberAvatar) {
+                            $s.chat.users[userId].avatar = memberAvatar
+                        }
+                    }
+                }
+
                 // Add message to channel - DeepSignal will trigger reactivity
                 const newMessage = {
                     kind: kind || 'message',
                     message: messageText,
                     nick: username,
                     time: timestamp || Date.now(),
+                    user_id: userId, // Include user_id for avatar lookup
                 }
 
                 // Push to array - DeepSignal tracks array mutations
@@ -89,7 +114,7 @@ const initChatSubscriptions = () => {
             if (typingUrlMatch) {
                 const channelId = parseInt(typingUrlMatch[1], 10)
                 const data = message.data
-                const {userId, typing, username} = data || {}
+                const {typing, userId, username} = data || {}
 
                 if (userId) {
                     const channelKey = channelId.toString()
@@ -99,8 +124,8 @@ const initChatSubscriptions = () => {
                         $s.chat.channels[channelKey] = {
                             id: channelKey,
                             messages: [],
-                            unread: 0,
                             typing: {},
+                            unread: 0,
                         }
                     } else if (!$s.chat.channels[channelKey].typing) {
                         $s.chat.channels[channelKey].typing = {}
@@ -109,9 +134,9 @@ const initChatSubscriptions = () => {
                     // Update typing state for this user in this channel
                     if (typing) {
                         $s.chat.channels[channelKey].typing[userId] = {
+                            timestamp: Date.now(),
                             userId,
                             username: username || 'Unknown',
-                            timestamp: Date.now(),
                         }
                     } else {
                         // Remove typing indicator when user stops typing
@@ -131,19 +156,19 @@ const initPresenceSubscriptions = () => {
     events.on('app:init', () => {
         // User joined group (broadcast from backend)
         ws.on('/presence/:groupId/join', (data) => {
-            const {groupId, userId, username, timestamp} = data
+            const {groupId, timestamp, userId, username} = data
 
             logger.debug(`User ${username} joined group ${groupId}`)
 
             // Update current group member count if relevant
-            const currentGroup = $s.groups.find(g => g.name === groupId)
+            const currentGroup = $s.groups.find((g) => g.name === groupId)
             if (currentGroup) {
                 currentGroup.clientCount = (currentGroup.clientCount || 0) + 1
             }
 
             // If this is the current group, add user to users list
             if ($s.group.name === groupId) {
-                const existingUser = $s.users.find(u => u.id === userId)
+                const existingUser = $s.users.find((u) => u.id === userId)
                 if (!existingUser) {
                     $s.users.push({
                         data: {
@@ -165,19 +190,19 @@ const initPresenceSubscriptions = () => {
 
         // User left group (broadcast from backend)
         ws.on('/presence/:groupId/leave', (data) => {
-            const {groupId, userId, timestamp} = data
+            const {groupId, timestamp, userId} = data
 
             logger.debug(`User ${userId} left group ${groupId}`)
 
             // Update current group member count if relevant
-            const currentGroup = $s.groups.find(g => g.name === groupId)
+            const currentGroup = $s.groups.find((g) => g.name === groupId)
             if (currentGroup && currentGroup.clientCount > 0) {
                 currentGroup.clientCount = currentGroup.clientCount - 1
             }
 
             // If this is the current group, remove user from users list
             if ($s.group.name === groupId) {
-                const userIndex = $s.users.findIndex(u => u.id === userId)
+                const userIndex = $s.users.findIndex((u) => u.id === userId)
                 if (userIndex !== -1) {
                     $s.users.splice(userIndex, 1)
                 }
@@ -186,9 +211,9 @@ const initPresenceSubscriptions = () => {
 
         // User status update (broadcast from backend)
         ws.on('/presence/:groupId/status', (data) => {
-            const {userId, status, timestamp} = data
+            const {status, timestamp, userId} = data
 
-            const user = $s.users.find(u => u.id === userId)
+            const user = $s.users.find((u) => u.id === userId)
             if (user) {
                 Object.assign(user.data, status)
             }
@@ -209,7 +234,7 @@ const initGroupSubscriptions = () => {
 
             logger.debug(`Group ${groupId} lock status: ${locked}`)
 
-            const group = $s.groups.find(g => g.name === groupId)
+            const group = $s.groups.find((g) => g.name === groupId)
             if (group) {
                 group.locked = locked
             }
@@ -240,7 +265,7 @@ const initGroupSubscriptions = () => {
 
             logger.debug(`Group ${groupId} config updated`)
 
-            const group = $s.groups.find(g => g.name === groupId)
+            const group = $s.groups.find((g) => g.name === groupId)
             if (group) {
                 Object.assign(group, config)
             }
@@ -248,19 +273,19 @@ const initGroupSubscriptions = () => {
 
         // Group created or deleted (broadcast from backend)
         ws.on('/groups/update', (data) => {
-            const {groupId, action, group, timestamp} = data
+            const {action, group, groupId, timestamp} = data
 
             logger.debug(`Group ${groupId} ${action}`)
 
             if (action === 'created' && group) {
                 // Add new group to list
-                const existingGroup = $s.groups.find(g => g.name === groupId)
+                const existingGroup = $s.groups.find((g) => g.name === groupId)
                 if (!existingGroup) {
                     $s.groups.push(group)
                 }
             } else if (action === 'deleted') {
                 // Remove group from list
-                const groupIndex = $s.groups.findIndex(g => g.name === groupId)
+                const groupIndex = $s.groups.findIndex((g) => g.name === groupId)
                 if (groupIndex !== -1) {
                     $s.groups.splice(groupIndex, 1)
                 }
@@ -269,14 +294,14 @@ const initGroupSubscriptions = () => {
 
         // Operator action (broadcast from backend)
         ws.on('/groups/:groupId/op-action', (data) => {
-            const {action, targetUserId, actionData, timestamp} = data
+            const {action, actionData, targetUserId, timestamp} = data
             const groupId = data.groupId
 
             if ($s.group.name !== groupId) return
 
             logger.debug(`Operator action in group ${groupId}: ${action}`)
 
-            const targetUser = $s.users.find(u => u.id === targetUserId)
+            const targetUser = $s.users.find((u) => u.id === targetUserId)
 
             switch (action) {
                 case 'kick':
@@ -287,7 +312,7 @@ const initGroupSubscriptions = () => {
                         $s.group.name = ''
                     } else if (targetUser) {
                         // Another user was kicked
-                        const userIndex = $s.users.findIndex(u => u.id === targetUserId)
+                        const userIndex = $s.users.findIndex((u) => u.id === targetUserId)
                         if (userIndex !== -1) {
                             $s.users.splice(userIndex, 1)
                         }
@@ -369,7 +394,7 @@ export const joinGroup = async (groupId: string) => {
     if (response && response.members) {
         // Update users list with current members
         for (const member of response.members) {
-            const existingUser = $s.users.find(u => u.id === member.id)
+            const existingUser = $s.users.find((u) => u.id === member.id)
             if (!existingUser) {
                 $s.users.push({
                     data: {

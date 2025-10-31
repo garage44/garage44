@@ -27,13 +27,13 @@ export const persistantState: Partial<PyriteState> = {
     },
     language: {id: null},
     language_ui: {
-        selection: 'en',
+        selection: 'eng-gbr',
         i18n: {},
         options: [
-            {id: 'de', name: 'Deutsch'},
-            {id: 'en', name: 'English'},
-            {id: 'fr', name: 'Français'},
-            {id: 'nl', name: 'Nederlands'},
+            {id: 'deu', name: 'Deutsch'},
+            {id: 'eng-gbr', name: 'English'},
+            {id: 'fra', name: 'Français'},
+            {id: 'nld', name: 'Nederlands'},
         ],
     },
     loading: true,
@@ -51,6 +51,12 @@ export const persistantState: Partial<PyriteState> = {
         settings: {
             collapsed: false,
         },
+    },
+    profile: {
+        id: null,
+        username: '',
+        displayName: '',
+        avatar: 'placeholder-1.png',
     },
     theme: 'system',
     user: {
@@ -128,6 +134,12 @@ export const volatileState: Partial<PyriteState> = {
         // so send can be modified in Settings.
         present: true,
         record: false,
+    },
+    profile: {
+        id: null,
+        username: '',
+        displayName: '',
+        avatar: 'placeholder-1.png',
     },
     streams: [],
     upMedia: {
