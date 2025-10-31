@@ -178,6 +178,23 @@ export async function loadChannelHistory(channelId: number) {
     }
 }
 
+/**
+ * Send typing indicator for current channel
+ */
+export async function sendTypingIndicator(typing: boolean, channelId?: number) {
+    const targetChannelId = channelId || $s.chat.activeChannelId
+    if (!targetChannelId) return
+
+    try {
+        await ws.post(`/channels/${targetChannelId}/typing`, {
+            typing,
+        })
+    } catch (error) {
+        logger.debug('[Chat] Error sending typing indicator:', error)
+        // Don't notify user - this is a background operation
+    }
+}
+
 export async function sendMessage(message: string) {
     if (!$s.chat.activeChannelId) {
         notifier.notify({
@@ -186,6 +203,9 @@ export async function sendMessage(message: string) {
         })
         return
     }
+
+    // Stop typing indicator when message is sent
+    await sendTypingIndicator(false, $s.chat.activeChannelId)
 
     const isCommand = message[0] === '/'
     let kind = 'message'

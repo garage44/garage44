@@ -29,6 +29,13 @@ export interface PyriteState extends CommonState {
                 id: string
                 messages: any[]
                 unread: number
+                typing?: {
+                    [userId: string]: {
+                        userId: string | number
+                        username: string
+                        timestamp: number
+                    }
+                }
             }
         }
         emoji: {

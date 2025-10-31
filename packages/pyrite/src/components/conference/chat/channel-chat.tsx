@@ -1,11 +1,12 @@
 import ChatMessage from './message'
 import classnames from 'classnames'
-import {useEffect, useRef, useMemo} from 'preact/hooks'
+import {useEffect, useRef, useCallback} from 'preact/hooks'
+import {effect} from '@preact/signals'
 import {Icon} from '@garage44/common/components'
 import Emoji from './emoji'
 import {logger} from '@garage44/common/app'
 import {$s} from '@/app'
-import {sendMessage as sendChatMessage} from '@/models/chat'
+import {sendMessage as sendChatMessage, sendTypingIndicator} from '@/models/chat'
 
 const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -21,7 +22,8 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
     const viewRef = useRef<HTMLDivElement>(null)
     const messagesRef = useRef<HTMLDivElement>(null)
     const chatInputRef = useRef<HTMLTextAreaElement>(null)
-    const resizeObserverRef = useRef<ResizeObserver | null>(null)
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const lastTypingSentRef = useRef<number>(0)
 
     // Get current channel from state - access directly for DeepSignal reactivity
     // Access $s.channels in render so Preact tracks it reactively
@@ -41,12 +43,10 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
     // Accessing $s.chat.channels[channelKey] in render makes it reactive
     const channelData = $s.chat.channels[channelKey]
     const messages = channelData?.messages || []
+    const messageCount = messages.length
 
-    const formattedMessage = useMemo(() => {
-        const trimmed = $s.chat.message.trim()
-        logger.debug('[ChannelChat] Message state:', $s.chat.message, 'Trimmed:', trimmed)
-        return trimmed
-    }, [$s.chat.message])
+    // Format message for sending (DeepSignal reactivity handled automatically)
+    const formattedMessage = $s.chat.message.trim()
 
     const addEmoji = (e: MouseEvent, emoji: string) => {
         const message = $s.chat.message.split('')
@@ -56,7 +56,7 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
         }
         $s.chat.message = message.join('')
 
-        if (!(e as any).ctrlKey) {
+        if (!(e as MouseEvent & {ctrlKey?: boolean}).ctrlKey) {
             $s.chat.emoji.active = false
         }
     }
@@ -76,6 +76,13 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
 
         logger.debug('[ChannelChat] Sending message:', formattedMessage)
 
+        // Stop typing indicator and clear timeout
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current)
+            typingTimeoutRef.current = null
+        }
+        await sendTypingIndicator(false, channelId)
+
         // Set the active channel before sending
         $s.chat.activeChannelId = channelId
         sendChatMessage(formattedMessage)
@@ -89,39 +96,50 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
         }
     }
 
-    // Watch channel messages and scroll to bottom when messages change
-    // Access messages.length here to make this reactive to DeepSignal changes
-    const messageCount = messages.length
-    useEffect(() => {
-        if (messagesRef.current && messageCount > 0) {
-            // Small delay to ensure DOM has updated
-            setTimeout(() => {
-                if (messagesRef.current) {
-                    messagesRef.current.scrollTop = messagesRef.current.scrollHeight
-                }
-            }, 0)
-        }
-    }, [messageCount])
+    // Check if user is near bottom of chat (within 100px)
+    const isNearBottom = useCallback(() => {
+        if (!messagesRef.current) return false
+        const {clientHeight, scrollHeight, scrollTop} = messagesRef.current
+        return scrollHeight - scrollTop - clientHeight < 100
+    }, [])
 
-    // Setup resize observer and initial scroll
-    useEffect(() => {
-        if (!viewRef.current || !messagesRef.current) return
+    // Scroll to bottom immediately
+    const scrollToBottom = useCallback(() => {
+        if (!messagesRef.current) return
+        // Use scrollIntoView for smoother scrolling, or direct scrollTop for immediate
+        const messagesContainer = messagesRef.current
+        messagesContainer.scrollTop = messagesContainer.scrollHeight
+    }, [])
 
-        resizeObserverRef.current = new ResizeObserver(() => {
-            if (viewRef.current) {
-                $s.chat.width = parseInt(viewRef.current.style.width.replace('px', ''), 10)
+    // Watch channel messages directly from state using signal effect
+    // This automatically tracks DeepSignal changes and triggers immediately
+    useEffect(() => {
+        const channelData = $s.chat.channels[channelKey]
+        if (!channelData) return
+
+        // Use effect from @preact/signals to watch signal changes
+        const unsubscribe = effect(() => {
+            // Access messages to track signal reactivity
+            const msgs = channelData.messages || []
+            const msgCount = msgs.length
+
+            if (messagesRef.current && msgCount > 0 && isNearBottom()) {
+                // Scroll immediately - signal change triggers this effect
+                scrollToBottom()
+                // Also scroll after next frame to catch any DOM layout updates
+                requestAnimationFrame(scrollToBottom)
             }
         })
 
-        resizeObserverRef.current.observe(viewRef.current)
-        messagesRef.current.scrollTop = messagesRef.current.scrollHeight
+        return unsubscribe
+    }, [channelKey, isNearBottom, scrollToBottom])
 
-        return () => {
-            if (resizeObserverRef.current) {
-                resizeObserverRef.current.disconnect()
-            }
+    // Initial scroll on mount
+    useEffect(() => {
+        if (messagesRef.current && messageCount > 0) {
+            messagesRef.current.scrollTop = messagesRef.current.scrollHeight
         }
-    }, [])
+    }, [messageCount])
 
     // Set active channel when component mounts
     useEffect(() => {
@@ -132,8 +150,22 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
             $s.chat.channels[channelKey] = {
                 id: channelKey,
                 messages: [],
+                typing: {},
                 unread: 0,
             }
+        } else if (!$s.chat.channels[channelKey].typing) {
+            $s.chat.channels[channelKey].typing = {}
+        }
+    }, [channelId])
+
+    // Cleanup typing timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current)
+            }
+            // Stop typing indicator when leaving channel
+            sendTypingIndicator(false, channelId)
         }
     }, [channelId])
 
@@ -141,7 +173,7 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
         return (
             <div class="c-channel-chat">
                 <div class="channel-not-found">
-                    <Icon class="icon icon-l" name="error" />
+                    <Icon className="icon icon-l" name="error" />
                     <h2>Channel not found</h2>
                     <p>The channel you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
                 </div>
@@ -149,74 +181,118 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
         )
     }
 
-    return (
-        <div ref={viewRef} class={classnames('c-channel-chat', {[$s.env.layout]: true})}>
-            {/* Channel Header */}
-            <div class="channel-header">
-                <Icon className="icon icon-s" name="chat" />
-                <h1>{currentChannel.name}</h1>
-                {currentChannel.description && (
-                    <p class="channel-description">{currentChannel.description}</p>
-                )}
-            </div>
+    return <div ref={viewRef} class={classnames('c-channel-chat', {[$s.env.layout]: true})}>
+        {/* Channel Header */}
+        <div class="channel-header">
+            <Icon className="icon icon-s" name="chat" />
+            <h1>{currentChannel.name}</h1>
+            {currentChannel.description && (
+                <p class="channel-description">{currentChannel.description}</p>
+            )}
+        </div>
 
-            {/* Emoji Picker */}
-            {$s.chat.emoji.active && <Emoji onselect={addEmoji} />}
+        {/* Emoji Picker */}
+        {$s.chat.emoji.active && <Emoji onselect={addEmoji} />}
 
-            {/* Messages */}
-            <div ref={messagesRef} class="messages scroller">
-                {(() => {
-                    // Access messages directly in render for DeepSignal reactivity
-                    const channelData = $s.chat.channels[channelKey]
-                    const msgs = channelData?.messages || []
-                    const sorted = msgs.length > 0 ? [...msgs].sort((a, b) => a.time - b.time) : []
+        {/* Messages */}
+        <div ref={messagesRef} class="messages scroller">
+            {(() => {
+                // Access messages directly in render for DeepSignal reactivity
+                const channelData = $s.chat.channels[channelKey]
+                const msgs = channelData?.messages || []
+                const sorted = msgs.length > 0 ? [...msgs].toSorted((a, b) => a.time - b.time) : []
 
-                    if (sorted.length === 0) {
-                        return (
-                            <div class="no-messages">
-                                <Icon class="icon icon-l" name="chat" />
-                                <p>No messages yet. Start the conversation!</p>
+                // Get typing indicators for this channel
+                const typingUsers = channelData?.typing ? Object.values(channelData.typing) : []
+                // Filter out current user's typing indicator and stale indicators (older than 5 seconds)
+                const otherTypingUsers = typingUsers.filter((t: {timestamp: number; userId: string | number; username: string}) => {
+                    const isStale = Date.now() - t.timestamp > 5000
+                    const isCurrentUser = $s.user.id && String(t.userId) === String($s.user.id)
+                    return !isStale && !isCurrentUser
+                })
+
+                if (sorted.length === 0 && otherTypingUsers.length === 0) {
+                    return (
+                        <div class="no-messages">
+                            <Icon className="icon icon-l" name="chat" />
+                            <p>No messages yet. Start the conversation!</p>
+                        </div>
+                    )
+                }
+
+                return (
+                    <>
+                        {sorted.map((message, index) => (
+                            <ChatMessage key={index} message={message} />
+                        ))}
+                        {otherTypingUsers.length > 0 && (
+                            <div class="typing-indicator">
+                                {otherTypingUsers.length === 1 ? (
+                                    <span class="typing-text">
+                                        <strong>{(otherTypingUsers[0] as {username: string}).username}</strong> is typing...
+                                    </span>
+                                ) : (
+                                    <span class="typing-text">
+                                        {otherTypingUsers.length} people are typing...
+                                    </span>
+                                )}
                             </div>
-                        )
+                        )}
+                    </>
+                )
+            })()}
+        </div>
+
+        {/* Message Input */}
+        <div class="send">
+            <textarea
+                ref={chatInputRef}
+                value={$s.chat.message}
+                onInput={(e) => {
+                    $s.chat.message = (e.target as HTMLTextAreaElement).value
+                    // Send typing indicator (debounced)
+                    const now = Date.now()
+                    if (now - lastTypingSentRef.current > 1000) {
+                        // Send typing indicator every 1 second max
+                        sendTypingIndicator(true, channelId)
+                        lastTypingSentRef.current = now
                     }
 
-                    return sorted.map((message, index) => (
-                        <ChatMessage key={index} message={message} />
-                    ))
-                })()}
-            </div>
+                    // Clear existing timeout
+                    if (typingTimeoutRef.current) {
+                        clearTimeout(typingTimeoutRef.current)
+                    }
 
-            {/* Message Input */}
-            <div class="send">
-                <textarea
-                    ref={chatInputRef}
-                    value={$s.chat.message}
-                    onInput={(e) => $s.chat.message = (e.target as HTMLTextAreaElement).value}
-                    autofocus={true}
-                    placeholder={`Message #${currentChannel.name}`}
-                    onKeyDown={handleKeyDown}
-                    onKeyUp={handleKeyUp}
-                />
-                <button
-                    class="btn btn-menu"
-                    disabled={formattedMessage === ''}
-                    onClick={sendMessage}
-                >
-                    <Icon class="icon icon-s" name="send" />
-                </button>
-            </div>
-
-            {/* Chat Actions */}
-            <div class="chat-actions">
-                <button
-                    class={classnames('btn btn-menu', {
-                        active: $s.chat.emoji.active,
-                    })}
-                    onClick={() => $s.chat.emoji.active = !$s.chat.emoji.active}
-                >
-                    😼
-                </button>
-            </div>
+                    // Set timeout to stop typing indicator after 3 seconds of inactivity
+                    typingTimeoutRef.current = setTimeout(() => {
+                        sendTypingIndicator(false, channelId)
+                    }, 3000)
+                }}
+                autofocus={true}
+                placeholder={`Message #${currentChannel.name}`}
+                onKeyDown={handleKeyDown}
+                onKeyUp={handleKeyUp}
+            />
+            <button
+                class="btn btn-menu"
+                disabled={formattedMessage === ''}
+                onClick={sendMessage}
+            >
+                <Icon className="icon icon-s" name="send" />
+            </button>
         </div>
-    )
+
+        {/* Chat Actions */}
+        <div class="chat-actions">
+            <button
+                class={classnames('btn btn-menu', {
+                    active: $s.chat.emoji.active,
+                })}
+                onClick={() => $s.chat.emoji.active = !$s.chat.emoji.active}
+            >
+                😼
+            </button>
+        </div>
+    </div>
+
 }

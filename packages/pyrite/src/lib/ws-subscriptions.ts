@@ -89,13 +89,33 @@ const initChatSubscriptions = () => {
             if (typingUrlMatch) {
                 const channelId = parseInt(typingUrlMatch[1], 10)
                 const data = message.data
-                const {userId, typing} = data || {}
+                const {userId, typing, username} = data || {}
 
                 if (userId) {
-                    // Update user typing state
-                    const user = $s.users.find(u => u.id === userId)
-                    if (user) {
-                        user.typing = typing
+                    const channelKey = channelId.toString()
+
+                    // Ensure channel exists
+                    if (!$s.chat.channels[channelKey]) {
+                        $s.chat.channels[channelKey] = {
+                            id: channelKey,
+                            messages: [],
+                            unread: 0,
+                            typing: {},
+                        }
+                    } else if (!$s.chat.channels[channelKey].typing) {
+                        $s.chat.channels[channelKey].typing = {}
+                    }
+
+                    // Update typing state for this user in this channel
+                    if (typing) {
+                        $s.chat.channels[channelKey].typing[userId] = {
+                            userId,
+                            username: username || 'Unknown',
+                            timestamp: Date.now(),
+                        }
+                    } else {
+                        // Remove typing indicator when user stops typing
+                        delete $s.chat.channels[channelKey].typing[userId]
                     }
                 }
             }
