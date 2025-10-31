@@ -24,7 +24,6 @@ export class Store<StateType extends object = object> {
 
 
         Object.assign(this.state, mergeDeep(mergeDeep(persistantState, restoredState), volatileState))
-        console.log('BETA', this.state)
         if (this.state.beta) {
             globalThis.$s = this.state as unknown as DeepSignal<CommonState>
         }

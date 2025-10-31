@@ -13,7 +13,7 @@
     <link rel="apple-touch-icon" sizes="512x512" href="<%= settings.assetPath %>/img/logo-512.png">
 
     <!-- PWA Manifest -->
-    <link rel="manifest" href="<%= settings.assetPath %>/manifest.json">
+    <link rel="manifest" href="/public/manifest.json">
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="/public/app.<%= settings.buildId %>.css">
@@ -24,6 +24,6 @@
     <script src="/public/app.<%= settings.buildId %>.js" type="module"></script>
 
     <!-- Service Worker -->
-    <script src="<%= settings.assetPath %>/sw-loader.js"></script>
+    <script src="/public/sw-loader.js"></script>
 </body>
 </html>

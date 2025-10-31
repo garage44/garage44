@@ -30,6 +30,27 @@ export interface ButtonProps {
     variant?: 'default' | 'toggle' | 'menu' | 'unset'
 }
 
+// Helper function to get DOM element from Preact ref
+// Handles both direct DOM elements and Preact component instances
+function getDOMElement(ref: unknown): HTMLElement | null {
+    if (!ref) return null
+
+    if (ref instanceof HTMLElement) {
+        // Direct DOM element (from <button>)
+        return ref
+    }
+
+    if (ref && typeof ref === 'object' && 'base' in ref) {
+        // Preact component instance (from <Link>)
+        const base = (ref as {base?: HTMLElement}).base
+        if (base instanceof HTMLElement) {
+            return base
+        }
+    }
+
+    return null
+}
+
 export function Button({
     active = false,
     children = null,
@@ -53,31 +74,35 @@ export function Button({
     const [contextText, setContextText] = useState('')
 
     useEffect(() => {
-        if (buttonRef.current && tip) {
-            tippyInstanceRef.current = tippy(buttonRef.current, {
-                allowHTML: true,
-                arrow: true,
-                content: tip,
-            })
-        }
-        return () => {
-            if (tippyInstanceRef.current) {
-                tippyInstanceRef.current.destroy()
-            }
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+        // Initialize or update tippy when tip changes or component mounts
+        const domElement = getDOMElement(buttonRef.current)
 
-    useEffect(() => {
+        if (!domElement) return
+
         if (tippyInstanceRef.current) {
+            // Update existing tippy instance
             if (tip) {
                 tippyInstanceRef.current.setContent(tip)
                 tippyInstanceRef.current.enable()
             } else {
                 tippyInstanceRef.current.disable()
             }
+        } else if (tip) {
+            // Initialize tippy if tip is available
+            tippyInstanceRef.current = tippy(domElement, {
+                allowHTML: true,
+                arrow: true,
+                content: tip,
+            })
         }
-    }, [tip])
+
+        return () => {
+            if (tippyInstanceRef.current) {
+                tippyInstanceRef.current.destroy()
+                tippyInstanceRef.current = null
+            }
+        }
+    }, [tip]) // Include tip in dependencies to handle both initialization and updates
 
     const handleClick = (event: MouseEvent) => {
         if (disabled) {
@@ -106,10 +131,6 @@ export function Button({
             setContextTriggered(false)
             setContextText('')
         }
-    }
-
-    const handleClickOutside = () => {
-        setContextTriggered(false)
     }
 
     const finalClassName = classnames(
@@ -160,12 +181,12 @@ export function Button({
 
     // If route is provided, render as Link
     if (route) {
+        // Preact-router Link accepts href but TypeScript types may not reflect this
         return (
             <Link
                 ref={buttonRef}
                 class={finalClassName}
-                href={route}
-                onClick={handleClick}
+                {...({href: route, onClick: handleClick} as Record<string, unknown>)}
             >
                 {buttonContent}
             </Link>

@@ -15,7 +15,6 @@ import {Login} from './login/login'
 import ProfileSettings from './settings/profile-settings'
 
 export const ConferenceApp = () => {
-    console.log('PROFILE', $s)
     useEffect(() => {
         (async () => {
             const themeColor = getComputedStyle(document.querySelector('.app')).getPropertyValue('--grey-4')
@@ -34,7 +33,6 @@ export const ConferenceApp = () => {
             // Load current user info to populate $s.profile and $s.user.id
             try {
                 const userData = await api.get('/api/users/me')
-                console.log('USER DATA', userData)
                 if (userData?.id) {
                     $s.user.id = userData.id
                     $s.profile.id = userData.id

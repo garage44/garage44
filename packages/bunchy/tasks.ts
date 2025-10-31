@@ -148,7 +148,20 @@ tasks.assets = new Task('assets', async function taskAssets() {
             from: path.join(settings.dir.assets, 'img'),
             to: path.join(settings.dir.public, 'img'),
         },
+        {
+            from: path.join(settings.dir.assets, 'manifest.json'),
+            to: path.join(settings.dir.public, 'manifest.json'),
+        },
+        {
+            from: path.join(settings.dir.assets, 'sw-loader.js'),
+            to: path.join(settings.dir.public, 'sw-loader.js'),
+        },
+        {
+            from: path.join(settings.dir.assets, 'sw.js'),
+            to: path.join(settings.dir.public, 'sw.js'),
+        },
     ]
+
 
     // Execute copy operations, skipping if source doesn't exist
     for (const operation of copyOperations) {
@@ -157,6 +170,7 @@ tasks.assets = new Task('assets', async function taskAssets() {
         } catch (error) {
             // Skip if source directory doesn't exist
             const errorCode = error.code
+            console.log('ERROR', error)
             if (errorCode !== 'ENOENT') {
                 throw error
             }
