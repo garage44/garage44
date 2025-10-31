@@ -245,54 +245,57 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
 
         {/* Message Input */}
         <div class="send">
-            <textarea
-                ref={chatInputRef}
-                value={$s.chat.message}
-                onInput={(e) => {
-                    $s.chat.message = (e.target as HTMLTextAreaElement).value
-                    // Send typing indicator (debounced)
-                    const now = Date.now()
-                    if (now - lastTypingSentRef.current > 1000) {
+            <div class="send-input">
+                <textarea
+                    ref={chatInputRef}
+                    value={$s.chat.message}
+                    onInput={(e) => {
+                        $s.chat.message = (e.target as HTMLTextAreaElement).value
+                        // Send typing indicator (debounced)
+                        const now = Date.now()
+                        if (now - lastTypingSentRef.current > 1000) {
                         // Send typing indicator every 1 second max
-                        sendTypingIndicator(true, channelId)
-                        lastTypingSentRef.current = now
-                    }
+                            sendTypingIndicator(true, channelId)
+                            lastTypingSentRef.current = now
+                        }
 
-                    // Clear existing timeout
-                    if (typingTimeoutRef.current) {
-                        clearTimeout(typingTimeoutRef.current)
-                    }
+                        // Clear existing timeout
+                        if (typingTimeoutRef.current) {
+                            clearTimeout(typingTimeoutRef.current)
+                        }
 
-                    // Set timeout to stop typing indicator after 3 seconds of inactivity
-                    typingTimeoutRef.current = setTimeout(() => {
-                        sendTypingIndicator(false, channelId)
-                    }, 3000)
-                }}
-                autofocus={true}
-                placeholder={`Message #${currentChannel.name}`}
-                onKeyDown={handleKeyDown}
-                onKeyUp={handleKeyUp}
-            />
-            <button
-                class="btn btn-menu"
-                disabled={formattedMessage === ''}
-                onClick={sendMessage}
-            >
-                <Icon className="icon icon-s" name="send" />
-            </button>
+                        // Set timeout to stop typing indicator after 3 seconds of inactivity
+                        typingTimeoutRef.current = setTimeout(() => {
+                            sendTypingIndicator(false, channelId)
+                        }, 3000)
+                    }}
+                    autofocus={true}
+                    placeholder={`Message #${currentChannel.name}`}
+                    onKeyDown={handleKeyDown}
+                    onKeyUp={handleKeyUp}
+                />
+            </div>
+
+
+            <div class="chat-actions">
+                <button
+                    class={classnames('btn btn-menu', {
+                        active: $s.chat.emoji.active,
+                    })}
+                    onClick={() => $s.chat.emoji.active = !$s.chat.emoji.active}
+                >
+                    😼
+                </button>
+                <button
+                    class="btn btn-menu"
+                    disabled={formattedMessage === ''}
+                    onClick={sendMessage}
+                >
+                    <Icon className="icon icon-s" name="send" />
+                </button>
+            </div>
         </div>
 
-        {/* Chat Actions */}
-        <div class="chat-actions">
-            <button
-                class={classnames('btn btn-menu', {
-                    active: $s.chat.emoji.active,
-                })}
-                onClick={() => $s.chat.emoji.active = !$s.chat.emoji.active}
-            >
-                😼
-            </button>
-        </div>
     </div>
 
 }

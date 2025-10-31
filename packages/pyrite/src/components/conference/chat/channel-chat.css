@@ -220,88 +220,93 @@
     /* Message Input Area */
 
     .send {
-        align-items: flex-end;
         background: var(--surface-1);
         border-top: 1px solid var(--surface-3);
         display: flex;
+        flex-direction: column;
         flex-shrink: 0;
         gap: var(--spacer-1);
         padding: var(--spacer-2) var(--spacer-3);
 
-        textarea {
-            background: var(--surface-2);
-            border: 1px solid var(--surface-3);
-            border-radius: var(--border-radius-d);
-            color: var(--surface-7);
-            flex: 1;
-            font-family: inherit;
-            font-size: var(--font-d);
-            line-height: 1.5;
-            max-height: 200px;
-            min-height: 40px;
-            outline: none;
-            padding: var(--spacer-2);
-            resize: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-            &::placeholder {
-                color: var(--surface-5);
-            }
-
-            &:focus {
-                border-color: var(--primary-4);
-                box-shadow: 0 0 0 2px oklch(from var(--primary-4) l c h / 0.2);
-            }
-
-            &:hover:not(:focus) {
-                border-color: var(--surface-4);
-            }
-        }
-
-        .btn {
+        .send-input {
             align-items: center;
-            background: var(--primary-4);
-            border: none;
-            border-radius: var(--border-radius-d);
-            color: var(--surface-8);
-            cursor: pointer;
             display: flex;
-            flex-shrink: 0;
-            height: 40px;
-            justify-content: center;
-            padding: var(--spacer-1);
-            transition: background-color 0.2s ease, transform 0.1s ease;
-            width: 40px;
+            gap: var(--spacer-1);
+            width: 100%;
 
-            &:hover:not(:disabled) {
-                background: var(--primary-5);
+            textarea {
+                background: var(--surface-2);
+                border: 1px solid var(--surface-3);
+                border-radius: var(--border-radius-d);
+                color: var(--surface-7);
+                flex: 1;
+                font-family: inherit;
+                font-size: var(--font-d);
+                line-height: 1.5;
+                max-height: 200px;
+                min-height: 40px;
+                outline: none;
+                padding: var(--spacer-2);
+                resize: none;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+                &::placeholder {
+                    color: var(--surface-5);
+                }
+
+                &:focus {
+                    border-color: var(--primary-4);
+                    box-shadow: 0 0 0 2px oklch(from var(--primary-4) l c h / 0.2);
+                }
+
+                &:hover:not(:focus) {
+                    border-color: var(--surface-4);
+                }
             }
 
-            &:active:not(:disabled) {
-                transform: scale(0.95);
-            }
+            .btn {
+                align-items: center;
+                background: var(--primary-4);
+                border: none;
+                border-radius: var(--border-radius-d);
+                color: var(--surface-8);
+                cursor: pointer;
+                display: flex;
+                flex-shrink: 0;
+                height: 40px;
+                justify-content: center;
+                padding: var(--spacer-1);
+                transition: background-color 0.2s ease, transform 0.1s ease;
+                width: 40px;
 
-            &:disabled {
-                background: var(--surface-3);
-                color: var(--surface-5);
-                cursor: not-allowed;
-                opacity: 0.6;
-            }
+                &:hover:not(:disabled) {
+                    background: var(--primary-5);
+                }
 
-            .icon {
-                color: inherit;
+                &:active:not(:disabled) {
+                    transform: scale(0.95);
+                }
+
+                &:disabled {
+                    background: var(--surface-3);
+                    color: var(--surface-5);
+                    cursor: not-allowed;
+                    opacity: 0.6;
+                }
+
+                .icon {
+                    color: inherit;
+                }
             }
         }
-    }
 
-    /* Chat Actions */
+
+    }
 
     .chat-actions {
         bottom: var(--spacer-2);
         display: flex;
-        gap: var(--spacer-1);
-        left: var(--spacer-2);
-        position: absolute;
+        justify-content: space-between;
 
         .btn {
             align-items: center;

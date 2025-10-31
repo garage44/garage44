@@ -1,6 +1,6 @@
-import {Icon} from '../icon/icon'
 import {ContextMenu} from '../context-menu/context-menu'
-import {ThemeToggle} from '../theme-toggle/theme-toggle'
+import {MenuItem} from '../menu-item/menu-item'
+import {store} from '@garage44/common/app'
 import classnames from 'classnames'
 import './user-menu.css'
 
@@ -10,8 +10,8 @@ interface UserMenuProps {
     onLogout?: () => void
     user?: {
         profile?: {
-            displayName?: string
             avatar?: string | null
+            displayName?: string
         }
     }
 }
@@ -20,6 +20,20 @@ interface UserMenuProps {
  * UserMenu - User menu with avatar icon and context menu
  * Contains theme toggle and logout options
  */
+const themes = ['light', 'dark', 'system'] as const
+
+const cycleTheme = () => {
+    const currentIndex = themes.indexOf(store.state.theme)
+    const nextIndex = (currentIndex + 1) % themes.length
+    store.state.theme = themes[nextIndex]
+}
+
+const getThemeIcon = () => {
+    if (store.state.theme === 'light') return 'sun'
+    if (store.state.theme === 'dark') return 'moon'
+    return 'system'
+}
+
 export const UserMenu = ({
     className = '',
     collapsed = false,
@@ -51,24 +65,28 @@ export const UserMenu = ({
             className={className}
             position="top"
         >
-            <div class="menu">
-                {!collapsed && (
-                    <div class="menu-header">
-                        <div class="menu-avatar">{avatarContent}</div>
-                        <div class="menu-name">{displayName}</div>
-                    </div>
-                )}
-                <div class="menu-item theme">
-                    <ThemeToggle />
-                    <span>Theme</span>
+            {!collapsed && (
+                <div class="menu-header">
+                    <div class="menu-avatar">{avatarContent}</div>
+                    <div class="menu-name">{displayName}</div>
                 </div>
-                {onLogout && (
-                    <button class="menu-item" onClick={onLogout} type="button">
-                        <Icon name="logout" type="info" />
-                        <span>Logout</span>
-                    </button>
-                )}
-            </div>
+            )}
+            <MenuItem
+                collapsed={collapsed}
+                icon={getThemeIcon()}
+                iconType="info"
+                onClick={cycleTheme}
+                text={`Theme: ${store.state.theme}`}
+            />
+            {onLogout && (
+                <MenuItem
+                    collapsed={collapsed}
+                    icon="logout"
+                    iconType="info"
+                    onClick={onLogout}
+                    text="Logout"
+                />
+            )}
         </ContextMenu>
     )
 }

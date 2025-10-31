@@ -122,6 +122,7 @@
     /* Icon sizes */
     --icon-xs: calc(var(--spacer-1) * 1.75);   /* 14px */
     --icon-s: calc(var(--spacer-1) * 2);       /* 16px */
+    --icon-m: calc(var(--spacer-1) * 2.5);     /* 20px */
     --icon-d: var(--spacer-3);                 /* 24px */
     --icon-l: var(--spacer-4);                 /* 32px */
     --icon-xl: calc(var(--spacer-1) * 4.5);    /* 36px */

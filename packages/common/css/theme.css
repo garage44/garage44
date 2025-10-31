@@ -33,6 +33,10 @@ html, body {
     padding: 0;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 /* Animations */
 @keyframes fade-in {
 

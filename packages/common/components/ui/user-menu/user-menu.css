@@ -14,6 +14,7 @@
     }
 
     .avatar-img {
+        display: block;
         object-fit: cover;
     }
 
@@ -25,10 +26,13 @@
         font-size: var(--font-xs);
         font-weight: 500;
         justify-content: center;
+        line-height: 1;
     }
 
     .name {
+        color: var(--surface-7);
         flex: 1;
+        font-weight: 500;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -44,29 +48,34 @@
 }
 
 /* Styles for UserMenu's menu content inside ContextMenu */
+
 .c-context-menu .menu {
-    .menu {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacer-05);
-    }
 
     .menu-header {
         align-items: center;
-        border-bottom: 1px solid var(--surface-3);
+        background: var(--surface-2);
+        border-radius: var(--radius-sm);
         display: flex;
         gap: var(--spacer-1);
-        margin-bottom: var(--spacer-05);
-        padding-bottom: var(--spacer-1);
+        margin-bottom: var(--spacer-1);
+        padding: var(--spacer-1);
     }
 
     .menu-avatar {
         flex-shrink: 0;
+
+        .avatar-img,
+        .avatar-initials {
+            height: var(--icon-l);
+            width: var(--icon-l);
+        }
     }
 
     .menu-name {
+        color: var(--surface-8);
         flex: 1;
-        font-weight: 500;
+        font-size: var(--font-d);
+        font-weight: 600;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -75,13 +84,13 @@
     .menu-item {
         align-items: center;
         background: transparent;
-        border: none;
         border-radius: var(--radius-sm);
         color: var(--surface-7);
         cursor: pointer;
         display: flex;
+        font-size: var(--font-s);
         gap: var(--spacer-1);
-        padding: var(--spacer-1);
+        padding: var(--spacer-05) var(--spacer-1);
         text-align: left;
         transition: all 0.2s ease;
         width: 100%;
@@ -103,12 +112,17 @@
             }
 
             &:hover {
+                background: transparent;
                 cursor: default;
             }
         }
 
         .c-icon {
             flex-shrink: 0;
+        }
+
+        span {
+            flex: 1;
         }
     }
 }

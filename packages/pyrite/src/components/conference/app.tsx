@@ -1,8 +1,9 @@
 import {useEffect} from 'preact/hooks'
-import {Router, Route} from 'preact-router'
+import {Router, Route, route} from 'preact-router'
 import {$s} from '@/app'
 import {api, logger, store} from '@garage44/common/app'
-import {IconLogo, Notifications, AppLayout, PanelMenu, PanelContext} from '@garage44/common/components'
+import {IconLogo, Notifications, AppLayout, PanelMenu, PanelContext, UserMenu} from '@garage44/common/components'
+import {mergeDeep} from '@garage44/common/lib/utils'
 import {emojiLookup} from '@/models/chat'
 import ConferenceControls from './controls/controls-main'
 import ChannelsContext from './context/context-channels'
@@ -30,11 +31,32 @@ export const ConferenceApp = () => {
         })()
     }, [])
 
+    const handleLogout = async () => {
+        const context = await api.get('/api/logout')
+        mergeDeep($s.admin, context)
+        // Clear stored credentials
+        $s.user.username = ''
+        $s.user.password = ''
+        store.save()
+        route('/')
+    }
+
     return (
         <div class="c-conference-app app">
             <AppLayout
                 menu={
                     <PanelMenu
+                        actions={
+                            <UserMenu
+                                collapsed={$s.panels.context.collapsed}
+                                onLogout={handleLogout}
+                                user={{
+                                    profile: {
+                                        displayName: $s.user.username || $s.user.name || 'User',
+                                    },
+                                }}
+                            />
+                        }
                         collapsed={$s.panels.context.collapsed}
                         onCollapseChange={(collapsed) => {
                             $s.panels.context.collapsed = collapsed

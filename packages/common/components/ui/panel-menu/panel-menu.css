@@ -114,6 +114,7 @@
             }
 
             &[data-collapsed='true'] {
+
                 a,
                 button {
                     justify-content: center;
@@ -176,10 +177,8 @@
                 border: 1px solid var(--surface-4);
                 border-radius: 50%;
                 cursor: pointer;
-                height: var(--icon-xl);
                 padding: 6px;
                 transition: all 0.3s ease;
-                width: var(--icon-xl);
 
                 &:hover {
                     background: var(--surface-4);

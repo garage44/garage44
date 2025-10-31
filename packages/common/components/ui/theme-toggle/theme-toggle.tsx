@@ -17,6 +17,7 @@ export const ThemeToggle = () => (
             return 'system' // system preference icon
         })()}
         onClick={cycleTheme}
+        size="s"
         tip={`Theme: ${store.state.theme}`}
     />
 )
