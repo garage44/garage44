@@ -85,26 +85,41 @@ export async function addShareMedia() {
 }
 
 export async function addUserMedia() {
+    logger.debug(`[sfu] addUserMedia called`)
+
+    if (!localStream) {
+        logger.error(`[sfu] addUserMedia: localStream is null`)
+        throw new Error('localStream is required for addUserMedia')
+    }
+
+    if (!connection) {
+        logger.error(`[sfu] addUserMedia: connection is null`)
+        throw new Error('SFU connection is required for addUserMedia')
+    }
+
     let localStreamId = findUpMedia('camera')
     let oldStream = localStreamId && connection.up[localStreamId]
 
     if (oldStream) {
-        logger.debug('removing old stream')
+        logger.debug(`[sfu] removing old camera stream ${localStreamId}`)
         stopUpMedia(oldStream)
     }
 
+    logger.debug(`[sfu] creating new upstream stream`)
     const {glnStream, streamState} = newUpStream(localStreamId)
     glnStream.label = 'camera'
     glnStream.stream = localStream
     localGlnStream = glnStream
 
+    logger.debug(`[sfu] upstream stream created: id=${glnStream.id}, label=${glnStream.label}`)
     $s.upMedia[glnStream.label].push(glnStream.id)
 
+    logger.debug(`[sfu] adding tracks to peer connection: ${localStream.getTracks().map(t => t.kind).join(', ')}`)
     localStream.getTracks().forEach((t) => {
         if (t.kind === 'audio') {
             streamState.hasAudio = true
             if (!$s.devices.mic.enabled) {
-                logger.info('muting local stream')
+                logger.info(`[sfu] muting local audio stream track`)
                 t.enabled = false
             }
         } else if (t.kind === 'video') {
@@ -116,10 +131,15 @@ export async function addUserMedia() {
         glnStream.pc.addTrack(t, localStream)
     })
 
+    logger.debug(`[sfu] streamState: hasAudio=${streamState.hasAudio}, hasVideo=${streamState.hasVideo}, id=${streamState.id}`)
+    logger.debug(`[sfu] waiting for negotiation to complete (stream will be added to $s.streams)`)
+
     return new Promise((resolve) => {
         localGlnStream.onstatus = (status) => {
+            logger.debug(`[sfu] upstream stream ${glnStream.id} status: ${status}`)
             if (status === 'connected') {
-                resolve()
+                logger.debug(`[sfu] upstream stream ${glnStream.id} connected successfully`)
+                resolve(undefined)
             }
         }
     })
@@ -257,9 +277,17 @@ export function delUpMediaKind(label) {
 }
 
 export function disconnect() {
-    logger.info(`disconnecting from group ${$s.group.name}`)
-    $s.group.connected = false
+    const channelSlug = $s.sfu.channel.name || $s.chat.activeChannelSlug
+    logger.info(`disconnecting from group ${channelSlug}`)
+
+    $s.sfu.channel.connected = false
     $s.streams = []
+
+    // Update channel connection state
+    if (channelSlug && $s.sfu.channels[channelSlug]) {
+        $s.sfu.channels[channelSlug].connected = false
+    }
+
     // Always reset active channel on disconnect
     $s.chat.channel = ''
     connection.close()
@@ -447,18 +475,29 @@ function newUpStream(_id, state) {
         delUpMedia(glnStream)
     }
     glnStream.onnegotiationcompleted = () => {
+        logger.debug(`[sfu] negotiation completed for stream ${glnStream.id}, adding to $s.streams`)
+        logger.debug(`[sfu] streamState: id=${streamState.id}, direction=${streamState.direction}, hasAudio=${streamState.hasAudio}, hasVideo=${streamState.hasVideo}`)
+
         const maxThroughput = getMaxVideoThroughput()
         setMaxVideoThroughput(glnStream, maxThroughput)
+
         $s.streams.push(streamState)
+        logger.debug(`[sfu] stream ${streamState.id} added to $s.streams (total: ${$s.streams.length})`)
     }
 
     return {glnStream, streamState}
 }
 
 function onClose(code, reason) {
+    const channelSlug = $s.sfu.channel.name || $s.chat.activeChannelSlug
     logger.debug('connection closed')
     events.emit('disconnected')
-    $s.group.connected = false
+    $s.sfu.channel.connected = false
+
+    // Update channel connection state
+    if (channelSlug && $s.sfu.channels[channelSlug]) {
+        $s.sfu.channels[channelSlug].connected = false
+    }
 
     delUpMediaKind(null)
 
@@ -466,28 +505,18 @@ function onClose(code, reason) {
         notifier.notify({message: `Socket close ${code}: ${reason}`, type: 'error'})
     }
 
-    // app.router.push({name: 'conference-groups'}, {params: {groupId: $s.group.name}})
+    // app.router.push({name: 'conference-groups'}, {params: {groupId: $s.sfu.channel.name}})
 }
 
 function onDownStream(c) {
-    logger.debug(`[onDownStream] ${c.id}`)
-    c.onclose = (replace) => {
-        if (!replace) {
-            logger.debug(`[onclose] downstream ${c.id}`)
-            delMedia(c.id)
-        }
-    }
-
-    c.onerror = () => {
-        const message = `[onerror] downstream ${c.id}`
-        logger.error(message)
-        notifier.notify({message, type: 'error'})
-    }
+    logger.debug(`[sfu] onDownStream: received downstream stream ${c.id} from user ${c.username}`)
 
     // When other-end Firefox replaces a stream (e.g. toggles webcam),
     // the onDownStream method is called twice.
-    if (!$s.streams.some((s) => s.id === c.id)) {
-        $s.streams.push({
+    const existingStream = $s.streams.find((s) => s.id === c.id)
+    if (!existingStream) {
+        logger.debug(`[sfu] onDownStream: creating new stream object for ${c.id}`)
+        const streamState = {
             aspectRatio: 4 / 3,
             direction: 'down',
             enlarged: false,
@@ -502,7 +531,26 @@ function onDownStream(c) {
                 locked: false,
                 value: 100,
             },
-        })
+        }
+        $s.streams.push(streamState)
+        logger.debug(`[sfu] onDownStream: stream ${c.id} added to $s.streams (total: ${$s.streams.length})`)
+    } else {
+        logger.debug(`[sfu] onDownStream: stream ${c.id} already exists in $s.streams (replacement)`)
+    }
+
+    c.onclose = (replace) => {
+        if (!replace) {
+            logger.debug(`[sfu] onDownStream: stream ${c.id} closed`)
+            delMedia(c.id)
+        } else {
+            logger.debug(`[sfu] onDownStream: stream ${c.id} replaced`)
+        }
+    }
+
+    c.onerror = () => {
+        const message = `[sfu] onDownStream: error on downstream stream ${c.id}`
+        logger.error(message)
+        notifier.notify({message, type: 'error'})
     }
 }
 
@@ -554,6 +602,18 @@ async function onJoined(kind, group, permissions, status, data, message) {
             $s.permissions.op = _permissions.op || false
             $s.permissions.present = _permissions.present || false
             $s.permissions.record = _permissions.record || false
+
+            // Update connection state - group is the channel slug
+            $s.sfu.channel.connected = true
+            $s.sfu.channel.name = group
+
+            // Initialize channel state if it doesn't exist
+            if (!$s.sfu.channels[group]) {
+                $s.sfu.channels[group] = {audio: false, connected: false, video: false}
+            }
+            // Set channel as connected
+            $s.sfu.channels[group].connected = true
+
             if (promiseConnect) {
                 promiseConnect.resolve(message)
                 promiseConnect = null
@@ -592,9 +652,10 @@ async function onJoined(kind, group, permissions, status, data, message) {
     logger.debug(`request Galène media types: ${$s.media.accept.id}`)
     connection.request(mapRequest($s.media.accept.id))
 
-    if ($s.permissions.present && !findUpMedia('camera')) {
-        await getUserMedia($s.devices)
-    }
+    // Note: Removed automatic getUserMedia call on join
+    // Media should only start when user explicitly clicks camera/mic buttons
+    // The default enabled=true in state doesn't mean user wants media - it's just default state
+    // User must explicitly enable camera/mic via button actions
 }
 
 function onUser(id, kind) {
@@ -616,8 +677,8 @@ function onUser(id, kind) {
         // There might be a user with name 'RECORDING' that is an ordinary user;
         // only trigger the recording flag when it is a system user.
         if (user.username === 'RECORDING' && user.permissions.system) {
-            $s.group.recording = user.id
-            notifier.notify({message: `Recording started in ${$s.group.name}`, type: 'info'})
+            $s.sfu.channel.recording = user.id
+            notifier.notify({message: `Recording started in ${$s.sfu.channel.name}`, type: 'info'})
         }
 
         if (id === $s.profile.id) {
@@ -638,7 +699,7 @@ function onUser(id, kind) {
                 $s.devices.cam.enabled = false
                 $s.devices.mic.enabled = false
 
-                notifier.notify({message: `Present permission removed in ${$s.group.name}`, type: 'warning'})
+                notifier.notify({message: `Present permission removed in ${$s.sfu.channel.name}`, type: 'warning'})
             } else if ($user && !$user.permissions.present && user.permissions.present) {
                 notifier.notify({message: 'Present permission granted', type: 'info'})
             } else if ($user && $user.permissions.op && !user.permissions.op) {
@@ -657,9 +718,9 @@ function onUser(id, kind) {
             $s.users.splice(userIndex, 1, user)
         }
     } else if (kind === 'delete') {
-        if (user.id === $s.group.recording) {
-            $s.group.recording = false
-            notifier.notify({message: `Recording stopped in ${$s.group.name}`, type: 'info'})
+        if (user.id === $s.sfu.channel.recording) {
+            $s.sfu.channel.recording = false
+            notifier.notify({message: `Recording stopped in ${$s.sfu.channel.name}`, type: 'info'})
         }
 
         const userIndex = $s.users.findIndex((u) => u.id === id)

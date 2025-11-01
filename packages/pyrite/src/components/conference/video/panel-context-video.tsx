@@ -10,7 +10,7 @@ export default function PanelContextVideo() {
     const [active, setActive] = useState(false)
     const [warningMessage, setWarningMessage] = useState('')
 
-    const currentGroupData = useMemo(() => currentGroup(), [$s.group.name, $s.groups])
+    const currentGroupData = useMemo(() => currentGroup(), [$s.sfu.channel.name, $s.chat.activeChannelSlug, $s.sfu.channels])
 
     const lock = {
         icon: currentGroupData.locked ? 'Unlock' : 'Lock',
@@ -66,7 +66,7 @@ export default function PanelContextVideo() {
             {active && <div class="context-actions">
                 {$s.permissions.op && <ContextInput
                     value={lock}
-                    revert={$s.group.locked}
+                    revert={$s.sfu.channel.locked}
                     submit={toggleLockGroup}
                     FieldTextComponent={FieldText}
                 />}

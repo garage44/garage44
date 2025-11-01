@@ -12,12 +12,18 @@ export default function AdminControls({ path }: AdminControlsProps) {
     const groupRoute = useMemo(() => {
         if ($s.admin.group) {
             return `/admin/groups/${$s.admin.group._name}/misc`
-        } else if ($s.groups.length) {
-            return `/admin/groups/${$s.groups[0].name}/misc`
         } else {
-            return '/admin/groups/misc'
+            // Use first channel from sfu.channels that has metadata
+            const firstChannel = Object.entries($s.sfu.channels).find(([_, data]) =>
+                data.description || data.comment || data.clientCount !== undefined
+            )
+            if (firstChannel) {
+                return `/admin/groups/${firstChannel[0]}/misc`
+            } else {
+                return '/admin/groups/misc'
+            }
         }
-    }, [$s.admin.group, $s.groups])
+    }, [$s.admin.group, $s.sfu.channels])
 
     const userRoute = useMemo(() => {
         if ($s.admin.user) {

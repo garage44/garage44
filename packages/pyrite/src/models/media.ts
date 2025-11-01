@@ -6,48 +6,109 @@ export let localStream
 export let screenStream
 
 export async function getUserMedia(presence) {
+    logger.debug(`[media] getUserMedia called, channel.connected=${$s.sfu.channel.connected}`)
     $s.mediaReady = false
+
     // Cleanup the old networked stream first:
     if (localStream) {
-        if ($s.group.connected) {
+        logger.debug(`[media] cleaning up existing localStream`)
+        if ($s.sfu.channel.connected) {
+            logger.debug(`[media] removing old camera stream from SFU`)
             sfu.delUpMediaKind('camera')
         } else {
+            logger.debug(`[media] removing local stream (not connected)`)
             sfu.delLocalMedia()
         }
     }
 
     let selectedAudioDevice = false
     let selectedVideoDevice = false
+    let userAction = false // Track if this was triggered by user action
 
+    // Validate and check if devices are selected
+    const validateDeviceExists = (deviceId: string, deviceType: 'mic' | 'cam') => {
+        if (!deviceId) return false
+        const availableDevices = $s.devices[deviceType].options
+        const exists = availableDevices.some((d) => d.id === deviceId)
+        if (!exists) {
+            logger.warn(`[media] selected ${deviceType} device ${deviceId} not found in available devices, clearing selection`)
+            $s.devices[deviceType].selected = {id: null, name: ''}
+            return false
+        }
+        return true
+    }
+
+    // Check if mic device is selected and valid
     if ($s.devices.mic.selected.id !== null) {
-        selectedAudioDevice = {deviceId: $s.devices.mic.selected.id}
+        if (validateDeviceExists($s.devices.mic.selected.id, 'mic')) {
+            selectedAudioDevice = {deviceId: $s.devices.mic.selected.id}
+            logger.debug(`[media] selected mic device: ${$s.devices.mic.selected.name} (${$s.devices.mic.selected.id})`)
+        } else {
+            // Invalid device - use browser default if enabled
+            if (presence && presence.mic.enabled) {
+                selectedAudioDevice = true
+                userAction = true
+                logger.debug(`[media] invalid mic device cleared, using browser default`)
+            }
+        }
+    } else if (presence && presence.mic.enabled) {
+        // Device enabled but not selected - use browser default
+        selectedAudioDevice = true
+        userAction = true
+        logger.debug(`[media] mic enabled but no device selected, using browser default`)
     }
 
+    // Check if cam device is selected and valid
     if ($s.devices.cam.selected.id !== null) {
-        selectedVideoDevice = {deviceId: $s.devices.cam.selected.id}
+        if (validateDeviceExists($s.devices.cam.selected.id, 'cam')) {
+            selectedVideoDevice = {deviceId: $s.devices.cam.selected.id}
+            logger.debug(`[media] selected cam device: ${$s.devices.cam.selected.name} (${$s.devices.cam.selected.id})`)
+        } else {
+            // Invalid device - use browser default if enabled
+            if (presence && presence.cam.enabled) {
+                selectedVideoDevice = true
+                userAction = true
+                logger.debug(`[media] invalid cam device cleared, using browser default`)
+            }
+        }
+    } else if (presence && presence.cam.enabled) {
+        // Device enabled but not selected - use browser default
+        selectedVideoDevice = true
+        userAction = true
+        logger.debug(`[media] cam enabled but no device selected, using browser default`)
     }
 
+    // Apply presence settings (enable/disable)
     if (presence) {
-        if (!presence.cam.enabled) selectedVideoDevice = false
-        if (!presence.mic.enabled) selectedAudioDevice = false
+        if (!presence.cam.enabled) {
+            selectedVideoDevice = false
+            userAction = true
+            logger.debug(`[media] camera disabled in presence, skipping video`)
+        }
+        if (!presence.mic.enabled) {
+            selectedAudioDevice = false
+            userAction = true
+            logger.debug(`[media] microphone disabled in presence, skipping audio`)
+        }
         // A local stream cannot be initialized with neither audio and video; return early.
         if (!presence.cam.enabled && !presence.mic.enabled) {
+            logger.debug(`[media] both camera and mic disabled, cannot create stream`)
             $s.mediaReady = true
             return
         }
     }
 
     // Verify whether the local mediastream is using the proper device setup.
-    logger.debug(`using cam ${$s.devices.cam.selected.name}`)
-    logger.debug(`using mic ${$s.devices.mic.selected.name}`)
+    logger.debug(`[media] using cam ${$s.devices.cam.selected.name}`)
+    logger.debug(`[media] using mic ${$s.devices.mic.selected.name}`)
 
     if (selectedVideoDevice) {
         if ($s.devices.cam.resolution.id === '720p') {
-            logger.debug(`using 720p resolution`)
+            logger.debug(`[media] using 720p resolution`)
             selectedVideoDevice.width = {ideal: 1280, min: 640}
             selectedVideoDevice.height = {ideal: 720, min: 400}
         } else if ($s.devices.cam.resolution.id === '1080p') {
-            logger.debug(`using 1080p resolution`)
+            logger.debug(`[media] using 1080p resolution`)
             selectedVideoDevice.width = {ideal: 1920, min: 640}
             selectedVideoDevice.height = {ideal: 1080, min: 400}
         }
@@ -58,20 +119,106 @@ export async function getUserMedia(presence) {
         video: selectedVideoDevice,
     }
 
-    try {
-        localStream = await navigator.mediaDevices.getUserMedia(constraints)
-    } catch (message) {
-        notifier.notify({level: 'error', message})
+    // Validate constraints before calling getUserMedia
+    if (!selectedAudioDevice && !selectedVideoDevice) {
+        logger.debug(`[media] both audio and video are disabled/not available, cannot create stream`)
+        // Only show warning if this was triggered by user action (button click)
+        // Don't show warning for automatic calls (on page refresh before devices initialized)
+        if (userAction) {
+            // User intentionally clicked button but both ended up disabled
+            logger.warn(`[media] user action triggered but both devices disabled`)
+            notifier.notify({level: 'warning', message: 'Cannot create stream: both audio and video are disabled'})
+        } else {
+            // Automatic call with both disabled - just log, don't notify
+            logger.debug(`[media] automatic call with both disabled, skipping silently`)
+        }
         $s.mediaReady = true
         return
     }
 
+    logger.debug(`[media] requesting getUserMedia with constraints:`, constraints)
+
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia(constraints)
+        logger.debug(`[media] getUserMedia successful, tracks: ${localStream.getTracks().map(t => `${t.kind}:${t.id}`).join(', ')}`)
+    } catch (error: any) {
+        logger.error(`[media] getUserMedia failed: ${error}`)
+
+        // Handle NotFoundError - device ID doesn't exist or is invalid
+        if (error.name === 'NotFoundError' || error.name === 'NotReadableError' || error.message?.includes('not be found')) {
+            logger.warn(`[media] selected device not found, falling back to browser default`)
+
+            // Retry with browser default (no deviceId specified)
+            const fallbackConstraints = {
+                audio: selectedAudioDevice ? (typeof selectedAudioDevice === 'object' ? true : selectedAudioDevice) : false,
+                video: selectedVideoDevice ? (typeof selectedVideoDevice === 'object' ? true : selectedVideoDevice) : false,
+            }
+
+            // Remove deviceId if it was specified - let browser choose
+            if (typeof fallbackConstraints.audio === 'object' && fallbackConstraints.audio.deviceId) {
+                fallbackConstraints.audio = true
+            }
+            if (typeof fallbackConstraints.video === 'object' && fallbackConstraints.video.deviceId) {
+                fallbackConstraints.video = true
+            }
+
+            if (fallbackConstraints.audio || fallbackConstraints.video) {
+                logger.debug(`[media] retrying getUserMedia with browser default:`, fallbackConstraints)
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints)
+                    logger.debug(`[media] getUserMedia with browser default successful`)
+
+                    // Clear invalid device selection - browser will use default
+                    if (typeof constraints.audio === 'object' && constraints.audio.deviceId) {
+                        logger.debug(`[media] clearing invalid mic device selection`)
+                        $s.devices.mic.selected = {id: null, name: ''}
+                    }
+                    if (typeof constraints.video === 'object' && constraints.video.deviceId) {
+                        logger.debug(`[media] clearing invalid cam device selection`)
+                        $s.devices.cam.selected = {id: null, name: ''}
+                    }
+
+                    notifier.notify({
+                        level: 'warning',
+                        message: 'Selected device not found, using browser default. Please select a device in settings.',
+                    })
+                } catch (fallbackError) {
+                    logger.error(`[media] getUserMedia fallback also failed: ${fallbackError}`)
+                    notifier.notify({level: 'error', message: `Failed to access media: ${fallbackError}`})
+                    $s.mediaReady = true
+                    return
+                }
+            } else {
+                // Both disabled, can't fallback
+                logger.error(`[media] both devices disabled, cannot fallback`)
+                notifier.notify({level: 'error', message: String(error)})
+                $s.mediaReady = true
+                return
+            }
+        } else {
+            // Other errors (permission denied, etc.)
+            notifier.notify({level: 'error', message: String(error)})
+            $s.mediaReady = true
+            return
+        }
+    }
+
     // Add local stream to Galène; handle peer connection logic.
-    if ($s.group.connected) {
-        await sfu.addUserMedia()
+    if ($s.sfu.channel.connected) {
+        logger.debug(`[media] group is connected, adding user media to SFU`)
+        try {
+            await sfu.addUserMedia()
+            logger.debug(`[media] addUserMedia completed`)
+        } catch (error) {
+            logger.error(`[media] addUserMedia failed: ${error}`)
+            throw error
+        }
+    } else {
+        logger.debug(`[media] group not connected, skipping addUserMedia`)
     }
 
     $s.mediaReady = true
+    logger.debug(`[media] getUserMedia complete, mediaReady=true`)
     return localStream
 }
 
@@ -193,7 +340,7 @@ navigator.mediaDevices.ondevicechange = async() => {
     }
     const invalidDevices = validateDevices()
 
-    if ($s.group.connected && Object.values(invalidDevices).some((i) => i)) {
+    if ($s.sfu.channel.connected && Object.values(invalidDevices).some((i) => i)) {
         // Note: Routing should be handled by the component, not here
         notifier.notify({
             icon: 'Headset',

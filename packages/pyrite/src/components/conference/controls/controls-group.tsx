@@ -34,10 +34,20 @@ export const GroupControls = () => {
     const unreadCount = useMemo(() => unreadMessages(), [$s.chat.channels])
 
     const toggleCam = () => {
-        $s.devices.cam.enabled = !$s.devices.cam.enabled
-        logger.debug(`switching cam stream: ${$s.devices.cam.enabled}`)
-        sfu.delUpMediaKind('camera')
-        media.getUserMedia($s.devices)
+        const newState = !$s.devices.cam.enabled
+        $s.devices.cam.enabled = newState
+        logger.debug(`[GroupControls] toggleCam: ${newState ? 'enabling' : 'disabling'} camera`)
+        logger.debug(`[GroupControls] cam.enabled=${newState}, mic.enabled=${$s.devices.mic.enabled}`)
+
+        if (!newState) {
+            // Camera disabled - remove existing camera stream
+            logger.debug(`[GroupControls] removing camera stream`)
+            sfu.delUpMediaKind('camera')
+        } else {
+            // Camera enabled - get new media
+            logger.debug(`[GroupControls] requesting camera media`)
+            media.getUserMedia($s.devices)
+        }
     }
 
     const toggleChat = async () => {
@@ -51,13 +61,22 @@ export const GroupControls = () => {
     }
 
     const toggleMicrophone = () => {
-        let shouldRestartStream = !$s.devices.cam.enabled
-        sfu.muteMicrophone($s.devices.mic.enabled)
+        const currentMicState = $s.devices.mic.enabled
+        const shouldRestartStream = !$s.devices.cam.enabled
+
+        logger.debug(`[GroupControls] toggleMicrophone: current=${currentMicState}, shouldRestart=${shouldRestartStream}`)
+
+        // Mute/unmute the microphone in existing stream
+        sfu.muteMicrophone(currentMicState)
+
         if (shouldRestartStream) {
             // When both the camera is off, toggling the microphone should also restart the stream.
             // Otherwise, we would either continue to stream empty data (when both camera and mic are
             // off), or we would not send our audio stream altogether.
+            logger.debug(`[GroupControls] camera is off, restarting stream for mic toggle`)
             media.getUserMedia($s.devices)
+        } else {
+            logger.debug(`[GroupControls] camera is on, mic toggle handled by muteMicrophone`)
         }
     }
 
@@ -95,12 +114,9 @@ export const GroupControls = () => {
         }
     }, [$s.devices.mic.enabled])
 
-    // Watch permissions.present
-    useEffect(() => {
-        if ($s.permissions.present) {
-            media.getUserMedia($s.devices)
-        }
-    }, [$s.permissions.present])
+    // Note: Removed automatic getUserMedia call on permissions.present
+    // Media should only start when user explicitly clicks camera/mic buttons
+    // The default enabled=true in state doesn't mean user wants media - it's just default state
 
     // Watch volume changes
     useEffect(() => {
@@ -164,7 +180,7 @@ export const GroupControls = () => {
                 </>
             )}
 
-            {$s.group.connected && (
+            {$s.sfu.channel.connected && (
                 <Button
                     active={$s.sfu.profile.raisehand}
                     icon="Hand"

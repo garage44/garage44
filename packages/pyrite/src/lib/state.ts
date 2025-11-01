@@ -81,17 +81,6 @@ export const volatileState: Partial<PyriteState> = mergeDeep({
         playing: [],
         upload: [],
     },
-    group: {
-        'allow-anonymous': false,
-        comment: '',
-        connected: false,
-        contact: '',
-        locked: false,
-        muted: false,
-        name: '',
-        recording: false,
-    },
-    groups: [],
     login: {
         autofocus: true,
     },
@@ -105,6 +94,25 @@ export const volatileState: Partial<PyriteState> = mergeDeep({
         record: false,
     },
     sfu: {
+        channel: {
+            'allow-anonymous': false,
+            comment: '',
+            connected: false,
+            contact: '',
+            locked: false,
+            muted: false,
+            name: '',
+            recording: false,
+        },
+        channels: {} as Record<string, {
+            audio: boolean
+            clientCount?: number
+            comment?: string
+            connected?: boolean
+            description?: string
+            locked?: boolean
+            video: boolean
+        }>,
         profile: {
             // Galene-specific user data - synced from $s.profile
             availability: {id: 'available', name: 'Available'},

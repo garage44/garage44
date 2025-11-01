@@ -15,7 +15,6 @@ export interface PyriteState extends CommonState {
     admin: {
         authenticated: boolean | null
         group: any
-        groups: any[]
         permission: boolean
         user: any
         users: any[]
@@ -78,17 +77,6 @@ export interface PyriteState extends CommonState {
         playing: any[]
         upload: any[]
     }
-    group: {
-        'allow-anonymous': boolean
-        comment: string
-        connected: boolean
-        contact: string
-        locked: boolean
-        muted: boolean
-        name: string
-        recording: boolean
-    }
-    groups: any[]
     language: {id: string | null}
     language_ui: {
         selection: string
@@ -117,6 +105,25 @@ export interface PyriteState extends CommonState {
     }
     streams: any[]
     sfu: {
+        channel: {
+            'allow-anonymous': boolean
+            comment: string
+            connected: boolean
+            contact: string
+            locked: boolean
+            muted: boolean
+            name: string
+            recording: boolean
+        }
+        channels: Record<string, {
+            audio: boolean
+            clientCount?: number
+            comment?: string
+            connected?: boolean
+            description?: string
+            locked?: boolean
+            video: boolean
+        }>
         profile: {
             // Galene-specific user data
             availability: {id: string, name: string}

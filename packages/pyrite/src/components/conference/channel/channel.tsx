@@ -27,7 +27,7 @@ export const Channel = ({channelSlug}: ChannelProps) => {
         // Connect to SFU for video conferencing if not already connected
         // Channel slug directly matches Galene group name (1:1 mapping)
         // Wait for credentials to be available before connecting
-        if (!$s.group.connected && channelSlug) {
+        if (!$s.sfu.channel.connected && channelSlug) {
             logger.info(`[Channel] Preparing to connect to SFU for channel: ${channelSlug}`)
             logger.info(`[Channel] Credentials check: username=${$s.profile.username ? '***' : '(empty)'}, password=${$s.profile.password ? '***' : '(empty)'}`)
 

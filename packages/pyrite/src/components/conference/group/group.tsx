@@ -73,7 +73,7 @@ export const Group = () => {
     // Auto-connect logic
     useEffect(() => {
         const attemptAutoConnect = async () => {
-            if ($s.group.connected) {
+            if ($s.sfu.channel.connected) {
                 return // Already connected
             }
 
@@ -94,7 +94,7 @@ export const Group = () => {
                     // Group requires authentication but no credentials stored
                     notifier.notify({
                         level: 'error',
-                        message: 'This group requires authentication. Please log in first.'
+                        message: 'This group requires authentication. Please log in first.',
                     })
                     return
                 }
@@ -104,12 +104,19 @@ export const Group = () => {
                     level: 'error',
                     message: err === 'not authorised' ?
                         'Authentication failed. Please check your credentials.' :
-                        'Failed to connect to group. Please try again.'
+                        'Failed to connect to group. Please try again.',
                 })
             }
         }
 
         attemptAutoConnect()
+    }, [])
+
+    const handleStreamUpdate = useCallback((updatedStream: any) => {
+        const streamIndex = $s.streams.findIndex((s) => s.id === updatedStream.id)
+        if (streamIndex !== -1) {
+            Object.assign($s.streams[streamIndex], updatedStream)
+        }
     }, [])
 
     // Setup and cleanup
@@ -139,7 +146,7 @@ export const Group = () => {
     return (
         <div ref={viewRef} class="c-group">
             {sortedStreams.map((description, index) => (
-                <Stream key={description.id || index} modelValue={sortedStreams[index]} />
+                <Stream key={description.id || index} modelValue={sortedStreams[index]} onUpdate={handleStreamUpdate} />
             ))}
 
             {!$s.streams.length && (

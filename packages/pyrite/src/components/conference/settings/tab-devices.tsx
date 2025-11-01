@@ -52,17 +52,11 @@ export default function TabDevices() {
             await queryDevices()
             setSoundAudio(new Sound({ file: '/audio/power-on.ogg', playing: false }))
 
-            // Not a media stream yet? Create one for the audio settings
-            if (!$s.group.connected) {
-                const res = await getUserMedia()
-                if (!res) {
-                    notifier.notify({ level: 'error', message: $t('device.media_error') })
-                    return
-                }
-            }
-
+            // Only use existing stream if available - don't auto-start media
+            // Media should only start when user explicitly clicks camera/mic buttons
+            // This prevents unwanted getUserMedia calls and permission prompts on page load
             const currentStream = localStream
-            if (currentStream) {
+            if (currentStream && !$s.sfu.channel.connected) {
                 setStream(currentStream)
                 setStreamId(currentStream.id)
                 setDescription({
@@ -84,7 +78,7 @@ export default function TabDevices() {
         init()
 
         return () => {
-            if (!$s.group.connected) {
+            if (!$s.sfu.channel.connected) {
                 delLocalMedia()
             }
         }

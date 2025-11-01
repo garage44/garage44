@@ -9,14 +9,15 @@ import {currentGroup} from '@/models/group'
 export default function GroupsContext() {
     const intervalRef = useRef<number | null>(null)
 
-    const currentGroupData = useMemo(() => currentGroup(), [$s.group.name, $s.groups])
+    const currentGroupData = useMemo(() => currentGroup(), [$s.sfu.channel.name, $s.chat.activeChannelSlug, $s.sfu.channels])
 
     const isListedGroup = useMemo(() => {
-        return !!$s.groups.find((i) => i.name === $s.group.name)
-    }, [$s.group.name, $s.groups])
+        const groupName = $s.sfu.channel.name
+        return groupName ? !!$s.sfu.channels[groupName] : false
+    }, [$s.sfu.channel.name, $s.sfu.channels])
 
     const groupLink = (groupId: string) => {
-        if ($s.group && $s.group.name === groupId) {
+        if ($s.sfu.channel && $s.sfu.channel.name === groupId) {
             return '/'
         } else {
             return `/groups/${groupId}`
@@ -25,22 +26,31 @@ export default function GroupsContext() {
 
     const pollGroups = async () => {
         const groups = await api.get('/api/groups/public')
-        if (!$s.groups.length) {
-            $s.groups = groups
-        } else {
+
+        // Store groups in sfu.channels (channel slug = group name)
+        if (groups && Array.isArray(groups)) {
             for (const group of groups) {
-                if (group.name === $s.group.name) {
-                    currentGroupData.locked = group.locked
+                const channelSlug = group.name
+                if (!$s.sfu.channels[channelSlug]) {
+                    // Initialize channel entry if it doesn't exist
+                    $s.sfu.channels[channelSlug] = {
+                        audio: false,
+                        connected: false,
+                        video: false,
+                    }
                 }
-                const _group = $s.groups.find((g) => g.name === group.name)
-                if (_group) {
-                    Object.assign(_group, {
-                        clientCount: group.clientCount,
-                        comment: group.comment,
-                        locked: group.locked,
-                    })
-                } else {
-                    $s.groups.push(group)
+
+                // Update group metadata in channel entry
+                Object.assign($s.sfu.channels[channelSlug], {
+                    locked: group.locked,
+                    clientCount: group.clientCount,
+                    comment: group.comment,
+                    description: group.description,
+                })
+
+                // Update current group data if this is the active group
+                if (group.name === $s.sfu.channel.name && currentGroupData) {
+                    currentGroupData.locked = group.locked
                 }
             }
         }
@@ -51,33 +61,34 @@ export default function GroupsContext() {
     }
 
     const toggleUnlisted = () => {
-        if (!$s.group.name || isListedGroup) {
-            $s.group.name = $t('group.unlisted')
+        if (!$s.sfu.channel.name || isListedGroup) {
+            $s.sfu.channel.name = $t('group.unlisted')
         } else if (!isListedGroup) {
-            $s.group.name = ''
+            $s.sfu.channel.name = ''
         }
     }
 
     const updateRoute = () => {
         $s.login.autofocus = false
 
-        if ($s.group.name) {
+        if ($s.sfu.channel.name) {
             // Assume unlocked, when there are no public groups
-            $s.group.locked = $s.groups.find((i) => i.name === $s.group.name)?.locked || false
+            const channelData = $s.sfu.channels[$s.sfu.channel.name]
+            $s.sfu.channel.locked = channelData?.locked || false
 
-            // Update the group route when the user sets the group name.
-            route(`/groups/${$s.group.name}`, true)
+            // Update the group route when the user sets the channel name.
+            route(`/groups/${$s.sfu.channel.name}`, true)
         } else {
-            // By default show the splash page when emptying the group input.
+            // By default show the splash page when emptying the channel input.
             route('/', true)
         }
     }
 
-    // Watch group name changes
+    // Watch channel name changes
     useEffect(() => {
-        logger.debug(`updating group route: ${$s.group.name}`)
+        logger.debug(`updating group route: ${$s.sfu.channel.name}`)
         updateRoute()
-    }, [$s.group.name])
+    }, [$s.sfu.channel.name])
 
     // Setup polling
     useEffect(() => {
@@ -102,45 +113,58 @@ export default function GroupsContext() {
                 >
                     <Icon class="icon item-icon icon-d" name="incognito" />
                     <div class="flex-column">
-                        {(isListedGroup || !$s.group.name) ? (
+                        {(isListedGroup || !$s.sfu.channel.name) ? (
                             <div class="name">...</div>
                         ) : (
-                            <div class="name">{$s.group.name}</div>
+                            <div class="name">{$s.sfu.channel.name}</div>
                         )}
                     </div>
                 </div>
             </div>
-            {$s.groups.map((group) => (
-                <Link
-                    key={group.name}
-                    class={classnames('group item', {active: currentGroupData.name === group.name})}
-                    href={groupLink(group.name)}
-                    onClick={setAutofocus}
-                >
-                    <Icon
-                        class="icon item-icon icon-d"
-                        name={group.locked ? 'GroupLocked' : 'Group'}
-                    />
+            {Object.entries($s.sfu.channels).map(([channelSlug, channelData]) => {
+                // Only show channels that have group metadata (from public groups API)
+                // A channel with group metadata has at least one of: description, comment, clientCount defined
+                const hasGroupMetadata =
+                    channelData.description !== undefined ||
+                    channelData.comment !== undefined ||
+                    channelData.clientCount !== undefined
 
-                    <div class="flex-column">
-                        <div class="name">
-                            {group.name}
-                        </div>
-                        {group.description && (
-                            <div class="item-properties">
-                                {group.description}
+                if (!hasGroupMetadata) {
+                    return null
+                }
+
+                return (
+                    <Link
+                        key={channelSlug}
+                        class={classnames('group item', {active: currentGroupData.name === channelSlug})}
+                        href={groupLink(channelSlug)}
+                        onClick={setAutofocus}
+                    >
+                        <Icon
+                            class="icon item-icon icon-d"
+                            name={channelData.locked ? 'GroupLocked' : 'Group'}
+                        />
+
+                        <div class="flex-column">
+                            <div class="name">
+                                {channelSlug}
                             </div>
-                        )}
-                    </div>
+                            {channelData.description && (
+                                <div class="item-properties">
+                                    {channelData.description}
+                                </div>
+                            )}
+                        </div>
 
-                    <div class={classnames('stats', {active: group.clientCount > 0})}>
-                        {group.clientCount}
-                        <Icon class="icon-d" name="user" />
-                    </div>
-                </Link>
-            ))}
+                        <div class={classnames('stats', {active: (channelData.clientCount || 0) > 0})}>
+                            {channelData.clientCount || 0}
+                            <Icon class="icon-d" name="user" />
+                        </div>
+                    </Link>
+                )
+            })}
 
-            {!$s.groups.length && (
+            {Object.keys($s.sfu.channels).length === 0 && (
                 <div class="group item no-presence">
                     <Icon class="item-icon icon-d" name="group" />
                     <div class="name">

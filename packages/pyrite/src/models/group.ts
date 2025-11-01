@@ -2,13 +2,23 @@ import {$s} from '@/app'
 import {$t, api, notifier} from '@garage44/common/app'
 
 export function currentGroup() {
-    const currentGroup = $s.groups.find((i) => i.name === $s.group.name)
-    // Assume hidden group; use selected group fields as placeholders.
-    if (!currentGroup) {
-        return $s.group
+    // Use channel slug to find group data from sfu.channels
+    // Channel slug maps 1:1 to Galene group name
+    const channelSlug = $s.chat.activeChannelSlug || $s.sfu.channel.name
+    const channelData = channelSlug ? $s.sfu.channels[channelSlug] : null
+    
+    // If channel data exists, merge with channel state
+    if (channelData) {
+        return {
+            ...$s.sfu.channel,
+            locked: channelData.locked ?? $s.sfu.channel.locked,
+            clientCount: channelData.clientCount,
+            comment: channelData.comment ?? $s.sfu.channel.comment,
+        }
     }
-
-    return currentGroup
+    
+    // Assume hidden group; use selected channel fields as placeholders.
+    return $s.sfu.channel
 }
 
 export async function saveGroup(groupId, data) {

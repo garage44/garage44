@@ -162,13 +162,12 @@ const initPresenceSubscriptions = () => {
             logger.debug(`User ${username} joined group ${groupId}`)
 
             // Update current group member count if relevant
-            const currentGroup = $s.groups.find((g) => g.name === groupId)
-            if (currentGroup) {
-                currentGroup.clientCount = (currentGroup.clientCount || 0) + 1
+            if ($s.sfu.channels[groupId]) {
+                $s.sfu.channels[groupId].clientCount = ($s.sfu.channels[groupId].clientCount || 0) + 1
             }
 
             // If this is the current group, add user to users list
-            if ($s.group.name === groupId) {
+            if ($s.sfu.channel.name === groupId) {
                 const existingUser = $s.users.find((u) => u.id === userId)
                 if (!existingUser) {
                     $s.users.push({
@@ -196,13 +195,12 @@ const initPresenceSubscriptions = () => {
             logger.debug(`User ${userId} left group ${groupId}`)
 
             // Update current group member count if relevant
-            const currentGroup = $s.groups.find((g) => g.name === groupId)
-            if (currentGroup && currentGroup.clientCount > 0) {
-                currentGroup.clientCount = currentGroup.clientCount - 1
+            if ($s.sfu.channels[groupId] && ($s.sfu.channels[groupId].clientCount || 0) > 0) {
+                $s.sfu.channels[groupId].clientCount = ($s.sfu.channels[groupId].clientCount || 0) - 1
             }
 
             // If this is the current group, remove user from users list
-            if ($s.group.name === groupId) {
+            if ($s.sfu.channel.name === groupId) {
                 const userIndex = $s.users.findIndex((u) => u.id === userId)
                 if (userIndex !== -1) {
                     $s.users.splice(userIndex, 1)
@@ -235,14 +233,14 @@ const initGroupSubscriptions = () => {
 
             logger.debug(`Group ${groupId} lock status: ${locked}`)
 
-            const group = $s.groups.find((g) => g.name === groupId)
-            if (group) {
-                group.locked = locked
+            // Update channel data
+            if ($s.sfu.channels[groupId]) {
+                $s.sfu.channels[groupId].locked = locked
             }
 
             // If this is the current group, update state
-            if ($s.group.name === groupId) {
-                $s.group.locked = locked
+            if ($s.sfu.channel.name === groupId) {
+                $s.sfu.channel.locked = locked
             }
         })
 
@@ -254,8 +252,8 @@ const initGroupSubscriptions = () => {
             logger.debug(`Group ${groupId} recording status: ${recording}`)
 
             // Update current group recording state
-            if ($s.group.name === groupId) {
-                $s.group.recording = recording
+            if ($s.sfu.channel.name === groupId) {
+                $s.sfu.channel.recording = recording
             }
         })
 
@@ -266,9 +264,9 @@ const initGroupSubscriptions = () => {
 
             logger.debug(`Group ${groupId} config updated`)
 
-            const group = $s.groups.find((g) => g.name === groupId)
-            if (group) {
-                Object.assign(group, config)
+            // Update channel data
+            if ($s.sfu.channels[groupId]) {
+                Object.assign($s.sfu.channels[groupId], config)
             }
         })
 
@@ -279,16 +277,29 @@ const initGroupSubscriptions = () => {
             logger.debug(`Group ${groupId} ${action}`)
 
             if (action === 'created' && group) {
-                // Add new group to list
-                const existingGroup = $s.groups.find((g) => g.name === groupId)
-                if (!existingGroup) {
-                    $s.groups.push(group)
+                // Add new group to channels if it doesn't exist
+                if (!$s.sfu.channels[groupId]) {
+                    $s.sfu.channels[groupId] = {
+                        audio: false,
+                        connected: false,
+                        video: false,
+                    }
                 }
+                // Update group metadata
+                Object.assign($s.sfu.channels[groupId], {
+                    locked: group.locked,
+                    clientCount: group.clientCount,
+                    comment: group.comment,
+                    description: group.description,
+                })
             } else if (action === 'deleted') {
-                // Remove group from list
-                const groupIndex = $s.groups.findIndex((g) => g.name === groupId)
-                if (groupIndex !== -1) {
-                    $s.groups.splice(groupIndex, 1)
+                // Note: We don't delete from sfu.channels to preserve audio/video state
+                // Only clear group metadata, keep audio/video preferences
+                if ($s.sfu.channels[groupId]) {
+                    delete $s.sfu.channels[groupId].locked
+                    delete $s.sfu.channels[groupId].clientCount
+                    delete $s.sfu.channels[groupId].comment
+                    delete $s.sfu.channels[groupId].description
                 }
             }
         })
@@ -298,7 +309,7 @@ const initGroupSubscriptions = () => {
             const {action, actionData, targetUserId, timestamp} = data
             const groupId = data.groupId
 
-            if ($s.group.name !== groupId) return
+            if ($s.sfu.channel.name !== groupId) return
 
             logger.debug(`Operator action in group ${groupId}: ${action}`)
 
@@ -309,8 +320,14 @@ const initGroupSubscriptions = () => {
                     // Remove kicked user
                     if (targetUserId === $s.profile.id) {
                         // Current user was kicked, disconnect
-                        $s.group.connected = false
-                        $s.group.name = ''
+                        const channelSlug = $s.sfu.channel.name || $s.chat.activeChannelSlug
+                        $s.sfu.channel.connected = false
+                        $s.sfu.channel.name = ''
+
+                        // Update channel connection state
+                        if (channelSlug && $s.sfu.channels[channelSlug]) {
+                            $s.sfu.channels[channelSlug].connected = false
+                        }
                     } else if (targetUser) {
                         // Another user was kicked
                         const userIndex = $s.users.findIndex((u) => u.id === targetUserId)
@@ -359,9 +376,9 @@ const initGroupSubscriptions = () => {
  * Send chat message via WebSocket (using REST-like API)
  */
 export const sendChatMessage = (message: string, kind: string = 'message') => {
-    if (!$s.group.name) return
+    if (!$s.sfu.channel.name) return
 
-    ws.post(`/api/chat/${$s.group.name}/message`, {
+    ws.post(`/api/chat/${$s.sfu.channel.name}/message`, {
         kind,
         message,
         nick: $s.profile.username,
@@ -372,9 +389,9 @@ export const sendChatMessage = (message: string, kind: string = 'message') => {
  * Send typing indicator
  */
 export const sendTypingIndicator = (typing: boolean) => {
-    if (!$s.group.name || !$s.profile.id) return
+    if (!$s.sfu.channel.name || !$s.profile.id) return
 
-    ws.post(`/api/chat/${$s.group.name}/typing`, {
+    ws.post(`/api/chat/${$s.sfu.channel.name}/typing`, {
         typing,
         userId: $s.profile.id,
     })

@@ -116,7 +116,7 @@ export const ConferenceApp = () => {
                         }}
                     >
                         <ConferenceControls />
-                        {$s.group.connected && (
+                        {$s.sfu.channel.connected && (
                             <>
                                 <PanelContextVideo />
                                 <VideoStrip />

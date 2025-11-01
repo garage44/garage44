@@ -12,14 +12,14 @@ interface StreamProps {
     onUpdate?: (value: any) => void
 }
 
-export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) => {
+export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => {
     const rootRef = useRef<HTMLDivElement>(null)
     const mediaRef = useRef<HTMLVideoElement>(null)
-    const [bar, setBar] = useState({ active: false })
+    const [bar, setBar] = useState({active: false})
     const [mediaFailed, setMediaFailed] = useState(false)
     const [muted, setMuted] = useState(false)
-    const [pip, setPip] = useState({ active: false, enabled: false })
-    const [stats, setStats] = useState({ visible: false })
+    const [pip, setPip] = useState({active: false, enabled: false})
+    const [stats, setStats] = useState({visible: false})
     const [stream, setStream] = useState<MediaStream | null>(null)
     const glnStreamRef = useRef<any>(null)
     const resizeObserverRef = useRef<ResizeObserver | null>(null)
@@ -49,7 +49,7 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
     const loadSettings = async () => {
         if (!stream) return
         logger.debug('loading stream settings')
-        const settings = { audio: {}, video: {} }
+        const settings = {audio: {}, video: {}}
 
         const audioTracks = stream.getAudioTracks()
         if (audioTracks.length) {
@@ -62,7 +62,7 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
         }
 
         if (onUpdate) {
-            onUpdate({ ...modelValue, settings })
+            onUpdate({...modelValue, settings})
         }
     }
 
@@ -70,48 +70,75 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
         const glnStream = sfu.connection?.down[modelValue.id]
 
         if (!glnStream) {
-            logger.debug(`no sfu stream on mounting stream ${modelValue.id}`)
+            logger.debug(`[Stream] no sfu stream on mounting downstream stream ${modelValue.id}`)
             return
-        } else {
-            logger.debug(`mount downstream ${modelValue.id}`)
         }
 
+        logger.debug(`[Stream] mounting downstream stream ${modelValue.id}`)
         glnStreamRef.current = glnStream
-        setStream(glnStream.stream)
 
-        // No need for further setup; this is an existing stream.
-        if (sfu.connection.down[modelValue.id].stream && mediaRef.current) {
-            mediaRef.current.srcObject = sfu.connection.down[modelValue.id].stream
+        // If stream already exists, mount it immediately
+        if (glnStream.stream && mediaRef.current) {
+            logger.debug(`[Stream] downstream stream ${modelValue.id} already has MediaStream, mounting immediately`)
+            setStream(glnStream.stream)
+            mediaRef.current.srcObject = glnStream.stream
             await playStream()
-            return
+        } else {
+            logger.debug(`[Stream] downstream stream ${modelValue.id} waiting for MediaStream`)
+            // Stream will be set via onstatus handler when it becomes available
         }
 
+        // Set up handlers for when tracks arrive
         glnStream.ondowntrack = (track: MediaStreamTrack) => {
-            if (!stream) {
+            logger.debug(`[Stream] downstream ondowntrack/${glnStream.id}, track kind: ${track.kind}`)
+
+            // Ensure we have the stream set
+            if (glnStream.stream && !stream) {
                 setStream(glnStream.stream)
+                if (mediaRef.current && !mediaRef.current.srcObject) {
+                    mediaRef.current.srcObject = glnStream.stream
+                }
             }
 
-            logger.debug(`downstream ondowntrack/${glnStream.id}`)
-            // An incoming audio-track; enable volume controls.
+            // Update stream state based on track kind
             if (track.kind === 'audio') {
-                logger.debug(`stream ondowntrack - enable audio controls`)
-                if (onUpdate) onUpdate({ ...modelValue, hasAudio: true })
+                logger.debug(`[Stream] downstream stream ${modelValue.id} - enabling audio controls`)
+                if (onUpdate) onUpdate({...modelValue, hasAudio: true})
             } else if (track.kind === 'video') {
-                if (onUpdate) onUpdate({ ...modelValue, hasVideo: true })
+                logger.debug(`[Stream] downstream stream ${modelValue.id} - enabling video`)
+                if (onUpdate) onUpdate({...modelValue, hasVideo: true})
             }
         }
 
         glnStream.onclose = () => {
+            logger.debug(`[Stream] downstream stream ${glnStream.id} closed`)
             sfu.delMedia(glnStream.id)
         }
 
         glnStream.onstatus = async (status: string) => {
+            logger.debug(`[Stream] downstream stream ${modelValue.id} status: ${status}`)
+
             if (['connected', 'completed'].includes(status) && mediaRef.current) {
-                mediaRef.current.srcObject = stream
+                // Use glnStream.stream directly (it's already set by protocol layer)
+                const streamToMount = glnStream.stream || stream
+
+                if (!streamToMount) {
+                    logger.warn(`[Stream] downstream stream ${modelValue.id} - no MediaStream available at status ${status}`)
+                    return
+                }
+
+                logger.debug(`[Stream] downstream stream ${modelValue.id} - mounting MediaStream`)
+                setStream(streamToMount)
+                mediaRef.current.srcObject = streamToMount
+
                 // Firefox doesn't have a working setSinkId
-                if (audioEnabled && (mediaRef.current as any).setSinkId) {
-                    logger.debug(`set stream sink: ${$s.devices.audio.selected.id}`)
-                    ;(mediaRef.current as any).setSinkId($s.devices.audio.selected.id)
+                if (audioEnabled && (mediaRef.current as any).setSinkId && $s.devices.audio.selected.id) {
+                    try {
+                        logger.debug(`[Stream] setting stream sink: ${$s.devices.audio.selected.id}`)
+                        await (mediaRef.current as any).setSinkId($s.devices.audio.selected.id)
+                    } catch (error) {
+                        logger.warn(`[Stream] failed to set stream sink: ${error}`)
+                    }
                 }
 
                 await playStream()
@@ -124,17 +151,32 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
         if (!muted) {
             toggleMuteVolume()
         }
-        logger.debug(`mount upstream ${modelValue.id}`)
+        logger.debug(`[Stream] mounting upstream stream ${modelValue.id}`)
 
         if (!modelValue.src) {
             // Local media stream from a device.
             const glnStream = sfu.connection?.up[modelValue.id]
+
+            if (!glnStream) {
+                logger.warn(`[Stream] upstream stream ${modelValue.id} not found in connection.up`)
+                return
+            }
+
+            if (!glnStream.stream) {
+                logger.warn(`[Stream] upstream stream ${modelValue.id} has no MediaStream assigned`)
+                return
+            }
+
+            logger.debug(`[Stream] upstream stream ${modelValue.id} - mounting MediaStream`)
             glnStreamRef.current = glnStream
             setStream(glnStream.stream)
+
             if (mediaRef.current) {
                 mediaRef.current.srcObject = glnStream.stream
+                await playStream()
+            } else {
+                logger.warn(`[Stream] upstream stream ${modelValue.id} - mediaRef.current is null`)
             }
-            await playStream()
         } else {
             // Local media stream playing from a file...
             if (modelValue.src instanceof File) {
@@ -164,9 +206,9 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
                             const track = e.track
 
                             if (track.kind === 'audio') {
-                                if (onUpdate) onUpdate({ ...modelValue, hasAudio: true })
+                                if (onUpdate) onUpdate({...modelValue, hasAudio: true})
                             } else if (track.kind === 'video') {
-                                if (onUpdate) onUpdate({ ...modelValue, hasVideo: true })
+                                if (onUpdate) onUpdate({...modelValue, hasVideo: true})
                             }
 
                             glnStream.pc.addTrack(track, capturedStream)
@@ -205,15 +247,23 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
     }
 
     const playStream = async () => {
+        if (!mediaRef.current) {
+            logger.warn('[Stream] playStream called but mediaRef.current is null')
+            return
+        }
+
         try {
-            await mediaRef.current?.play()
+            logger.debug(`[Stream] playing stream ${modelValue.id}`)
+            await mediaRef.current.play()
             await loadSettings()
-            if (onUpdate) onUpdate({ ...modelValue, playing: true })
-        } catch (message) {
+            if (onUpdate) onUpdate({...modelValue, playing: true})
+            logger.debug(`[Stream] stream ${modelValue.id} playing successfully`)
+        } catch (error) {
+            logger.error(`[Stream] stream ${modelValue.id} terminated unexpectedly: ${error}`)
             if (glnStreamRef.current) {
                 sfu.delMedia(glnStreamRef.current.id)
             }
-            logger.warn(`stream terminated unexpectedly: ${message}`)
+            setMediaFailed(true)
         }
     }
 
@@ -235,7 +285,7 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
                 stream.enlarged = false
             }
         }
-        if (onUpdate) onUpdate({ ...modelValue, enlarged: !modelValue.enlarged })
+        if (onUpdate) onUpdate({...modelValue, enlarged: !modelValue.enlarged})
     }
 
     const toggleMuteVolume = () => {
@@ -246,16 +296,16 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
     }
 
     const toggleStats = () => {
-        setStats({ visible: !stats.visible })
+        setStats({visible: !stats.visible})
     }
 
     const toggleStreamBar = (active: boolean) => () => {
-        setBar({ active })
+        setBar({active})
     }
 
     const handleVolumeChange = (volume: number) => {
         if (onUpdate) {
-            onUpdate({ ...modelValue, volume: { ...modelValue.volume, value: volume } })
+            onUpdate({...modelValue, volume: {...modelValue.volume, value: volume}})
         }
     }
 
@@ -287,8 +337,8 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
 
         // Firefox doesn't support this API (yet).
         if ((mediaRef.current as any).requestPictureInPicture) {
-            const enterPip = () => setPip({ ...pip, active: true })
-            const leavePip = () => setPip({ ...pip, active: false })
+            const enterPip = () => setPip({...pip, active: true})
+            const leavePip = () => setPip({...pip, active: false})
 
             mediaRef.current.addEventListener('enterpictureinpicture', enterPip)
             mediaRef.current.addEventListener('leavepictureinpicture', leavePip)
@@ -307,7 +357,7 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
             if (mediaRef.current && mediaRef.current.videoHeight) {
                 const aspectRatio = mediaRef.current.videoWidth / mediaRef.current.videoHeight
                 rootRef.current?.style.setProperty('--aspect-ratio', String(aspectRatio))
-                if (onUpdate) onUpdate({ ...modelValue, aspectRatio })
+                if (onUpdate) onUpdate({...modelValue, aspectRatio})
             }
         }
 
@@ -337,7 +387,7 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
             <video
                 ref={mediaRef}
                 autoplay={true}
-                class={classnames('media', { 'media-failed': mediaFailed, mirror: modelValue.mirror })}
+                class={classnames('media', {'media-failed': mediaFailed, mirror: modelValue.mirror})}
                 muted={modelValue.direction === 'up'}
                 playsinline={true}
                 onClick={(e) => {
@@ -383,13 +433,13 @@ export const Stream = ({ controls = true, modelValue, onUpdate }: StreamProps) =
                         </div>
                     )}
 
-                    <div class={classnames('user', { 'has-audio': audioEnabled })}>
+                    <div class={classnames('user', {'has-audio': audioEnabled})}>
                         {modelValue.username}
                     </div>
                 </div>
             )}
 
-            <div class={classnames('stream-options', { active: bar.active })}>
+            <div class={classnames('stream-options', {active: bar.active})}>
                 {pip.enabled && (
                     <Button
                         icon="Pip"

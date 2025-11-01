@@ -13,12 +13,12 @@ interface SettingsProps {
 
 export default function Settings({ tabId }: SettingsProps) {
     const settingsRoute = useMemo(() => {
-        if ($s.group.connected) {
-            return `/groups/${$s.group.name}/settings`
+        if ($s.sfu.channel.connected) {
+            return `/groups/${$s.sfu.channel.name}/settings`
         } else {
             return '/settings'
         }
-    }, [$s.group.connected, $s.group.name])
+    }, [$s.sfu.channel.connected, $s.sfu.channel.name])
 
     const saveSettings = async () => {
         // await setLanguage($s.language.id)
