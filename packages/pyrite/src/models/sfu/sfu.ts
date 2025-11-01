@@ -20,10 +20,13 @@
 
 import * as _protocol from './protocol.ts'
 import _commands from './commands.ts'
-import {notifier} from '@garage44/common/app'
-import {$s} from '@/app'
+import {notifier, $t} from '@garage44/common/app'
+import {$s, store} from '@/app'
+import {events} from '@garage44/common/app'
 import {logger} from '@garage44/common/lib/logger'
 import {formatBytes} from '@garage44/common/lib/utils'
+import {localStream, getUserMedia, removeLocalStream} from '@/models/media'
+import {currentGroup} from '@/models/group'
 
 export const protocol = _protocol
 export const commands = _commands
@@ -32,7 +35,7 @@ export let connection
 export let file
 
 let localGlnStream
-let promiseConnect
+let promiseConnect: {reject: (reason: string) => void; resolve: (value: string) => void} | null = null
 
 export async function addFileMedia(file) {
     logger.info('add file media')
@@ -53,10 +56,10 @@ export async function addShareMedia() {
     try {
         if (!('getDisplayMedia' in navigator.mediaDevices))
             throw new Error('Your browser does not support screen sharing')
-            /** @ts-ignore */
+            /** @ts-expect-error - getDisplayMedia may not be in all types */
         stream = await navigator.mediaDevices.getDisplayMedia({audio: true, video: true})
     } catch (e) {
-        notifier.notify({level: 'error', message: e})
+        notifier.notify({message: String(e), type: 'error'})
         return
     }
 
@@ -65,7 +68,7 @@ export async function addShareMedia() {
     $s.upMedia[glnStream.label].push(glnStream.id)
     glnStream.stream = stream
 
-    stream.getTracks().forEach(t => {
+    stream.getTracks().forEach((t) => {
         if (t.kind === 'audio') {
             streamState.hasAudio = true
         } else if (t.kind === 'video') {
@@ -86,18 +89,18 @@ export async function addUserMedia() {
     let oldStream = localStreamId && connection.up[localStreamId]
 
     if (oldStream) {
-        logger.debug(`removing old stream`)
+        logger.debug('removing old stream')
         stopUpMedia(oldStream)
     }
 
     const {glnStream, streamState} = newUpStream(localStreamId)
     glnStream.label = 'camera'
-    glnStream.stream = app.$m.media.localStream
+    glnStream.stream = localStream
     localGlnStream = glnStream
 
     $s.upMedia[glnStream.label].push(glnStream.id)
 
-    app.$m.media.localStream.getTracks().forEach(t => {
+    localStream.getTracks().forEach((t) => {
         if (t.kind === 'audio') {
             streamState.hasAudio = true
             if (!$s.devices.mic.enabled) {
@@ -110,7 +113,7 @@ export async function addUserMedia() {
                 t.contentHint = 'detail'
             }
         }
-        glnStream.pc.addTrack(t, app.$m.media.localStream)
+        glnStream.pc.addTrack(t, localStream)
     })
 
     return new Promise((resolve) => {
@@ -122,68 +125,107 @@ export async function addUserMedia() {
     })
 }
 
-export async function connect(username, password) {
+export async function connect(username?: string, password?: string) {
     if (connection && connection.socket) {
         connection.close()
     }
+
+    // Use credentials from parameters or fall back to profile state
+    const sfuUsername = username || $s.profile.username || ''
+    const sfuPassword = password || $s.profile.password || ''
+
+    logger.info(`[SFU] Connecting with username: ${sfuUsername ? '***' : '(empty)'}`)
+
+    // Create the join promise BEFORE setting up handlers
+    // This ensures promiseConnect is available when onJoined is called
+    let joinResolve: (value: string) => void
+    let joinReject: (reason: string) => void
+    const joinPromise = new Promise<string>((resolve, reject) => {
+        joinResolve = resolve
+        joinReject = reject
+    })
+    promiseConnect = {reject: joinReject!, resolve: joinResolve!}
+
     connection = new protocol.ServerConnection()
 
     connection.onconnected = () => {
         logger.info('[connected] connected to Galène websocket')
-        $s.user.id = connection.id
-        const groupName = app.router.currentRoute.value.params.groupId
-        connection.join(groupName, username, password)
+        $s.profile.id = connection.id
+
+        // Get channel slug from state (active channel) or from current channel
+        // Channel slug directly matches Galene group name (1:1 mapping)
+        const channelSlug = $s.chat.activeChannelSlug
+        if (!channelSlug) {
+            logger.warn('[SFU] No active channel slug found, cannot join group')
+            notifier.notify({
+                message: 'No channel selected',
+                type: 'error',
+            })
+            // Reject the join promise if no channel is selected
+            if (promiseConnect) {
+                promiseConnect.reject('No channel selected')
+                promiseConnect = null
+            }
+            return
+        }
+
+        logger.info(`[SFU] Joining Galene group: ${channelSlug} (channel slug) with username: ${sfuUsername ? '***' : '(empty)'}`)
+        connection.join(channelSlug, sfuUsername, sfuPassword)
     }
 
-    connection.onchat = app.$m.chat.onMessage
-    connection.onclearchat = app.$m.chat.clearChat
+    // Disable chat handlers - Pyrite handles chat separately
+    connection.onchat = null
+    connection.onclearchat = null
+
+    // Keep file transfer handler - uses WebRTC datachannels
+    connection.onfiletransfer = onFileTransfer
+
     connection.onclose = onClose
     connection.ondownstream = onDownStream
     connection.onuser = onUser
     connection.onjoined = onJoined
     connection.onusermessage = onUserMessage
-    connection.onfiletransfer = onFileTransfer
 
-    // Temporarily disabled Galene WebSocket connection
-    // let url = `ws${location.protocol === 'https:' ? 's' : ''}://${location.host}/ws`
-    // logger.info(`connecting websocket ${url}`)
+    // Connect through Pyrite WebSocket proxy at /sfu
+    // The proxy handles routing to Galene backend
+    const url = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/sfu`
+    logger.info(`[SFU] Connecting to Galene through proxy: ${url}`)
 
-    // try {
-    //     await connection.connect(url)
-    //     // Share initial status with other users.
-    //     connection.userAction('setdata', connection.id, $s.user.data)
-    // } catch (e) {
-    //     notifier.notify({
-    //         level: 'error',
-    //         message: e.message ? e.message : "Couldn't connect to " + url,
-    //     })
-    // }
-
-    // Mock successful connection for now
-    logger.info('Galene WebSocket connection disabled - using mock connection')
-    if (connection.onconnected) {
-        connection.onconnected()
+    try {
+        await connection.connect(url)
+        // Share initial status with other users.
+        // Map $s.profile to Galene user data
+        connection.userAction('setdata', connection.id, $s.sfu.profile)
+    } catch (e) {
+        logger.error('[SFU] Failed to connect to Galene:', e)
+        // Clean up promiseConnect on connection error
+        promiseConnect = null
+        notifier.notify({
+            message: e.message ? e.message : "Couldn't connect to " + url,
+            type: 'error',
+        })
+        throw e
     }
 
-    return new Promise((resolve, reject) => {
-        promiseConnect = {reject, resolve}
-    })
-
+    // Return the promise that will resolve/reject when onJoined is called
+    return joinPromise
 }
 
 export function delLocalMedia() {
-    if (app.$m.media.screenStream) {
-        logger.info(`disconnect screen share stream`)
-        delUpMedia(app.$m.media.screenStream)
+    // Find and disconnect screen share stream by label
+    const screenShareId = findUpMedia('screenshare')
+    if (screenShareId && connection.up[screenShareId]) {
+        logger.info('disconnect screen share stream')
+        delUpMedia(connection.up[screenShareId])
     }
-    if (!app.$m.media.localStream) return
+    if (!localStream) return
 
     logger.info('delete local media share media')
-    app.$m.media.removeLocalStream()
+    removeLocalStream()
 }
 
 export function delMedia(id) {
-    const delStreamIndex = $s.streams.findIndex(i => i.id === id)
+    const delStreamIndex = $s.streams.findIndex((i) => i.id === id)
     if (delStreamIndex === -1) return
 
     const delStream = $s.streams[delStreamIndex]
@@ -224,95 +266,94 @@ export function disconnect() {
     delLocalMedia()
 }
 
-function fileTransferEvent(state, data) {
-    let f = this
+function fileTransferEvent(this: any, state: string, data: any) {
+    const f = this
     switch (state) {
-    case 'inviting':
-        break
-    case 'connecting':
-        break
-    case 'connected':
-        if (f.up) {
-            Object.assign(f.notifier, {
-                buttons: [{
-                    action: () => f.cancel(),
-                    icon: 'Close',
-                    text: 'Abort',
-                }],
-                message: app.$t('user.action.share_file.sending', {file: f.name}),
-                progress: {
-                    boundaries: ['0', formatBytes(f.size)],
-                    percentage: Math.ceil((f.datalen / f.size) * 100),
-                },
+        case 'inviting':
+            break
+        case 'connecting':
+            break
+        case 'connected':
+            if (f.up) {
+                Object.assign(f.notifier, {
+                    buttons: [{
+                        action: () => f.cancel(),
+                        icon: 'Close',
+                        text: 'Abort',
+                    }],
+                    message: $t('user.action.share_file.sending', {file: f.name}),
+                    progress: {
+                        boundaries: ['0', formatBytes(f.size)],
+                        percentage: Math.ceil((f.datalen / f.size) * 100),
+                    },
 
-            })
-        }
-        else {
-            Object.assign(f.notifier, {
-                buttons: [{
-                    action: () => f.cancel(),
-                    icon: 'Close',
-                    text: 'Abort',
-                }],
-                message: app.$t('user.action.share_file.receiving', {file: f.name}),
-                progress: {
-                    boundaries: ['0', formatBytes(f.size)],
-                    percentage: Math.ceil((f.datalen / f.size) * 100),
-                },
-            })
-        }
-        break
-    case 'done':
-        if (!f.up) {
-            let url = URL.createObjectURL(data)
-            let a = document.createElement('a')
-            a.href = url
-            a.textContent = f.name
-            a.download = f.name
-            a.type = f.mimetype
-            a.click()
-            URL.revokeObjectURL(url)
+                })
+            } else {
+                Object.assign(f.notifier, {
+                    buttons: [{
+                        action: () => f.cancel(),
+                        icon: 'Close',
+                        text: 'Abort',
+                    }],
+                    message: $t('user.action.share_file.receiving', {file: f.name}),
+                    progress: {
+                        boundaries: ['0', formatBytes(f.size)],
+                        percentage: Math.ceil((f.datalen / f.size) * 100),
+                    },
+                })
+            }
+            break
+        case 'done':
+            if (!f.up) {
+                let url = URL.createObjectURL(data)
+                let a = document.createElement('a')
+                a.href = url
+                a.textContent = f.name
+                a.download = f.name
+                a.type = f.mimetype
+                a.click()
+                URL.revokeObjectURL(url)
+                Object.assign(f.notifier, {
+                    buttons: [],
+                    message: $t('user.action.share_file.transfer_complete', {
+                        file: f.name,
+                        size: formatBytes(f.size),
+                    }),
+                    progress: null,
+                })
+            } else {
+                Object.assign(f.notifier, {
+                    buttons: [],
+                    message: $t('user.action.share_file.transfer_complete', {
+                        file: f.name,
+                        size: formatBytes(f.size),
+                    }),
+                    progress: null,
+                })
+            }
+            notifier.setTimeout(f.notifier)
+            break
+        case 'cancelled':
             Object.assign(f.notifier, {
                 buttons: [],
-                message: app.$t('user.action.share_file.transfer_complete', {
-                    file: f.name,
-                    size: formatBytes(f.size),
-                }),
+                level: 'warning',
+                message: $t('user.action.share_file.transfer_cancelled', {file: f.name}),
                 progress: null,
             })
-        } else {
+            notifier.setTimeout(f.notifier)
+            break
+        case 'closed':
+            break
+        default:
             Object.assign(f.notifier, {
                 buttons: [],
-                message: app.$t('user.action.share_file.transfer_complete', {
-                    file: f.name,
-                    size: formatBytes(f.size),
-                }),
+                level: 'error',
+                message: $t('error', {error: state}),
                 progress: null,
             })
-        }
-        notifier.setTimeout(f.notifier)
-        break
-    case 'cancelled':
-        Object.assign(f.notifier, {
-            buttons: [],
-            level: 'warning',
-            message: app.$t('user.action.share_file.transfer_cancelled', {file: f.name}),
-            progress: null,
-        })
-        notifier.setTimeout(f.notifier)
-        break
-    case 'closed':
-        break
-    default:
-        Object.assign(f.notifier, {
-            buttons: [],
-            level: 'error',
-            message: app.$t('error', {error: state}),
-            progress: null,
-        })
-        notifier.setTimeout(f.notifier)
-        f.cancel(`unexpected state "${state}" (this shouldn't happen)`)
-        break
+            notifier.setTimeout(f.notifier)
+            f.cancel(`unexpected state "${state}" (this shouldn't happen)`)
+            break
     }
 }
 
@@ -326,35 +367,35 @@ function findUpMedia(label) {
 
 function getMaxVideoThroughput() {
     switch ($s.media.upstream.id) {
-    case 'lowest':
-        return 150000
-    case 'low':
-        return 300000
-    case 'normal':
-        return 700000
-    case 'unlimited':
-        return null
-    default:
-        return 700000
+        case 'lowest':
+            return 150000
+        case 'low':
+            return 300000
+        case 'normal':
+            return 700000
+        case 'unlimited':
+            return null
+        default:
+            return 700000
     }
 }
 
 function mapRequest(what) {
     switch (what) {
-    case '':
-        return {}
-    case 'audio':
-        return {'': ['audio']}
-    case 'screenshare-low':
-        return {'': ['audio'], screenshare: ['audio','video-low']}
-    case 'screenshare':
-        return {'': ['audio'], screenshare: ['audio','video']}
-    case 'everything-low':
-        return {'': ['audio','video-low']}
-    case 'everything':
-        return {'': ['audio','video']}
-    default:
-        throw new Error(`Unknown value ${what} in request`)
+        case '':
+            return {}
+        case 'audio':
+            return {'': ['audio']}
+        case 'screenshare-low':
+            return {'': ['audio'], screenshare: ['audio','video-low']}
+        case 'screenshare':
+            return {'': ['audio'], screenshare: ['audio','video']}
+        case 'everything-low':
+            return {'': ['audio','video-low']}
+        case 'everything':
+            return {'': ['audio','video']}
+        default:
+            throw new Error(`Unknown value ${what} in request`)
     }
 }
 
@@ -364,7 +405,7 @@ export function muteMicrophone(muted) {
     for (let id in connection.up) {
         const glnStream = connection.up[id]
         if (glnStream.label === 'camera') {
-            glnStream.stream.getTracks().forEach(t => {
+            glnStream.stream.getTracks().forEach((t) => {
                 if (t.kind === 'audio') {
                     t.enabled = !muted
                 }
@@ -386,7 +427,7 @@ function newUpStream(_id, state) {
         mirror: true,
         playing: false,
         settings: {audio: {}, video: {}},
-        username: $s.user.username,
+        username: $s.profile.username,
         volume: {
             locked: false,
             value: 100,
@@ -399,7 +440,7 @@ function newUpStream(_id, state) {
     }
 
     glnStream.onerror = (e) => {
-        notifier.notify({level: 'error', message: e})
+        notifier.notify({message: String(e), type: 'error'})
         delUpMedia(glnStream)
     }
     glnStream.onabort = () => {
@@ -416,16 +457,16 @@ function newUpStream(_id, state) {
 
 function onClose(code, reason) {
     logger.debug('connection closed')
-    app.emit('disconnected')
+    events.emit('disconnected')
     $s.group.connected = false
 
     delUpMediaKind(null)
 
-    if (code != 1000) {
-        notifier.notify({level: 'error', message: `Socket close ${code}: ${reason}`})
+    if (code !== 1000) {
+        notifier.notify({message: `Socket close ${code}: ${reason}`, type: 'error'})
     }
 
-    app.router.push({name: 'conference-groups'}, {params: {groupId: $s.group.name}})
+    // app.router.push({name: 'conference-groups'}, {params: {groupId: $s.group.name}})
 }
 
 function onDownStream(c) {
@@ -440,12 +481,12 @@ function onDownStream(c) {
     c.onerror = () => {
         const message = `[onerror] downstream ${c.id}`
         logger.error(message)
-        notifier.notify({level: 'error', message})
+        notifier.notify({message, type: 'error'})
     }
 
     // When other-end Firefox replaces a stream (e.g. toggles webcam),
     // the onDownStream method is called twice.
-    if (!$s.streams.find((s) => s.id === c.id)) {
+    if (!$s.streams.some((s) => s.id === c.id)) {
         $s.streams.push({
             aspectRatio: 4 / 3,
             direction: 'down',
@@ -469,96 +510,90 @@ async function onFileTransfer(f) {
     f.onevent = fileTransferEvent
     if (f.up) {
         f.notifier = notifier.notify({
-            buttons: [{
-                action: () => f.cancel(),
-                icon: 'Close',
-                text: 'Abort',
-            }],
-            level: 'info',
-            message: app.$t('user.action.share_file.share_confirm', {
+            message: $t('user.action.share_file.share_confirm', {
                 file: f.name,
                 size: formatBytes(f.size),
                 username: f.username,
             }),
+            type: 'info',
         }, 0)
     } else {
         f.notifier = notifier.notify({
-            buttons: [{
-                action: () => f.cancel(),
-                icon: 'Close',
-                text: 'Ignore',
-            }, {
-                action: () => f.receive(),
-                icon: 'Save',
-                text: 'Save file',
-            }],
-            level: 'info',
-            message: app.$t('user.action.share_file.share_accept', {
+            message: $t('user.action.share_file.share_accept', {
                 file: f.name,
                 size: formatBytes(f.size),
                 username: f.username,
             }),
+            type: 'info',
         }, 0)
     }
 }
 
 async function onJoined(kind, group, permissions, status, data, message) {
     logger.debug(`[onJoined] ${kind}/${group}: ${message}`)
-    let currentGroup = app.$m.group.currentGroup()
+    let currentGroupData = currentGroup()
     let _permissions = {}
     switch (kind) {
-    case 'fail':
-        promiseConnect.reject(message)
-        promiseConnect = null
+        case 'fail':
+            if (promiseConnect) {
+                promiseConnect.reject(message)
+                promiseConnect = null
+            }
 
-        // Closing the connection will trigger a 'leave' message,
-        // which handles the accompanying UI flow.
-        connection.close()
-        return
-    case 'leave':
-        disconnect()
-        return
-    case 'join':
-        for (const permission of permissions) {
-            _permissions[permission] = true
-        }
-        $s.permissions = _permissions
-        promiseConnect.resolve(message)
-        promiseConnect = null
-        break
-    case 'change':
-
-        for (const permission of permissions) {
-            _permissions[permission] = true
-        }
-        $s.permissions = _permissions
-
-        if (status && status.locked) {
-            currentGroup.locked = true
-            // A custom message is sent along:
-            let personal = null
-            if (status.locked !== true) personal = {group, message:status.locked}
-            notifier.message('lock', {group}, personal)
-        } else if (currentGroup.locked) {
-            currentGroup.locked = false
-            notifier.message('unlock', {group})
-        }
-
-        logger.debug(`permissions: ${JSON.stringify(permissions)}`)
-        if (kind === 'change')
+            // Closing the connection will trigger a 'leave' message,
+            // which handles the accompanying UI flow.
+            connection.close()
             return
-        break
-    default:
-        notifier.notify({level: 'error', message: 'Unknown join message'})
-        connection.close()
-        return
+        case 'leave':
+            disconnect()
+            return
+        case 'join':
+            for (const permission of permissions) {
+                _permissions[permission] = true
+            }
+            $s.permissions.op = _permissions.op || false
+            $s.permissions.present = _permissions.present || false
+            $s.permissions.record = _permissions.record || false
+            if (promiseConnect) {
+                promiseConnect.resolve(message)
+                promiseConnect = null
+            }
+            break
+        case 'change':
+
+            for (const permission of permissions) {
+                _permissions[permission] = true
+            }
+            $s.permissions.op = _permissions.op || false
+            $s.permissions.present = _permissions.present || false
+            $s.permissions.record = _permissions.record || false
+
+            if (status && status.locked) {
+                currentGroupData.locked = true
+                // A custom message is sent along:
+                let personal = null
+                if (status.locked !== true) personal = {group, message:status.locked}
+                notifier.notify({message: `Group ${group} is locked`, type: 'info'})
+            } else if (currentGroupData.locked) {
+                currentGroupData.locked = false
+                notifier.notify({message: `Group ${group} is unlocked`, type: 'info'})
+            }
+
+            logger.debug(`permissions: ${JSON.stringify(permissions)}`)
+            if (kind === 'change')
+                return
+            break
+        default:
+            notifier.notify({message: 'Unknown join message', type: 'error'})
+            connection.close()
+            return
     }
 
     logger.debug(`request Galène media types: ${$s.media.accept.id}`)
     connection.request(mapRequest($s.media.accept.id))
 
     if ($s.permissions.present && !findUpMedia('camera')) {
-        await app.$m.media.getUserMedia($s.devices)
+        await getUserMedia($s.devices)
     }
 }
 
@@ -582,48 +617,56 @@ function onUser(id, kind) {
         // only trigger the recording flag when it is a system user.
         if (user.username === 'RECORDING' && user.permissions.system) {
             $s.group.recording = user.id
-            notifier.message('record', {dir: 'target', group: $s.group.name})
+            notifier.notify({message: `Recording started in ${$s.group.name}`, type: 'info'})
         }
 
-        if (id === $s.user.id) {
+        if (id === $s.profile.id) {
             // Restore user data back from state and notify others about it.
-            user.data = $s.user.data
-            connection.userAction('setdata', connection.id, $s.user.data)
+            // Map $s.profile to Galene user data
+            user.data = $s.sfu.profile
+            connection.userAction('setdata', connection.id, $s.sfu.profile)
         }
 
         $s.users.push(user)
-        app.emit('user', {action: 'add', user})
+        events.emit('user', {action: 'add', user})
     } else if (kind === 'change') {
-        if (id === $s.user.id) {
+        if (id === $s.profile.id) {
             const $user = $s.users.find((i) => i.id === user.id)
             // Shutdown the local stream when the Present permission is taken away.
-            if ($user.permissions.present && !user.permissions.present) {
+            if ($user && $user.permissions.present && !user.permissions.present) {
                 delUpMedia(localGlnStream)
                 $s.devices.cam.enabled = false
                 $s.devices.mic.enabled = false
 
-                notifier.message('unpresent', {group: $s.group.name})
-            } else if (!$user.permissions.present && user.permissions.present) {
-                notifier.message('present')
-            } else if ($user.permissions.op && !user.permissions.op) {
-                notifier.message('unop')
-            } else if (!$user.permissions.op && user.permissions.op) {
-                notifier.message('op')
+                notifier.notify({message: `Present permission removed in ${$s.group.name}`, type: 'warning'})
+            } else if ($user && !$user.permissions.present && user.permissions.present) {
+                notifier.notify({message: 'Present permission granted', type: 'info'})
+            } else if ($user && $user.permissions.op && !user.permissions.op) {
+                notifier.notify({message: 'Operator permission removed', type: 'warning'})
+            } else if ($user && !$user.permissions.op && user.permissions.op) {
+                notifier.notify({message: 'Operator permission granted', type: 'info'})
             }
 
-            $s.user.data = {...$s.user.data, ...user.data}
-            app.store.save()
+            // Update Galene-specific user data from server
+            $s.sfu.profile = {...$s.sfu.profile, ...user.data}
+            store.save()
         }
 
-        $s.users.splice($s.users.findIndex((i) => i.id === user.id), 1, user)
+        const userIndex = $s.users.findIndex((i) => i.id === user.id)
+        if (userIndex !== -1) {
+            $s.users.splice(userIndex, 1, user)
+        }
     } else if (kind === 'delete') {
         if (user.id === $s.group.recording) {
             $s.group.recording = false
-            notifier.message('unrecord', {dir: 'target', group: $s.group.name})
+            notifier.notify({message: `Recording stopped in ${$s.group.name}`, type: 'info'})
         }
 
-        $s.users.splice($s.users.findIndex((u) => u.id === id), 1)
-        app.emit('user', {action: 'del', user})
+        const userIndex = $s.users.findIndex((u) => u.id === id)
+        if (userIndex !== -1) {
+            $s.users.splice(userIndex, 1)
+        }
+        events.emit('user', {action: 'del', user})
     }
 }
 
@@ -634,25 +677,22 @@ function onUserMessage(id, dest, username, time, privileged, kind, message) {
         else source = 'System Message'
     }
 
-    // Handle incoming notifications here...
-    notifier.onUserMessage({id, kind, message, privileged, source})
+    // Handle incoming user messages - log for now, can be extended later
+    logger.debug(`[onUserMessage] ${source}: ${message}`)
     // Remote actions are only allowed for operators.
     if (!privileged) return
 
     switch (kind) {
     // Handle related actions here...
-    case 'mute':
-        muteMicrophone(true)
-        break
-    case 'clearchat':
-        app.$m.chat.clearChat()
-        break
+        case 'mute':
+            muteMicrophone(true)
+            break
     }
 }
 
 export function removeTrack(glnStream, kind) {
     const tracks = glnStream.stream.getTracks()
-    tracks.forEach(track => {
+    tracks.forEach((track) => {
         if (track.kind === kind) {
             logger.debug(`stopping track ${track.id}`)
             track.stop()
@@ -673,7 +713,7 @@ async function setMaxVideoThroughput(c, bps) {
             continue
         let p = s.getParameters()
         if (!p.encodings) p.encodings = [{}]
-        p.encodings.forEach(e => {
+        p.encodings.forEach((e) => {
             if (!e.rid || e.rid === 'h') e.maxBitrate = bps || unlimitedRate
 
         })
@@ -685,8 +725,8 @@ async function setMaxVideoThroughput(c, bps) {
 
 function stopUpMedia(c) {
     logger.debug(`stopping up-stream ${c.id}`)
-    c.stream.getTracks().forEach(t => t.stop())
+    c.stream.getTracks().forEach((t) => t.stop())
 
-    $s.upMedia[c.label].splice($s.upMedia[c.label].findIndex(i => i.id === c.id), 1)
-    $s.streams.splice($s.streams.findIndex(i => i.id === c.id), 1)
+    $s.upMedia[c.label].splice($s.upMedia[c.label].findIndex((i) => i.id === c.id), 1)
+    $s.streams.splice($s.streams.findIndex((i) => i.id === c.id), 1)
 }

@@ -1,5 +1,5 @@
 import {$s} from '@/app'
-import {logger, notifier} from '@garage44/common/app'
+import {logger, notifier, $t} from '@garage44/common/app'
 import * as sfu from './sfu/sfu.ts'
 
 export let localStream
@@ -180,7 +180,7 @@ navigator.mediaDevices.ondevicechange = async() => {
             icon: 'Headset',
             level: 'info',
             list: added.map((i) => i.name),
-            message: app.$tc('device.added', added.length),
+            message: $t('device.added', {count: added.length}),
         })
     }
     if (removed.length) {
@@ -188,20 +188,20 @@ navigator.mediaDevices.ondevicechange = async() => {
             icon: 'Headset',
             level: 'warning',
             list: removed.map((i) => i.name),
-            message: app.$tc('device.removed', removed.length),
+            message: $t('device.removed', {count: removed.length}),
         })
     }
     const invalidDevices = validateDevices()
 
     if ($s.group.connected && Object.values(invalidDevices).some((i) => i)) {
-        app.router.push({name: 'conference-group-settings', params: {tabId: 'devices'}})
+        // Note: Routing should be handled by the component, not here
         notifier.notify({
             icon: 'Headset',
             level: 'warning',
             list: Object.entries(invalidDevices)
                 .filter(([_, value]) => value)
-                .map(([key]) => app.$t(`device.select_${key}_label`)),
-            message: app.$tc('device.action_required', removed.length),
+                .map(([key]) => $t(`device.select_${key}_label`)),
+            message: $t('device.action_required', {count: removed.length}),
         })
         // Don't set a default option; it must be clear that an
         // invalid device option is set while being connected.

@@ -26,6 +26,13 @@ interface CommonState {
     panel: {
         collapsed: boolean
     }
+    profile: {
+        avatar: string
+        displayName: string
+        id: string | null
+        password: string
+        username: string
+    }
     theme: 'dark' | 'light' | 'system'
     user: DeepSignal<{
         admin: boolean

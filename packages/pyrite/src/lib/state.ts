@@ -31,17 +31,6 @@ export const persistantState: Partial<PyriteState> = mergeDeep({
             selected: {id: null, name: ''},
         },
     },
-    language: {id: null},
-    language_ui: {
-        i18n: {},
-        options: [
-            {id: 'deu', name: 'Deutsch'},
-            {id: 'eng-gbr', name: 'English'},
-            {id: 'fra', name: 'Français'},
-            {id: 'nld', name: 'Nederlands'},
-        ],
-        selection: 'eng-gbr',
-    },
     loading: true,
     media: {
         accept: {id: 'everything', name: ''},
@@ -58,7 +47,6 @@ export const persistantState: Partial<PyriteState> = mergeDeep({
             collapsed: false,
         },
     },
-    theme: 'system',
 }, commonPersistantState)
 
 // State is always overwritten by these properties
@@ -73,7 +61,7 @@ export const volatileState: Partial<PyriteState> = mergeDeep({
     },
     channels: [],
     chat: {
-        activeChannelId: null,
+        activeChannelSlug: null,
         channel: '',
         channels: {
             main: {
@@ -88,13 +76,6 @@ export const volatileState: Partial<PyriteState> = mergeDeep({
         },
         message: '',
         width: 375,
-    },
-    env: {
-        isBrowser: true,
-        isFirefox: false,
-        isSafari: false,
-        layout: 'desktop',
-        ua: '',
     },
     files: {
         playing: [],
@@ -122,6 +103,14 @@ export const volatileState: Partial<PyriteState> = mergeDeep({
         // so send can be modified in Settings.
         present: true,
         record: false,
+    },
+    sfu: {
+        profile: {
+            // Galene-specific user data - synced from $s.profile
+            availability: {id: 'available', name: 'Available'},
+            mic: true,
+            raisehand: false,
+        },
     },
     streams: [],
     upMedia: {

@@ -425,16 +425,25 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
 
     /**
      * Get channel members
-     * GET /api/channels/:channelId/members
+     * GET /api/channels/:channelSlug/members
+     * Accepts channel slug (matches Galene group name 1:1)
      */
-    api.get('/channels/:channelId/members', async (context, request) => {
+    api.get('/channels/:channelSlug/members', async (context, request) => {
         try {
-            const {channelId} = request.params
-            const channelIdNum = parseInt(channelId, 10)
+            const {channelSlug} = request.params
 
-            if (isNaN(channelIdNum)) {
+            if (!channelSlug || typeof channelSlug !== 'string') {
                 return {
-                    error: 'Invalid channel ID',
+                    error: 'Invalid channel slug',
+                    success: false,
+                }
+            }
+
+            // Look up channel by slug
+            const channel = channelManager!.getChannelBySlug(channelSlug)
+            if (!channel) {
+                return {
+                    error: 'Channel not found',
                     success: false,
                 }
             }
@@ -449,14 +458,14 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 }
             }
 
-            if (!channelManager!.canAccessChannel(channelIdNum, userId)) {
+            if (!channelManager!.canAccessChannel(channel.id, userId)) {
                 return {
                     error: 'Access denied',
                     success: false,
                 }
             }
 
-            const members = channelManager!.getChannelMembers(channelIdNum)
+            const members = channelManager!.getChannelMembers(channel.id)
 
             return {
                 members,

@@ -83,7 +83,6 @@ function createStaticFileHandler(options: StaticFileServerOptions) {
             const indexFile = Bun.file(indexPath)
 
             if (await indexFile.exists()) {
-                (logger as any)?.debug(`[Static] SPA fallback for: ${pathname}`)
                 return new Response(indexFile, {
                     headers: {'Content-Type': 'text/html'},
                 })

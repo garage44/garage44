@@ -107,28 +107,37 @@ export async function onMessage(messageData: {
 
 export const emojiLookup = new Set()
 
-export function selectChannel(channelId: number | string) {
-    if (typeof channelId === 'number') {
-        $s.chat.activeChannelId = channelId
-        $s.chat.channel = channelId.toString()
+export function selectChannel(channelSlug: string | number) {
+    // channelSlug can be a channel slug (string) or a legacy numeric ID (for backward compatibility during migration)
+    // For non-channel chat (e.g., 'main', user IDs), treat as string
+    if (typeof channelSlug === 'string') {
+        // Check if it's a Pyrite channel slug (by checking if it exists in channels)
+        const channel = $s.channels.find(c => c.slug === channelSlug)
+        if (channel) {
+            $s.chat.activeChannelSlug = channelSlug
+            $s.chat.channel = channelSlug
+            // Load channel history
+            loadChannelHistory(channelSlug)
+        } else {
+            // Legacy chat channel (e.g., 'main', user IDs)
+            $s.chat.activeChannelSlug = null
+            $s.chat.channel = channelSlug
+        }
     } else {
-        $s.chat.activeChannelId = null
-        $s.chat.channel = channelId
+        // Legacy numeric ID (during migration)
+        $s.chat.activeChannelSlug = null
+        $s.chat.channel = channelSlug.toString()
+        loadChannelHistory(channelSlug)
     }
 
     // Clear unread count for the selected channel
     if ($s.chat.channels[$s.chat.channel]) {
         $s.chat.channels[$s.chat.channel].unread = 0
     }
-
-    // Load channel history if not already loaded
-    if (typeof channelId === 'number') {
-        loadChannelHistory(channelId)
-    }
 }
 
 // Track ongoing load requests to prevent duplicates
-const loadingChannels = new Set<number>()
+const loadingChannels = new Set<string | number>()
 
 /**
  * Load all users globally from all accessible channels
@@ -144,7 +153,7 @@ export async function loadGlobalUsers() {
 
         // Load members from all channels
         for (const channel of $s.channels) {
-            const membersResponse = await ws.get(`/channels/${channel.id}/members`)
+            const membersResponse = await ws.get(`/channels/${channel.slug}/members`)
             if (membersResponse && membersResponse.success && membersResponse.members) {
                 for (const member of membersResponse.members) {
                     // Store user globally: userId -> {username, avatar}
@@ -167,16 +176,16 @@ export async function loadGlobalUsers() {
     }
 }
 
-export async function loadChannelHistory(channelId: number) {
+export async function loadChannelHistory(channelSlug: string | number) {
     // Prevent duplicate requests for the same channel
-    if (loadingChannels.has(channelId)) {
-        logger.debug(`[Chat] Already loading history for channel ${channelId}`)
+    if (loadingChannels.has(channelSlug)) {
+        logger.debug(`[Chat] Already loading history for channel ${channelSlug}`)
         return
     }
 
     try {
-        loadingChannels.add(channelId)
-        const channelKey = channelId.toString()
+        loadingChannels.add(channelSlug)
+        const channelKey = channelSlug.toString()
 
         // Pre-create channel entry if it doesn't exist for immediate UI feedback
         if (!$s.chat.channels[channelKey]) {
@@ -187,10 +196,10 @@ export async function loadChannelHistory(channelId: number) {
             }
         }
 
-        logger.debug(`[Chat] Loading history for channel ${channelId}`)
+        logger.debug(`[Chat] Loading history for channel ${channelSlug}`)
 
         // Load channel members first to get avatars
-        const membersResponse = await ws.get(`/channels/${channelId}/members`)
+        const membersResponse = await ws.get(`/channels/${channelSlug}/members`)
         const members: Record<string, {avatar: string}> = {}
 
         if (membersResponse && membersResponse.success && membersResponse.members) {
@@ -208,7 +217,7 @@ export async function loadChannelHistory(channelId: number) {
             }
         }
 
-        const response = await ws.get(`/channels/${channelId}/messages`)
+        const response = await ws.get(`/channels/${channelSlug}/messages`)
 
         if (response && response.success && response.messages) {
             // Transform database message format to frontend format
@@ -222,7 +231,7 @@ export async function loadChannelHistory(channelId: number) {
                 user_id: msg.user_id,
             }))
 
-            logger.debug(`[Chat] Loaded ${transformedMessages.length} messages for channel ${channelId}`)
+            logger.debug(`[Chat] Loaded ${transformedMessages.length} messages for channel ${channelSlug}`)
 
             // Assign entire array to trigger DeepSignal reactivity
             $s.chat.channels[channelKey].messages = transformedMessages
@@ -233,24 +242,24 @@ export async function loadChannelHistory(channelId: number) {
             }
             Object.assign($s.chat.channels[channelKey].members, members)
         } else {
-            logger.warn(`[Chat] No messages in response for channel ${channelId}:`, response)
+            logger.warn(`[Chat] No messages in response for channel ${channelSlug}:`, response)
         }
     } catch (error) {
         logger.error('[Chat] Error loading channel history:', error)
     } finally {
-        loadingChannels.delete(channelId)
+        loadingChannels.delete(channelSlug)
     }
 }
 
 /**
  * Send typing indicator for current channel
  */
-export async function sendTypingIndicator(typing: boolean, channelId?: number) {
-    const targetChannelId = channelId || $s.chat.activeChannelId
-    if (!targetChannelId) return
+export async function sendTypingIndicator(typing: boolean, channelSlug?: string) {
+    const targetChannelSlug = channelSlug || $s.chat.activeChannelSlug
+    if (!targetChannelSlug) return
 
     try {
-        await ws.post(`/channels/${targetChannelId}/typing`, {
+        await ws.post(`/channels/${targetChannelSlug}/typing`, {
             typing,
         })
     } catch (error) {
@@ -260,7 +269,7 @@ export async function sendTypingIndicator(typing: boolean, channelId?: number) {
 }
 
 export async function sendMessage(message: string) {
-    if (!$s.chat.activeChannelId) {
+    if (!$s.chat.activeChannelSlug) {
         notifier.notify({
             level: 'error',
             message: 'No channel selected'
@@ -269,7 +278,7 @@ export async function sendMessage(message: string) {
     }
 
     // Stop typing indicator when message is sent
-    await sendTypingIndicator(false, $s.chat.activeChannelId)
+    await sendTypingIndicator(false, $s.chat.activeChannelSlug)
 
     const isCommand = message[0] === '/'
     let kind = 'message'
@@ -303,7 +312,7 @@ export async function sendMessage(message: string) {
     }
 
     try {
-        const response = await ws.post(`/channels/${$s.chat.activeChannelId}/messages`, {
+        const response = await ws.post(`/channels/${$s.chat.activeChannelSlug}/messages`, {
             message,
             kind
         })

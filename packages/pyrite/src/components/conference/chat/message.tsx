@@ -20,10 +20,10 @@ interface MessageProps {
         kind: string
         user_id?: string
     }
-    channelId?: number
+    channelSlug?: string
 }
 
-export default function Message({ message, channelId }: MessageProps) {
+export default function Message({ message, channelSlug }: MessageProps) {
     const messageModel = useMemo(() => {
         let messageData: MessageBlock[] = []
         let textBlock: MessageBlock = { type: 'text', value: '' }
@@ -76,9 +76,9 @@ export default function Message({ message, channelId }: MessageProps) {
         // Try global users first (available across all channels)
         if ($s.chat.users?.[message.user_id]) {
             avatarUrl = getAvatarUrl($s.chat.users[message.user_id].avatar, message.user_id)
-        } else if (channelId) {
+        } else if (channelSlug) {
             // Fallback to channel members for backward compatibility
-            const channelKey = channelId.toString()
+            const channelKey = channelSlug
             const channel = $s.chat.channels[channelKey]
             if (channel?.members?.[message.user_id]) {
                 avatarUrl = getAvatarUrl(channel.members[message.user_id].avatar, message.user_id)

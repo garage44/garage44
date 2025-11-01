@@ -31,8 +31,8 @@ export default function AdminControls({ path }: AdminControlsProps) {
         const context = await api.get('/api/logout')
         Object.assign($s.admin, context)
         // Clear stored credentials
-        $s.user.username = ''
-        $s.user.password = ''
+        $s.profile.username = ''
+        $s.profile.password = ''
         store.save()
         route('/')
     }

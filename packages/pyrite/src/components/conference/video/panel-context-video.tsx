@@ -5,7 +5,6 @@ import {$s} from '@/app'
 import {$t} from '@garage44/common/app'
 import {currentGroup} from '@/models/group'
 import {connection} from '@/models/sfu/sfu'
-import './panel-context-video.css'
 
 export default function PanelContextVideo() {
     const [active, setActive] = useState(false)
@@ -42,7 +41,7 @@ export default function PanelContextVideo() {
         if (typeof forceState === 'object') {
             setActive(false)
         } else {
-            setActive(prev => !prev)
+            setActive((prev) => !prev)
         }
 
         // Undo input action context state when there is no text yet...

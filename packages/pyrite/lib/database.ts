@@ -15,9 +15,9 @@ let db: Database | null = null
 export interface Channel {
     created_at: number
     description: string
-    galene_group: string
     id: number
     name: string
+    slug: string
 }
 
 export interface ChannelMember {
@@ -68,12 +68,15 @@ function createPyriteTables() {
     db.exec(`
         CREATE TABLE IF NOT EXISTS channels (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            slug TEXT UNIQUE NOT NULL,
             description TEXT NOT NULL DEFAULT '',
-            galene_group TEXT NOT NULL,
             created_at INTEGER NOT NULL
         )
     `)
+
+    // Create index on slug for performance
+    db.exec('CREATE INDEX IF NOT EXISTS idx_channels_slug ON channels(slug)')
 
     // Channel members table
     // Note: user_id is TEXT to match users.id (UUID string from common database)
@@ -142,11 +145,12 @@ export function initializeDefaultData() {
             const now = Date.now()
 
             // Create default "general" channel
+            // slug directly matches Galene group name (1:1 mapping)
             const channelInsert = db.prepare(`
-                INSERT INTO channels (name, description, galene_group, created_at)
+                INSERT INTO channels (name, slug, description, created_at)
                 VALUES (?, ?, ?, ?)
             `)
-            const channelResult = channelInsert.run('general', 'General discussion channel', 'general', now)
+            const channelResult = channelInsert.run('general', 'general', 'General discussion channel', now)
             const channelId = channelResult.lastInsertRowid as number
 
             if (!channelId || channelId <= 0) {

@@ -63,31 +63,91 @@ class Router {
 }
 
 // SFU Proxy - proxies WebSocket connections to Galène
+// This is a pass-through proxy that doesn't require WebSocket server management
 async function proxySFUWebSocket(request: Request, server: any) {
     const sfuUrl = config.sfu.url.replace('http://', 'ws://').replace('https://', 'wss://')
     const url = new URL(request.url)
-    const targetUrl = `${sfuUrl}${url.pathname}${url.search}`
+
+    // Galene expects WebSocket connections at /ws, not /sfu
+    // Map client's /sfu path to Galene's /ws endpoint
+    const targetUrl = `${sfuUrl}/ws${url.search}`
+
+    logger.info(`[SFU Proxy] Connecting to upstream: ${targetUrl}`)
+    logger.debug(`[SFU Proxy] Client requested: ${request.url}`)
+    logger.debug(`[SFU Proxy] SFU base URL: ${config.sfu.url}`)
 
     try {
-        // Create WebSocket connection to Galène
-        const sfuWs = new WebSocket(targetUrl)
+        // Create WebSocket connection to upstream server (Galène)
+        const upstream = new WebSocket(targetUrl)
 
-        // Upgrade client connection
+        // Wait for upstream connection to open before upgrading client
+        // This ensures we can catch connection errors early
+        await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                logger.error(`[SFU Proxy] Connection timeout after 5s for ${targetUrl}`)
+                reject(new Error(`Connection timeout after 5s for ${targetUrl}`))
+            }, 5000)
+
+            upstream.onopen = () => {
+                clearTimeout(timeout)
+                logger.info(`[SFU Proxy] Successfully connected to upstream: ${targetUrl}`)
+                resolve()
+            }
+
+            upstream.onerror = (error: Event) => {
+                clearTimeout(timeout)
+                logger.error(`[SFU Proxy] Upstream WebSocket error for ${targetUrl}:`, error)
+                if ('message' in error) {
+                    logger.error(`[SFU Proxy] Error message: ${(error as any).message}`)
+                }
+                logger.error(`[SFU Proxy] Upstream connection state: ${upstream.readyState}`)
+
+                // Try to get more error details
+                if (upstream.readyState === WebSocket.CLOSED || upstream.readyState === WebSocket.CLOSING) {
+                    logger.error(`[SFU Proxy] Connection closed immediately, check if Galene is running on ${targetUrl}`)
+                }
+
+                reject(new Error(`Failed to connect to ${targetUrl}. Check if Galene is running and accessible.`))
+            }
+
+            upstream.onclose = (event: CloseEvent) => {
+                clearTimeout(timeout)
+                logger.warn(`[SFU Proxy] Upstream connection closed before upgrade: ${event.code} ${event.reason || 'no reason'}`)
+                if (event.code !== 1000) {
+                    logger.error(`[SFU Proxy] Abnormal close: code=${event.code}, reason=${event.reason || 'none'}`)
+                }
+                // Only reject if not already resolved
+                if (upstream.readyState !== WebSocket.OPEN) {
+                    reject(new Error(`Connection closed: ${event.code} ${event.reason || 'no reason'}`))
+                }
+            }
+        })
+
+        // Upgrade client connection with special marker to skip manager lookup
         const upgraded = server.upgrade(request, {
             data: {
                 endpoint: '/sfu',
-                sfuWs,
+                proxy: true, // Mark as proxy to skip manager lookup
+                upstream, // Store upstream connection for generic forwarding
             },
         })
 
         if (upgraded) {
+            logger.info(`[SFU Proxy] Client connection upgraded successfully`)
+            // Bidirectional message forwarding will be handled by common WebSocket handler
             return
         }
 
+        logger.error(`[SFU Proxy] Failed to upgrade client connection`)
+        upstream.close()
         return new Response('WebSocket upgrade failed', {status: 400})
     } catch (error) {
         logger.error(`[SFU Proxy] Failed to connect to SFU: ${error}`)
-        return new Response('Failed to connect to SFU', {status: 502})
+        if (error instanceof Error) {
+            logger.error(`[SFU Proxy] Error details: ${error.message}`)
+            logger.error(`[SFU Proxy] Stack: ${error.stack}`)
+        }
+        return new Response(`Failed to connect to SFU: ${error instanceof Error ? error.message : String(error)}`, {status: 502})
     }
 }
 

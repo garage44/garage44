@@ -305,6 +305,16 @@ class WebSocketServerManager extends EventEmitter {
 function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>) {
     return {
         close: (ws: any) => {
+            // Handle proxy connections (forward close to upstream)
+            if (ws.data?.proxy && ws.data?.upstream) {
+                try {
+                    ws.data.upstream.close()
+                } catch (error) {
+                    logger.debug(`[WS Proxy] Error closing upstream connection: ${error}`)
+                }
+                return
+            }
+
             const endpoint = ws.data?.endpoint
             const manager = managers.get(endpoint)
             if (manager) {
@@ -312,6 +322,16 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
             }
         },
         message: (ws: any, message: string) => {
+            // Handle proxy connections (forward message to upstream)
+            if (ws.data?.proxy && ws.data?.upstream) {
+                try {
+                    ws.data.upstream.send(message)
+                } catch (error) {
+                    logger.error(`[WS Proxy] Error forwarding message: ${error}`)
+                }
+                return
+            }
+
             const endpoint = ws.data?.endpoint
             const manager = managers.get(endpoint)
             if (manager) {
@@ -319,6 +339,45 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
             }
         },
         open: (ws: any) => {
+            // Handle proxy connections (set up bidirectional forwarding)
+            if (ws.data?.proxy && ws.data?.upstream) {
+                const upstream = ws.data.upstream
+
+                // Forward messages from upstream to client
+                upstream.onmessage = (event: MessageEvent) => {
+                    try {
+                        if (ws.readyState === 1) { // WebSocket.OPEN
+                            ws.send(event.data)
+                        }
+                    } catch (error) {
+                        logger.error(`[WS Proxy] Error forwarding message from upstream: ${error}`)
+                    }
+                }
+
+                // Forward errors and close events
+                upstream.onerror = (error: Event) => {
+                    logger.error(`[WS Proxy] Upstream connection error: ${error}`)
+                    try {
+                        ws.close(1011, 'Upstream Error')
+                    } catch (e) {
+                        // Connection may already be closed
+                    }
+                }
+
+                upstream.onclose = (event: CloseEvent) => {
+                    logger.debug(`[WS Proxy] Upstream connection closed: ${event.code} ${event.reason}`)
+                    try {
+                        ws.close(event.code || 1000, event.reason || 'Upstream Closed')
+                    } catch (e) {
+                        // Connection may already be closed
+                    }
+                }
+
+                logger.info(`[WS Proxy] Proxy connection established for ${ws.data?.endpoint || 'unknown'}`)
+                return
+            }
+
+            // Normal manager-based handling
             const endpoint = ws.data?.endpoint
             const manager = managers.get(endpoint)
             if (manager) {

@@ -71,8 +71,8 @@ export const GroupControls = () => {
     }
 
     const toggleRaiseHand = () => {
-        sfu.connection?.userAction('setdata', sfu.connection.id, { raisehand: !$s.user.data.raisehand })
-        if (!$s.user.data.raisehand) {
+        sfu.connection?.userAction('setdata', sfu.connection.id, { raisehand: !$s.sfu.profile.raisehand })
+        if (!$s.sfu.profile.raisehand) {
             sfu.connection?.userMessage('raisehand')
         }
     }
@@ -166,9 +166,9 @@ export const GroupControls = () => {
 
             {$s.group.connected && (
                 <Button
-                    active={$s.user.data.raisehand}
+                    active={$s.sfu.profile.raisehand}
                     icon="Hand"
-                    tip={$s.user.data.raisehand ? $t('group.action.raisehand_active') : $t('group.action.raisehand')}
+                    tip={$s.sfu.profile.raisehand ? $t('group.action.raisehand_active') : $t('group.action.raisehand')}
                     variant="toggle"
                     onClick={toggleRaiseHand}
                 />

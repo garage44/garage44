@@ -289,6 +289,7 @@ ServerConnection.prototype.connect = async function(url) {
         this.socket.onopen = function(e) {
             sc.send({
                 type: 'handshake',
+                version: ["2"],
                 id: sc.id,
             });
             if(sc.onconnected)

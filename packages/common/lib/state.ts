@@ -11,7 +11,11 @@ const persistentState = {
 
 const volatileState = {
     env: {
+        isBrowser: true,
+        isFirefox: false,
+        isSafari: false,
         layout: 'desktop',
+        ua: '',
         url: '',
     },
     language_ui: {
@@ -31,6 +35,7 @@ const volatileState = {
         avatar: 'placeholder-1.png',
         displayName: '',
         id: null,
+        password: '',
         username: '',
     },
 }

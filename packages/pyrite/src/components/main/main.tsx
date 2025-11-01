@@ -14,6 +14,22 @@ export const Main = () => {
             const context = await api.get('/api/context')
             mergeDeep($s.admin, context)
 
+            // Set profile data from context (username, id, avatar, displayName, password)
+            // This ensures profile is populated on page load when user is already authenticated
+            if (context.authenticated && context.username) {
+                $s.profile.username = context.username
+                if (context.id) {
+                    $s.profile.id = context.id
+                }
+                if (context.password) {
+                    $s.profile.password = context.password
+                }
+                if (context.profile) {
+                    $s.profile.avatar = context.profile.avatar || 'placeholder-1.png'
+                    $s.profile.displayName = context.profile.displayName || context.username || 'User'
+                }
+            }
+
             if (context.authenticated) {
                 ws.connect()
             }
@@ -36,8 +52,23 @@ export const Main = () => {
             Object.assign($s.admin, context)
 
             // Store credentials for Galene group reuse
-            $s.user.username = username
-            $s.user.password = password
+            $s.profile.username = username
+            $s.profile.password = password
+
+            // Also populate profile from context response (username, id, avatar, displayName, password)
+            if (context.username) {
+                $s.profile.username = context.username
+            }
+            if (context.password) {
+                $s.profile.password = context.password
+            }
+            if (context.id) {
+                $s.profile.id = context.id
+            }
+            if (context.profile) {
+                $s.profile.avatar = context.profile.avatar || 'placeholder-1.png'
+                $s.profile.displayName = context.profile.displayName || context.username || 'User'
+            }
 
             if (!context.authenticated || (context.authenticated && !context.permission)) {
                 if (!context.authenticated) {

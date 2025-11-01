@@ -257,6 +257,7 @@ export const createFinalHandler = (config: {
                         ...baseContext,
                         id: adminUser.id,
                         username: adminUser.username,
+                        password: adminUser.password.key, // Include password for SFU auth (will encrypt later)
                         profile: {
                             avatar: adminUser.profile.avatar || 'placeholder-1.png',
                             displayName: adminUser.profile.displayName || adminUser.username,
@@ -283,6 +284,7 @@ export const createFinalHandler = (config: {
                         ...baseContext,
                         id: user.id,
                         username: user.username,
+                        password: user.password.key, // Include password for SFU auth (will encrypt later)
                         profile: {
                             avatar: user.profile.avatar || 'placeholder-1.png',
                             displayName: user.profile.displayName || user.username,
@@ -353,6 +355,7 @@ export const createFinalHandler = (config: {
                     ...baseContext,
                     id: user.id,
                     username: user.username,
+                    password: user.password.key, // Include password for SFU auth (will encrypt later)
                     profile: {
                         avatar: user.profile.avatar || 'placeholder-1.png',
                         displayName: user.profile.displayName || user.username,

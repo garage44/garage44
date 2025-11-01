@@ -44,6 +44,8 @@ AI Decision Records (ADRs) are structured documents that capture important archi
 | [013](./ADR-013-theme-switching-system.md) | Theme Switching System | Architecture | Accepted | 2025-10-15 |
 | [014](./ADR-014-unified-theme-system.md) | Unified Theme System | Architecture | Accepted | 2025-10-16 |
 | [015](./ADR-015-unified-authentication-flow.md) | Unified Authentication Flow | Architecture | Proposed | 2025-01-27 |
+| [016](./ADR-016-three-column-conference-layout.md) | Three-Column Conference Layout with Right-Side Video Panel | Architecture | Proposed | 2025-01-27 |
+| [017](./ADR-017-galene-direct-connection-revival.md) | Direct Galene Connection Revival for Video Conferencing | Architecture | Proposed | 2025-01-27 |
 
 ### ADRs by Decision Type
 
@@ -60,6 +62,8 @@ AI Decision Records (ADRs) are structured documents that capture important archi
 - [ADR-013](./ADR-013-theme-switching-system.md): Theme Switching
 - [ADR-014](./ADR-014-unified-theme-system.md): Unified Theme System
 - [ADR-015](./ADR-015-unified-authentication-flow.md): Unified Authentication Flow
+- [ADR-016](./ADR-016-three-column-conference-layout.md): Three-Column Conference Layout
+- [ADR-017](./ADR-017-galene-direct-connection-revival.md): Direct Galene Connection Revival
 - Pattern: [Architecture Pattern](./guide/PATTERNS.md#architecture-pattern)
 
 **Tool Adoption/Replacement** (Developer Tooling):
@@ -83,18 +87,19 @@ AI Decision Records (ADRs) are structured documents that capture important archi
 - ADR-001, ADR-003, ADR-004, ADR-006, ADR-007, ADR-011
 
 **Pyrite** (Video conferencing):
-- ADR-001, ADR-003, ADR-004, ADR-011, ADR-012
+- ADR-001, ADR-003, ADR-004, ADR-011, ADR-012, ADR-016, ADR-017
 
 **Infrastructure** (Build, deployment):
-- ADR-001, ADR-003, ADR-005, ADR-007, ADR-010, ADR-011
+- ADR-001, ADR-003, ADR-005, ADR-007, ADR-010, ADR-011, ADR-017
 
 ### ADRs by Tag
 
-**Frontend**: ADR-004, ADR-011, ADR-012, ADR-013, ADR-014
-**Backend**: ADR-003, ADR-006, ADR-007, ADR-008
+**Frontend**: ADR-004, ADR-011, ADR-012, ADR-013, ADR-014, ADR-016
+**Backend**: ADR-003, ADR-006, ADR-007, ADR-008, ADR-017
+**Infrastructure**: ADR-001, ADR-003, ADR-005, ADR-007, ADR-010, ADR-011, ADR-017
 **Tooling**: ADR-003, ADR-007, ADR-010, ADR-011
 **Performance**: ADR-003, ADR-010, ADR-011
-**UX**: ADR-011, ADR-012, ADR-013, ADR-014
+**UX**: ADR-011, ADR-012, ADR-013, ADR-014, ADR-016
 
 ## Architectural Principles
 

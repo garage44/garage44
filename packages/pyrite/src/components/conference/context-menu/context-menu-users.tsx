@@ -100,12 +100,12 @@ export default function UsersContextMenu({ user }: UsersContextMenuProps) {
         <div class={classnames('c-users-context-menu context-menu', {active: active})}>
             <Icon class="icon icon-d" name="menu" onClick={toggleMenu} />
             {active && <div class="context-actions">
-                {user.id !== $s.user.id && <button class="action" onClick={activateUserChat}>
+                {user.id !== $s.profile.id && <button class="action" onClick={activateUserChat}>
                     <Icon class="icon icon-s" name="chat" />
                     {`${$t('user.action.chat', {username: user.username})}`}
                 </button>}
 
-                {user.id !== $s.user.id && <button class="action">
+                {user.id !== $s.profile.id && <button class="action">
                     <FieldFile
                         value={$s.files.upload}
                         accept="*"
@@ -115,37 +115,37 @@ export default function UsersContextMenu({ user }: UsersContextMenuProps) {
                     />
                 </button>}
 
-                {($s.permissions.op && user.id !== $s.user.id) && <ContextInput
+                {($s.permissions.op && user.id !== $s.profile.id) && <ContextInput
                     value={warning}
                     submit={sendNotification}
                     FieldTextComponent={FieldText}
                 />}
 
-                {($s.permissions.op && user.id !== $s.user.id) && <button class="action" onClick={muteUser}>
+                {($s.permissions.op && user.id !== $s.profile.id) && <button class="action" onClick={muteUser}>
                     <Icon class="icon icon-s" name="mic" />
                     {$t('user.action.mute_mic')}
                 </button>}
 
-                {($s.permissions.op && user.id !== $s.user.id) && <button class="action" onClick={toggleOperator}>
+                {($s.permissions.op && user.id !== $s.profile.id) && <button class="action" onClick={toggleOperator}>
                     <Icon class="icon icon-s" name="operator" />
                     {user.permissions.op ? $t('user.action.set_role.op_retract') : $t('user.action.set_role.op_assign')}
                 </button>}
 
-                {($s.permissions.op && user.id !== $s.user.id) && <button class="action" onClick={togglePresenter}>
+                {($s.permissions.op && user.id !== $s.profile.id) && <button class="action" onClick={togglePresenter}>
                     <Icon class="icon icon-s" name="present" />
                     {user.permissions.present ? $t('user.action.set_role.present_retract') : $t('user.action.set_role.present_assign')}
                 </button>}
 
-                {user.id === $s.user.id && <ContextSelect
-                    value={$s.user.data.availability}
+                {user.id === $s.profile.id && <ContextSelect
+                    value={$s.sfu.profile.availability}
                     icon="User"
                     options={statusOptions}
                     submit={setAvailability}
-                    title={$t(`user.action.set_availability.${$s.user.data.availability.id}`)}
+                    title={$t(`user.action.set_availability.${$s.sfu.profile.availability.id}`)}
                     FieldSelectComponent={FieldSelect}
                 />}
 
-                {(user.id !== $s.user.id && $s.permissions.op) && <ContextInput
+                {(user.id !== $s.profile.id && $s.permissions.op) && <ContextInput
                     value={kick}
                     required={false}
                     submit={kickUser}

@@ -11,8 +11,8 @@ export const Login = () => {
         setErrors({ username: [], password: [] })
 
         const context = await api.post('/api/login', {
-            password: $s.user.password,
-            username: $s.user.username,
+            password: $s.profile.password,
+            username: $s.profile.username,
         })
 
         Object.assign($s.admin, context)
@@ -49,8 +49,8 @@ export const Login = () => {
             <div class="panels">
                 <section>
                     <FieldText
-                        value={$s.user.username}
-                        onChange={(value) => $s.user.username = value}
+                        value={$s.profile.username}
+                        onChange={(value) => $s.profile.username = value}
                         autocomplete="username"
                         autofocus={true}
                         label={$t('user.username')}
@@ -59,8 +59,8 @@ export const Login = () => {
                     />
 
                     <FieldText
-                        value={$s.user.password}
-                        onChange={(value) => $s.user.password = value}
+                        value={$s.profile.password}
+                        onChange={(value) => $s.profile.password = value}
                         autocomplete="password"
                         label={$t('user.password')}
                         name="password"

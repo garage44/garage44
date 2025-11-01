@@ -4,8 +4,8 @@ import type {CommonState} from '@garage44/common/types'
 export interface Channel {
     id: number
     name: string
+    slug: string
     description: string
-    galene_group: string
     created_at: number
     member_count?: number
     unread_count?: number
@@ -22,7 +22,7 @@ export interface PyriteState extends CommonState {
     }
     channels: Channel[]
     chat: {
-        activeChannelId: number | null
+        activeChannelSlug: string | null
         channel: string
         channels: {
             [key: string]: {
@@ -99,12 +99,6 @@ export interface PyriteState extends CommonState {
     login: {
         autofocus: boolean
     }
-    profile: {
-        id: string | null
-        username: string
-        displayName: string
-        avatar: string
-    }
     media: {
         accept: {id: string, name: string}
         upstream: {id: string, name: string}
@@ -122,24 +116,20 @@ export interface PyriteState extends CommonState {
         record: boolean
     }
     streams: any[]
+    sfu: {
+        profile: {
+            // Galene-specific user data
+            availability: {id: string, name: string}
+            mic: boolean
+            raisehand: boolean
+        }
+    }
     theme: 'light' | 'dark' | 'system'
     upMedia: {
         audio: any[]
         camera: any[]
         screenshare: any[]
         video: any[]
-    }
-    user: {
-        authOption: string
-        data: {
-            availability: {id: string, name: string}
-            mic: boolean
-            raisehand: boolean
-        }
-        id: string | null
-        name: string
-        username: string
-        password: string
     }
     users: any[]
 }

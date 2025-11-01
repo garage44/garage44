@@ -15,10 +15,11 @@ const handleKeyDown = (e: KeyboardEvent) => {
 }
 
 interface ChannelChatProps {
-    channelId: number
+    channelSlug: string
+    channel?: any
 }
 
-export default function ChannelChat({channelId}: ChannelChatProps) {
+export default function ChannelChat({channelSlug, channel}: ChannelChatProps) {
     const viewRef = useRef<HTMLDivElement>(null)
     const messagesRef = useRef<HTMLDivElement>(null)
     const chatInputRef = useRef<HTMLTextAreaElement>(null)
@@ -27,17 +28,17 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
 
     // Get current channel from state - access directly for DeepSignal reactivity
     // Access $s.channels in render so Preact tracks it reactively
-    const currentChannel = $s.channels.find((c) => c.id === channelId)
+    const currentChannel = channel || $s.channels.find((c) => c.slug === channelSlug)
 
     // Only log when channel is found to avoid spam
     useEffect(() => {
         if (currentChannel) {
-            logger.debug(`[ChannelChat] Looking for channel ${channelId}, found:`, currentChannel)
+            logger.debug(`[ChannelChat] Looking for channel ${channelSlug}, found:`, currentChannel)
         }
-    }, [currentChannel, channelId])
+    }, [currentChannel, channelSlug])
 
-    // Get channel key - needed for accessing messages
-    const channelKey = channelId.toString()
+    // Get channel key - needed for accessing messages (slug is the key now)
+    const channelKey = channelSlug
 
     // Access messages directly from DeepSignal - this is reactive
     // Accessing $s.chat.channels[channelKey] in render makes it reactive
@@ -81,10 +82,10 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
             clearTimeout(typingTimeoutRef.current)
             typingTimeoutRef.current = null
         }
-        await sendTypingIndicator(false, channelId)
+        await sendTypingIndicator(false, channelSlug)
 
         // Set the active channel before sending
-        $s.chat.activeChannelId = channelId
+        $s.chat.activeChannelSlug = channelSlug
         sendChatMessage(formattedMessage)
         $s.chat.message = ''
         $s.chat.emoji.active = false
@@ -143,9 +144,9 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
 
     // Set active channel when component mounts
     useEffect(() => {
-        $s.chat.activeChannelId = channelId
+        $s.chat.activeChannelSlug = channelSlug
         // Pre-create channel entry if it doesn't exist for immediate UI feedback
-        const channelKey = channelId.toString()
+        const channelKey = channelSlug
         if (!$s.chat.channels[channelKey]) {
             $s.chat.channels[channelKey] = {
                 id: channelKey,
@@ -156,7 +157,7 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
         } else if (!$s.chat.channels[channelKey].typing) {
             $s.chat.channels[channelKey].typing = {}
         }
-    }, [channelId])
+    }, [channelSlug])
 
     // Cleanup typing timeout on unmount
     useEffect(() => {
@@ -165,9 +166,9 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
                 clearTimeout(typingTimeoutRef.current)
             }
             // Stop typing indicator when leaving channel
-            sendTypingIndicator(false, channelId)
+            sendTypingIndicator(false, channelSlug)
         }
-    }, [channelId])
+    }, [channelSlug])
 
     if (!currentChannel) {
         return (
@@ -232,7 +233,7 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
                 return (
                     <>
                         {sorted.map((message, index) => (
-                            <ChatMessage key={index} message={message} channelId={channelId} />
+                            <ChatMessage key={index} message={message} channelSlug={channelSlug} />
                         ))}
                         {otherTypingUsers.length > 0 && (
                             <div class="typing-indicator">
@@ -264,7 +265,7 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
                         const now = Date.now()
                         if (now - lastTypingSentRef.current > 1000) {
                         // Send typing indicator every 1 second max
-                            sendTypingIndicator(true, channelId)
+                            sendTypingIndicator(true, channelSlug)
                             lastTypingSentRef.current = now
                         }
 
@@ -275,7 +276,7 @@ export default function ChannelChat({channelId}: ChannelChatProps) {
 
                         // Set timeout to stop typing indicator after 3 seconds of inactivity
                         typingTimeoutRef.current = setTimeout(() => {
-                            sendTypingIndicator(false, channelId)
+                            sendTypingIndicator(false, channelSlug)
                         }, 3000)
                     }}
                     autofocus={true}

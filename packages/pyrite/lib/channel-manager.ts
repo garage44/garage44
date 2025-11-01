@@ -10,8 +10,8 @@ import type {User} from './database.ts'
 export interface Channel {
     id: number
     name: string
+    slug: string
     description: string
-    galene_group: string
     created_at: number
     member_count?: number
     unread_count?: number
@@ -35,22 +35,23 @@ export class ChannelManager {
 
     /**
      * Create a new channel
+     * slug directly matches Galene group name (1:1 mapping)
      */
-    async createChannel(name: string, description: string, galeneGroup: string, creatorId: string): Promise<Channel> {
+    async createChannel(name: string, slug: string, description: string, creatorId: string): Promise<Channel> {
         const now = Date.now()
 
         const insertChannel = this.db.prepare(`
-            INSERT INTO channels (name, description, galene_group, created_at)
+            INSERT INTO channels (name, slug, description, created_at)
             VALUES (?, ?, ?, ?)
         `)
 
-        const result = insertChannel.run(name, description, galeneGroup, now)
+        const result = insertChannel.run(name, slug, description, now)
         const channelId = result.lastInsertRowid as number
 
         // Add creator as admin
         await this.addMember(channelId, creatorId, 'admin')
 
-        logger.info(`[ChannelManager] Created channel "${name}" (id: ${channelId})`)
+        logger.info(`[ChannelManager] Created channel "${name}" (slug: ${slug}, id: ${channelId})`)
 
         return this.getChannel(channelId)!
     }
@@ -83,6 +84,22 @@ export class ChannelManager {
         `)
 
         return stmt.get(name) as Channel | null
+    }
+
+    /**
+     * Get a channel by slug
+     * slug directly matches Galene group name (1:1 mapping)
+     */
+    getChannelBySlug(slug: string): Channel | null {
+        const stmt = this.db.prepare(`
+            SELECT c.*, COUNT(cm.user_id) as member_count
+            FROM channels c
+            LEFT JOIN channel_members cm ON c.id = cm.channel_id
+            WHERE c.slug = ?
+            GROUP BY c.id
+        `)
+
+        return stmt.get(slug) as Channel | null
     }
 
     /**
@@ -119,7 +136,7 @@ export class ChannelManager {
     /**
      * Update a channel
      */
-    async updateChannel(id: number, updates: Partial<Pick<Channel, 'name' | 'description' | 'galene_group'>>): Promise<Channel | null> {
+    async updateChannel(id: number, updates: Partial<Pick<Channel, 'name' | 'slug' | 'description'>>): Promise<Channel | null> {
         const channel = this.getChannel(id)
         if (!channel) return null
 
@@ -130,13 +147,13 @@ export class ChannelManager {
             fields.push('name = ?')
             values.push(updates.name)
         }
+        if (updates.slug !== undefined) {
+            fields.push('slug = ?')
+            values.push(updates.slug)
+        }
         if (updates.description !== undefined) {
             fields.push('description = ?')
             values.push(updates.description)
-        }
-        if (updates.galene_group !== undefined) {
-            fields.push('galene_group = ?')
-            values.push(updates.galene_group)
         }
 
         if (fields.length === 0) return channel

@@ -38,17 +38,17 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
 
     /**
      * Send a message to a channel
-     * POST /channels/:channelId/messages
+     * POST /channels/:channelSlug/messages
+     * Accepts channel slug (matches Galene group name 1:1)
      */
-    api.post('/channels/:channelId/messages', async (context, request) => {
+    api.post('/channels/:channelSlug/messages', async (context, request) => {
         try {
-            const {channelId} = request.params
-            const channelIdNum = parseInt(channelId, 10)
+            const {channelSlug} = request.params
             const {kind = 'message', message} = request.data
 
-            if (isNaN(channelIdNum)) {
+            if (!channelSlug || typeof channelSlug !== 'string') {
                 return {
-                    error: 'Invalid channel ID',
+                    error: 'Invalid channel slug',
                     success: false,
                 }
             }
@@ -70,15 +70,24 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
                 }
             }
 
+            // Look up channel by slug
+            const channel = channelManager!.getChannelBySlug(channelSlug)
+            if (!channel) {
+                return {
+                    error: 'Channel not found',
+                    success: false,
+                }
+            }
+
             // Check if user can access channel
-            if (!channelManager!.canAccessChannel(channelIdNum, userId)) {
+            if (!channelManager!.canAccessChannel(channel.id, userId)) {
                 return {
                     error: 'Access denied',
                     success: false,
                 }
             }
 
-            // Save message to database
+            // Save message to database (use channel.id for foreign key)
             const db = getDatabase()
             const now = Date.now()
 
@@ -87,11 +96,12 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
                 VALUES (?, ?, ?, ?, ?, ?)
             `)
 
-            const result = insertMessage.run(channelIdNum, userId, username, message, now, kind)
+            const result = insertMessage.run(channel.id, userId, username, message, now, kind)
             const messageId = result.lastInsertRowid
 
             const messageData = {
-                channelId: channelIdNum,
+                channelId: channel.id,
+                channelSlug: channel.slug,
                 id: messageId,
                 kind,
                 message,
@@ -100,8 +110,8 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
                 username,
             }
 
-            // Broadcast to all clients in the channel
-            wsManager.broadcast(`/channels/${channelId}/messages`, messageData)
+            // Broadcast to all clients in the channel (use slug in broadcast path)
+            wsManager.broadcast(`/channels/${channelSlug}/messages`, messageData)
 
             const response = {
                 message: messageData,
@@ -119,17 +129,26 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
 
     /**
      * Send typing indicator
-     * POST /api/channels/:channelId/typing
+     * POST /channels/:channelSlug/typing
+     * Accepts channel slug (matches Galene group name 1:1)
      */
-    api.post('/channels/:channelId/typing', async (context, request) => {
+    api.post('/channels/:channelSlug/typing', async (context, request) => {
         try {
-            const {channelId} = request.params
-            const channelIdNum = parseInt(channelId, 10)
+            const {channelSlug} = request.params
             const {typing} = request.data
 
-            if (isNaN(channelIdNum)) {
+            if (!channelSlug || typeof channelSlug !== 'string') {
                 return {
-                    error: 'Invalid channel ID',
+                    error: 'Invalid channel slug',
+                    success: false,
+                }
+            }
+
+            // Look up channel by slug
+            const channel = channelManager!.getChannelBySlug(channelSlug)
+            if (!channel) {
+                return {
+                    error: 'Channel not found',
                     success: false,
                 }
             }
@@ -137,7 +156,7 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
             // Get user ID from context
             const {userId} = await getUserIdFromContext(context)
 
-            if (!userId || !channelManager!.canAccessChannel(channelIdNum, userId)) {
+            if (!userId || !channelManager!.canAccessChannel(channel.id, userId)) {
                 return {
                     error: 'Access denied',
                     success: false,
@@ -147,8 +166,8 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
             // Get username from context
             const {username} = await getUserIdFromContext(context)
 
-            // Broadcast to all clients in the channel
-            wsManager.broadcast(`/channels/${channelId}/typing`, {
+            // Broadcast to all clients in the channel (use slug in broadcast path)
+            wsManager.broadcast(`/channels/${channelSlug}/typing`, {
                 timestamp: Date.now(),
                 typing,
                 userId,
@@ -167,17 +186,26 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
 
     /**
      * Get chat history for a channel
-     * GET /api/channels/:channelId/messages
+     * GET /channels/:channelSlug/messages
+     * Accepts channel slug (matches Galene group name 1:1)
      */
-    api.get('/channels/:channelId/messages', async (context, request) => {
+    api.get('/channels/:channelSlug/messages', async (context, request) => {
         try {
-            const {channelId} = request.params
-            const channelIdNum = parseInt(channelId, 10)
+            const {channelSlug} = request.params
             const {limit = 100} = request.data || {}
 
-            if (isNaN(channelIdNum)) {
+            if (!channelSlug || typeof channelSlug !== 'string') {
                 return {
-                    error: 'Invalid channel ID',
+                    error: 'Invalid channel slug',
+                    success: false,
+                }
+            }
+
+            // Look up channel by slug
+            const channel = channelManager!.getChannelBySlug(channelSlug)
+            if (!channel) {
+                return {
+                    error: 'Channel not found',
                     success: false,
                 }
             }
@@ -185,14 +213,14 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
             // Get user ID from context
             const {userId} = await getUserIdFromContext(context)
 
-            if (!userId || !channelManager!.canAccessChannel(channelIdNum, userId)) {
+            if (!userId || !channelManager!.canAccessChannel(channel.id, userId)) {
                 return {
                     error: 'Access denied',
                     success: false,
                 }
             }
 
-            // Load messages from database
+            // Load messages from database (use channel.id for query)
             const db = getDatabase()
             const stmt = db.prepare(`
                 SELECT id, channel_id, user_id, username, message, timestamp, kind
@@ -202,7 +230,7 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
                 LIMIT ?
             `)
 
-            const messages = stmt.all(channelIdNum, limit) as Array<{
+            const messages = stmt.all(channel.id, limit) as Array<{
                 channel_id: number
                 id: number
                 kind: string
@@ -216,7 +244,8 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
             messages.reverse()
 
             return {
-                channelId: channelIdNum,
+                channelId: channel.id,
+                channelSlug: channel.slug,
                 messages,
                 success: true,
             }

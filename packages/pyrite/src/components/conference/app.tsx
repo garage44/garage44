@@ -11,7 +11,6 @@ import PanelContextVideo from './video/panel-context-video'
 import {VideoStrip} from './video/video-strip'
 import {Link} from 'preact-router'
 import {Channel} from './channel/channel'
-import {Login} from './login/login'
 import ProfileSettings from './settings/profile-settings'
 
 export const ConferenceApp = () => {
@@ -30,15 +29,27 @@ export const ConferenceApp = () => {
                 emojiLookup.add(emoji.codePointAt())
             }
 
-            // Load current user info to populate $s.profile and $s.user.id
+            // Load current user info to populate $s.profile
+            // IMPORTANT: Preserve existing credentials (username/password) that were set during login
             try {
                 const userData = await api.get('/api/users/me')
                 if (userData?.id) {
-                    $s.user.id = userData.id
+                    // Store existing credentials before loading user data
+                    const existingUsername = $s.profile.username || ''
+                    const existingPassword = $s.profile.password || ''
+
                     $s.profile.id = userData.id
-                    $s.profile.username = userData.username || ''
+                    // Only set username if not already set (preserve login credentials)
+                    if (!existingUsername && userData.username) {
+                        $s.profile.username = userData.username
+                    }
                     $s.profile.displayName = userData.profile?.displayName || userData.username || 'User'
                     $s.profile.avatar = userData.profile?.avatar || 'placeholder-1.png'
+
+                    // Restore password if it was set (it won't come from API)
+                    if (existingPassword) {
+                        $s.profile.password = existingPassword
+                    }
 
                     // Ensure chat.users entry exists for backward compatibility
                     if (!$s.chat.users) {
@@ -48,7 +59,7 @@ export const ConferenceApp = () => {
                         avatar: $s.profile.avatar,
                         username: $s.profile.username,
                     }
-                    logger.info(`[ConferenceApp] Loaded user: ${userData.id}, avatar: ${$s.profile.avatar}`)
+                    logger.info(`[ConferenceApp] Loaded user: ${userData.id}, avatar: ${$s.profile.avatar}, username preserved: ${!!existingUsername}, password preserved: ${!!existingPassword}`)
                 }
             } catch (error) {
                 logger.warn('[ConferenceApp] Failed to load current user:', error)
@@ -60,8 +71,8 @@ export const ConferenceApp = () => {
         const context = await api.get('/api/logout')
         mergeDeep($s.admin, context)
         // Clear stored credentials
-        $s.user.username = ''
-        $s.user.password = ''
+        $s.login.username = ''
+        $s.login.password = ''
         store.save()
         route('/')
     }
@@ -115,8 +126,7 @@ export const ConferenceApp = () => {
                 }
             >
                 <Router>
-                    <Route path="/channels/:channelId" component={Channel} />
-                    <Route path="/login" component={Login} />
+                    <Route path="/channels/:channelSlug" component={Channel} />
                     <Route path="/settings" component={ProfileSettings} />
                     <Route default component={() => (
                         <div class="c-welcome">

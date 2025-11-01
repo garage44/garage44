@@ -10,8 +10,8 @@ import type {Channel} from '../../types.ts'
 import './context-channels.css'
 
 // Helper function outside component to avoid recreation
-const channelLink = (channelId: number) => {
-    return `/channels/${channelId}`
+const channelLink = (channelSlug: string) => {
+    return `/channels/${channelSlug}`
 }
 
 export default function ChannelsContext() {
@@ -19,8 +19,8 @@ export default function ChannelsContext() {
 
     // DeepSignal is reactive - no need for useMemo dependencies
     const currentChannel = useMemo(() => {
-        if (!$s.chat.activeChannelId) return null
-        return $s.channels.find((c) => c.id === $s.chat.activeChannelId)
+        if (!$s.chat.activeChannelSlug) return null
+        return $s.channels.find((c) => c.slug === $s.chat.activeChannelSlug)
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     const pollChannels = async () => {
@@ -47,14 +47,14 @@ export default function ChannelsContext() {
         const currentPath = window.location.pathname
 
         // Don't redirect if we're on a protected route (settings, login, etc.)
-        const protectedRoutes = ['/settings', '/login']
+        const protectedRoutes = ['/settings']
         if (protectedRoutes.some((route) => currentPath.startsWith(route))) {
             return
         }
 
-        if ($s.chat.activeChannelId) {
+        if ($s.chat.activeChannelSlug) {
             // Update the channel route when the user sets the active channel
-            route(`/channels/${$s.chat.activeChannelId}`, true)
+            route(`/channels/${$s.chat.activeChannelSlug}`, true)
         } else if (currentPath === '/' || currentPath.startsWith('/channels/')) {
             // Only redirect to home if we're already on home or a channel route
             // This prevents redirecting away from /settings or other routes
@@ -65,9 +65,9 @@ export default function ChannelsContext() {
     // Watch active channel changes - but only update route when channel changes, not on initial mount
     useEffect(() => {
         // Don't call updateRoute on mount - let the router handle the current URL
-        // Only update route when activeChannelId actually changes
-        if ($s.chat.activeChannelId !== null && $s.chat.activeChannelId !== undefined) {
-            logger.debug(`updating channel route: ${$s.chat.activeChannelId}`)
+        // Only update route when activeChannelSlug actually changes
+        if ($s.chat.activeChannelSlug !== null && $s.chat.activeChannelSlug !== undefined) {
+            logger.debug(`updating channel route: ${$s.chat.activeChannelSlug}`)
             updateRoute()
         }
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -88,7 +88,7 @@ export default function ChannelsContext() {
         <section class={classnames('c-channels-context presence', {collapsed: $s.panels.context.collapsed})}>
             <div class="channels-list">
                 {$s.channels.map((channel) => {
-                    const channelKey = channel.id.toString()
+                    const channelKey = channel.slug
                     const channelData = $s.chat.channels[channelKey]
                     const unreadCount = channelData?.unread || 0
                     const hasUnread = unreadCount > 0
@@ -97,12 +97,12 @@ export default function ChannelsContext() {
                         <Link
                             key={channel.id}
                             class={classnames('channel item', {
-                                active: currentChannel?.id === channel.id,
+                                active: currentChannel?.slug === channel.slug,
                                 'has-unread': hasUnread,
                             })}
-                            href={channelLink(channel.id)}
+                            href={channelLink(channel.slug)}
                             onClick={() => {
-                                $s.chat.activeChannelId = channel.id
+                                $s.chat.activeChannelSlug = channel.slug
                                 setAutofocus()
                             }}
                         >

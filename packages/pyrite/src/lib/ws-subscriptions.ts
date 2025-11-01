@@ -29,18 +29,19 @@ const initChatSubscriptions = () => {
     // Listen for incoming chat messages (broadcast from backend)
     events.on('app:init', () => {
         // Use onRoute for dynamic channel message broadcasts
-        // Since URLs are dynamic (/channels/1/messages, /channels/2/messages, etc.),
+        // Since URLs are dynamic (/channels/general/messages, /channels/dev/messages, etc.),
         // we use the generic message handler but with better pattern matching
         ws.on('message', (message) => {
             if (!message || !message.url) return
 
             // Check if this is a channel message broadcast
-            const messageUrlMatch = message.url.match(/^\/channels\/(\d+)\/messages$/)
+            // Match slug pattern (alphanumeric, hyphens, underscores)
+            const messageUrlMatch = message.url.match(/^\/channels\/([a-zA-Z0-9_-]+)\/messages$/)
             if (messageUrlMatch) {
-                const channelId = parseInt(messageUrlMatch[1], 10)
+                const channelSlug = messageUrlMatch[1]
                 const data = message.data
 
-                if (!data || typeof channelId !== 'number' || isNaN(channelId)) {
+                if (!data || !channelSlug) {
                     logger.warn('[Chat WS] Invalid message data:', message)
                     return
                 }
@@ -52,10 +53,10 @@ const initChatSubscriptions = () => {
                     return
                 }
 
-                logger.debug(`[Chat WS] Received message for channel ${channelId}:`, {messageText, username})
+                logger.debug(`[Chat WS] Received message for channel ${channelSlug}:`, {messageText, username})
 
-                // Find or create the chat channel
-                const channelKey = channelId.toString()
+                // Find or create the chat channel (use slug as key)
+                const channelKey = channelSlug
                 if (!$s.chat.channels[channelKey]) {
                     $s.chat.channels[channelKey] = {
                         id: channelKey,
@@ -71,7 +72,6 @@ const initChatSubscriptions = () => {
                         $s.chat.users = {}
                     }
                     // Get avatar from channel members if available, or use placeholder
-                    const channelKey = channelId.toString()
                     const channel = $s.chat.channels[channelKey]
                     const memberAvatar = channel?.members?.[userId]?.avatar
 
@@ -104,20 +104,21 @@ const initChatSubscriptions = () => {
                 logger.debug(`[Chat WS] Added message to channel ${channelKey}, total messages: ${$s.chat.channels[channelKey].messages.length}`)
 
                 // Increment unread count if not the active channel
-                if ($s.chat.activeChannelId !== channelId) {
+                if ($s.chat.activeChannelSlug !== channelSlug) {
                     $s.chat.channels[channelKey].unread++
                 }
             }
 
             // Check if this is a typing indicator broadcast
-            const typingUrlMatch = message.url.match(/^\/channels\/(\d+)\/typing$/)
+            // Match slug pattern (alphanumeric, hyphens, underscores)
+            const typingUrlMatch = message.url.match(/^\/channels\/([a-zA-Z0-9_-]+)\/typing$/)
             if (typingUrlMatch) {
-                const channelId = parseInt(typingUrlMatch[1], 10)
+                const channelSlug = typingUrlMatch[1]
                 const data = message.data
                 const {typing, userId, username} = data || {}
 
                 if (userId) {
-                    const channelKey = channelId.toString()
+                    const channelKey = channelSlug
 
                     // Ensure channel exists
                     if (!$s.chat.channels[channelKey]) {
@@ -306,7 +307,7 @@ const initGroupSubscriptions = () => {
             switch (action) {
                 case 'kick':
                     // Remove kicked user
-                    if (targetUserId === $s.user.id) {
+                    if (targetUserId === $s.profile.id) {
                         // Current user was kicked, disconnect
                         $s.group.connected = false
                         $s.group.name = ''
@@ -321,7 +322,7 @@ const initGroupSubscriptions = () => {
 
                 case 'mute':
                     // Mute user's microphone
-                    if (targetUserId === $s.user.id) {
+                    if (targetUserId === $s.profile.id) {
                         $s.devices.mic.enabled = false
                     } else if (targetUser) {
                         targetUser.data.mic = false
@@ -334,7 +335,7 @@ const initGroupSubscriptions = () => {
                     if (targetUser) {
                         targetUser.permissions.op = (action === 'op')
                     }
-                    if (targetUserId === $s.user.id) {
+                    if (targetUserId === $s.profile.id) {
                         $s.permissions.op = (action === 'op')
                     }
                     break
@@ -345,7 +346,7 @@ const initGroupSubscriptions = () => {
                     if (targetUser) {
                         targetUser.permissions.present = (action === 'present')
                     }
-                    if (targetUserId === $s.user.id) {
+                    if (targetUserId === $s.profile.id) {
                         $s.permissions.present = (action === 'present')
                     }
                     break
@@ -363,7 +364,7 @@ export const sendChatMessage = (message: string, kind: string = 'message') => {
     ws.post(`/api/chat/${$s.group.name}/message`, {
         kind,
         message,
-        nick: $s.user.username,
+        nick: $s.profile.username,
     })
 }
 
@@ -371,11 +372,11 @@ export const sendChatMessage = (message: string, kind: string = 'message') => {
  * Send typing indicator
  */
 export const sendTypingIndicator = (typing: boolean) => {
-    if (!$s.group.name || !$s.user.id) return
+    if (!$s.group.name || !$s.profile.id) return
 
     ws.post(`/api/chat/${$s.group.name}/typing`, {
         typing,
-        userId: $s.user.id,
+        userId: $s.profile.id,
     })
 }
 
@@ -383,11 +384,11 @@ export const sendTypingIndicator = (typing: boolean) => {
  * Join a group (announce presence)
  */
 export const joinGroup = async (groupId: string) => {
-    if (!$s.user.id || !$s.user.username) return
+    if (!$s.profile.id || !$s.profile.username) return
 
     const response = await ws.post(`/api/presence/${groupId}/join`, {
-        userId: $s.user.id,
-        username: $s.user.username,
+        userId: $s.profile.id,
+        username: $s.profile.username,
     })
 
     // Response contains current members list
@@ -419,10 +420,10 @@ export const joinGroup = async (groupId: string) => {
  * Leave a group (remove presence)
  */
 export const leaveGroup = (groupId: string) => {
-    if (!$s.user.id) return
+    if (!$s.profile.id) return
 
     ws.post(`/api/presence/${groupId}/leave`, {
-        userId: $s.user.id,
+        userId: $s.profile.id,
     })
 }
 

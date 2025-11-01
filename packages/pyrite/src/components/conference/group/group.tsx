@@ -87,13 +87,9 @@ export const Group = () => {
                 if (group['allow-anonymous'] && group['public-access']) {
                     // Connect anonymously
                     await connect('', '')
-                } else if ($s.user.username && $s.user.password) {
+                } else if ($s.profile.username && $s.profile.password) {
                     // Use stored credentials
-                    await connect($s.user.username, $s.user.password)
-                } else if (group['public-access'] && !group['allow-anonymous']) {
-                    // Guest access with stored username or default
-                    const username = $s.user.username || 'Guest'
-                    await connect(username, '')
+                    await connect($s.profile.username, $s.profile.password)
                 } else {
                     // Group requires authentication but no credentials stored
                     notifier.notify({
