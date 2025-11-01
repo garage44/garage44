@@ -24,7 +24,7 @@ export default function ControlsMain({path}: ControlsMainProps) {
     }, [])
 
     const currentChannelSlug = $s.chat.activeChannelSlug
-    
+
     // Check if channel is connected
     const isChannelConnected = currentChannelSlug ? ($s.sfu.channels[currentChannelSlug]?.connected || false) : false
 
@@ -110,16 +110,17 @@ export default function ControlsMain({path}: ControlsMainProps) {
     return (
         <nav class="c-general-controls">
             <div class="navigational-controls">
-                {!isChannelConnected && (
+                {/* {!isChannelConnected && (
                     <Button
                         active={path?.includes('/groups')}
                         disabled={!$s.sfu.channel.name && !isChannelConnected}
                         icon={currentGroupData.locked ? 'grouplocked' : 'group'}
                         route={groupRoute}
+                        size="s"
                         tip={currentGroupData.locked ? `${$t('group.current')} (${$t('group.locked')})` : $t('group.current')}
-                        variant="menu"
+                        variant="toggle"
                     />
-                )}
+                )} */}
 
                 {isChannelConnected && $s.permissions.op && (
                     <Button
@@ -129,22 +130,23 @@ export default function ControlsMain({path}: ControlsMainProps) {
                             submit: sendNotification,
                         }}
                         icon="Megafone"
+                        size="s"
                         tip={$t('group.action.notify')}
-                        variant="menu"
+                        variant="toggle"
                     />
                 )}
 
-                {isChannelConnected && $s.permissions.record && (
-                    <Button
-                        icon={$s.sfu.channel.recording ? 'unrecord' : 'record'}
-                        tip={$s.sfu.channel.recording ? $t('group.action.stop_recording') : $t('group.action.start_recording')}
-                        variant="menu"
-                        onClick={toggleRecording}
-                    />
-                )}
+                {isChannelConnected && $s.permissions.record && <Button
+                    active={$s.sfu.channel.recording}
+                    icon={$s.sfu.channel.recording ? 'unrecord' : 'record'}
+                    tip={$s.sfu.channel.recording ? $t('group.action.stop_recording') : $t('group.action.start_recording')}
+                    variant="toggle"
+                    onClick={toggleRecording}
+                />}
 
                 {isChannelConnected && $s.permissions.op && (
                     <Button
+                        active={currentGroupData.locked}
                         context={{
                             enabled: !currentGroupData.locked,
                             placeholder: $t('group.action.lock_context'),
@@ -152,7 +154,7 @@ export default function ControlsMain({path}: ControlsMainProps) {
                         }}
                         icon={currentGroupData.locked ? 'unlock' : 'lock'}
                         tip={currentGroupData.locked ? $t('group.action.unlock') : $t('group.action.lock')}
-                        variant="menu"
+                        variant="toggle"
                     />
                 )}
 
@@ -160,7 +162,7 @@ export default function ControlsMain({path}: ControlsMainProps) {
                     <Button
                         icon="micmute"
                         tip={$t('group.action.mute_participants')}
-                        variant="menu"
+                        variant="toggle"
                         onClick={muteAllUsers}
                     />
                 )}
@@ -169,7 +171,7 @@ export default function ControlsMain({path}: ControlsMainProps) {
                     <Button
                         icon="chatremove"
                         tip={$t('group.action.clear_chat')}
-                        variant="menu"
+                        variant="toggle"
                         onClick={clearChat}
                     />
                 )}
@@ -179,7 +181,7 @@ export default function ControlsMain({path}: ControlsMainProps) {
                         class="btn-logout"
                         icon="Logout"
                         tip={$t('group.action.leave')}
-                        variant="menu"
+                        variant="toggle"
                         onClick={disconnect}
                     />
                 )}
@@ -189,7 +191,7 @@ export default function ControlsMain({path}: ControlsMainProps) {
                         active={$s.sfu.channels[currentChannelSlug]?.video || false}
                         icon="Webcam"
                         tip={$s.sfu.channels[currentChannelSlug]?.video ? $t('group.action.cam_off') : $t('group.action.cam_on')}
-                        variant="menu"
+                        variant="toggle"
                         onClick={toggleCamera}
                     />
                 )}

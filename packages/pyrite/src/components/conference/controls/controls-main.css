@@ -1,22 +1,25 @@
 .c-general-controls {
-    align-items: center;
+    align-items: flex-start;
     background: var(--bg-secondary);
     box-shadow: var(--shadow-l);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding-bottom: var(--spacer-1);
+    min-width: fit-content;
+    padding: var(--spacer-1);
+    width: fit-content;
 
     .navigational-controls {
         display: flex;
         flex-direction: column;
         gap: var(--spacer-1);
-        width: 100%;
+        width: fit-content;
     }
 
     .toggles {
         display: flex;
         flex-direction: column;
         gap: var(--spacer-1);
+        width: fit-content;
     }
 }

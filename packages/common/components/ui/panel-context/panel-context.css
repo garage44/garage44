@@ -41,9 +41,11 @@
         background: var(--surface-1);
         display: flex;
         flex: 1;
-        flex-direction: column;
+        flex-direction: row;
+        gap: var(--spacer-1);
         height: 100%;
         overflow-y: auto;
+        padding: var(--spacer-1);
         width: 100%;
     }
 

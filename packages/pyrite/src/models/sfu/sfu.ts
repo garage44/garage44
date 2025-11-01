@@ -250,7 +250,8 @@ export function delMedia(id) {
 
     const delStream = $s.streams[delStreamIndex]
     logger.info(`[delMedia] remove stream ${delStream.id} from stream state (${delStreamIndex})`)
-    $s.streams.splice(delStreamIndex, 1)
+    // Use array assignment to ensure DeepSignal reactivity
+    $s.streams = $s.streams.filter((s) => s.id !== id)
 }
 
 export function delUpMedia(c) {
@@ -481,7 +482,8 @@ function newUpStream(_id, state) {
         const maxThroughput = getMaxVideoThroughput()
         setMaxVideoThroughput(glnStream, maxThroughput)
 
-        $s.streams.push(streamState)
+        // Use array assignment to ensure DeepSignal reactivity
+        $s.streams = [...$s.streams, streamState]
         logger.debug(`[sfu] stream ${streamState.id} added to $s.streams (total: ${$s.streams.length})`)
     }
 
@@ -513,30 +515,31 @@ function onDownStream(c) {
 
     // When other-end Firefox replaces a stream (e.g. toggles webcam),
     // the onDownStream method is called twice.
-    const existingStream = $s.streams.find((s) => s.id === c.id)
-    if (!existingStream) {
-        logger.debug(`[sfu] onDownStream: creating new stream object for ${c.id}`)
-        const streamState = {
-            aspectRatio: 4 / 3,
-            direction: 'down',
-            enlarged: false,
-            hasAudio: false,
-            hasVideo: false,
-            id: c.id,
-            mirror: true,
-            playing: false,
-            settings: {audio: {}, video: {}},
-            username: c.username,
-            volume: {
-                locked: false,
-                value: 100,
-            },
+        const existingStream = $s.streams.find((s) => s.id === c.id)
+        if (!existingStream) {
+            logger.debug(`[sfu] onDownStream: creating new stream object for ${c.id}`)
+            const streamState = {
+                aspectRatio: 4 / 3,
+                direction: 'down',
+                enlarged: false,
+                hasAudio: false,
+                hasVideo: false,
+                id: c.id,
+                mirror: true,
+                playing: false,
+                settings: {audio: {}, video: {}},
+                username: c.username,
+                volume: {
+                    locked: false,
+                    value: 100,
+                },
+            }
+            // Use array assignment to ensure DeepSignal reactivity
+            $s.streams = [...$s.streams, streamState]
+            logger.debug(`[sfu] onDownStream: stream ${c.id} added to $s.streams (total: ${$s.streams.length})`)
+        } else {
+            logger.debug(`[sfu] onDownStream: stream ${c.id} already exists in $s.streams (replacement)`)
         }
-        $s.streams.push(streamState)
-        logger.debug(`[sfu] onDownStream: stream ${c.id} added to $s.streams (total: ${$s.streams.length})`)
-    } else {
-        logger.debug(`[sfu] onDownStream: stream ${c.id} already exists in $s.streams (replacement)`)
-    }
 
     c.onclose = (replace) => {
         if (!replace) {
@@ -789,5 +792,6 @@ function stopUpMedia(c) {
     c.stream.getTracks().forEach((t) => t.stop())
 
     $s.upMedia[c.label].splice($s.upMedia[c.label].findIndex((i) => i.id === c.id), 1)
-    $s.streams.splice($s.streams.findIndex((i) => i.id === c.id), 1)
+    // Use array assignment to ensure DeepSignal reactivity
+    $s.streams = $s.streams.filter((s) => s.id !== c.id)
 }

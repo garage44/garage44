@@ -1,9 +1,10 @@
 .c-video-strip {
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: var(--spacer-1);
+    min-width: 0;
     overflow-y: auto;
-    padding: var(--spacer-1);
     width: 100%;
 
     .video-strip-item {
