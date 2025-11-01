@@ -1,6 +1,10 @@
 import {Database} from 'bun:sqlite'
 import {logger} from '../service.ts'
 import type {User} from './database.ts'
+import {groupTemplate, saveGroup, loadGroup} from './group.ts'
+import {config} from './config.ts'
+import fs from 'fs-extra'
+import path from 'node:path'
 
 /**
  * Channel Manager for Pyrite
@@ -273,5 +277,156 @@ export class ChannelManager {
      */
     async getChannelsForGaleneSync(): Promise<Channel[]> {
         return await this.listChannels()
+    }
+
+    /**
+     * Sync a single channel to Galene group file
+     * Creates the group file if it doesn't exist, updates it if it does
+     */
+    async syncChannelToGalene(channel: Channel): Promise<boolean> {
+        try {
+            const groupName = channel.slug // Channel slug directly matches Galene group name (1:1 mapping)
+
+            // Check if SFU path is configured
+            if (!config.sfu.path) {
+                logger.warn(`[ChannelManager] SFU path not configured, skipping sync for channel "${channel.name}"`)
+                return false
+            }
+
+            // Ensure groups directory exists
+            const groupsPath = path.join(config.sfu.path, 'groups')
+            await fs.ensureDir(groupsPath)
+
+            const existingGroup = await loadGroup(groupName)
+
+            let groupData
+            if (!existingGroup) {
+                // Group file doesn't exist - create new one
+                logger.info(`[ChannelManager] Creating new Galene group file for channel "${channel.name}" (slug: ${groupName})`)
+                groupData = groupTemplate(groupName)
+                groupData.displayName = channel.name
+                groupData.description = channel.description || ''
+            } else {
+                // Group file exists - update it with channel info
+                logger.info(`[ChannelManager] Updating existing Galene group file for channel "${channel.name}" (slug: ${groupName})`)
+                groupData = existingGroup
+                // Ensure _name is set (required by saveGroup)
+                if (!groupData._name) {
+                    groupData._name = groupName
+                }
+                groupData.displayName = channel.name
+                groupData.description = channel.description || ''
+            }
+
+            // Save the group file in native Galene format (without op/other/presenter arrays)
+            await this.saveGroupNativeGalene(groupName, groupData)
+            logger.info(`[ChannelManager] Successfully synced channel "${channel.name}" to Galene group "${groupName}"`)
+            return true
+        } catch (error) {
+            logger.error(`[ChannelManager] Failed to sync channel "${channel.name}" to Galene:`, error)
+            // Log the actual error message for debugging
+            if (error instanceof Error) {
+                logger.error(`[ChannelManager] Error details: ${error.message}`)
+                logger.error(`[ChannelManager] Stack trace: ${error.stack}`)
+            }
+            return false
+        }
+    }
+
+    /**
+     * Sync all channels to Galene group files
+     * Creates group files for channels that don't have them yet
+     */
+    async syncAllChannelsToGalene(): Promise<{success: number; failed: number}> {
+        try {
+            const channels = await this.listChannels()
+            let success = 0
+            let failed = 0
+
+            logger.info(`[ChannelManager] Syncing ${channels.length} channels to Galene groups`)
+
+            for (const channel of channels) {
+                const result = await this.syncChannelToGalene(channel)
+                if (result) {
+                    success++
+                } else {
+                    failed++
+                }
+            }
+
+            logger.info(`[ChannelManager] Sync complete: ${success} succeeded, ${failed} failed`)
+            return {success, failed}
+        } catch (error) {
+            logger.error('[ChannelManager] Failed to sync channels to Galene:', error)
+            return {success: 0, failed: 0}
+        }
+    }
+
+    /**
+     * Save group file in native Galene format (without Pyrite-specific op/other/presenter arrays)
+     * Galene only understands the native format with users dictionary
+     */
+    private async saveGroupNativeGalene(groupName: string, groupData: any): Promise<void> {
+        // Create a clean copy without Pyrite-specific fields
+        const nativeData: any = {
+            // Copy all native Galene fields
+            'allow-anonymous': groupData['allow-anonymous'] ?? false,
+            'allow-recording': groupData['allow-recording'] ?? true,
+            'allow-subgroups': groupData['allow-subgroups'] ?? true,
+            autokick: groupData.autokick ?? false,
+            autolock: groupData.autolock ?? false,
+            codecs: groupData.codecs ?? ['opus', 'vp8'],
+            comment: groupData.comment ?? '',
+            contact: groupData.contact ?? '',
+            description: groupData.description ?? '',
+            displayName: groupData.displayName ?? groupName,
+            'max-clients': groupData['max-clients'] ?? 10,
+            'max-history-age': groupData['max-history-age'] ?? 14400,
+            public: groupData.public ?? false,
+        }
+
+        // Handle wildcard-user for public access (native Galene format)
+        if (groupData['allow-anonymous'] || groupData.public) {
+            nativeData['wildcard-user'] = {
+                password: {type: 'wildcard'},
+                permissions: 'present'
+            }
+        }
+
+        // Include users dictionary if it exists (required for Galene)
+        if (groupData.users && typeof groupData.users === 'object' && !Array.isArray(groupData.users)) {
+            nativeData.users = groupData.users
+        } else {
+            // Ensure users dictionary exists (even if empty)
+            nativeData.users = {}
+        }
+
+        // Remove any Pyrite-specific fields that shouldn't be in the file
+        // (op, other, presenter arrays are for Pyrite internal use only)
+
+        // Write the native Galene format file
+        const groupsPath = path.join(config.sfu.path, 'groups')
+        const groupFile = path.join(groupsPath, `${groupName}.json`)
+        await fs.writeFile(groupFile, JSON.stringify(nativeData, null, 2))
+    }
+
+    /**
+     * Delete Galene group file for a channel
+     */
+    async deleteGaleneGroup(slug: string): Promise<boolean> {
+        try {
+            const groupFile = path.join(config.sfu.path, 'groups', `${slug}.json`)
+            if (await fs.pathExists(groupFile)) {
+                await fs.remove(groupFile)
+                logger.info(`[ChannelManager] Deleted Galene group file: ${groupFile}`)
+                return true
+            } else {
+                logger.warn(`[ChannelManager] Galene group file not found: ${groupFile}`)
+                return false
+            }
+        } catch (error) {
+            logger.error(`[ChannelManager] Failed to delete Galene group file for slug "${slug}":`, error)
+            return false
+        }
     }
 }

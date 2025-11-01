@@ -119,7 +119,7 @@ function createPyriteTables() {
  * Initialize Pyrite-specific default data if database is empty
  * User initialization is handled by UserManager in common service
  */
-export function initializeDefaultData() {
+export async function initializeDefaultData() {
     if (!db) throw new Error('Database not initialized')
 
     try {
@@ -168,6 +168,31 @@ export function initializeDefaultData() {
             memberInsert.run(channelId, adminUser.id, 'admin', now)
 
             logger.info(`[Database] Added admin user (${adminUser.username}) to general channel`)
+
+            // Sync default channels to Galene groups
+            try {
+                const {ChannelManager} = await import('./channel-manager.ts')
+                const channelManager = new ChannelManager(db)
+                const syncResult = await channelManager.syncAllChannelsToGalene()
+                logger.info(`[Database] Synced ${syncResult.success} default channel(s) to Galene groups`)
+                if (syncResult.failed > 0) {
+                    logger.warn(`[Database] Failed to sync ${syncResult.failed} channel(s) to Galene`)
+                }
+            } catch (syncError) {
+                logger.error('[Database] Failed to sync default channels to Galene (non-fatal):', syncError)
+                // Don't fail initialization if sync fails - channels are still created
+            }
+
+            // Sync users to Galene (global config.json and group files)
+            try {
+                const {syncUsersToGalene} = await import('./sync.ts')
+                await syncUsersToGalene()
+                logger.info('[Database] Synced users to Galene (global config and group files)')
+            } catch (syncError) {
+                logger.error('[Database] Failed to sync users to Galene (non-fatal):', syncError)
+                // Don't fail initialization if sync fails - users can be synced later
+            }
+
             logger.info('[Database] Pyrite default data initialization completed successfully')
         } else {
             logger.info(`[Database] Channels already exist (${channelCount.count}), skipping default data initialization`)

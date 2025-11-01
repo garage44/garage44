@@ -203,7 +203,6 @@ export const createFinalHandler = (config: {
     return async (request: Request, server?: unknown): Promise<Response | undefined> => {
         const url = new URL(request.url)
 
-        config.logger.info(`[HTTP] ${url.pathname} miss`)
         config.devContext.addHttp({method: request.method, ts: Date.now(), url: url.pathname})
 
         // Get session early and populate it if needed (before unified middleware)
@@ -256,12 +255,12 @@ export const createFinalHandler = (config: {
                     context = {
                         ...baseContext,
                         id: adminUser.id,
-                        username: adminUser.username,
                         password: adminUser.password.key, // Include password for SFU auth (will encrypt later)
                         profile: {
                             avatar: adminUser.profile.avatar || 'placeholder-1.png',
                             displayName: adminUser.profile.displayName || adminUser.username,
                         },
+                        username: adminUser.username,
                     }
                 } else {
                     context = baseContext
@@ -283,12 +282,12 @@ export const createFinalHandler = (config: {
                     context = {
                         ...baseContext,
                         id: user.id,
-                        username: user.username,
                         password: user.password.key, // Include password for SFU auth (will encrypt later)
                         profile: {
                             avatar: user.profile.avatar || 'placeholder-1.png',
                             displayName: user.profile.displayName || user.username,
                         },
+                        username: user.username,
                     }
                 } else {
                     context = config.contextFunctions.deniedContext()
@@ -324,11 +323,11 @@ export const createFinalHandler = (config: {
             // Return user data in the format expected by the frontend
             return new Response(JSON.stringify({
                 id: user.id,
-                username: user.username,
                 profile: {
                     avatar: user.profile.avatar || 'placeholder-1.png',
                     displayName: user.profile.displayName || user.username,
                 },
+                username: user.username,
             }), {
                 headers: {'Content-Type': 'application/json'},
             })
@@ -354,12 +353,12 @@ export const createFinalHandler = (config: {
                 context = {
                     ...baseContext,
                     id: user.id,
-                    username: user.username,
                     password: user.password.key, // Include password for SFU auth (will encrypt later)
                     profile: {
                         avatar: user.profile.avatar || 'placeholder-1.png',
                         displayName: user.profile.displayName || user.username,
                     },
+                    username: user.username,
                 }
             } else {
                 console.log(`[AUTH] Authentication failed for user: ${username}`)
@@ -421,7 +420,6 @@ export const createFinalHandler = (config: {
         try {
             const indexFile = Bun.file(path.join(config.publicPath, 'index.html'))
             if (await indexFile.exists()) {
-                config.logger.info(`[HTTP] SPA fallback for ${url.pathname}`)
                 const response = new Response(indexFile, {
                     headers: {'Content-Type': 'text/html'},
                 })

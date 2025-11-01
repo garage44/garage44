@@ -69,7 +69,7 @@ void cli.usage('Usage: $0 [task]')
 
         // Initialize Pyrite-specific default data (channels, etc.)
         // Must run AFTER service.init() so that the admin user exists
-        initializeDefaultData()
+        await initializeDefaultData()
 
         // Initialize middleware and WebSocket server (after UserManager is initialized)
         const {handleRequest} = await initMiddleware(bunchyConfig)

@@ -9,6 +9,7 @@ import {userManager} from '@garage44/common/service'
 import {ChannelManager} from '../lib/channel-manager.ts'
 import {getDatabase} from '../lib/database.ts'
 import {logger} from '../service.ts'
+import {syncUsersToGalene} from '../lib/sync.ts'
 
 let channelManager: ChannelManager | null = null
 
@@ -119,7 +120,15 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 }
             }
 
-            const channel = await channelManager!.createChannel(name, description || '', galeneGroup, creatorId)
+            const channel = await channelManager!.createChannel(name, galeneGroup, description || '', creatorId)
+
+            // Sync channel to Galene group file
+            try {
+                await channelManager!.syncChannelToGalene(channel)
+            } catch (syncError) {
+                logger.error('[Channels API] Failed to sync channel to Galene (channel still created):', syncError)
+                // Continue even if sync fails - channel is still created
+            }
 
             // Broadcast channel creation to all users
             wsManager.broadcast('/channels/created', {
@@ -222,6 +231,10 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 }
             }
 
+            // Get old channel to check if slug changed
+            const oldChannel = channelManager!.getChannel(channelIdNum)
+            const oldSlug = oldChannel?.slug
+
             const channel = await channelManager!.updateChannel(channelIdNum, updates)
 
             if (!channel) {
@@ -229,6 +242,26 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                     error: 'Channel not found',
                     success: false,
                 }
+            }
+
+            // Handle slug changes - rename old group file and create/update new one
+            if (updates.slug !== undefined && oldSlug && oldSlug !== channel.slug) {
+                try {
+                    // Delete old group file
+                    await channelManager!.deleteGaleneGroup(oldSlug)
+                    logger.info(`[Channels API] Deleted old Galene group file for renamed channel: ${oldSlug} -> ${channel.slug}`)
+                } catch (deleteError) {
+                    logger.warn(`[Channels API] Failed to delete old Galene group file "${oldSlug}":`, deleteError)
+                    // Continue even if old file deletion fails
+                }
+            }
+
+            // Sync channel to Galene group file
+            try {
+                await channelManager!.syncChannelToGalene(channel)
+            } catch (syncError) {
+                logger.error('[Channels API] Failed to sync channel to Galene (channel still updated):', syncError)
+                // Continue even if sync fails - channel is still updated
             }
 
             // Broadcast channel update to all users
@@ -276,12 +309,26 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 }
             }
 
+            // Get channel before deletion to get slug for Galene group deletion
+            const channel = channelManager!.getChannel(channelIdNum)
+            const channelSlug = channel?.slug
+
             const success = await channelManager!.deleteChannel(channelIdNum)
 
             if (!success) {
                 return {
                     error: 'Channel not found',
                     success: false,
+                }
+            }
+
+            // Delete corresponding Galene group file
+            if (channelSlug) {
+                try {
+                    await channelManager!.deleteGaleneGroup(channelSlug)
+                } catch (deleteError) {
+                    logger.error(`[Channels API] Failed to delete Galene group file for channel "${channelSlug}":`, deleteError)
+                    // Continue even if Galene file deletion fails - channel is still deleted
                 }
             }
 
@@ -346,6 +393,14 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 }
             }
 
+            // Sync users to Galene (group files need updated user list)
+            try {
+                await syncUsersToGalene()
+            } catch (syncError) {
+                logger.error('[Channels API] Failed to sync users to Galene after adding member:', syncError)
+                // Continue even if sync fails - member is still added
+            }
+
             // Broadcast membership change to all users
             wsManager.broadcast(`/channels/${channelId}/members`, {
                 action: 'added',
@@ -401,6 +456,14 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                     error: 'Failed to remove member',
                     success: false,
                 }
+            }
+
+            // Sync users to Galene (group files need updated user list)
+            try {
+                await syncUsersToGalene()
+            } catch (syncError) {
+                logger.error('[Channels API] Failed to sync users to Galene after removing member:', syncError)
+                // Continue even if sync fails - member is still removed
             }
 
             // Broadcast membership change to all users
