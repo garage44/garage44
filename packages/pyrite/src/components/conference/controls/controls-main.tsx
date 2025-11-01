@@ -110,31 +110,6 @@ export default function ControlsMain({path}: ControlsMainProps) {
     return (
         <nav class="c-general-controls">
             <div class="navigational-controls">
-                {/* {!isChannelConnected && (
-                    <Button
-                        active={path?.includes('/groups')}
-                        disabled={!$s.sfu.channel.name && !isChannelConnected}
-                        icon={currentGroupData.locked ? 'grouplocked' : 'group'}
-                        route={groupRoute}
-                        size="s"
-                        tip={currentGroupData.locked ? `${$t('group.current')} (${$t('group.locked')})` : $t('group.current')}
-                        variant="toggle"
-                    />
-                )} */}
-
-                {isChannelConnected && $s.permissions.op && (
-                    <Button
-                        context={{
-                            enabled: true,
-                            placeholder: $t('group.action.notify_context'),
-                            submit: sendNotification,
-                        }}
-                        icon="Megafone"
-                        size="s"
-                        tip={$t('group.action.notify')}
-                        variant="toggle"
-                    />
-                )}
 
                 {isChannelConnected && $s.permissions.record && <Button
                     active={$s.sfu.channel.recording}
@@ -144,74 +119,38 @@ export default function ControlsMain({path}: ControlsMainProps) {
                     onClick={toggleRecording}
                 />}
 
-                {isChannelConnected && $s.permissions.op && (
-                    <Button
-                        active={currentGroupData.locked}
-                        context={{
-                            enabled: !currentGroupData.locked,
-                            placeholder: $t('group.action.lock_context'),
-                            submit: toggleLockGroup,
-                        }}
-                        icon={currentGroupData.locked ? 'unlock' : 'lock'}
-                        tip={currentGroupData.locked ? $t('group.action.unlock') : $t('group.action.lock')}
-                        variant="toggle"
-                    />
-                )}
+                {isChannelConnected && $s.permissions.op && <Button
+                    active={currentGroupData.locked}
+                    context={{
+                        enabled: !currentGroupData.locked,
+                        placeholder: $t('group.action.lock_context'),
+                        submit: toggleLockGroup,
+                    }}
+                    icon={currentGroupData.locked ? 'unlock' : 'lock'}
+                    tip={currentGroupData.locked ? $t('group.action.unlock') : $t('group.action.lock')}
+                    variant="toggle"
+                />}
 
-                {isChannelConnected && $s.permissions.op && (
-                    <Button
-                        icon="micmute"
-                        tip={$t('group.action.mute_participants')}
-                        variant="toggle"
-                        onClick={muteAllUsers}
-                    />
-                )}
+                {isChannelConnected && $s.permissions.op && <Button
+                    icon="micmute"
+                    tip={$t('group.action.mute_participants')}
+                    variant="toggle"
+                    onClick={muteAllUsers}
+                />}
 
-                {isChannelConnected && $s.permissions.op && (
-                    <Button
-                        icon="chatremove"
-                        tip={$t('group.action.clear_chat')}
-                        variant="toggle"
-                        onClick={clearChat}
-                    />
-                )}
-
-                {isChannelConnected && (
-                    <Button
-                        class="btn-logout"
-                        icon="Logout"
-                        tip={$t('group.action.leave')}
-                        variant="toggle"
-                        onClick={disconnect}
-                    />
-                )}
-
-                {isChannelConnected && currentChannelSlug && (
-                    <Button
-                        active={$s.sfu.channels[currentChannelSlug]?.video || false}
-                        icon="Webcam"
-                        tip={$s.sfu.channels[currentChannelSlug]?.video ? $t('group.action.cam_off') : $t('group.action.cam_on')}
-                        variant="toggle"
-                        onClick={toggleCamera}
-                    />
-                )}
-            </div>
-
-            <div class="toggles">
+                {isChannelConnected && currentChannelSlug && <Button
+                    active={$s.sfu.channels[currentChannelSlug]?.video || false}
+                    icon="webcam"
+                    tip={$s.sfu.channels[currentChannelSlug]?.video ? $t('group.action.cam_off') : $t('group.action.cam_on')}
+                    variant="toggle"
+                    onClick={toggleCamera}
+                />}
                 <Button
                     active={isSettingsRoute}
-                    icon="Settings"
+                    icon="cog_outline"
                     route={settingsRoute}
                     tip={$t('group.settings.name')}
                     variant="toggle"
-                />
-
-                <Button
-                    active={!$s.panels.context.collapsed}
-                    icon="ViewList"
-                    tip={$s.panels.context.collapsed ? $t('ui.panel.expand') : $t('ui.panel.collapse')}
-                    variant="toggle"
-                    onClick={toggleCollapse}
                 />
             </div>
         </nav>

@@ -5,12 +5,13 @@ import {$s} from '@/app'
 import {$t} from '@garage44/common/app'
 import {currentGroup} from '@/models/group'
 import {connection} from '@/models/sfu/sfu'
+import ConferenceControls from '../controls/controls-main'
 
 export default function PanelContextVideo() {
     const [active, setActive] = useState(false)
-    const [warningMessage, setWarningMessage] = useState('')
 
-    const currentGroupData = useMemo(() => currentGroup(), [$s.sfu.channel.name, $s.chat.activeChannelSlug, $s.sfu.channels])
+    // DeepSignal is reactive - accessing $s properties makes components reactive automatically
+    const currentGroupData = useMemo(() => currentGroup(), [])
 
     const lock = {
         icon: currentGroupData.locked ? 'Unlock' : 'Lock',
@@ -18,11 +19,6 @@ export default function PanelContextVideo() {
     }
 
     const warning = {icon: 'Megafone', title: $t('group.action.notify')}
-
-    const clearChat = () => {
-        connection?.groupAction('clearchat')
-        toggleMenu()
-    }
 
     const sendNotification = (text: string) => {
         connection?.userMessage('notification', null, text)
@@ -36,17 +32,12 @@ export default function PanelContextVideo() {
         }
     }
 
-    const toggleMenu = (e?: any, forceState?: any) => {
+    const toggleMenu = (_e?: unknown, forceState?: unknown) => {
         // The click-outside
         if (typeof forceState === 'object') {
             setActive(false)
         } else {
             setActive((prev) => !prev)
-        }
-
-        // Undo input action context state when there is no text yet...
-        if (!active && warningMessage === '') {
-            // Reset warning input state if needed
         }
     }
 
@@ -56,27 +47,7 @@ export default function PanelContextVideo() {
                 active: active,
             })}
         >
-            <Button
-                active={false}
-                icon="Menu"
-                variant="menu"
-                onClick={toggleMenu}
-            />
-
-            {active && <div class="context-actions">
-                {$s.permissions.op && <ContextInput
-                    value={lock}
-                    revert={$s.sfu.channel.locked}
-                    submit={toggleLockGroup}
-                    FieldTextComponent={FieldText}
-                />}
-
-                {$s.permissions.op && <ContextInput
-                    value={warning}
-                    submit={sendNotification}
-                    FieldTextComponent={FieldText}
-                />}
-            </div>}
+            <ConferenceControls />
         </div>
     )
 }

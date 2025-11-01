@@ -5,7 +5,6 @@ import {api, logger, store} from '@garage44/common/app'
 import {IconLogo, Notifications, AppLayout, PanelMenu, PanelContext, UserMenu} from '@garage44/common/components'
 import {mergeDeep} from '@garage44/common/lib/utils'
 import {emojiLookup} from '@/models/chat'
-import ConferenceControls from './controls/controls-main'
 import ChannelsContext from './context/context-channels'
 import PanelContextVideo from './video/panel-context-video'
 import {VideoStrip} from './video/video-strip'
@@ -115,7 +114,6 @@ export const ConferenceApp = () => {
                             // Context panel collapse state can be added if needed
                         }}
                     >
-                        <ConferenceControls />
                         {$s.sfu.channel.connected && (
                             <>
                                 <PanelContextVideo />
