@@ -76,14 +76,14 @@ export function Tabs({
                     return (
                         <li key={tab.id}>
                             <Link
-                                class={classnames('c-tabs__tab', {
+                                class={classnames('tab', {
                                     'is-active': isActive,
                                     'is-disabled': isDisabled,
                                 })}
                                 href={tab.route}
                             >
-                                {tab.icon && <Icon class="c-tabs__icon" name={tab.icon} type="info" />}
-                                {tab.label && <span class="c-tabs__label">{tab.label}</span>}
+                                {tab.icon && <Icon class="icon" name={tab.icon} type="info" />}
+                                {tab.label && <span class="label">{tab.label}</span>}
                             </Link>
                         </li>
                     )
@@ -94,7 +94,7 @@ export function Tabs({
                     return (
                         <li key={tab.id}>
                             <button
-                                class={classnames('c-tabs__tab', {
+                                class={classnames('tab', {
                                     'is-active': isActive,
                                     'is-disabled': isDisabled,
                                 })}
@@ -102,8 +102,8 @@ export function Tabs({
                                 onClick={() => tab.onClick?.(tab.id)}
                                 type="button"
                             >
-                                {tab.icon && <Icon class="c-tabs__icon" name={tab.icon} type="info" />}
-                                {tab.label && <span class="c-tabs__label">{tab.label}</span>}
+                                {tab.icon && <Icon class="icon" name={tab.icon} type="info" />}
+                                {tab.label && <span class="label">{tab.label}</span>}
                             </button>
                         </li>
                     )

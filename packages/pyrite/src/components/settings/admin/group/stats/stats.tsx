@@ -149,7 +149,7 @@ export default function Stats({ groupId }: StatsProps) {
     if (clientsArray.length === 0) {
         return (
             <section class="c-admin-dashboard tab-content no-results">
-                <Icon className="icon icon-l" name="stats" />
+                <Icon class="icon icon-l" name="stats" />
                 <span>{$t('group.settings.statistic.no_connections')}</span>
             </section>
         )
@@ -166,7 +166,7 @@ export default function Stats({ groupId }: StatsProps) {
                         role="button"
                         tabIndex={0}
                     >
-                        <Icon className="icon icon-d" name="stats" /> {client.id}
+                        <Icon class="icon icon-d" name="stats" /> {client.id}
                     </div>
                     {!client.collapsed && client.up.map((stream, streamIdx) => (
                         <div key={streamIdx} class="stream">

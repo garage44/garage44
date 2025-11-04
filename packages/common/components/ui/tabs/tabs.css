@@ -4,40 +4,40 @@
     list-style: none;
     margin: 0;
     padding: 0;
-}
 
-.c-tabs__tab {
-    align-items: center;
-    background: transparent;
-    border: none;
-    color: var(--surface-6);
-    cursor: pointer;
-    display: flex;
-    gap: var(--spacer-1);
-    padding: var(--spacer-1) var(--spacer-2);
-    text-decoration: none;
-    transition: color 0.2s;
+    .tab {
+        align-items: center;
+        background: transparent;
+        border: none;
+        color: var(--surface-6);
+        cursor: pointer;
+        display: flex;
+        gap: var(--spacer-1);
+        padding: var(--spacer-1) var(--spacer-2);
+        text-decoration: none;
+        transition: color 0.2s;
 
-    &:hover:not(.is-disabled) {
-        color: var(--surface-7);
+        &:hover:not(.is-disabled) {
+            color: var(--surface-7);
+        }
+
+        &.is-active {
+            color: var(--surface-8);
+            font-weight: var(--font-weight-semibold, 600);
+        }
+
+        &.is-disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
     }
 
-    &.is-active {
-        color: var(--surface-8);
-        font-weight: var(--font-weight-semibold, 600);
+    .icon {
+        flex-shrink: 0;
     }
 
-    &.is-disabled {
-        cursor: not-allowed;
-        opacity: 0.5;
+    .label {
+        font-size: var(--font-d);
     }
-}
-
-.c-tabs__icon {
-    flex-shrink: 0;
-}
-
-.c-tabs__label {
-    font-size: var(--font-d);
 }
 

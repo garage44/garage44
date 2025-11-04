@@ -80,7 +80,7 @@ export default function TabChannels() {
 
     return (
         <section class="c-settings-tab-channels tab-content active">
-            <div class="c-settings-tab-channels__header">
+            <div class="header">
                 <h2>Channel Configuration</h2>
                 <Button
                     icon="Plus"
@@ -93,11 +93,11 @@ export default function TabChannels() {
             {loading ? (
                 <div>Loading channels...</div>
             ) : (
-                <div class="c-settings-tab-channels__list">
+                <div class="list">
                     {channels.map((channel) => (
-                        <div key={channel.id} class="c-settings-tab-channels__item">
+                        <div key={channel.id} class="item">
                             {editing === channel.id ? (
-                                <div class="c-settings-tab-channels__form">
+                                <div class="form">
                                     <FieldText
                                         value={formData.name}
                                         onChange={(value) => setFormData({...formData, name: value})}
@@ -108,7 +108,7 @@ export default function TabChannels() {
                                         onChange={(value) => setFormData({...formData, description: value})}
                                         label="Description"
                                     />
-                                    <div class="c-settings-tab-channels__actions">
+                                    <div class="actions">
                                         <Button
                                             icon="Save"
                                             label="Save"
@@ -124,12 +124,12 @@ export default function TabChannels() {
                                     </div>
                                 </div>
                             ) : (
-                                <div class="c-settings-tab-channels__content">
+                                <div class="content">
                                     <div>
                                         <h3>{channel.name}</h3>
                                         <p>{channel.description || 'No description'}</p>
                                     </div>
-                                    <div class="c-settings-tab-channels__actions">
+                                    <div class="actions">
                                         <Button
                                             icon="Edit"
                                             onClick={() => startEdit(channel)}

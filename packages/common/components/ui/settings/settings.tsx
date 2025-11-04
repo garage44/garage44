@@ -125,7 +125,7 @@ export function Settings({
                 {header || (
                     <div class="title">
                         {title && <span>{title}</span>}
-                        {icon && <Icon className="item-icon icon-regular" name={icon} />}
+                        {icon && <Icon class="item-icon icon-regular" name={icon} />}
                     </div>
                 )}
             </header>
