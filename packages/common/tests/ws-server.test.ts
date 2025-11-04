@@ -70,10 +70,10 @@ function waitForMessage(ws: WebSocket, timeout?: number) {
             resolve(JSON.parse(data.toString()))
         }
 
-        const timer = timeout !== undefined ? setTimeout(() => {
+        const timer = timeout === undefined ? undefined : setTimeout(() => {
             ws.off('message', handler)
             reject(new Error('timeout'))
-        }, timeout) : undefined
+        }, timeout)
 
         ws.on('message', handler)
     })
