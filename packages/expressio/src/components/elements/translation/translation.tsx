@@ -10,14 +10,29 @@ export function Translation({group, path}) {
     const path_update = path.join('.')
 
     async function translate() {
-        await ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/translate`, {
-            path,
-            value: group,
-        })
-        notifier.notify({
-            message: $t('translation.message.translated'),
-            type: 'success',
-        })
+        try {
+            const result = await ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/translate`, {
+                path,
+                value: group,
+            })
+            
+            if (result?.success) {
+                notifier.notify({
+                    message: $t('translation.message.translated'),
+                    type: 'success',
+                })
+            } else if (result?.error) {
+                notifier.notify({
+                    message: `Translation failed: ${result.error}`,
+                    type: 'error',
+                })
+            }
+        } catch (error) {
+            notifier.notify({
+                message: `Translation error: ${error.message}`,
+                type: 'error',
+            })
+        }
     }
 
     return <div class={classnames('c-translation', {

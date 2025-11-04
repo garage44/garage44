@@ -70,25 +70,47 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
 
         if (value) {
             const sourceText = value.source
-            const persist = !!value._soft
+            const persist = !value._soft
 
             try {
                 const result = await translate_tag(workspace, path, sourceText, persist)
-                console.log('TRANSLATED', result)
-                return {cached: [], targets: [], translations: []}
+                workspace.save()
+                
+                // Return proper translation result for UI feedback
+                return {
+                    cached: [],
+                    success: true,
+                    targets: [result],
+                    translations: workspace.config.languages.target.map(lang => 
+                        result.ref[result.id].target[lang.id]
+                    ),
+                }
             } catch (error) {
                 logger.error('Translation error:', error)
+                return {
+                    cached: [],
+                    error: error.message,
+                    success: false,
+                    targets: [],
+                    translations: [],
+                }
             }
         } else {
             try {
                 const {cached, targets, translations} = await translate_path(workspace, path, ignore_cache)
-                return {cached, targets, translations}
+                workspace.save()
+                return {cached, success: true, targets, translations}
             } catch (error) {
                 logger.error('Translation error:', error)
+                return {
+                    cached: [],
+                    error: error.message,
+                    success: false,
+                    targets: [],
+                    translations: [],
+                }
             }
         }
-
-        workspace.save()
     })
 
     // oxlint-disable-next-line require-await

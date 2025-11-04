@@ -1,5 +1,5 @@
 import {$s} from '@/app'
-import {ws} from '@garage44/common/app'
+import {notifier, ws} from '@garage44/common/app'
 import {randomId} from '@garage44/common/lib/utils'
 import classnames from 'classnames'
 import {$t} from '@garage44/common/app'
@@ -97,11 +97,32 @@ export function GroupActions({className, group, path}: {className?: string; grou
             <Icon
                 name="translate"
                 onClick={async() => {
-                    // Translate the group
-                    await ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/translate`, {
-                        ignore_cache: $s.env.ctrlKey,
-                        path,
-                    })
+                    try {
+                        // Translate the group
+                        const result = await ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/translate`, {
+                            ignore_cache: $s.env.ctrlKey,
+                            path,
+                        })
+                        
+                        if (result?.success) {
+                            const translatedCount = result.targets?.length || 0
+                            const cachedCount = result.cached?.length || 0
+                            notifier.notify({
+                                message: `Translated ${translatedCount} tags (${cachedCount} cached)`,
+                                type: 'success',
+                            })
+                        } else if (result?.error) {
+                            notifier.notify({
+                                message: `Translation failed: ${result.error}`,
+                                type: 'error',
+                            })
+                        }
+                    } catch (error) {
+                        notifier.notify({
+                            message: `Translation error: ${error.message}`,
+                            type: 'error',
+                        })
+                    }
                 }}
                 size="s"
                 tip={$s.env.ctrlKey ? $t('translation.tip.translate_group_force') : $t('translation.tip.translate_group')}

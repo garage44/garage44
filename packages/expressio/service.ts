@@ -3,10 +3,11 @@ import {URL, fileURLToPath} from 'node:url'
 import {createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
 import {bunchyArgs, bunchyService} from '@garage44/bunchy'
 import {config, initConfig} from './lib/config.ts'
-import {keyMod, padLeft} from '@garage44/common/lib/utils.ts'
+import {hash, keyMod, keyPath, padLeft} from '@garage44/common/lib/utils.ts'
 import {Enola} from '@garage44/enola'
 import {Workspace} from './lib/workspace.ts'
 import {Workspaces} from './lib/workspaces.ts'
+import {translate_tag} from './lib/translate.ts'
 import {createRuntime, createWelcomeBanner, setupBunchyConfig, createWebSocketManagers, service, loggerTransports} from '@garage44/common/service'
 import {initDatabase} from '@garage44/common/lib/database'
 import fs from 'fs-extra'
@@ -15,7 +16,7 @@ import {i18nFormat} from '@garage44/common/lib//i18n.ts'
 import {initMiddleware} from './lib/middleware.ts'
 import {lintWorkspace} from './lib/lint.ts'
 import path from 'node:path'
-import {pathCreate} from '@garage44/common/lib/paths'
+import {pathCreate, pathRef} from '@garage44/common/lib/paths'
 import pc from 'picocolors'
 import {registerI18nWebSocketApiRoutes} from './api/i18n.ts'
 import {registerWorkspacesWebSocketApiRoutes} from './api/workspaces.ts'
@@ -64,33 +65,266 @@ void cli.usage('Usage: $0 [task]')
                 describe: 'I18next file for input',
                 type: 'string',
             })
+            .option('merge', {
+                alias: 'm',
+                default: false,
+                describe: 'Merge with existing translations instead of replacing',
+                type: 'boolean',
+            })
+            .option('translate', {
+                alias: 't',
+                default: false,
+                describe: 'Automatically translate imported tags',
+                type: 'boolean',
+            })
     , async(argv) => {
         const workspace = new Workspace()
         await workspace.init({
             source_file: path.resolve(argv.workspace),
         }, false)
 
-        const importData = JSON.parse((await fs.readFile(argv.file, 'utf8')))
+        const inputFile = path.resolve(argv.input)
+        logger.info(`Importing from: ${inputFile}`)
+        
+        if (!await fs.pathExists(inputFile)) {
+            logger.error(`Input file not found: ${inputFile}`)
+            process.exit(1)
+        }
+
+        const importData = JSON.parse((await fs.readFile(inputFile, 'utf8')))
         const createTags = []
+        const skipTags = []
 
         keyMod(importData, (sourceRef, id, refPath) => {
             // The last string in refPath must not be a reserved keyword (.e.g source/target)
             const last = refPath.at(-1)
-            if (last === 'source' || last === 'target') {
+            if (last === 'source' || last === 'target' || last === 'cache') {
                 logger.warn(`skipping reserved keyword: ${last} (refPath: ${refPath.join('.')})`)
+                skipTags.push(refPath.join('.'))
+                return
+            }
+
+            // Skip internal properties
+            if (id.startsWith('_')) {
                 return
             }
 
             if (typeof sourceRef[id] === 'string') {
+                // Check if tag already exists
+                const existingRef = keyPath(workspace.i18n, refPath)
+                
+                if (existingRef && 'source' in existingRef && !argv.merge) {
+                    logger.debug(`skipping existing tag: ${refPath.join('.')}`)
+                    skipTags.push(refPath.join('.'))
+                    return
+                }
+
                 createTags.push(refPath)
                 pathCreate(workspace.i18n, [...refPath], {
                     source: sourceRef[id],
-                }, [])
+                }, workspace.config.languages.target)
             }
         })
 
         await workspace.save()
         logger.info(`Imported: ${createTags.length} tags`)
+        if (skipTags.length) {
+            logger.info(`Skipped: ${skipTags.length} tags (existing or invalid)`)
+        }
+
+        // Auto-translate if requested
+        if (argv.translate && createTags.length > 0) {
+            logger.info('Starting automatic translation...')
+            await enola.init(config.enola, logger)
+            
+            for (const tagPath of createTags) {
+                try {
+                    const {id, ref} = pathRef(workspace.i18n, tagPath)
+                    const sourceText = ref[id].source
+                    
+                    logger.info(`Translating: ${tagPath.join('.')}`)
+                    await translate_tag(workspace, tagPath, sourceText, true)
+                } catch (error) {
+                    logger.error(`Failed to translate ${tagPath.join('.')}: ${error.message}`)
+                }
+            }
+            
+            await workspace.save()
+            logger.info('Translation complete!')
+        }
+    })
+    .command('translate-all', 'Translate all untranslated or outdated tags', (yargs) =>
+        yargs
+            .option('workspace', {
+                alias: 'w',
+                default: './src/.expressio.json',
+                describe: 'Workspace file to use',
+                type: 'string',
+            })
+            .option('force', {
+                alias: 'f',
+                default: false,
+                describe: 'Force retranslation of all tags (ignore cache)',
+                type: 'boolean',
+            })
+    , async(argv) => {
+        const workspace = new Workspace()
+        await workspace.init({
+            source_file: path.resolve(argv.workspace),
+        }, false)
+
+        await enola.init(config.enola, logger)
+
+        const tagsToTranslate = []
+        
+        // Collect all tags that need translation
+        keyMod(workspace.i18n, (ref, id, refPath) => {
+            if (ref && 'source' in ref && typeof ref.source === 'string') {
+                // Skip soft tags
+                if (ref._soft) {
+                    return
+                }
+
+                const needsTranslation = argv.force || 
+                    !ref.cache || 
+                    ref.cache !== hash(ref.source) ||
+                    workspace.config.languages.target.some(lang => !ref.target[lang.id])
+
+                if (needsTranslation) {
+                    tagsToTranslate.push(refPath)
+                }
+            }
+        })
+
+        if (tagsToTranslate.length === 0) {
+            logger.info('All tags are up to date!')
+            process.exit(0)
+        }
+
+        logger.info(`Found ${tagsToTranslate.length} tags to translate`)
+
+        for (const [index, tagPath] of tagsToTranslate.entries()) {
+            try {
+                const {id, ref} = pathRef(workspace.i18n, tagPath)
+                const sourceText = ref[id].source
+                
+                logger.info(`[${index + 1}/${tagsToTranslate.length}] Translating: ${tagPath.join('.')}`)
+                await translate_tag(workspace, tagPath, sourceText, true)
+            } catch (error) {
+                logger.error(`Failed to translate ${tagPath.join('.')}: ${error.message}`)
+            }
+        }
+
+        await workspace.save()
+        logger.info('Translation complete!')
+    })
+    .command('stats', 'Show translation statistics', (yargs) =>
+        yargs
+            .option('workspace', {
+                alias: 'w',
+                default: './src/.expressio.json',
+                describe: 'Workspace file to use',
+                type: 'string',
+            })
+    , async(argv) => {
+        const workspace = new Workspace()
+        await workspace.init({
+            source_file: path.resolve(argv.workspace),
+        }, false)
+
+        const stats = {
+            groups: 0,
+            languages: workspace.config.languages.target.length,
+            outdated: 0,
+            redundant: 0,
+            soft: 0,
+            tags: 0,
+            translated: {},
+            untranslated: {},
+        }
+
+        // Initialize language stats
+        workspace.config.languages.target.forEach(lang => {
+            stats.translated[lang.id] = 0
+            stats.untranslated[lang.id] = 0
+        })
+
+        keyMod(workspace.i18n, (ref, id, refPath) => {
+            if (ref && typeof ref === 'object') {
+                if ('source' in ref && typeof ref.source === 'string') {
+                    stats.tags++
+
+                    if (ref._soft) {
+                        stats.soft++
+                    }
+
+                    if (ref._redundant) {
+                        stats.redundant++
+                    }
+
+                    const currentHash = hash(ref.source)
+                    if (ref.cache && ref.cache !== currentHash) {
+                        stats.outdated++
+                    }
+
+                    // Check translation status per language
+                    workspace.config.languages.target.forEach(lang => {
+                        if (ref.target[lang.id] && ref.target[lang.id] !== id) {
+                            stats.translated[lang.id]++
+                        } else {
+                            stats.untranslated[lang.id]++
+                        }
+                    })
+                } else if (!refPath.length || refPath.length > 0) {
+                    stats.groups++
+                }
+            }
+        })
+
+        // Display statistics
+        // oxlint-disable-next-line no-console
+        console.log(pc.bold(pc.cyan('\n📊 Translation Statistics\n')))
+        // oxlint-disable-next-line no-console
+        console.log(pc.bold('Overview:'))
+        // oxlint-disable-next-line no-console
+        console.log(`  Groups: ${pc.green(stats.groups)}`)
+        // oxlint-disable-next-line no-console
+        console.log(`  Tags: ${pc.green(stats.tags)}`)
+        // oxlint-disable-next-line no-console
+        console.log(`  Languages: ${pc.green(stats.languages)}`)
+
+        if (stats.soft > 0) {
+            // oxlint-disable-next-line no-console
+            console.log(`  Soft tags: ${pc.yellow(stats.soft)}`)
+        }
+
+        if (stats.redundant > 0) {
+            // oxlint-disable-next-line no-console
+            console.log(`  Redundant tags: ${pc.yellow(stats.redundant)}`)
+        }
+
+        if (stats.outdated > 0) {
+            // oxlint-disable-next-line no-console
+            console.log(`  Outdated translations: ${pc.yellow(stats.outdated)}`)
+        }
+
+        // oxlint-disable-next-line no-console
+        console.log(pc.bold('\nTranslation Progress:'))
+        workspace.config.languages.target.forEach(lang => {
+            const total = stats.translated[lang.id] + stats.untranslated[lang.id]
+            const percentage = total > 0 ? Math.round((stats.translated[lang.id] / total) * 100) : 0
+            const bar = '█'.repeat(Math.floor(percentage / 2)) + '░'.repeat(50 - Math.floor(percentage / 2))
+            
+            // oxlint-disable-next-line no-console
+            console.log(`  ${lang.name} (${lang.id}):`)
+            // oxlint-disable-next-line no-console
+            console.log(`    ${bar} ${percentage}%`)
+            // oxlint-disable-next-line no-console
+            console.log(`    ${pc.green(stats.translated[lang.id])} translated, ${pc.yellow(stats.untranslated[lang.id])} remaining`)
+        })
+
+        // oxlint-disable-next-line no-console
+        console.log('')
     })
     .command('export', 'Export target translations to i18next format', (yargs) =>
         yargs
@@ -103,8 +337,26 @@ void cli.usage('Usage: $0 [task]')
             .option('output', {
                 alias: 'o',
                 default: './i18next.json',
-                describe: 'I18next file for output',
+                describe: 'Output file path',
                 type: 'string',
+            })
+            .option('format', {
+                alias: 'f',
+                choices: ['i18next', 'flat', 'nested'],
+                default: 'i18next',
+                describe: 'Export format',
+                type: 'string',
+            })
+            .option('language', {
+                alias: 'l',
+                describe: 'Export specific language (default: all languages)',
+                type: 'string',
+            })
+            .option('split', {
+                alias: 's',
+                default: false,
+                describe: 'Split translations into separate files per language',
+                type: 'boolean',
             })
     , async(argv) => {
         const workspace = new Workspace()
@@ -112,13 +364,40 @@ void cli.usage('Usage: $0 [task]')
             source_file: path.resolve(argv.workspace),
         }, false)
 
-        const bundleTarget = path.resolve(path.dirname(workspace.config.source_file), argv.output)
-        logger.info(`Exported to: ${bundleTarget}`)
-        await fs.mkdirp(path.dirname(bundleTarget))
-        fs.writeFile(bundleTarget, JSON.stringify(i18nFormat(
-            workspace.i18n,
-            workspace.config.languages.target,
-        )))
+        const outputDir = path.dirname(path.resolve(argv.output))
+        const outputBase = path.basename(argv.output, path.extname(argv.output))
+        const outputExt = path.extname(argv.output) || '.json'
+
+        await fs.mkdirp(outputDir)
+
+        const languagesToExport = argv.language 
+            ? workspace.config.languages.target.filter(lang => lang.id === argv.language)
+            : workspace.config.languages.target
+
+        if (argv.language && languagesToExport.length === 0) {
+            logger.error(`Language '${argv.language}' not found in workspace`)
+            process.exit(1)
+        }
+
+        if (argv.split) {
+            // Export each language to a separate file
+            for (const language of languagesToExport) {
+                const outputFile = path.join(outputDir, `${outputBase}.${language.id}${outputExt}`)
+                const translations = i18nFormat(workspace.i18n, [language])
+                
+                await fs.writeFile(outputFile, JSON.stringify(translations, null, 2), 'utf8')
+                logger.info(`Exported ${language.name} to: ${outputFile}`)
+            }
+        } else {
+            // Export all languages to a single file
+            const bundleTarget = path.resolve(outputDir, `${outputBase}${outputExt}`)
+            const translations = i18nFormat(workspace.i18n, languagesToExport)
+            
+            await fs.writeFile(bundleTarget, JSON.stringify(translations, null, 2), 'utf8')
+            logger.info(`Exported to: ${bundleTarget}`)
+        }
+
+        logger.info('Export complete!')
     })
     .command('lint', 'Lint translations', (yargs) => {
         yargs.option('workspace', {
