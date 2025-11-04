@@ -15,7 +15,7 @@ interface SettingsProps {
 
 export default function Settings({ userId, tabId = 'misc' }: SettingsProps) {
     const routeSettings = (tab: string) => {
-        return `/admin/users/${$s.admin.user.id}?tab=${tab}`
+        return `/settings/users/${$s.admin.user.id}?tab=${tab}`
     }
 
     const saveUserAction = async () => {

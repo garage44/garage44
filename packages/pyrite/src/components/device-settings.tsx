@@ -1,13 +1,18 @@
 import {FieldSelect, Icon, SoundMeter as Soundmeter} from '@garage44/common/components'
 import Sound from '@/lib/sound'
-import {Stream} from '@/components/conference/stream/stream'
+import {Stream} from '@/components/stream/stream'
 import {useState, useEffect} from 'preact/hooks'
 import {$s} from '@/app'
-import {$t, notifier} from '@garage44/common/app'
-import {getUserMedia, queryDevices} from '@/models/media'
-import {localStream, delLocalMedia} from '@/models/media'
+import {$t} from '@garage44/common/app'
+import {getUserMedia, queryDevices, localStream} from '@/models/media'
+import * as sfu from '@/models/sfu/sfu'
+import './device-settings.css'
 
-export default function TabDevices() {
+/**
+ * Device Settings Component for PanelContext Quick Access
+ * Contains only device selection (cam, mic, audio) - no media settings
+ */
+export function DeviceSettings() {
     const [description, setDescription] = useState<any>(null)
     const [stream, setStream] = useState<MediaStream | null>(null)
     const [streamId, setStreamId] = useState<string | null>(null)
@@ -52,9 +57,7 @@ export default function TabDevices() {
             await queryDevices()
             setSoundAudio(new Sound({ file: '/audio/power-on.ogg', playing: false }))
 
-            // Only use existing stream if available - don't auto-start media
-            // Media should only start when user explicitly clicks camera/mic buttons
-            // This prevents unwanted getUserMedia calls and permission prompts on page load
+            // Only use existing stream if available
             const currentStream = localStream
             if (currentStream && !$s.sfu.channel.connected) {
                 setStream(currentStream)
@@ -77,11 +80,11 @@ export default function TabDevices() {
 
         init()
 
-        return () => {
-            if (!$s.sfu.channel.connected) {
-                delLocalMedia()
+            return () => {
+                if (!$s.sfu.channel.connected) {
+                    sfu.delLocalMedia()
+                }
             }
-        }
     }, [])
 
     // Watch for device changes
@@ -90,8 +93,9 @@ export default function TabDevices() {
     }, [$s.devices.cam.resolution, $s.devices.cam.selected, $s.devices.mic.selected])
 
     return (
-        <section class="c-tab-devices tab-content active">
-            <div class="camera-field">
+        <div class="c-device-settings">
+            <div class="c-device-settings__section">
+                <h3 class="c-device-settings__title">Camera</h3>
                 <FieldSelect
                     value={$s.devices.cam.selected}
                     onChange={(value) => $s.devices.cam.selected = value}
@@ -100,31 +104,29 @@ export default function TabDevices() {
                     name="video"
                     options={$s.devices.cam.options}
                 />
-
                 {description && <Stream modelValue={description} controls={false} />}
                 {!description && (
-                    <div class="webcam-placeholder">
+                    <div class="c-device-settings__placeholder">
                         <Icon name="webcam" />
                     </div>
                 )}
             </div>
 
-            <FieldSelect
-                value={$s.devices.mic.selected}
-                onChange={(value) => $s.devices.mic.selected = value}
-                help={$t('device.select_mic_verify_help')}
-                label={$t('device.select_mic_label')}
-                name="audio"
-                options={$s.devices.mic.options}
-            />
-
-            <div class="soundmeter">
+            <div class="c-device-settings__section">
+                <h3 class="c-device-settings__title">Microphone</h3>
+                <FieldSelect
+                    value={$s.devices.mic.selected}
+                    onChange={(value) => $s.devices.mic.selected = value}
+                    help={$t('device.select_mic_verify_help')}
+                    label={$t('device.select_mic_label')}
+                    name="audio"
+                    options={$s.devices.mic.options}
+                />
                 {streamId && stream && <Soundmeter stream={stream} streamId={streamId} />}
             </div>
 
-            <div class="output-config">
-                {/* https://bugzilla.mozilla.org/show_bug.cgi?id=1498512 */}
-                {/* https://bugzilla.mozilla.org/show_bug.cgi?id=1152401 */}
+            <div class="c-device-settings__section">
+                <h3 class="c-device-settings__title">Audio Output</h3>
                 {$s.devices.audio.options.length && !$s.env.isFirefox && (
                     <FieldSelect
                         value={$s.devices.audio.selected}
@@ -137,20 +139,15 @@ export default function TabDevices() {
                 )}
 
                 {($s.env.isFirefox || !$s.devices.audio.options.length) && (
-                    <div class="field">
-                        <div class="label-container">
-                            <label class="field-label">{$t('device.select_audio_label')}</label>
-                            <button class="btn" disabled={playing} onClick={testSoundAudio}>
-                                <Icon class="icon-d" name="play" />
-                            </button>
-                        </div>
-
-                        <div class="help">
-                            {$t('device.select_audio_verify_help')}
-                        </div>
+                    <div class="c-device-settings__audio-test">
+                        <label>{$t('device.select_audio_label')}</label>
+                        <button class="btn" disabled={playing} onClick={testSoundAudio}>
+                            <Icon class="icon-d" name="play" />
+                        </button>
+                        <p class="c-device-settings__help">{$t('device.select_audio_verify_help')}</p>
                     </div>
                 )}
             </div>
-        </section>
+        </div>
     )
 }

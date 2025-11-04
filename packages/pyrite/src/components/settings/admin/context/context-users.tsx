@@ -47,7 +47,7 @@ export default function ContextUsers({ path, userId }: ContextUsersProps) {
 
         if (orderedUsers.length) {
             const userId = orderedUsers[0].id
-            route(`/admin/users/${userId}/misc`)
+            route(`/settings/users/${userId}/misc`)
         }
     }
 
@@ -88,9 +88,9 @@ export default function ContextUsers({ path, userId }: ContextUsersProps) {
 
     const userLink = (userId: number) => {
         if ($s.admin.user && $s.admin.user.id == userId) {
-            return '/admin/users'
+            return '/settings/users'
         } else {
-            return `/admin/users/${userId}/misc`
+            return `/settings/users/${userId}/misc`
         }
     }
 

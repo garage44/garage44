@@ -11,25 +11,25 @@ interface AdminControlsProps {
 export default function AdminControls({ path }: AdminControlsProps) {
     const groupRoute = useMemo(() => {
         if ($s.admin.group) {
-            return `/admin/groups/${$s.admin.group._name}/misc`
+            return `/settings/groups/${$s.admin.group._name}/misc`
         } else {
             // Use first channel from sfu.channels that has metadata
             const firstChannel = Object.entries($s.sfu.channels).find(([_, data]) =>
                 data.description || data.comment || data.clientCount !== undefined
             )
             if (firstChannel) {
-                return `/admin/groups/${firstChannel[0]}/misc`
+                return `/settings/groups/${firstChannel[0]}/misc`
             } else {
-                return '/admin/groups/misc'
+                return '/settings/groups/misc'
             }
         }
     }, [$s.admin.group, $s.sfu.channels])
 
     const userRoute = useMemo(() => {
         if ($s.admin.user) {
-            return `/admin/users/${$s.admin.user.id}/misc`
+            return `/settings/users/${$s.admin.user.id}/misc`
         } else {
-            return '/admin/users'
+            return '/settings/users'
         }
     }, [$s.admin.user])
 
@@ -52,7 +52,7 @@ export default function AdminControls({ path }: AdminControlsProps) {
         <div class="c-admin-controls">
             <div class="navigational-controls">
                 <Button
-                    active={path?.includes('/admin/groups')}
+                    active={path?.includes('/settings/groups')}
                     icon="Group"
                     route={groupRoute}
                     tip={$t('group.groups')}
@@ -60,7 +60,7 @@ export default function AdminControls({ path }: AdminControlsProps) {
                 />
 
                 <Button
-                    active={path?.includes('/admin/users')}
+                    active={path?.includes('/settings/users')}
                     icon="User"
                     route={userRoute}
                     tip={$t('user.users')}

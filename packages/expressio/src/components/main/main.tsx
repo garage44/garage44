@@ -1,6 +1,7 @@
 import {$s} from '@/app'
 import {$t, api, notifier, ws} from '@garage44/common/app'
-import {Config, Profile, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
+import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
+import {Settings} from '@/components/settings/settings'
 import {AppLayout, FieldSelect, MenuGroup, MenuItem, Notifications, PanelMenu, Progress, UserMenu} from '@garage44/common/components'
 import {Router, getCurrentUrl, route} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
@@ -156,7 +157,7 @@ export const Main = () => {
                                 mergeDeep($s.user, result)
                                 route('/')
                             }}
-                            settingsHref="/profile"
+                            settingsHref="/settings"
                             user={{
                                 id: ($s.user as any).id,
                                 profile: {
@@ -189,7 +190,7 @@ export const Main = () => {
             <div class="view">
                 <Router onChange={handleRoute}>
                     {$s.user.admin && <Config path="/" />}
-                    <Profile path="/profile" />
+                    <Settings path="/settings" />
                     <WorkspaceSettings path="/workspaces/:workspace/settings" />
                     <WorkspaceTranslations path="/workspaces/:workspace/translations" />
                 </Router>

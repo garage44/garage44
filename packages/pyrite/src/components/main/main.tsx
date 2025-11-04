@@ -3,8 +3,8 @@ import classnames from 'classnames'
 import {api, ws, notifier} from '@garage44/common/app'
 import {Router} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
-import {ConferenceApp} from '../conference/app'
-import {AdminApp} from '../admin/app'
+import {ConferenceApp} from '../app'
+import {AdminApp} from '../settings/admin/app'
 import {Login, Notifications} from '@garage44/common/components'
 import {useEffect} from 'preact/hooks'
 
@@ -102,7 +102,7 @@ export const Main = () => {
     return <div class="app">
         <Router>
             {/* Admin routes */}
-            <AdminApp path="/admin/*" />
+            <AdminApp path="/settings/*" />
 
             {/* Conference routes (default) */}
             <ConferenceApp default path="/*" />

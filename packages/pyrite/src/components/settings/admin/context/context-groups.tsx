@@ -46,15 +46,15 @@ export default function ContextGroups({ path, groupId }: ContextGroupsProps) {
 
         if (orderedGroups.length) {
             const groupId = orderedGroups[0]._name
-            route(`/admin/groups/${groupId}/misc`)
+            route(`/settings/groups/${groupId}/misc`)
         }
     }
 
     const groupLink = (groupId: string) => {
         if ($s.admin.group && $s.admin.group._name == groupId) {
-            return path || `/admin/groups/${groupId}/misc`
+            return path || `/settings/groups/${groupId}/misc`
         } else {
-            return `/admin/groups/${groupId}/misc`
+            return `/settings/groups/${groupId}/misc`
         }
     }
 

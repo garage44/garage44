@@ -1,7 +1,7 @@
 import classnames from 'classnames'
 import {Icon} from '@garage44/common/components'
-import Recordings from '@/components/admin/group/recordings/recordings'
-import Stats from '@/components/admin/group/stats/stats'
+import Recordings from '@/components/settings/admin/group/recordings/recordings'
+import Stats from '@/components/settings/admin/group/stats/stats'
 import TabAccess from './tab-access'
 import TabMisc from './tab-misc'
 import TabPermissions from './tab-permissions'
@@ -19,13 +19,13 @@ interface SettingsProps {
 
 export default function Settings({ groupId, tabId = 'misc', path }: SettingsProps) {
     const routeSettings = (tab: string) => {
-        return `/admin/groups/${groupId}?tab=${tab}`
+        return `/settings/groups/${groupId}?tab=${tab}`
     }
 
     const saveGroupAction = async () => {
         if (groupId) {
             const group = await saveGroup(groupId, $s.admin.group)
-            route(`/admin/groups/${group._name}?tab=${tabId}`)
+            route(`/settings/groups/${group._name}?tab=${tabId}`)
         }
     }
 
@@ -83,7 +83,7 @@ export default function Settings({ groupId, tabId = 'misc', path }: SettingsProp
                 {tabId === 'stats' && <Stats groupId={groupId} />}
                 {tabId === 'recordings' && <Recordings groupId={groupId} />}
 
-                {path?.includes('/admin/groups') && (
+                {path?.includes('/settings/groups') && (
                     <div class="actions">
                         <button class="btn btn-menu btn-save" onClick={saveGroupAction}>
                             <Icon class="icon-d" name="save" />

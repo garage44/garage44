@@ -8,7 +8,7 @@ import {emojiLookup} from '@/models/chat'
 import ChannelsContext from './context/context-channels'
 import {Link} from 'preact-router'
 import {Channel} from './channel/channel'
-import ProfileSettings from './settings/profile-settings'
+import Settings from './settings/settings'
 
 import {PanelContextSfu} from './panel-context-sfu'
 
@@ -101,7 +101,7 @@ export const ConferenceApp = () => {
                             $s.panels.menu.collapsed = collapsed
                             store.save()
                         }}
-                        logoHref="/admin/groups"
+                        logoHref="/settings/groups"
                         logoText="PYRITE"
                         logoVersion={process.env.APP_VERSION || '2.0.0'}
                         LogoIcon={IconLogo}
@@ -113,7 +113,8 @@ export const ConferenceApp = () => {
             >
                 <Router>
                     <Route path="/channels/:channelSlug" component={Channel} />
-                    <Route path="/settings" component={ProfileSettings} />
+                    <Route path="/settings" component={Settings} />
+                    <Route path="/settings/:tabId" component={Settings} />
                     <Route default component={() => (
                         <div class="c-welcome">
                             <IconLogo />

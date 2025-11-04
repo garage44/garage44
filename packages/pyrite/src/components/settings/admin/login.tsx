@@ -29,7 +29,7 @@ export const Login = () => {
             setErrors({ username: [message], password: [message] })
         } else {
             notifier.notify({ level: 'info', message: $t('user.login.succesful') })
-            route('/admin/users')
+            route('/settings/users')
         }
     }
 

@@ -3,6 +3,7 @@ import {ControlsMain} from './controls/controls-main'
 import {PanelContext} from '@garage44/common/components'
 import {$s} from '@/app'
 import {store} from '@garage44/common/app'
+import {DeviceSettings} from './device-settings'
 
 export function PanelContextSfu() {
     return <PanelContext
@@ -24,9 +25,13 @@ export function PanelContextSfu() {
             }
         }}
     >
-        {$s.sfu.channel.connected && <>
-            <ControlsMain key="controls" />,
-            <VideoStrip key="video" />
-        </> }
+        {$s.sfu.channel.connected ? (
+            <>
+                <ControlsMain key="controls" />
+                <VideoStrip key="video" />
+            </>
+        ) : (
+            <DeviceSettings key="devices" />
+        )}
     </PanelContext>
 }
