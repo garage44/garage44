@@ -300,13 +300,7 @@ export class ChannelManager {
             const existingGroup = await loadGroup(groupName)
 
             let groupData
-            if (!existingGroup) {
-                // Group file doesn't exist - create new one
-                logger.info(`[ChannelManager] Creating new Galene group file for channel "${channel.name}" (slug: ${groupName})`)
-                groupData = groupTemplate(groupName)
-                groupData.displayName = channel.name
-                groupData.description = channel.description || ''
-            } else {
+            if (existingGroup) {
                 // Group file exists - update it with channel info
                 logger.info(`[ChannelManager] Updating existing Galene group file for channel "${channel.name}" (slug: ${groupName})`)
                 groupData = existingGroup
@@ -314,6 +308,12 @@ export class ChannelManager {
                 if (!groupData._name) {
                     groupData._name = groupName
                 }
+                groupData.displayName = channel.name
+                groupData.description = channel.description || ''
+            } else {
+                // Group file doesn't exist - create new one
+                logger.info(`[ChannelManager] Creating new Galene group file for channel "${channel.name}" (slug: ${groupName})`)
+                groupData = groupTemplate(groupName)
                 groupData.displayName = channel.name
                 groupData.description = channel.description || ''
             }
@@ -420,10 +420,10 @@ export class ChannelManager {
                 await fs.remove(groupFile)
                 logger.info(`[ChannelManager] Deleted Galene group file: ${groupFile}`)
                 return true
-            } else {
-                logger.warn(`[ChannelManager] Galene group file not found: ${groupFile}`)
-                return false
             }
+
+            logger.warn(`[ChannelManager] Galene group file not found: ${groupFile}`)
+            return false
         } catch (error) {
             logger.error(`[ChannelManager] Failed to delete Galene group file for slug "${slug}":`, error)
             return false

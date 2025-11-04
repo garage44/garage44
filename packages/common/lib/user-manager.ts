@@ -244,10 +244,10 @@ export class UserManager {
             console.warn(`[UserManager] updateUser: No rows updated for userId ${userId}`)
             // Check if the user exists
             const checkUser = this.db.prepare('SELECT id FROM users WHERE id = ?').get(userId)
-            if (!checkUser) {
-                console.error(`[UserManager] updateUser: User ${userId} does not exist in database`)
-            } else {
+            if (checkUser) {
                 console.warn(`[UserManager] updateUser: User exists but UPDATE affected 0 rows`)
+            } else {
+                console.error(`[UserManager] updateUser: User ${userId} does not exist in database`)
             }
             return null
         }

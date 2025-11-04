@@ -171,7 +171,7 @@ function sortNestedObjectKeys(obj) {
         return obj
     }
 
-    const sortedKeys = Object.keys(obj).sort()
+    const sortedKeys = Object.keys(obj).toSorted()
 
     const sortedObj = {}
     sortedKeys.forEach((key) => {

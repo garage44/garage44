@@ -36,13 +36,15 @@ const PUBLIC_GROUP_FIELDS = [
 ]
 
 export function groupTemplate(groupId = null) {
+    const baseName = groupId ?? uniqueNamesGenerator({
+        dictionaries: [dictionary.adjs, dictionary.nouns],
+        length: 2,
+        separator: '-',
+        style: 'lowercase',
+    })
+
     const template = {
-        _name: groupId ? groupId : uniqueNamesGenerator({
-            dictionaries: [dictionary.adjs, dictionary.nouns],
-            length: 2,
-            separator: '-',
-            style: 'lowercase',
-        }),
+        _name: baseName,
         _permissions: {},
         _unsaved: true,
         'allow-anonymous': false,
@@ -104,10 +106,8 @@ export async function saveGroupPermissions(groupName, groupPermissions) {
                 }
             }
 
-            if (!userGroupMatch) {
-                if (user.groups[permissionName].includes(groupName)) {
-                    user.groups[permissionName].splice(user.groups[permissionName].indexOf(groupName), 1)
-                }
+            if (!userGroupMatch && user.groups[permissionName].includes(groupName)) {
+                user.groups[permissionName].splice(user.groups[permissionName].indexOf(groupName), 1)
             }
         }
     }
@@ -165,11 +165,11 @@ export async function loadGroup(groupName) {
         const public_access_idx = groupData.other.findIndex(
             (obj) => obj && typeof obj === 'object' && Object.keys(obj).length === 0 && Object.getPrototypeOf(obj) === Object.prototype,
         )
-        if (public_access_idx !== -1) {
+        if (public_access_idx === -1) {
+            groupData['public-access'] = false
+        } else {
             groupData['public-access'] = true
             groupData.other.splice(public_access_idx, 1)
-        } else {
-            groupData['public-access'] = false
         }
     }
 
@@ -202,9 +202,7 @@ export async function loadGroups(publicEndpoint = false) {
 
     const glob = new Glob('**/*.json')
     const files = Array.from(glob.scanSync(groupsPath)).map((f) => path.join(groupsPath, f))
-    const groupNames = files.map((i) => {
-        return i.substring(groupsPath.length+1, i.length-5)
-    })
+    const groupNames = files.map((i) => i.slice(groupsPath.length + 1, -5))
     const fileData = await Promise.all(groupNames.map((i) => loadGroup(i)))
 
     const groupsData = []
@@ -231,7 +229,7 @@ export async function loadGroups(publicEndpoint = false) {
         if (galeneGroup) {
             Object.assign(data, {
                 clientCount: galeneGroup.clientCount,
-                locked: galeneGroup.locked ? true : false,
+                locked: Boolean(galeneGroup.locked),
                 name: groupName,
             })
         }
@@ -292,20 +290,20 @@ export async function saveGroup(groupName, data) {
 
     const groupsPath = path.join(config.sfu.path, 'groups')
     const currentGroupFile = path.join(groupsPath, `${data._name}.json`)
-    if (data._name !== data._newName) {
-        logger.debug(`save and rename group ${groupName}`)
-        const newGroupFile = path.join(groupsPath, `${data._newName}.json`)
-        // Sync current group file in group definitions and settings.users
-        await renameGroup(data._name, data._newName)
-        await fs.remove(currentGroupFile)
-
-        await fs.promises.writeFile(newGroupFile, JSON.stringify(saveData, null, '  '))
-        return {data, groupId: data._newName}
-    } else {
+    if (data._name === data._newName) {
         logger.debug(`save group ${groupName}`)
         await fs.promises.writeFile(currentGroupFile, JSON.stringify(saveData, null, '  '))
         return {data, groupId: data._name}
     }
+
+    logger.debug(`save and rename group ${groupName}`)
+    const newGroupFile = path.join(groupsPath, `${data._newName}.json`)
+    // Sync current group file in group definitions and settings.users
+    await renameGroup(data._name, data._newName)
+    await fs.remove(currentGroupFile)
+
+    await fs.promises.writeFile(newGroupFile, JSON.stringify(saveData, null, '  '))
+    return {data, groupId: data._newName}
 }
 
 /**
@@ -320,12 +318,10 @@ export async function syncGroup(groupId, groupData) {
             const _user = users.find((i) => i.name === username)
             // User from groups definition is in settings.users;
             // Make sure the group is there as well...
-            if (_user) {
-                if (!_user.groups[role].includes(groupId)) {
-                    logger.debug(`add group ${groupId} to user ${_user.name}`)
-                    _user.groups[role].push(groupId)
-                    changed = true
-                }
+            if (_user && !_user.groups[role].includes(groupId)) {
+                logger.debug(`add group ${groupId} to user ${_user.name}`)
+                _user.groups[role].push(groupId)
+                changed = true
             }
         }
     }

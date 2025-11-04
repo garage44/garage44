@@ -59,12 +59,12 @@ export function createAvatarRoutes(options: AvatarRoutesOptions) {
                         return new Response(file, {
                             headers: { 'Content-Type': contentType }
                         })
-                    } else {
-                        return new Response(JSON.stringify({error: 'image not found'}), {
-                            headers: { 'Content-Type': 'application/json' },
-                            status: 404
-                        })
                     }
+
+                    return new Response(JSON.stringify({error: 'image not found'}), {
+                        headers: { 'Content-Type': 'application/json' },
+                        status: 404
+                    })
                 } catch (error) {
                     logger?.error(`[Avatar Routes] Error serving image ${filename}:`, error)
                     return new Response(JSON.stringify({error: 'failed to serve image'}), {
@@ -110,12 +110,12 @@ export function createAvatarRoutes(options: AvatarRoutesOptions) {
                         return new Response(file, {
                             headers: { 'Content-Type': contentType }
                         })
-                    } else {
-                        return new Response(JSON.stringify({error: 'avatar not found'}), {
-                            headers: { 'Content-Type': 'application/json' },
-                            status: 404
-                        })
                     }
+
+                    return new Response(JSON.stringify({error: 'avatar not found'}), {
+                        headers: { 'Content-Type': 'application/json' },
+                        status: 404
+                    })
                 } catch (error) {
                     logger?.error(`[Avatar Routes] Error serving avatar ${filename}:`, error)
                     return new Response(JSON.stringify({error: 'failed to serve avatar'}), {

@@ -20,41 +20,45 @@ type LogEvent = {
     ts: number
 }
 
-class RingBuffer<T> {
-    #buf: T[] = []
-    #cap: number
-    constructor(capacity: number) {
-        this.#cap = capacity 
-    }
-    push(item: T) {
-        this.#buf.push(item)
-        if (this.#buf.length > this.#cap) {
-            this.#buf.shift() 
-        }
-    }
-    toArray(): T[] {
-        return [...this.#buf] 
+type RingBuffer<T> = {
+    push: (item: T) => void
+    toArray: () => T[]
+}
+
+function createRingBuffer<T>(capacity: number): RingBuffer<T> {
+    const buffer: T[] = []
+
+    return {
+        push(item: T) {
+            buffer.push(item)
+            if (buffer.length > capacity) {
+                buffer.shift()
+            }
+        },
+        toArray(): T[] {
+            return [...buffer]
+        },
     }
 }
 
 class DevContext {
-    http = new RingBuffer<HttpEvent>(500)
-    ws = new RingBuffer<WsEvent>(500)
-    logs = new RingBuffer<LogEvent>(500)
-    errors = new RingBuffer<LogEvent>(200)
+    http = createRingBuffer<HttpEvent>(500)
+    ws = createRingBuffer<WsEvent>(500)
+    logs = createRingBuffer<LogEvent>(500)
+    errors = createRingBuffer<LogEvent>(200)
 
     addHttp(e: HttpEvent) {
-        this.http.push(e) 
+        this.http.push(e)
     }
     addWs(e: WsEvent) {
-        this.ws.push(e) 
+        this.ws.push(e)
     }
     addLog(level: string, message: string) {
         const evt = {level, message, ts: Date.now()}
         if (level === 'error') {
-            this.errors.push(evt) 
+            this.errors.push(evt)
         } else {
-            this.logs.push(evt) 
+            this.logs.push(evt)
         }
     }
 
