@@ -17,4 +17,19 @@
             width: 100%;
         }
     }
+
+    .video-strip-placeholder {
+        align-items: center;
+        aspect-ratio: 16 / 9;
+        background: var(--surface-2);
+        color: var(--surface-6);
+        display: flex;
+        justify-content: center;
+        width: 100%;
+
+        p {
+            font-size: var(--font-d);
+            margin: 0;
+        }
+    }
 }

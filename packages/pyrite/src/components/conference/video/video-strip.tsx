@@ -2,6 +2,7 @@ import {Stream} from '../stream/stream'
 import {useMemo, useCallback, useEffect} from 'preact/hooks'
 import {$s} from '@/app'
 import {logger} from '@garage44/common/app'
+import {Icon} from '@garage44/common/components'
 import './video-strip.css'
 
 interface VideoStripProps {
@@ -29,7 +30,7 @@ export const VideoStrip = ({streams}: VideoStripProps) => {
     const handleStreamUpdate = useCallback((updatedStream: any) => {
         logger.debug(`[VideoStrip] handleStreamUpdate: stream ${updatedStream.id}`)
         const streamIndex = $s.streams.findIndex((s) => s.id === updatedStream.id)
-        if (streamIndex !== -1) {
+        if (streamIndex >= 0) {
             logger.debug(`[VideoStrip] updating stream ${updatedStream.id} at index ${streamIndex}`)
             Object.assign($s.streams[streamIndex], updatedStream)
         } else {
@@ -45,17 +46,20 @@ export const VideoStrip = ({streams}: VideoStripProps) => {
         })
     }, [$s.streams])
 
-    if (!sortedStreams.length) {
-        return null
-    }
-
     return (
         <div class="c-video-strip">
-            {sortedStreams.map((description, index) => (
-                <div key={description.id || index} class="video-strip-item">
-                    <Stream modelValue={sortedStreams[index]} onUpdate={handleStreamUpdate} />
+            {sortedStreams.length > 0 ? (
+                sortedStreams.map((description, index) => (
+                    <div key={description.id || index} class="video-strip-item">
+                        <Stream modelValue={sortedStreams[index]} onUpdate={handleStreamUpdate} />
+                    </div>
+                ))
+            ) : (
+                <div class="video-strip-placeholder">
+                    <Icon class="icon icon-l" name="webcam" />
+                    <p>No video streams</p>
                 </div>
-            ))}
+            )}
         </div>
     )
 }
