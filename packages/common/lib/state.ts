@@ -3,8 +3,15 @@ const persistentState = {
     language_ui: {
         selection: 'eng-gbr',
     },
-    panel: {
-        collapsed: false,
+    panels: {
+        context: {
+            collapsed: false,
+            width: 200,
+        },
+        menu: {
+            collapsed: false,
+            width: 240,
+        },
     },
     theme: 'system',
 } as const

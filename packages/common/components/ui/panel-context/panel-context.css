@@ -1,7 +1,6 @@
 .c-panel-context {
     animation: fade-in 0.2s ease-in forwards;
-    background: oklch(from var(--surface-1) l c h / 0.8);
-    border-left: 1px solid var(--surface-2);
+    border-left: 1px solid var(--surface-1);
     box-shadow: 0 0 var(--spacer-2) var(--spacer-1) oklch(from var(--surface-0) l c h / 0.4);
     display: flex;
     flex-direction: column;
@@ -10,6 +9,11 @@
     position: relative;
     transition: width 0.3s ease;
     width: auto;
+
+    &.resizing {
+        transition: none;
+        user-select: none;
+    }
 
     .collapse-toggle {
         align-items: center;
@@ -37,6 +41,21 @@
         }
     }
 
+    .resize-handle {
+        background: transparent;
+        cursor: ew-resize;
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 4px;
+        z-index: 5;
+
+        &:hover {
+            background: var(--surface-3);
+        }
+    }
+
     .content {
         background: var(--surface-1);
         display: flex;
@@ -50,10 +69,11 @@
     }
 
     &.collapsed {
+        /* Fixed width when collapsed - not resizable */
         min-width: 64px;
         width: 64px;
 
-        .content {
+        .resize-handle {
             display: none;
         }
     }

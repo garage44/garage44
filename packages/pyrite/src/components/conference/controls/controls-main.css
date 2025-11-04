@@ -6,8 +6,6 @@
     flex-direction: column;
     justify-content: space-between;
     min-width: fit-content;
-    padding: var(--spacer-1);
-    width: fit-content;
 
     .navigational-controls {
         display: flex;

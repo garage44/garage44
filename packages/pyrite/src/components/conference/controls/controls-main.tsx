@@ -12,7 +12,7 @@ interface ControlsMainProps {
     path?: string
 }
 
-export default function ControlsMain({path}: ControlsMainProps) {
+export function ControlsMain({path}: ControlsMainProps) {
     // DeepSignal is reactive - accessing $s properties makes components reactive automatically
     const currentGroupData = useMemo(() => currentGroup(), [])
 
@@ -107,52 +107,50 @@ export default function ControlsMain({path}: ControlsMainProps) {
 
     const isSettingsRoute = path?.includes('/settings')
 
-    return (
-        <nav class="c-general-controls">
-            <div class="navigational-controls">
+    return <nav class="c-general-controls">
+        <div class="navigational-controls">
 
-                {isChannelConnected && $s.permissions.record && <Button
-                    active={$s.sfu.channel.recording}
-                    icon={$s.sfu.channel.recording ? 'unrecord' : 'record'}
-                    tip={$s.sfu.channel.recording ? $t('group.action.stop_recording') : $t('group.action.start_recording')}
-                    variant="toggle"
-                    onClick={toggleRecording}
-                />}
+            {isChannelConnected && $s.permissions.record && <Button
+                active={$s.sfu.channel.recording}
+                icon={$s.sfu.channel.recording ? 'unrecord' : 'record'}
+                tip={$s.sfu.channel.recording ? $t('group.action.stop_recording') : $t('group.action.start_recording')}
+                variant="toggle"
+                onClick={toggleRecording}
+            />}
 
-                {isChannelConnected && $s.permissions.op && <Button
-                    active={currentGroupData.locked}
-                    context={{
-                        enabled: !currentGroupData.locked,
-                        placeholder: $t('group.action.lock_context'),
-                        submit: toggleLockGroup,
-                    }}
-                    icon={currentGroupData.locked ? 'unlock' : 'lock'}
-                    tip={currentGroupData.locked ? $t('group.action.unlock') : $t('group.action.lock')}
-                    variant="toggle"
-                />}
+            {isChannelConnected && $s.permissions.op && <Button
+                active={currentGroupData.locked}
+                context={{
+                    enabled: !currentGroupData.locked,
+                    placeholder: $t('group.action.lock_context'),
+                    submit: toggleLockGroup,
+                }}
+                icon={currentGroupData.locked ? 'unlock' : 'lock'}
+                tip={currentGroupData.locked ? $t('group.action.unlock') : $t('group.action.lock')}
+                variant="toggle"
+            />}
 
-                {isChannelConnected && $s.permissions.op && <Button
-                    icon="micmute"
-                    tip={$t('group.action.mute_participants')}
-                    variant="toggle"
-                    onClick={muteAllUsers}
-                />}
+            {isChannelConnected && $s.permissions.op && <Button
+                icon="micmute"
+                tip={$t('group.action.mute_participants')}
+                variant="toggle"
+                onClick={muteAllUsers}
+            />}
 
-                {isChannelConnected && currentChannelSlug && <Button
-                    active={$s.sfu.channels[currentChannelSlug]?.video || false}
-                    icon="webcam"
-                    tip={$s.sfu.channels[currentChannelSlug]?.video ? $t('group.action.cam_off') : $t('group.action.cam_on')}
-                    variant="toggle"
-                    onClick={toggleCamera}
-                />}
-                <Button
-                    active={isSettingsRoute}
-                    icon="cog_outline"
-                    route={settingsRoute}
-                    tip={$t('group.settings.name')}
-                    variant="toggle"
-                />
-            </div>
-        </nav>
-    )
+            {isChannelConnected && currentChannelSlug && <Button
+                active={$s.sfu.channels[currentChannelSlug]?.video || false}
+                icon="webcam"
+                tip={$s.sfu.channels[currentChannelSlug]?.video ? $t('group.action.cam_off') : $t('group.action.cam_on')}
+                variant="toggle"
+                onClick={toggleCamera}
+            />}
+            <Button
+                active={isSettingsRoute}
+                icon="cog_outline"
+                route={settingsRoute}
+                tip={$t('group.settings.name')}
+                variant="toggle"
+            />
+        </div>
+    </nav>
 }

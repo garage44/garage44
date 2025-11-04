@@ -36,17 +36,6 @@ export const persistantState: Partial<PyriteState> = mergeDeep({
         accept: {id: 'everything', name: ''},
         upstream: {id: 'normal', name: ''},
     },
-    panels: {
-        chat: {
-            collapsed: false,
-        },
-        context: {
-            collapsed: false,
-        },
-        settings: {
-            collapsed: false,
-        },
-    },
 }, commonPersistantState)
 
 // State is always overwritten by these properties

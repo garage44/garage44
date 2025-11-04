@@ -6,11 +6,11 @@ import {IconLogo, Notifications, AppLayout, PanelMenu, PanelContext, UserMenu} f
 import {mergeDeep} from '@garage44/common/lib/utils'
 import {emojiLookup} from '@/models/chat'
 import ChannelsContext from './context/context-channels'
-import PanelContextVideo from './video/panel-context-video'
-import {VideoStrip} from './video/video-strip'
 import {Link} from 'preact-router'
 import {Channel} from './channel/channel'
 import ProfileSettings from './settings/profile-settings'
+
+import {PanelContextSfu} from './panel-context-sfu'
 
 export const ConferenceApp = () => {
     useEffect(() => {
@@ -83,7 +83,7 @@ export const ConferenceApp = () => {
                     <PanelMenu
                         actions={
                             <UserMenu
-                                collapsed={$s.panels.context.collapsed}
+                                collapsed={$s.panels.menu.collapsed}
                                 onLogout={handleLogout}
                                 settingsHref="/settings"
                                 user={{
@@ -95,9 +95,11 @@ export const ConferenceApp = () => {
                                 }}
                             />
                         }
-                        collapsed={$s.panels.context.collapsed}
+                        collapsed={$s.panels.menu.collapsed}
                         onCollapseChange={(collapsed) => {
-                            $s.panels.context.collapsed = collapsed
+                            // Synchronize collapse state: both panels collapse together
+                            $s.panels.menu.collapsed = collapsed
+                            store.save()
                         }}
                         logoHref="/admin/groups"
                         logoText="PYRITE"
@@ -107,21 +109,7 @@ export const ConferenceApp = () => {
                         navigation={<ChannelsContext />}
                     />
                 }
-                context={
-                    <PanelContext
-                        collapsed={false}
-                        onCollapseChange={(_collapsed) => {
-                            // Context panel collapse state can be added if needed
-                        }}
-                    >
-                        {$s.sfu.channel.connected && (
-                            <>
-                                <PanelContextVideo />
-                                <VideoStrip />
-                            </>
-                        )}
-                    </PanelContext>
-                }
+                context={<PanelContextSfu />}
             >
                 <Router>
                     <Route path="/channels/:channelSlug" component={Channel} />

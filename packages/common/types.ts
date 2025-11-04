@@ -3,9 +3,9 @@ import type {DeepSignal} from 'deepsignal'
 type LogLevel = 'error' | 'warn' | 'info' | 'success' | 'verbose' | 'debug'
 
 interface LoggerConfig {
-    level?: LogLevel
     colors?: boolean
     file?: string
+    level?: LogLevel
     timestamp?: boolean
 }
 
@@ -18,13 +18,20 @@ interface CommonState {
         url: string
     }
     language_ui: {
-        selection: string
         i18n: Record<string, Record<string, string>>
         options: any[]
+        selection: string
     }
     notifications: []
-    panel: {
-        collapsed: boolean
+    panels: {
+        context: {
+            collapsed: boolean
+            width?: number
+        }
+        menu: {
+            collapsed: boolean
+            width?: number
+        }
     }
     profile: {
         avatar: string
@@ -43,8 +50,8 @@ interface CommonState {
 
 interface TargetLanguage {
     engine: 'anthropic' | 'deepl'
-    id: string
     formality: 'informal' | 'formal'
+    id: string
 }
 
 export {

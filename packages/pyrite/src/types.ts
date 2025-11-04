@@ -2,12 +2,12 @@
 import type {CommonState} from '@garage44/common/types'
 
 export interface Channel {
+    created_at: number
+    description: string
     id: number
+    member_count?: number
     name: string
     slug: string
-    description: string
-    created_at: number
-    member_count?: number
     unread_count?: number
 }
 
@@ -26,16 +26,16 @@ export interface PyriteState extends CommonState {
         channels: {
             [key: string]: {
                 id: string
-                messages: any[]
-                unread: number
                 members?: Record<string, {avatar: string}>
+                messages: any[]
                 typing?: {
                     [userId: string]: {
+                        timestamp: number
                         userId: string | number
                         username: string
-                        timestamp: number
                     }
                 }
+                unread: number
             }
         }
         emoji: {
@@ -44,26 +44,26 @@ export interface PyriteState extends CommonState {
             lookup: any
         }
         message: string
-        width: number
         // Global users map: userId -> {username, avatar}
-        users?: Record<string, {username: string; avatar: string}>
+        users?: Record<string, {avatar: string; username: string}>
+        width: number
     }
     devices: {
         audio: {
             enabled: boolean
             options: any[]
-            selected: {id: string | null, name: string}
+            selected: {id: string | null; name: string}
         }
         cam: {
             enabled: boolean
             options: any[]
-            resolution: {id: string, name: string}
-            selected: {id: string | null, name: string}
+            resolution: {id: string; name: string}
+            selected: {id: string | null; name: string}
         }
         mic: {
             enabled: boolean
             options: any[]
-            selected: {id: string | null, name: string}
+            selected: {id: string | null; name: string}
         }
     }
     env: {
@@ -79,31 +79,25 @@ export interface PyriteState extends CommonState {
     }
     language: {id: string | null}
     language_ui: {
-        selection: string
         i18n: Record<string, Record<string, string>>
         options: any[]
+        selection: string
     }
     loading: boolean
     login: {
         autofocus: boolean
     }
     media: {
-        accept: {id: string, name: string}
-        upstream: {id: string, name: string}
+        accept: {id: string; name: string}
+        upstream: {id: string; name: string}
     }
     mediaReady: boolean
     notifications: any[]
-    panels: {
-        chat: {collapsed: boolean}
-        context: {collapsed: boolean}
-        settings: {collapsed: boolean}
-    }
     permissions: {
         op: boolean
         present: boolean
         record: boolean
     }
-    streams: any[]
     sfu: {
         channel: {
             'allow-anonymous': boolean
@@ -126,11 +120,12 @@ export interface PyriteState extends CommonState {
         }>
         profile: {
             // Galene-specific user data
-            availability: {id: string, name: string}
+            availability: {id: string; name: string}
             mic: boolean
             raisehand: boolean
         }
     }
+    streams: any[]
     theme: 'light' | 'dark' | 'system'
     upMedia: {
         audio: any[]

@@ -330,7 +330,6 @@ const ConferenceApp = () => {
       context={
         $s.group.connected && (
           <PanelContext>
-            <PanelContextVideo /> {/* Top: Video controls */}
             <VideoStrip streams={$s.streams} /> {/* Bottom: Video tiles */}
           </PanelContext>
         )
