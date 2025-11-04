@@ -102,23 +102,24 @@ class WebSocketServerManager extends EventEmitter {
     }
 
     composeMiddleware(middlewares: Middleware[], handler: ApiHandler): ApiHandler {
-        return (ctx, request) => {
-            let index = -1
+        return async(initialCtx, request) => {
+            let lastIndex = -1
 
-            const dispatch = (_index: number) => {
-                if (_index <= index) {
+            const dispatch = async(index: number, ctx: WebSocketContext): Promise<unknown> => {
+                if (index <= lastIndex) {
                     throw new Error('next() called multiple times')
                 }
-                index = _index
+                lastIndex = index
 
-                const middleware = _index === middlewares.length ?
-                    ((ctx) => handler(ctx, request)) :
-                    middlewares[_index]
+                if (index === middlewares.length) {
+                    return handler(ctx, request)
+                }
 
-                return middleware(ctx, (_ctx) => dispatch(_index + 1))
+                const middleware = middlewares[index]
+                return middleware(ctx, (nextCtx) => dispatch(index + 1, nextCtx))
             }
 
-            return dispatch(0)
+            return dispatch(0, initialCtx)
         }
     }
 
