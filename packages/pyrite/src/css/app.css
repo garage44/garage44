@@ -35,10 +35,6 @@ html, body {
     color: var(--primary-8);
 }
 
-#app {
-    height: 100%;
-}
-
 /* Scrollbar styling */
 
 .scroller {

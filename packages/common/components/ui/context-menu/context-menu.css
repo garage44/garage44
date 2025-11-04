@@ -24,13 +24,13 @@
         }
 
         &.bottom {
-            top: 100%;
             margin-top: var(--spacer-1);
+            top: 100%;
         }
 
         &.left {
-            right: 100%;
             margin-right: var(--spacer-1);
+            right: 100%;
         }
 
         &.right {

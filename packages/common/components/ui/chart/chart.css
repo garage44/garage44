@@ -1,5 +1,7 @@
 .c-chart {
+
     svg {
+
         .line {
             stroke: var(--brand-primary);
         }
