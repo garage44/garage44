@@ -1,29 +1,91 @@
 import {describe, expect, it} from 'bun:test'
 
+import type {AddressInfo} from 'node:net'
+import WebSocket, {WebSocketServer} from 'ws'
+
 import {constructMessage} from '@/lib/ws-client'
 import {WebSocketServerManager, type WebSocketContext} from '@/lib/ws-server'
 
-class MockWebSocket {
-    closeCalls: {code?: number, reason?: string}[] = []
-    readyState = 1
-    sent: string[] = []
+async function createManagedServer(manager: WebSocketServerManager) {
+    const sockets = new Map<string, WebSocket>()
+    const wss = new WebSocketServer({ path: manager.endpoint, port: 0 })
 
-    close(code?: number, reason?: string) {
-        this.readyState = 3
-        this.closeCalls.push({code, reason})
-    }
+    await new Promise((resolve) => wss.once('listening', resolve))
 
-    send(payload: string) {
-        this.sent.push(payload)
+    wss.on('connection', (socket, request) => {
+        const url = new URL(request.url ?? manager.endpoint, 'http://localhost')
+        const user = url.searchParams.get('user') ?? ''
+
+        const session = user ? { userid: user } : undefined
+        manager.open(socket, { session })
+        sockets.set(user, socket)
+
+        socket.on('message', async(data) => {
+            await manager.message(socket, data.toString(), { session })
+        })
+
+        socket.on('close', () => {
+            manager.close(socket)
+            sockets.delete(user)
+        })
+    })
+
+    const address = wss.address() as AddressInfo
+    const url = `ws://127.0.0.1:${address.port}${manager.endpoint}`
+
+    return {
+        sockets,
+        url,
+        close: () => new Promise<void>((resolve, reject) => {
+            wss.close((error) => {
+                if (error) {
+                    reject(error)
+                } else {
+                    resolve()
+                }
+            })
+        }),
     }
+}
+
+async function waitForOpen(ws: WebSocket) {
+    if (ws.readyState === WebSocket.OPEN) {
+        return
+    }
+    await new Promise((resolve) => ws.once('open', resolve))
+}
+
+async function waitForClose(ws: WebSocket) {
+    if (ws.readyState === WebSocket.CLOSED) {
+        return
+    }
+    await new Promise((resolve) => ws.once('close', resolve))
+}
+
+function waitForMessage(ws: WebSocket, timeout?: number) {
+    return new Promise((resolve, reject) => {
+        const handler = (data: WebSocket.RawData) => {
+            clearTimeout(timer)
+            ws.off('message', handler)
+            resolve(JSON.parse(data.toString()))
+        }
+
+        const timer = timeout !== undefined ? setTimeout(() => {
+            ws.off('message', handler)
+            reject(new Error('timeout'))
+        }, timeout) : undefined
+
+        ws.on('message', handler)
+    })
 }
 
 describe('WebSocketServerManager URL routing', () => {
     it('routes messages by URL and HTTP verb, honoring middleware context changes', async() => {
         const manager = new WebSocketServerManager({ endpoint: '/ws' })
-        const ws = new MockWebSocket()
+        const server = await createManagedServer(manager)
+        const client = new WebSocket(`${server.url}?user=alice`)
 
-        manager.open(ws, { session: { userid: 'alice' } })
+        await waitForOpen(client)
 
         let handlerCalls = 0
 
@@ -40,33 +102,39 @@ describe('WebSocketServerManager URL routing', () => {
             return { status: 'ok', seenBy: augmented.tenant }
         }, [
             async(ctx, next) => {
-                const augmentedCtx = { ...ctx, tenant: 'alpha' } as WebSocketContext
+                const augmentedCtx = ctx as WebSocketContext & {tenant?: string}
+                augmentedCtx.tenant = 'alpha'
                 return next(augmentedCtx)
             },
         ])
 
         const requestMessage = constructMessage('/workspaces/42/items/todo', { echo: true }, 'req-1', 'GET')
-        await manager.message(ws, JSON.stringify(requestMessage), { session: { userid: 'alice' } })
+        client.send(JSON.stringify(requestMessage))
+
+        const response = await waitForMessage(client) as Record<string, unknown>
 
         expect(handlerCalls).toBe(1)
-
-        expect(ws.sent).toHaveLength(1)
-        expect(JSON.parse(ws.sent[0])).toEqual({
+        expect(response).toEqual({
             data: { status: 'ok', seenBy: 'alpha' },
             id: 'req-1',
             url: '/workspaces/42/items/todo',
         })
+
+        client.close()
+        await waitForClose(client)
+        await server.close()
     })
 })
 
 describe('WebSocketServerManager pub/sub', () => {
     it('publishes events only to subscribed sockets and cleans up on disconnect', async() => {
         const manager = new WebSocketServerManager({ endpoint: '/ws' })
-        const alphaWs = new MockWebSocket()
-        const betaWs = new MockWebSocket()
+        const server = await createManagedServer(manager)
 
-        manager.open(alphaWs, { session: { userid: 'alpha' } })
-        manager.open(betaWs, { session: { userid: 'beta' } })
+        const alpha = new WebSocket(`${server.url}?user=alpha`)
+        const beta = new WebSocket(`${server.url}?user=beta`)
+
+        await Promise.all([waitForOpen(alpha), waitForOpen(beta)])
 
         manager.api.post('/topics/:topic/subscribe', async(ctx, request) => {
             ctx.subscribe?.(`topic:${request.params.topic}`)
@@ -74,27 +142,37 @@ describe('WebSocketServerManager pub/sub', () => {
         })
 
         const alphaSubscribe = constructMessage('/topics/alpha/subscribe', undefined, 'sub-1', 'POST')
-        await manager.message(alphaWs, JSON.stringify(alphaSubscribe), { session: { userid: 'alpha' } })
+        alpha.send(JSON.stringify(alphaSubscribe))
 
-        expect(JSON.parse(alphaWs.sent[0])).toEqual({
+        const subscribeAck = await waitForMessage(alpha) as Record<string, unknown>
+        expect(subscribeAck).toEqual({
             data: { subscribed: 'alpha' },
             id: 'sub-1',
             url: '/topics/alpha/subscribe',
         })
 
         manager.emitEvent('topic:alpha', { note: 'first' })
-        expect(alphaWs.sent).toHaveLength(2)
-        expect(JSON.parse(alphaWs.sent[1])).toEqual({
+        const firstNotification = await waitForMessage(alpha) as Record<string, unknown>
+        expect(firstNotification).toEqual({
             data: { note: 'first' },
             url: 'topic:alpha',
         })
 
         manager.emitEvent('topic:beta', { note: 'ignored' })
-        expect(betaWs.sent).toHaveLength(0)
+        await expect(waitForMessage(beta, 50)).rejects.toThrow('timeout')
 
-        manager.close(alphaWs)
+        alpha.close()
+        await waitForClose(alpha)
+        await new Promise((resolve) => setTimeout(resolve, 10))
+
+        const alphaSubscriptionSize = manager.subscriptions['topic:alpha']?.size ?? 0
+        expect(alphaSubscriptionSize).toBe(0)
+
         manager.emitEvent('topic:alpha', { note: 'after-close' })
+        await expect(waitForMessage(beta, 50)).rejects.toThrow('timeout')
 
-        expect(alphaWs.sent).toHaveLength(2)
+        beta.close()
+        await waitForClose(beta)
+        await server.close()
     })
 })
