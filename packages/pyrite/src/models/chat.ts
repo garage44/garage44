@@ -176,48 +176,73 @@ export async function loadGlobalUsers() {
     }
 }
 
-export async function loadChannelHistory(channelSlug: string | number) {
+/**
+ * Load channel history with pagination support
+ * @param channelSlug Channel slug
+ * @param before Load messages before this timestamp (for pagination)
+ * @param limit Number of messages to load
+ */
+export async function loadChannelHistory(
+    channelSlug: string | number,
+    before?: number,
+    limit: number = 50
+) {
     // Prevent duplicate requests for the same channel
-    if (loadingChannels.has(channelSlug)) {
+    const loadKey = `${channelSlug}-${before || 'initial'}`
+    if (loadingChannels.has(loadKey)) {
         logger.debug(`[Chat] Already loading history for channel ${channelSlug}`)
         return
     }
 
     try {
-        loadingChannels.add(channelSlug)
+        loadingChannels.add(loadKey)
         const channelKey = channelSlug.toString()
 
         // Pre-create channel entry if it doesn't exist for immediate UI feedback
         if (!$s.chat.channels[channelKey]) {
             $s.chat.channels[channelKey] = {
+                hasMore: false,
                 id: channelKey,
+                loading: true,
                 messages: [],
-                unread: 0
+                typing: {},
+                unread: 0,
+            }
+        } else {
+            $s.chat.channels[channelKey].loading = true
+        }
+
+        logger.debug(`[Chat] Loading history for channel ${channelSlug}`, {before, limit})
+
+        // Load channel members first to get avatars (only on initial load)
+        if (!before) {
+            const membersResponse = await ws.get(`/channels/${channelSlug}/members`)
+            const members: Record<string, {avatar: string}> = {}
+
+            if (membersResponse && membersResponse.success && membersResponse.members) {
+                for (const member of membersResponse.members) {
+                    members[member.user_id] = {avatar: member.avatar}
+
+                    // Also update global users
+                    if (!$s.chat.users) {
+                        $s.chat.users = {}
+                    }
+                    $s.chat.users[member.user_id] = {
+                        avatar: member.avatar,
+                        username: member.username,
+                    }
+                }
+
+                // Store members for avatar lookup
+                if (!$s.chat.channels[channelKey].members) {
+                    $s.chat.channels[channelKey].members = {}
+                }
+                Object.assign($s.chat.channels[channelKey].members, members)
             }
         }
 
-        logger.debug(`[Chat] Loading history for channel ${channelSlug}`)
-
-        // Load channel members first to get avatars
-        const membersResponse = await ws.get(`/channels/${channelSlug}/members`)
-        const members: Record<string, {avatar: string}> = {}
-
-        if (membersResponse && membersResponse.success && membersResponse.members) {
-            for (const member of membersResponse.members) {
-                members[member.user_id] = {avatar: member.avatar}
-
-                // Also update global users
-                if (!$s.chat.users) {
-                    $s.chat.users = {}
-                }
-                $s.chat.users[member.user_id] = {
-                    username: member.username,
-                    avatar: member.avatar,
-                }
-            }
-        }
-
-        const response = await ws.get(`/channels/${channelSlug}/messages`)
+        // Load messages with pagination
+        const response = await ws.get(`/channels/${channelSlug}/messages`, {before, limit})
 
         if (response && response.success && response.messages) {
             // Transform database message format to frontend format
@@ -233,22 +258,48 @@ export async function loadChannelHistory(channelSlug: string | number) {
 
             logger.debug(`[Chat] Loaded ${transformedMessages.length} messages for channel ${channelSlug}`)
 
-            // Assign entire array to trigger DeepSignal reactivity
-            $s.chat.channels[channelKey].messages = transformedMessages
-
-            // Store members for avatar lookup
-            if (!$s.chat.channels[channelKey].members) {
-                $s.chat.channels[channelKey].members = {}
+            if (before) {
+                // Prepend older messages to the beginning
+                $s.chat.channels[channelKey].messages.unshift(...transformedMessages)
+            } else {
+                // Replace with initial messages
+                $s.chat.channels[channelKey].messages = transformedMessages
             }
-            Object.assign($s.chat.channels[channelKey].members, members)
+
+            // Update pagination info
+            $s.chat.channels[channelKey].hasMore = response.hasMore || false
+            $s.chat.channels[channelKey].loading = false
         } else {
             logger.warn(`[Chat] No messages in response for channel ${channelSlug}:`, response)
+            $s.chat.channels[channelKey].loading = false
         }
     } catch (error) {
         logger.error('[Chat] Error loading channel history:', error)
+        const channelKey = channelSlug.toString()
+        if ($s.chat.channels[channelKey]) {
+            $s.chat.channels[channelKey].loading = false
+        }
     } finally {
-        loadingChannels.delete(channelSlug)
+        loadingChannels.delete(loadKey)
     }
+}
+
+/**
+ * Load more (older) messages for a channel
+ */
+export async function loadMoreMessages(channelSlug: string) {
+    const channelKey = channelSlug
+    const channel = $s.chat.channels[channelKey]
+
+    if (!channel || !channel.hasMore || channel.loading) {
+        return
+    }
+
+    // Get timestamp of oldest message
+    const oldestMessage = channel.messages[0]
+    if (!oldestMessage) return
+
+    await loadChannelHistory(channelSlug, oldestMessage.time, 50)
 }
 
 /**

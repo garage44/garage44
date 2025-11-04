@@ -1,12 +1,12 @@
 import ChatMessage from './message'
 import classnames from 'classnames'
-import {useEffect, useRef, useCallback} from 'preact/hooks'
+import {useEffect, useRef, useCallback, useMemo} from 'preact/hooks'
 import {effect} from '@preact/signals'
 import {Icon} from '@garage44/common/components'
 import Emoji from './emoji'
 import {logger} from '@garage44/common/app'
 import {$s} from '@/app'
-import {sendMessage as sendChatMessage, sendTypingIndicator} from '@/models/chat'
+import {sendMessage as sendChatMessage, sendTypingIndicator, loadMoreMessages} from '@/models/chat'
 
 const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -45,6 +45,31 @@ export default function ChannelChat({channelSlug, channel}: ChannelChatProps) {
     const channelData = $s.chat.channels[channelKey]
     const messages = channelData?.messages || []
     const messageCount = messages.length
+
+    // Memoize sorted messages - only recompute when messages array reference changes
+    const sortedMessages = useMemo(() => {
+        if (messages.length === 0) return []
+        return [...messages].sort((a, b) => a.time - b.time)
+    }, [messages])
+
+    // Memoize typing users calculation - only recompute when typing object changes
+    const typingUsers = useMemo(() => {
+        if (!channelData?.typing) return []
+        const now = Date.now()
+        return Object.values(channelData.typing)
+            .map((t: {timestamp: number; userId: string | number; username: string}) => {
+                // Use username from global users if not provided
+                if (!t.username && $s.chat.users?.[String(t.userId)]) {
+                    t.username = $s.chat.users[String(t.userId)].username
+                }
+                return t
+            })
+            .filter((t: {timestamp: number; userId: string | number; username: string}) => {
+                const isStale = now - t.timestamp > 5000
+                const isCurrentUser = $s.profile.id && String(t.userId) === String($s.profile.id)
+                return !isStale && !isCurrentUser
+            })
+    }, [channelData?.typing, $s.profile.id])
 
     // Format message for sending (DeepSignal reactivity handled automatically)
     const formattedMessage = $s.chat.message.trim()
@@ -198,30 +223,7 @@ export default function ChannelChat({channelSlug, channel}: ChannelChatProps) {
         {/* Messages */}
         <div ref={messagesRef} class="messages scroller">
             {(() => {
-                // Access messages directly in render for DeepSignal reactivity
-                const channelData = $s.chat.channels[channelKey]
-                const msgs = channelData?.messages || []
-                const sorted = msgs.length > 0 ? [...msgs].toSorted((a, b) => a.time - b.time) : []
-
-                // Get typing indicators for this channel
-                const typingUsers = channelData?.typing ? Object.values(channelData.typing) : []
-                // Filter out current user's typing indicator and stale indicators (older than 5 seconds)
-                // Also enrich with username from global users if missing
-                const otherTypingUsers = typingUsers
-                    .map((t: {timestamp: number; userId: string | number; username: string}) => {
-                        // Use username from global users if not provided
-                        if (!t.username && $s.chat.users?.[String(t.userId)]) {
-                            t.username = $s.chat.users[String(t.userId)].username
-                        }
-                        return t
-                    })
-                    .filter((t: {timestamp: number; userId: string | number; username: string}) => {
-                        const isStale = Date.now() - t.timestamp > 5000
-                        const isCurrentUser = $s.profile.id && String(t.userId) === String($s.profile.id)
-                        return !isStale && !isCurrentUser
-                    })
-
-                if (sorted.length === 0 && otherTypingUsers.length === 0) {
+                if (sortedMessages.length === 0 && typingUsers.length === 0) {
                     return (
                         <div class="no-messages">
                             <Icon className="icon icon-l" name="chat" />
@@ -232,18 +234,31 @@ export default function ChannelChat({channelSlug, channel}: ChannelChatProps) {
 
                 return (
                     <>
-                        {sorted.map((message, index) => (
-                            <ChatMessage key={index} message={message} channelSlug={channelSlug} />
+                        {/* Load More button for pagination */}
+                        {channelData?.hasMore && (
+                            <div class="load-more">
+                                <button
+                                    class="btn-load-more"
+                                    onClick={() => loadMoreMessages(channelSlug)}
+                                    disabled={channelData?.loading}
+                                >
+                                    {channelData?.loading ? 'Loading...' : 'Load Older Messages'}
+                                </button>
+                            </div>
+                        )}
+                        
+                        {sortedMessages.map((message, index) => (
+                            <ChatMessage key={`${message.time}-${index}`} message={message} channelSlug={channelSlug} />
                         ))}
-                        {otherTypingUsers.length > 0 && (
+                        {typingUsers.length > 0 && (
                             <div class="typing-indicator">
-                                {otherTypingUsers.length === 1 ? (
+                                {typingUsers.length === 1 ? (
                                     <span class="typing-text">
-                                        <strong>{(otherTypingUsers[0] as {username: string}).username}</strong> is typing...
+                                        <strong>{typingUsers[0].username}</strong> is typing...
                                     </span>
                                 ) : (
                                     <span class="typing-text">
-                                        {otherTypingUsers.length} people are typing...
+                                        {typingUsers.length} people are typing...
                                     </span>
                                 )}
                             </div>

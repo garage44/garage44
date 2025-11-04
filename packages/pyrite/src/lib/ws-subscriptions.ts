@@ -1,10 +1,20 @@
 /**
  * WebSocket client subscriptions for real-time features
  * Uses Expressio's REST-like WebSocket API pattern (ws.post/get + ws.on for broadcasts)
+ * Optimized for performance with message batching and efficient pattern matching
  */
 
 import {$s} from '@/app'
 import {events, logger, ws} from '@garage44/common/app'
+
+// Message batching for performance
+const messageBatchQueue = new Map<string, any[]>()
+let messageBatchTimer: NodeJS.Timeout | null = null
+const MESSAGE_BATCH_DELAY = 50 // ms - batch messages within 50ms window
+
+// Pre-compile regex patterns for better performance
+const MESSAGE_URL_PATTERN = /^\/channels\/([a-zA-Z0-9_-]+)\/messages$/
+const TYPING_URL_PATTERN = /^\/channels\/([a-zA-Z0-9_-]+)\/typing$/
 
 /**
  * Initialize all WebSocket subscriptions
@@ -22,10 +32,82 @@ export const initWebSocketSubscriptions = () => {
 }
 
 /**
+ * Flush batched messages to state
+ * Reduces state updates by batching multiple messages into single update
+ */
+const flushMessageBatch = () => {
+    if (messageBatchQueue.size === 0) return
+
+    // Process all batched messages
+    for (const [channelKey, messages] of messageBatchQueue.entries()) {
+        if (messages.length === 0) continue
+
+        // Ensure channel exists
+        if (!$s.chat.channels[channelKey]) {
+            $s.chat.channels[channelKey] = {
+                id: channelKey,
+                messages: [],
+                typing: {},
+                unread: 0,
+            }
+        }
+
+        // Batch append all messages at once - single state update
+        $s.chat.channels[channelKey].messages.push(...messages)
+
+        logger.debug(`[Chat WS] Flushed ${messages.length} messages to channel ${channelKey}`)
+
+        // Update unread count if not active channel
+        if ($s.chat.activeChannelSlug !== channelKey) {
+            $s.chat.channels[channelKey].unread += messages.length
+        }
+    }
+
+    // Clear batch queue
+    messageBatchQueue.clear()
+    messageBatchTimer = null
+}
+
+/**
+ * Add message to batch queue
+ * Messages are batched and flushed together for better performance
+ */
+const batchMessage = (channelKey: string, message: any) => {
+    if (!messageBatchQueue.has(channelKey)) {
+        messageBatchQueue.set(channelKey, [])
+    }
+    messageBatchQueue.get(channelKey)!.push(message)
+
+    // Schedule flush if not already scheduled
+    if (!messageBatchTimer) {
+        messageBatchTimer = setTimeout(flushMessageBatch, MESSAGE_BATCH_DELAY)
+    }
+}
+
+/**
  * Chat WebSocket subscriptions
  * Listen for broadcasts from backend
+ * Optimized with message batching and pre-compiled regex
  */
 const initChatSubscriptions = () => {
+    // Listen for private channel creation
+    events.on('app:init', () => {
+        ws.on('/chat/private-channel-created', (data) => {
+            const {channel} = data
+            
+            if (!channel) return
+
+            logger.debug('[Chat WS] Private channel created:', channel)
+
+            // Add channel to channels list if not already there
+            if (!$s.channels.find(c => c.id === channel.id)) {
+                $s.channels.push(channel)
+            }
+
+            // Notify user
+            // (Optional: Can add a notification here)
+        })
+    })
     // Listen for incoming chat messages (broadcast from backend)
     events.on('app:init', () => {
         // Use onRoute for dynamic channel message broadcasts
@@ -35,8 +117,8 @@ const initChatSubscriptions = () => {
             if (!message || !message.url) return
 
             // Check if this is a channel message broadcast
-            // Match slug pattern (alphanumeric, hyphens, underscores)
-            const messageUrlMatch = message.url.match(/^\/channels\/([a-zA-Z0-9_-]+)\/messages$/)
+            // Use pre-compiled regex for better performance
+            const messageUrlMatch = message.url.match(MESSAGE_URL_PATTERN)
             if (messageUrlMatch) {
                 const channelSlug = messageUrlMatch[1]
                 const data = message.data
@@ -55,63 +137,36 @@ const initChatSubscriptions = () => {
 
                 logger.debug(`[Chat WS] Received message for channel ${channelSlug}:`, {messageText, username})
 
-                // Find or create the chat channel (use slug as key)
-                const channelKey = channelSlug
-                if (!$s.chat.channels[channelKey]) {
-                    $s.chat.channels[channelKey] = {
-                        id: channelKey,
-                        messages: [],
-                        unread: 0,
-                    }
-                    logger.debug(`[Chat WS] Created channel entry for ${channelKey}`)
+                // Ensure global users map exists
+                if (!$s.chat.users) {
+                    $s.chat.users = {}
                 }
 
-                // Ensure user is in global users map for avatar lookup
-                if (userId && username) {
-                    if (!$s.chat.users) {
-                        $s.chat.users = {}
-                    }
-                    // Get avatar from channel members if available, or use placeholder
-                    const channel = $s.chat.channels[channelKey]
-                    const memberAvatar = channel?.members?.[userId]?.avatar
-
-                    if (!$s.chat.users[userId]) {
-                        $s.chat.users[userId] = {
-                            avatar: memberAvatar || 'placeholder-1.png',
-                            username,
-                        }
-                    } else {
-                        // Update username/avatar if they changed
-                        $s.chat.users[userId].username = username
-                        if (memberAvatar) {
-                            $s.chat.users[userId].avatar = memberAvatar
-                        }
+                // Update user info if provided
+                if (userId && username && !$s.chat.users[userId]) {
+                    $s.chat.users[userId] = {
+                        avatar: 'placeholder-1.png',
+                        username,
                     }
                 }
 
-                // Add message to channel - DeepSignal will trigger reactivity
+                // Create message object
                 const newMessage = {
                     kind: kind || 'message',
                     message: messageText,
                     nick: username,
                     time: timestamp || Date.now(),
-                    user_id: userId, // Include user_id for avatar lookup
+                    user_id: userId,
                 }
 
-                // Push to array - DeepSignal tracks array mutations
-                $s.chat.channels[channelKey].messages.push(newMessage)
-
-                logger.debug(`[Chat WS] Added message to channel ${channelKey}, total messages: ${$s.chat.channels[channelKey].messages.length}`)
-
-                // Increment unread count if not the active channel
-                if ($s.chat.activeChannelSlug !== channelSlug) {
-                    $s.chat.channels[channelKey].unread++
-                }
+                // Batch message instead of adding immediately
+                // This reduces re-renders when multiple messages arrive quickly
+                batchMessage(channelSlug, newMessage)
             }
 
             // Check if this is a typing indicator broadcast
-            // Match slug pattern (alphanumeric, hyphens, underscores)
-            const typingUrlMatch = message.url.match(/^\/channels\/([a-zA-Z0-9_-]+)\/typing$/)
+            // Use pre-compiled regex for better performance
+            const typingUrlMatch = message.url.match(TYPING_URL_PATTERN)
             if (typingUrlMatch) {
                 const channelSlug = typingUrlMatch[1]
                 const data = message.data
