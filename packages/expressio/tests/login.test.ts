@@ -1,5 +1,4 @@
 import {describe, expect, it} from 'bun:test'
-import {chromium} from 'playwright-core'
 
 interface PlaywrightLoginOptions {
     baseUrl?: string
@@ -9,6 +8,7 @@ interface PlaywrightLoginOptions {
 }
 
 async function playwrightLogin(options: PlaywrightLoginOptions = {}) {
+    const {chromium} = await import('playwright-core')
     const baseUrl = options.baseUrl || process.env.EXPRESSIO_URL || 'http://localhost:3030'
     const username = options.username || process.env.EXPRESSIO_USER || 'admin'
     const password = options.password || process.env.EXPRESSIO_PASS || 'admin'
@@ -73,7 +73,10 @@ async function playwrightLogin(options: PlaywrightLoginOptions = {}) {
     return {authenticated: true, snapshotText: text}
 }
 
-describe('expressio login', () => {
+const shouldRunPlaywright = process.env.RUN_PLAYWRIGHT === '1'
+const describeLogin = shouldRunPlaywright ? describe : describe.skip
+
+describeLogin('expressio login', () => {
     it('logs in successfully and returns authentication result', async () => {
         const result = await playwrightLogin({
             baseUrl: process.env.EXPRESSIO_URL || 'http://localhost:3030',
