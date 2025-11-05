@@ -22,11 +22,11 @@ export default async function(router: any) {
             return new Response(i18nTags, {
                 headers: { 'Content-Type': 'application/json' }
             })
-        } else {
+        }
             return new Response(JSON.stringify({error: 'invalid language'}), {
                 headers: { 'Content-Type': 'application/json' },
                 status: 404
             })
-        }
+        
     })
 }

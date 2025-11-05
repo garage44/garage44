@@ -420,10 +420,10 @@ export class ChannelManager {
                 await fs.remove(groupFile)
                 logger.info(`[ChannelManager] Deleted Galene group file: ${groupFile}`)
                 return true
-            } else {
+            }
                 logger.warn(`[ChannelManager] Galene group file not found: ${groupFile}`)
                 return false
-            }
+            
         } catch (error) {
             logger.error(`[ChannelManager] Failed to delete Galene group file for slug "${slug}":`, error)
             return false

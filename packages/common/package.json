@@ -35,6 +35,7 @@
     "classnames": "catalog:",
     "cookie-parser": "^1.4.7",
     "deepsignal": "catalog:",
+    "figlet": "catalog:",
     "i18next": "25.6.0",
     "path-to-regexp": "^8.2.0",
     "preact": "catalog:",

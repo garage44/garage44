@@ -12,7 +12,7 @@ interface SettingsProps {
     tabId?: string
 }
 
-export function Settings({ tabId }: SettingsProps) {
+export function Settings({tabId}: SettingsProps) {
     // Extract tab from query params if not provided as prop
     const activeTabId = useMemo(() => {
         if (tabId) return tabId
@@ -34,18 +34,14 @@ export function Settings({ tabId }: SettingsProps) {
 
     const tabs = [
         {
+            component: <Profile />,
+            icon: 'Settings',
             id: 'profile',
             label: $t('ui.settings.profile.name'),
-            icon: 'Settings',
             tip: $t('ui.settings.profile.name'),
-            component: <Profile />,
         },
         ...(showUserSettings ? [
             {
-                id: 'users-misc',
-                label: $t('ui.settings.users.misc.name'),
-                icon: 'Pirate',
-                tip: $t('ui.settings.users.misc.name'),
                 component: (
                     <UsersMisc
                         user={$s.user}
@@ -61,12 +57,12 @@ export function Settings({ tabId }: SettingsProps) {
                         $t={$t}
                     />
                 ),
+                icon: 'Pirate',
+                id: 'users-misc',
+                label: $t('ui.settings.users.misc.name'),
+                tip: $t('ui.settings.users.misc.name'),
             },
             {
-                id: 'users-permissions',
-                label: $t('ui.settings.users.permissions.name'),
-                icon: 'Operator',
-                tip: $t('ui.settings.users.permissions.name'),
                 component: (
                     <UsersPermissions
                         user={$s.user}
@@ -79,14 +75,18 @@ export function Settings({ tabId }: SettingsProps) {
                         $t={$t}
                     />
                 ),
+                icon: 'Operator',
+                id: 'users-permissions',
+                label: $t('ui.settings.users.permissions.name'),
+                tip: $t('ui.settings.users.permissions.name'),
             },
         ] : []),
         {
+            component: <TabWorkspaces />,
+            icon: 'Workspace',
             id: 'workspaces',
             label: $t('ui.settings.workspaces.name'),
-            icon: 'Workspace',
             tip: $t('ui.settings.workspaces.name'),
-            component: <TabWorkspaces />,
         },
     ]
 
