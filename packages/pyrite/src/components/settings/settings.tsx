@@ -41,38 +41,7 @@ export default function Settings({ tabId }: SettingsProps) {
             label: $t('ui.settings.profile.name'),
             icon: 'Settings',
             tip: $t('ui.settings.profile.name'),
-            component: (
-                <Profile
-                    state={$s}
-                    getLanguageSelection={(s) => {
-                        // Pyrite uses language.$id for language selection, not language_ui.$selection
-                        if (s?.language?.$id && typeof s.language.$id === 'object' && 'value' in s.language.$id) {
-                            return s.language.$id
-                        }
-                        return null
-                    }}
-                    getLanguageOptions={(s) => {
-                        // Return language options if available
-                        if (s?.language_ui?.options && s.language_ui.options.length > 0) {
-                            return s.language_ui.options
-                        }
-                        // Fallback to common languages if no options available
-                        return [
-                            {id: 'deu', name: 'German'},
-                            {id: 'eng-gbr', name: 'English'},
-                            {id: 'fra', name: 'French'},
-                            {id: 'nld', name: 'Dutch'},
-                        ]
-                    }}
-                    onLanguageChange={(s, language) => {
-                        if (s?.language) {
-                            s.language.id = language
-                        }
-                        logger.info(`Language changed to: ${language}`)
-                        store.save()
-                    }}
-                />
-            ),
+            component: <Profile />,
         },
         ...(showUserSettings ? [
             {

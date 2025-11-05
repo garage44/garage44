@@ -6,25 +6,6 @@ import './profile.css'
 
 export interface ProfileTabProps {
     /**
-     * Function to get language options from state
-     * @default (state) => state?.language_ui?.options || []
-     */
-    getLanguageOptions?: (state: any) => any[]
-    /**
-     * Function to get language selection from state
-     * @default (state) => state?.language_ui?.$selection
-     */
-    getLanguageSelection?: (state: any) => any | null
-    /**
-     * Function to handle language change
-     * @default (state, language) => { state.language_ui.selection = language; store.save() }
-     */
-    onLanguageChange?: (state: any, language: string) => void
-    /**
-     * Global state object (typically $s from app)
-     */
-    state?: any
-    /**
      * User endpoint for avatar upload
      * @default '/api/users/me'
      */
@@ -36,22 +17,6 @@ export interface ProfileTabProps {
  * Contains avatar upload, theme toggle, and language selection
  */
 export function Profile({
-    getLanguageOptions = (s) => s?.language_ui?.options || [],
-    getLanguageSelection = (s) => {
-        // Try to get the signal - check if $selection exists
-        if (s?.language_ui?.$selection && typeof s.language_ui.$selection === 'object' && 'value' in s.language_ui.$selection) {
-            return s.language_ui.$selection
-        }
-        // Fallback: return null if signal doesn't exist
-        return null
-    },
-    onLanguageChange = (s, language) => {
-        if (s?.language_ui) {
-            s.language_ui.selection = language
-        }
-        store.save()
-    },
-    state = null,
     userEndpoint = '/api/users/me',
 }: ProfileTabProps = {}) {
     // Watch for theme changes
@@ -65,17 +30,14 @@ export function Profile({
         }
     }, [])
 
-    const languages = state ? getLanguageOptions(state) : []
-    const languageSelection = state ? getLanguageSelection(state) : null
-
-    // Check if languageSelection is a valid signal (has .value property)
-    const hasValidLanguageSelection = languageSelection && typeof languageSelection === 'object' && 'value' in languageSelection
+    const languages = store.state.language_ui?.options || []
+    const languageSelection = store.state.language_ui?.$selection
 
     return (
         <section class="c-profile-tab">
             <div class="section">
                 <h2 class="section-title">Profile</h2>
-                <AvatarUpload state={state} userEndpoint={userEndpoint} />
+                <AvatarUpload state={store.state} userEndpoint={userEndpoint} />
             </div>
 
             <div class="section">
@@ -86,7 +48,7 @@ export function Profile({
                 </div>
             </div>
 
-            {hasValidLanguageSelection && languages.length > 0 && (
+            {languageSelection && languages.length > 0 && (
                 <div class="section">
                     <h2 class="section-title">Language</h2>
                     <FieldSelect
@@ -95,8 +57,9 @@ export function Profile({
                         label="Interface Language"
                         options={languages}
                         onChange={(language) => {
-                            if (state) {
-                                onLanguageChange(state, language)
+                            if (store.state.language_ui) {
+                                store.state.language_ui.selection = language
+                                store.save()
                             }
                             logger.info(`Language changed to: ${language}`)
                         }}

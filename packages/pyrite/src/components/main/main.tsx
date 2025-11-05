@@ -102,7 +102,7 @@ export const Main = () => {
     return <div class="app">
         <Router>
             {/* Admin routes */}
-            <AdminApp path="/settings/*" />
+            {/* <AdminApp path="/settings/*" /> */}
 
             {/* Conference routes (default) */}
             <ConferenceApp default path="/*" />

@@ -38,18 +38,7 @@ export function Settings({ tabId }: SettingsProps) {
             label: $t('ui.settings.profile.name'),
             icon: 'Settings',
             tip: $t('ui.settings.profile.name'),
-            component: (
-                <Profile
-                    state={$s}
-                    onLanguageChange={(state, language) => {
-                        if (state?.language_ui) {
-                            state.language_ui.selection = language
-                        }
-                        logger.info(`Language changed to: ${language}`)
-                        store.save()
-                    }}
-                />
-            ),
+            component: <Profile />,
         },
         ...(showUserSettings ? [
             {
