@@ -109,9 +109,10 @@ export const ConferenceApp = () => {
                         navigation={<ChannelsContext />}
                     />
                 }
-                context={<PanelContextSfu />}
+                context={$s.chat.activeChannelSlug ? <PanelContextSfu /> : null}
             >
                 <Router>
+                    <Route path="/channels/:channelSlug/devices" component={Channel} />
                     <Route path="/channels/:channelSlug" component={Channel} />
                     <Route path="/settings" component={Settings} />
                     <Route path="/settings/:tabId" component={Settings} />

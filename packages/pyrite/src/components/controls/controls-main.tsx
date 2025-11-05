@@ -1,5 +1,6 @@
 import {Button} from '@garage44/common/components'
 import {useMemo} from 'preact/hooks'
+import {getCurrentUrl, route} from 'preact-router'
 import {$s} from '@/app'
 import {$t, store, logger} from '@garage44/common/app'
 import {currentGroup} from '@/models/group'
@@ -28,31 +29,8 @@ export function ControlsMain({path}: ControlsMainProps) {
     // Check if channel is connected
     const isChannelConnected = currentChannelSlug ? ($s.sfu.channels[currentChannelSlug]?.connected || false) : false
 
-    const settingsRoute = useMemo(() => {
-        if (!isChannelConnected) {
-            return '/settings/misc'
-        }
-        if (path === '/settings') {
-            return `/groups/${$s.sfu.channel.name}`
-        }
-        return '/settings/misc'
-    }, [path, isChannelConnected])
-
-    const clearChat = () => {
-        connection?.groupAction('clearchat')
-    }
-
     const muteAllUsers = () => {
         connection?.userMessage('mute', null, null)
-    }
-
-    const sendNotification = (text: string) => {
-        connection?.userMessage('notification', null, text)
-    }
-
-    const toggleCollapse = () => {
-        $s.panels.context.collapsed = !$s.panels.context.collapsed
-        store.save()
     }
 
     const toggleLockGroup = (text: string) => {
@@ -71,41 +49,7 @@ export function ControlsMain({path}: ControlsMainProps) {
         }
     }
 
-    const toggleCamera = () => {
-        if (!currentChannelSlug) {
-            logger.warn('[ControlsMain] No active channel, cannot toggle camera')
-            return
-        }
 
-        // Initialize channel state if it doesn't exist
-        if (!$s.sfu.channels[currentChannelSlug]) {
-            $s.sfu.channels[currentChannelSlug] = {audio: false, connected: false, video: false}
-        }
-
-        // Toggle video state
-        const newVideoState = !$s.sfu.channels[currentChannelSlug].video
-        $s.sfu.channels[currentChannelSlug].video = newVideoState
-
-        // Update device state to match channel state
-        $s.devices.cam.enabled = newVideoState
-
-        logger.debug(`[ControlsMain] toggleCamera: channel=${currentChannelSlug}, video=${newVideoState}`)
-
-        if (newVideoState) {
-            // Camera enabled - get new media
-            logger.debug('[ControlsMain] requesting camera media')
-            media.getUserMedia($s.devices)
-        } else {
-            // Camera disabled - remove existing camera stream
-            logger.debug('[ControlsMain] removing camera stream')
-            sfu.delUpMediaKind('camera')
-        }
-
-        // Save state
-        store.save()
-    }
-
-    const isSettingsRoute = path?.includes('/settings')
 
     return <nav class="c-general-controls">
         <div class="navigational-controls">
@@ -142,14 +86,56 @@ export function ControlsMain({path}: ControlsMainProps) {
                 icon="webcam"
                 tip={$s.sfu.channels[currentChannelSlug]?.video ? $t('group.action.cam_off') : $t('group.action.cam_on')}
                 variant="toggle"
-                onClick={toggleCamera}
+                onClick={() => {
+                    if (!currentChannelSlug) {
+                        logger.warn('[ControlsMain] No active channel, cannot toggle camera')
+                        return
+                    }
+
+                    // Initialize channel state if it doesn't exist
+                    if (!$s.sfu.channels[currentChannelSlug]) {
+                        $s.sfu.channels[currentChannelSlug] = {audio: false, connected: false, video: false}
+                    }
+
+                    // Toggle video state
+                    const newVideoState = !$s.sfu.channels[currentChannelSlug].video
+                    $s.sfu.channels[currentChannelSlug].video = newVideoState
+
+                    // Update device state to match channel state
+                    $s.devices.cam.enabled = newVideoState
+
+                    logger.debug(`[ControlsMain] toggleCamera: channel=${currentChannelSlug}, video=${newVideoState}`)
+
+                    if (newVideoState) {
+                        // Camera enabled - get new media
+                        logger.debug('[ControlsMain] requesting camera media')
+                        media.getUserMedia($s.devices)
+                    } else {
+                        // Camera disabled - remove existing camera stream
+                        logger.debug('[ControlsMain] removing camera stream')
+                        sfu.delUpMediaKind('camera')
+                    }
+
+                    // Save state
+                    store.save()
+                }}
             />}
             <Button
-                active={isSettingsRoute}
+                active={$s.env.url.includes('/devices')}
                 icon="cog_outline"
-                route={settingsRoute}
                 tip={$t('group.settings.name')}
                 variant="toggle"
+                onClick={() => {
+                    // Navigate to/from devices route
+                    const currentPath = getCurrentUrl()
+                    if (currentPath.includes('/devices')) {
+                        // Navigate back to channel
+                        route(`/channels/${currentChannelSlug}`)
+                    } else {
+                        // Navigate to devices route
+                        route(`/channels/${currentChannelSlug}/devices`)
+                    }
+                }}
             />
         </div>
     </nav>

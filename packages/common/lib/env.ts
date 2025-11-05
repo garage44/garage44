@@ -37,17 +37,32 @@ export default function env(env, _storeParam = null) {
         env.layout = event.matches ? 'tablet' : 'desktop'
     })
 
-    // Initialize URL from current location and listen to browser navigation
-    if (typeof window !== 'undefined') {
-        env.url = window.location.pathname
 
-        // Listen to browser back/forward navigation
-        window.addEventListener('popstate', () => {
-            if (store && store.state) {
-                store.state.env.url = window.location.pathname
-            }
-        })
+    env.url = window.location.pathname
+
+    const updateUrl = () => {
+        if (store && store.state) {
+            store.state.env.url = window.location.pathname
+        }
     }
+
+    // Listen to popstate events (browser back/forward)
+    window.addEventListener('popstate', updateUrl)
+
+    // Intercept pushState and replaceState to catch programmatic navigation
+    const originalPushState = history.pushState
+    const originalReplaceState = history.replaceState
+
+    history.pushState = function(...args) {
+        originalPushState.apply(history, args)
+        updateUrl()
+    }
+
+    history.replaceState = function(...args) {
+        originalReplaceState.apply(history, args)
+        updateUrl()
+    }
+
 
     document.addEventListener('keydown', (event) => {
         if (event.altKey) {
