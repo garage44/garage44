@@ -1,5 +1,5 @@
 import {$s} from '@/app'
-import {AppLayout, MenuItem, PanelMenu, ThemeToggle} from '@garage44/common/components'
+import {AppLayout, MenuItem, PanelMenu, Submenu, ThemeToggle} from '@garage44/common/components'
 import {Router} from 'preact-router'
 import {useState, useEffect} from 'preact/hooks'
 import {Components} from './pages/components'
@@ -115,20 +115,18 @@ export const Main = () => {
                                 text="Components"
                             />
                             {isComponentsRoute && (
-                                <div class="submenu">
-                                    {components.map((componentName) => {
+                                <Submenu
+                                    collapsed={$s.panels.menu.collapsed}
+                                    items={components.map((componentName) => {
                                         const id = componentName.toLowerCase().replaceAll(/\s+/g, '-')
-                                        return (
-                                            <button
-                                                key={id}
-                                                class={`submenu-item ${activeComponent === id ? 'active' : ''}`}
-                                                onClick={() => scrollToComponent(componentName)}
-                                            >
-                                                {componentName}
-                                            </button>
-                                        )
+                                        return {
+                                            active: activeComponent === id,
+                                            id,
+                                            label: componentName,
+                                            onClick: () => scrollToComponent(componentName),
+                                        }
                                     })}
-                                </div>
+                                />
                             )}
                             <MenuItem
                                 active={$s.currentRoute === '/forms'}
