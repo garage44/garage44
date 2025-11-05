@@ -3,8 +3,7 @@ import {$s} from '@/app'
 import {$t, logger, store, notifier} from '@garage44/common/app'
 import {Settings as CommonSettings} from '@garage44/common/components/ui/settings/settings'
 import {Profile} from '@garage44/common/components/ui/settings/tabs/profile'
-import {UsersMisc} from '@garage44/common/components/ui/settings/tabs/users-misc'
-import {UsersPermissions} from '@garage44/common/components/ui/settings/tabs/users-permissions'
+import {UsersManagement} from '@garage44/common/components'
 import TabDevices from './tabs/devices'
 import TabMedia from './tabs/media'
 import TabChannels from './tabs/channels'
@@ -45,48 +44,11 @@ export default function Settings({ tabId }: SettingsProps) {
         },
         ...(showUserSettings ? [
             {
-                id: 'users-misc',
-                label: $t('ui.settings.users.misc.name'),
-                icon: 'Pirate',
-                tip: $t('ui.settings.users.misc.name'),
-                component: (
-                    <UsersMisc
-                        user={$s.admin.user}
-                        onNameChange={(value) => {
-                            if ($s.admin.user) $s.admin.user.name = value
-                        }}
-                        onPasswordChange={(value) => {
-                            if ($s.admin.user) $s.admin.user.password = value
-                        }}
-                        onAdminChange={(value) => {
-                            if ($s.admin.user) $s.admin.user.admin = value
-                        }}
-                        $t={$t}
-                    />
-                ),
-            },
-            {
-                id: 'users-permissions',
-                label: $t('ui.settings.users.permissions.name'),
-                icon: 'Operator',
-                tip: $t('ui.settings.users.permissions.name'),
-                disabled: $s.admin.groups.length === 0,
-                component: (
-                    <UsersPermissions
-                        user={$s.admin.user}
-                        groups={$s.admin.groups}
-                        loadGroups={async () => {
-                            const {api} = await import('@garage44/common/app')
-                            $s.admin.groups = await api.get('/api/groups')
-                        }}
-                        onPermissionsChange={(permissions) => {
-                            if ($s.admin.user) $s.admin.user._permissions = permissions
-                        }}
-                        authenticated={$s.admin.authenticated || false}
-                        hasPermission={$s.admin.permission || false}
-                        $t={$t}
-                    />
-                ),
+                component: <UsersManagement $t={$t} />,
+                icon: 'account',
+                id: 'users',
+                label: $t('ui.settings.users.name'),
+                tip: $t('ui.settings.users.name'),
             },
         ] : []),
         {

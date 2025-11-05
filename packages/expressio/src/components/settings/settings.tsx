@@ -4,8 +4,7 @@ import {$s} from '@/app'
 import {$t, store, notifier} from '@garage44/common/app'
 import {Settings as CommonSettings} from '@garage44/common/components/ui/settings/settings'
 import {Profile} from '@garage44/common/components/ui/settings/tabs/profile'
-import {UsersMisc} from '@garage44/common/components/ui/settings/tabs/users-misc'
-import {UsersPermissions} from '@garage44/common/components/ui/settings/tabs/users-permissions'
+import {UsersManagement} from '@garage44/common/components'
 import TabWorkspaces from './tabs/workspaces'
 
 interface SettingsProps {
@@ -42,49 +41,11 @@ export function Settings({tabId}: SettingsProps) {
         },
         ...(showUserSettings ? [
             {
-                component: (
-                    <UsersMisc
-                        user={{
-                            admin: $s.user.admin || false,
-                            name: $s.profile.displayName || $s.profile.username || '',
-                            password: $s.profile.password || '',
-                        }}
-                        onNameChange={(value) => {
-                            $s.profile.displayName = value
-                        }}
-                        onPasswordChange={(value) => {
-                            $s.profile.password = value
-                        }}
-                        onAdminChange={(value) => {
-                            $s.user.admin = value
-                        }}
-                        $t={$t}
-                    />
-                ),
-                icon: 'Pirate',
-                id: 'users-misc',
-                label: $t('ui.settings.users.misc.name'),
-                tip: $t('ui.settings.users.misc.name'),
-            },
-            {
-                component: (
-                    <UsersPermissions
-                        user={{
-                            _permissions: ($s.user as any)._permissions || {},
-                        }}
-                        groups={[]}
-                        onPermissionsChange={(permissions) => {
-                            ;($s.user as any)._permissions = permissions
-                        }}
-                        authenticated={!!$s.user?.authenticated}
-                        hasPermission={!!$s.user?.admin}
-                        $t={$t}
-                    />
-                ),
-                icon: 'Operator',
-                id: 'users-permissions',
-                label: $t('ui.settings.users.permissions.name'),
-                tip: $t('ui.settings.users.permissions.name'),
+                component: <UsersManagement $t={$t} />,
+                icon: 'account',
+                id: 'users',
+                label: $t('ui.settings.users.name'),
+                tip: $t('ui.settings.users.name'),
             },
         ] : []),
         {
