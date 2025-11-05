@@ -2,28 +2,28 @@ import type {EnolaEngine, EnolaEngineConfig, EnolaLogger, EnolaTag, TargetLangua
 import {target} from '../languages.ts'
 
 interface FetchOptions extends RequestInit {
-    params?: Record<string, string>
     data?: {
+        max_tokens?: number
         messages: {
-            role: string
             content: string
+            role: string
         }[]
         model: string
-        max_tokens?: number
     }
+    params?: Record<string, string>
 }
 
 // Add interface for API response
 interface AnthropicResponse {
     content: {text: string}[]
-    usage?: {
-        input_tokens: number
-        output_tokens: number
-    }
     headers?: {
         limit: number
         remaining: number
         reset: string
+    }
+    usage?: {
+        input_tokens: number
+        output_tokens: number
     }
 }
 
@@ -108,7 +108,7 @@ export default class Anthropic implements EnolaEngine {
         }
     }
 
-    async suggestion(tagPath:string[], sourceText:string, similarTranslations: {path:string[], source:string}[]) {
+    async suggestion(tagPath:string[], sourceText:string, similarTranslations: {path:string[]; source:string}[]) {
         this.logger.info(`[enola-anthropic] requesting suggestion for: ${sourceText}...`)
         // Build examples section if we have existing translations
         let examplesSection = ''
@@ -116,9 +116,9 @@ export default class Anthropic implements EnolaEngine {
             examplesSection = `
 EXISTING TRANSLATION EXAMPLES:
 ${similarTranslations.slice(0, 5).map((example) =>
-        `Key: ${example.path.join('.')}
+    `Key: ${example.path.join('.')}
 Source text: ${example.source}`,
-    ).join('\n\n')}
+).join('\n\n')}
 
 Use these examples to maintain a consistent style and tone.
 `
@@ -286,8 +286,8 @@ TRANSLATIONS:`
         // Parse the numbered list response and clean up each translation
         const translations = response.content[0].text
             .split('\n')
-            .filter(line => /^\d+\./.test(line))
-            .map(line => {
+            .filter((line) => /^\d+\./.test(line))
+            .map((line) => {
                 let translation = line.replace(/^\d+\.\s*/, '').trim()
                 translation = translation.replaceAll(/[«»""]/g, '') // Remove guillemets and smart quotes
                 translation = translation.replaceAll(/^['"]|['"]$/g, '') // Remove single or double quotes at start/end

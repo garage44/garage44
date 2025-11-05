@@ -40,13 +40,25 @@
       "deepsignal": "^1.6.0",
       "figlet": "^1.8.0",
       "fs-extra": "^11.3.2",
+      "path-to-regexp": "^8.2.0",
       "picocolors": "^1.1.1",
       "preact": "^10.26.5",
       "preact-router": "^4.1.2",
+      "preact-transitioning": "^1.5.2",
       "rc": "^1.2.8",
+      "tippy.js": "^6.3.7",
       "yargs": "^18.0.0"
     },
-    "catalogs": {},
+    "catalogs": {
+       "dev": {
+          "@types/node": "^22.13.14",
+          "@types/yargs": "^17.0.32",
+          "bun-types": "^1.2.7",
+          "oxlint": "^0.16.6",
+          "stylelint": "^16.17.0",
+          "stylelint-order": "^7.0.0"
+       }
+    },
     "packages": ["packages/*"]
   }
 }

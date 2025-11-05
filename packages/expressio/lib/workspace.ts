@@ -28,6 +28,7 @@ export class Workspace {
             // oxlint-disable-next-line no-template-curly-in-string
             dir: '${workspaceFolder}/src/**/*.{ts,tsx}',
             enabled: false,
+            suggestions: true,
         },
         workspace_id: '',
     }

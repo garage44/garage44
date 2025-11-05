@@ -14,15 +14,15 @@
   "dependencies": {
     "@garage44/bunchy": "workspace:*",
     "@garage44/common": "workspace:*",
-    "preact": "10.26.5",
-    "preact-router": "^4.1.2",
-    "deepsignal": "^1.6.0",
-    "yargs": "^17.7.2"
+    "preact": "catalog:",
+    "preact-router": "catalog:",
+    "deepsignal": "catalog:",
+    "yargs": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^22.13.14",
-    "@types/yargs": "^17.0.32",
-    "bun-types": "^1.2.7",
-    "oxlint": "^0.16.6"
+    "@types/node": "catalog:dev",
+    "@types/yargs": "catalog:dev",
+    "bun-types": "catalog:dev",
+    "oxlint": "catalog:dev"
   }
 }

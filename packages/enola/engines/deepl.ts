@@ -11,7 +11,6 @@ const ignoreITagRegex = /<i>[\w]*<\/i>/g
 const placeholderRegex = /{{[\w]*}}/g
 
 interface FetchOptions extends RequestInit {
-    params?: Record<string, string>
     data?: {
         formality?: string
         ignore_tags?: string[]
@@ -20,6 +19,7 @@ interface FetchOptions extends RequestInit {
         target_lang: string
         text: string[]
     }
+    params?: Record<string, string>
 }
 
 export default class Deepl implements EnolaEngine {
@@ -71,7 +71,7 @@ export default class Deepl implements EnolaEngine {
     async fetch(endpoint: string, options: FetchOptions = {}) {
         const url = new URL(`${this.config.base_url}${endpoint}`)
         if (options && options.params) {
-            Object.keys(options.params).forEach(key => url.searchParams.append(key, options.params[key]))
+            Object.keys(options.params).forEach((key) => url.searchParams.append(key, options.params[key]))
         }
 
         const headers = {

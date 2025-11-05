@@ -1,7 +1,7 @@
 import {useMemo} from 'preact/hooks'
 import {getCurrentUrl} from 'preact-router'
 import {$s} from '@/app'
-import {$t, logger, store, notifier} from '@garage44/common/app'
+import {$t, store, notifier} from '@garage44/common/app'
 import {Settings as CommonSettings} from '@garage44/common/components/ui/settings/settings'
 import {Profile} from '@garage44/common/components/ui/settings/tabs/profile'
 import {UsersMisc} from '@garage44/common/components/ui/settings/tabs/users-misc'
@@ -10,6 +10,10 @@ import TabWorkspaces from './tabs/workspaces'
 
 interface SettingsProps {
     tabId?: string
+}
+
+const getRoute = (tabId: string) => {
+    return `/settings?tab=${tabId}`
 }
 
 export function Settings({tabId}: SettingsProps) {
@@ -22,11 +26,7 @@ export function Settings({tabId}: SettingsProps) {
     }, [tabId])
     const saveSettings = async () => {
         store.save()
-        notifier.notify({icon: 'Settings', level: 'info', message: $t('ui.settings.action.saved')})
-    }
-
-    const getRoute = (tabId: string) => {
-        return `/settings?tab=${tabId}`
+        notifier.notify({icon: 'Settings', message: $t('ui.settings.action.saved'), type: 'info'})
     }
 
     // Determine if user settings should be shown (admin only)
@@ -44,15 +44,19 @@ export function Settings({tabId}: SettingsProps) {
             {
                 component: (
                     <UsersMisc
-                        user={$s.user}
+                        user={{
+                            admin: $s.user.admin || false,
+                            name: $s.profile.displayName || $s.profile.username || '',
+                            password: $s.profile.password || '',
+                        }}
                         onNameChange={(value) => {
-                            if ($s.user) $s.user.name = value
+                            $s.profile.displayName = value
                         }}
                         onPasswordChange={(value) => {
-                            if ($s.user) $s.user.password = value
+                            $s.profile.password = value
                         }}
                         onAdminChange={(value) => {
-                            if ($s.user) $s.user.admin = value
+                            $s.user.admin = value
                         }}
                         $t={$t}
                     />
@@ -65,10 +69,12 @@ export function Settings({tabId}: SettingsProps) {
             {
                 component: (
                     <UsersPermissions
-                        user={$s.user}
+                        user={{
+                            _permissions: ($s.user as any)._permissions || {},
+                        }}
                         groups={[]}
                         onPermissionsChange={(permissions) => {
-                            if ($s.user) $s.user._permissions = permissions
+                            ;($s.user as any)._permissions = permissions
                         }}
                         authenticated={!!$s.user?.authenticated}
                         hasPermission={!!$s.user?.admin}

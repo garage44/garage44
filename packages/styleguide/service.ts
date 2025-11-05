@@ -3,7 +3,7 @@ import {WebSocketServerManager, createBunWebSocketHandler} from '@garage44/commo
 import {bunchyArgs, bunchyService} from '@garage44/bunchy'
 import {hideBin} from 'yargs/helpers'
 import path from 'path'
-import {withSpaFallback} from '@garage44/common/lib/service'
+import {withSpaFallback, setupBunchyConfig} from '@garage44/common/service'
 import {devContext} from '@garage44/common/lib/dev-context'
 import yargs from 'yargs'
 
@@ -12,13 +12,11 @@ const BUN_ENV = process.env.BUN_ENV || 'production'
 let bunchyConfig: any = null
 
 if (BUN_ENV === 'development') {
-    bunchyConfig = {
-        common: path.resolve(import.meta.dir, '../', 'common'),
+    bunchyConfig = setupBunchyConfig({
         logPrefix: 'B',
-        reload_ignore: [],
+        serviceDir: import.meta.dir,
         version: '1.0.0',
-        workspace: import.meta.dir,
-    }
+    })
 }
 
 const cli = yargs(hideBin(process.argv))

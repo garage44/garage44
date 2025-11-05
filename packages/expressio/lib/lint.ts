@@ -50,11 +50,11 @@ export async function lintWorkspace(workspace, lintMode: 'sync' | 'lint') {
                 }
             } else if (lintMode === 'sync') {
                 let sourceText = ''
-                if ('anthropic' in enola.engines) {
+                if (workspace.config.sync.suggestions !== false && 'anthropic' in enola.engines) {
                     // Guess the source text from the context.
                     sourceText = await enola.suggestion('anthropic', workspace.i18n, tagPath, match[0])
                 } else {
-                    // Fallback to a random ID if no LLM is available.
+                    // Fallback to a random ID if no LLM is available or suggestions are disabled.
                     sourceText = `tag_${randomId()}`
                 }
 

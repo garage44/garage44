@@ -21,16 +21,16 @@ export const Login = () => {
                 })
                 const config = await api.get('/api/config')
                 // result from login already includes full profile from /api/context
-                // Explicitly set user data from result to override any stale localStorage data
-                const userState = $s.user as any
-                userState.admin = result.admin || false
-                userState.authenticated = result.authenticated || false
-                if (result.id) userState.id = result.id
-                if (result.username) userState.username = result.username
+                // Set user authentication/admin flags
+                $s.user.admin = result.admin || false
+                $s.user.authenticated = result.authenticated || false
+                // Set profile data from result
+                if (result.id) $s.profile.id = result.id
+                if (result.username) $s.profile.username = result.username
+                if (result.password) $s.profile.password = result.password
                 if (result.profile) {
-                    if (!userState.profile) userState.profile = {}
-                    userState.profile.avatar = result.profile.avatar || 'placeholder-1.png'
-                    userState.profile.displayName = result.profile.displayName || result.username || 'User'
+                    $s.profile.avatar = result.profile.avatar || 'placeholder-1.png'
+                    $s.profile.displayName = result.profile.displayName || result.username || 'User'
                 }
                 mergeDeep($s, {
                     enola: config.enola,

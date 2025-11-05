@@ -135,6 +135,12 @@ export default function TabWorkspaces() {
                 label={$t('settings.label.sync_dir')}
                 model={$s.workspace.config.sync.$dir}
             />
+            <FieldCheckbox
+                disabled={!$s.workspace.config.sync.enabled}
+                help={$t('settings.help.sync_suggestions')}
+                model={$s.workspace.config.sync.$suggestions}
+                label={$t('settings.label.sync_suggestions')}
+            />
             <Button
                 label={$t('settings.label.update_settings')}
                 onClick={async() => {

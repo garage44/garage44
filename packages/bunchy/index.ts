@@ -26,6 +26,7 @@ interface Settings {
         workspace: string
     }
     reload_ignore: string[]
+    separateAssets?: string[]
 }
 
 const settings = {} as Settings
@@ -46,6 +47,7 @@ function applySettings(config) {
         },
         minify: config.minify,
         reload_ignore: config.reload_ignore,
+        separateAssets: config.separateAssets,
         sourcemap: config.sourcemap,
         version: config.version,
     })
@@ -130,7 +132,7 @@ const connections = {
     delete: (ws) => logger.info('[bunchy] WebSocket connection removed'),
     has: (ws) => false,
     get size() {
-        return 0 
+        return 0
     },
 } as Set<WebSocket>
 
@@ -164,7 +166,7 @@ function setupLogForwarding(wsManager: any, logPrefix: string) {
 
         // Log using the server logger with appropriate level
         try {
-            devContext.addLog('remote', `${formattedMessage} ${formattedArgs.join(' ')}`) 
+            devContext.addLog('remote', `${formattedMessage} ${formattedArgs.join(' ')}`)
         } catch {}
         switch (level) {
             case 'error':

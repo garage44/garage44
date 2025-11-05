@@ -16,6 +16,7 @@ const app = new App()
 
 // Simple mock translations for the styleguide
 const mockTranslations = {
+    'direction_helper': 'ltr',
     'nav.components': 'Components',
     'nav.forms': 'Forms',
     'nav.tokens': 'Design Tokens',

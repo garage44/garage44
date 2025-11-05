@@ -25,6 +25,7 @@ interface WorkspaceConfig {
     sync: {
         dir: string
         enabled: boolean
+        suggestions?: boolean
     }
     workspace_id: string
 }
