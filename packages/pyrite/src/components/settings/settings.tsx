@@ -1,4 +1,5 @@
 import {useMemo} from 'preact/hooks'
+import {getCurrentUrl} from 'preact-router'
 import {$s} from '@/app'
 import {$t, logger, store, notifier} from '@garage44/common/app'
 import {Settings as CommonSettings} from '@garage44/common/components/ui/settings/settings'
@@ -13,6 +14,16 @@ interface SettingsProps {
 }
 
 export default function Settings({ tabId }: SettingsProps) {
+    // Detect if we're on a users route and set active tab to 'users'
+    const activeTabId = useMemo(() => {
+        if (tabId) return tabId
+        const url = getCurrentUrl()
+        // If URL is /settings/users/new or /settings/users/:userId, show users tab
+        if (url.startsWith('/settings/users')) {
+            return 'users'
+        }
+        return undefined
+    }, [tabId])
     const settingsRoute = useMemo(() => {
         if ($s.sfu.channel.connected) {
             return `/groups/${$s.sfu.channel.name}/settings`
@@ -79,7 +90,7 @@ export default function Settings({ tabId }: SettingsProps) {
             title={$t('ui.settings.name')}
             icon="settings"
             tabs={tabs}
-            activeTabId={tabId}
+            activeTabId={activeTabId}
             defaultTab="profile"
             getRoute={getRoute}
             onSave={saveSettings}

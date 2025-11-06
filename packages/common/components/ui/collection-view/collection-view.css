@@ -1,0 +1,88 @@
+.c-collection-view {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-1);
+    border-radius: var(--radius-1);
+    overflow: hidden;
+    background: var(--surface-0);
+}
+
+.c-collection-view .collection-header {
+    display: flex;
+    background: var(--surface-1);
+    border-bottom: 2px solid var(--border-2);
+    font-weight: 600;
+    font-size: var(--font-d);
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.c-collection-view .collection-header-cell {
+    padding: var(--spacer-2);
+    border-right: 1px solid var(--border-1);
+    flex-shrink: 0;
+
+    &:last-child {
+        border-right: none;
+    }
+}
+
+.c-collection-view .collection-row {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-1);
+    transition: all 0.2s ease;
+    position: relative;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &.even {
+        background: var(--surface-0);
+    }
+
+    &.odd {
+        background: var(--surface-1);
+    }
+
+    &:hover {
+        background: var(--surface-2);
+    }
+}
+
+.c-collection-view .collection-cell {
+    padding: var(--spacer-2);
+    border-right: 1px solid var(--border-1);
+    display: flex;
+    align-items: center;
+    gap: var(--spacer-1);
+    flex-shrink: 0;
+
+    &:last-child {
+        border-right: none;
+    }
+}
+
+.c-collection-view .collection-empty-state {
+    padding: var(--spacer-4);
+    text-align: center;
+    color: var(--text-2);
+    font-size: var(--font-d);
+}
+
+.c-collection-view .collection-row-actions {
+    display: flex;
+    gap: var(--spacer-1);
+    align-items: center;
+    justify-content: flex-end;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.c-collection-view .collection-row:hover .collection-row-actions {
+    opacity: 1;
+    visibility: visible;
+}

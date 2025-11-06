@@ -2038,6 +2038,42 @@
                         "fra": "Paramètres",
                         "nld": "Instellingen"
                     }
+                },
+                "profile": {
+                    "name": {
+                        "cache": "0000000000000017",
+                        "source": "Profile",
+                        "target": {
+                            "eng-gbr": "Profile",
+                            "deu": "Profil",
+                            "fra": "Profil",
+                            "nld": "Profiel"
+                        }
+                    }
+                },
+                "users": {
+                    "name": {
+                        "cache": "0000000000000018",
+                        "source": "Users",
+                        "target": {
+                            "eng-gbr": "Users",
+                            "deu": "Benutzer",
+                            "fra": "Utilisateurs",
+                            "nld": "Gebruikers"
+                        }
+                    }
+                },
+                "channels": {
+                    "name": {
+                        "cache": "0000000000000019",
+                        "source": "Channels",
+                        "target": {
+                            "eng-gbr": "Channels",
+                            "deu": "Kanäle",
+                            "fra": "Canaux",
+                            "nld": "Kanalen"
+                        }
+                    }
                 }
             },
             "switch_admin": {
@@ -2688,6 +2724,264 @@
                     "deu": "Du",
                     "fra": "Tu",
                     "nld": "Jij"
+                }
+            },
+            "management": {
+                "action": {
+                    "add_user": {
+                        "cache": "0000000000000000",
+                        "source": "Add User",
+                        "target": {
+                            "eng-gbr": "Add User",
+                            "deu": "Benutzer hinzufügen",
+                            "fra": "Ajouter un utilisateur",
+                            "nld": "Voeg gebruiker toe"
+                        }
+                    },
+                    "cancel": {
+                        "cache": "0000000000000001",
+                        "source": "Cancel",
+                        "target": {
+                            "eng-gbr": "Cancel",
+                            "deu": "Abbrechen",
+                            "fra": "Annuler",
+                            "nld": "Annuleren"
+                        }
+                    },
+                    "delete": {
+                        "cache": "0000000000000002",
+                        "source": "Delete",
+                        "target": {
+                            "eng-gbr": "Delete",
+                            "deu": "Löschen",
+                            "fra": "Supprimer",
+                            "nld": "Verwijderen"
+                        }
+                    },
+                    "edit": {
+                        "cache": "0000000000000003",
+                        "source": "Edit",
+                        "target": {
+                            "eng-gbr": "Edit",
+                            "deu": "Bearbeiten",
+                            "fra": "Modifier",
+                            "nld": "Bewerken"
+                        }
+                    },
+                    "save": {
+                        "cache": "0000000000000004",
+                        "source": "Save",
+                        "target": {
+                            "eng-gbr": "Save",
+                            "deu": "Speichern",
+                            "fra": "Enregistrer",
+                            "nld": "Opslaan"
+                        }
+                    }
+                },
+                "badge": {
+                    "admin": {
+                        "cache": "0000000000000005",
+                        "source": "Admin",
+                        "target": {
+                            "eng-gbr": "Admin",
+                            "deu": "Admin",
+                            "fra": "Admin",
+                            "nld": "Admin"
+                        }
+                    }
+                },
+                "confirm": {
+                    "delete": {
+                        "cache": "0000000000000006",
+                        "source": "Are you sure you want to delete user {username}?",
+                        "target": {
+                            "eng-gbr": "Are you sure you want to delete user {username}?",
+                            "deu": "Möchten Sie den Benutzer {username} wirklich löschen?",
+                            "fra": "Êtes-vous sûr de vouloir supprimer l'utilisateur {username} ?",
+                            "nld": "Weet je zeker dat je gebruiker {username} wilt verwijderen?"
+                        }
+                    }
+                },
+                "error": {
+                    "create_failed": {
+                        "cache": "0000000000000007",
+                        "source": "Failed to create user",
+                        "target": {
+                            "eng-gbr": "Failed to create user",
+                            "deu": "Benutzer konnte nicht erstellt werden",
+                            "fra": "Échec de la création de l'utilisateur",
+                            "nld": "Kan gebruiker niet aanmaken"
+                        }
+                    },
+                    "delete_failed": {
+                        "cache": "0000000000000008",
+                        "source": "Failed to delete user",
+                        "target": {
+                            "eng-gbr": "Failed to delete user",
+                            "deu": "Benutzer konnte nicht gelöscht werden",
+                            "fra": "Échec de la suppression de l'utilisateur",
+                            "nld": "Kan gebruiker niet verwijderen"
+                        }
+                    },
+                    "load_failed": {
+                        "cache": "0000000000000009",
+                        "source": "Failed to load users",
+                        "target": {
+                            "eng-gbr": "Failed to load users",
+                            "deu": "Benutzer konnten nicht geladen werden",
+                            "fra": "Échec du chargement des utilisateurs",
+                            "nld": "Kan gebruikers niet laden"
+                        }
+                    },
+                    "save_failed": {
+                        "cache": "000000000000000a",
+                        "source": "Failed to save user",
+                        "target": {
+                            "eng-gbr": "Failed to save user",
+                            "deu": "Benutzer konnte nicht gespeichert werden",
+                            "fra": "Échec de l'enregistrement de l'utilisateur",
+                            "nld": "Kan gebruiker niet opslaan"
+                        }
+                    },
+                    "username_required": {
+                        "cache": "000000000000000b",
+                        "source": "Username is required",
+                        "target": {
+                            "eng-gbr": "Username is required",
+                            "deu": "Benutzername ist erforderlich",
+                            "fra": "Le nom d'utilisateur est requis",
+                            "nld": "Gebruikersnaam is verplicht"
+                        }
+                    }
+                },
+                "field": {
+                    "admin": {
+                        "cache": "000000000000000c",
+                        "source": "Administrator",
+                        "target": {
+                            "eng-gbr": "Administrator",
+                            "deu": "Administrator",
+                            "fra": "Administrateur",
+                            "nld": "Administrator"
+                        }
+                    },
+                    "password": {
+                        "cache": "000000000000000d",
+                        "source": "Password",
+                        "target": {
+                            "eng-gbr": "Password",
+                            "deu": "Passwort",
+                            "fra": "Mot de passe",
+                            "nld": "Wachtwoord"
+                        }
+                    },
+                    "username": {
+                        "cache": "000000000000000e",
+                        "source": "Username",
+                        "target": {
+                            "eng-gbr": "Username",
+                            "deu": "Benutzername",
+                            "fra": "Nom d'utilisateur",
+                            "nld": "Gebruikersnaam"
+                        }
+                    }
+                },
+                "placeholder": {
+                    "password": {
+                        "cache": "000000000000000f",
+                        "source": "Enter password",
+                        "target": {
+                            "eng-gbr": "Enter password",
+                            "deu": "Passwort eingeben",
+                            "fra": "Entrez le mot de passe",
+                            "nld": "Voer wachtwoord in"
+                        }
+                    },
+                    "password_optional": {
+                        "cache": "0000000000000011",
+                        "source": "Leave blank to keep current password",
+                        "target": {
+                            "eng-gbr": "Leave blank to keep current password",
+                            "deu": "Leer lassen, um aktuelles Passwort beizubehalten",
+                            "fra": "Laisser vide pour conserver le mot de passe actuel",
+                            "nld": "Leeg laten om huidig wachtwoord te behouden"
+                        }
+                    },
+                    "username": {
+                        "cache": "0000000000000010",
+                        "source": "Enter username",
+                        "target": {
+                            "eng-gbr": "Enter username",
+                            "deu": "Benutzername eingeben",
+                            "fra": "Entrez le nom d'utilisateur",
+                            "nld": "Voer gebruikersnaam in"
+                        }
+                    }
+                },
+                "success": {
+                    "created": {
+                        "cache": "0000000000000011",
+                        "source": "User successfully created",
+                        "target": {
+                            "eng-gbr": "User successfully created",
+                            "deu": "Benutzer erfolgreich erstellt",
+                            "fra": "Utilisateur créé avec succès",
+                            "nld": "Gebruiker succesvol aangemaakt"
+                        }
+                    },
+                    "deleted": {
+                        "cache": "0000000000000012",
+                        "source": "User successfully deleted",
+                        "target": {
+                            "eng-gbr": "User successfully deleted",
+                            "deu": "Benutzer erfolgreich gelöscht",
+                            "fra": "Utilisateur supprimé avec succès",
+                            "nld": "Gebruiker succesvol verwijderd"
+                        }
+                    },
+                    "updated": {
+                        "cache": "0000000000000013",
+                        "source": "User successfully updated",
+                        "target": {
+                            "eng-gbr": "User successfully updated",
+                            "deu": "Benutzer erfolgreich aktualisiert",
+                            "fra": "Utilisateur mis à jour avec succès",
+                            "nld": "Gebruiker succesvol bijgewerkt"
+                        }
+                    }
+                },
+                "title": {
+                    "create": {
+                        "cache": "0000000000000014",
+                        "source": "Create New User",
+                        "target": {
+                            "eng-gbr": "Create New User",
+                            "deu": "Neuen Benutzer erstellen",
+                            "fra": "Créer un nouvel utilisateur",
+                            "nld": "Nieuwe gebruiker aanmaken"
+                        }
+                    },
+                    "edit": {
+                        "cache": "0000000000000015",
+                        "source": "Edit User",
+                        "target": {
+                            "eng-gbr": "Edit User",
+                            "deu": "Benutzer bearbeiten",
+                            "fra": "Modifier l'utilisateur",
+                            "nld": "Gebruiker bewerken"
+                        }
+                    }
+                },
+                "empty": {
+                    "cache": "0000000000000016",
+                    "source": "No users yet",
+                    "target": {
+                        "eng-gbr": "No users yet",
+                        "deu": "Noch keine Benutzer",
+                        "fra": "Aucun utilisateur pour le moment",
+                        "nld": "Nog geen gebruikers"
+                    }
                 }
             }
         }

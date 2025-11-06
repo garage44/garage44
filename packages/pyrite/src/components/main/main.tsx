@@ -37,9 +37,12 @@ export const Main = () => {
                 ws.connect()
 
                 // Set theme color
-                const themeColor = getComputedStyle(document.querySelector('.app')).getPropertyValue('--grey-4')
-                const metaTheme = document.querySelector('meta[name="theme-color"]')
-                if (metaTheme) (metaTheme as HTMLMetaElement).content = themeColor
+                const appElement = document.querySelector('.app')
+                if (appElement) {
+                    const themeColor = getComputedStyle(appElement).getPropertyValue('--grey-4')
+                    const metaTheme = document.querySelector('meta[name="theme-color"]')
+                    if (metaTheme) (metaTheme as HTMLMetaElement).content = themeColor
+                }
 
                 // Load emoji list
                 if (!$s.chat.emoji.list.length) {
@@ -195,6 +198,8 @@ export const Main = () => {
                 <Router>
                     <Route path="/channels/:channelSlug/devices" component={Channel} />
                     <Route path="/channels/:channelSlug" component={Channel} />
+                    <Route path="/settings/users/new" component={Settings} />
+                    <Route path="/settings/users/:userId" component={Settings} />
                     <Route path="/settings" component={Settings} />
                     <Route path="/settings/:tabId" component={Settings} />
                     <Route default component={() => (
