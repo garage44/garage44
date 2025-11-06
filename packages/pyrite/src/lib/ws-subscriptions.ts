@@ -161,6 +161,14 @@ const initPresenceSubscriptions = () => {
 
             logger.debug(`User ${username} joined group ${groupId}`)
 
+            // Update presence status in chat.users
+            if ($s.chat.users && userId) {
+                const normalizedUserId = String(userId)
+                if ($s.chat.users[normalizedUserId]) {
+                    $s.chat.users[normalizedUserId].status = 'online'
+                }
+            }
+
             // Update current group member count if relevant
             if ($s.sfu.channels[groupId]) {
                 $s.sfu.channels[groupId].clientCount = ($s.sfu.channels[groupId].clientCount || 0) + 1
@@ -194,6 +202,13 @@ const initPresenceSubscriptions = () => {
 
             logger.debug(`User ${userId} left group ${groupId}`)
 
+            // Update presence status in chat.users (check if user is still in any group)
+            if ($s.chat.users && userId) {
+                const normalizedUserId = String(userId)
+                // Note: We don't set offline here because user might be in another group
+                // The presence API will handle this
+            }
+
             // Update current group member count if relevant
             if ($s.sfu.channels[groupId] && ($s.sfu.channels[groupId].clientCount || 0) > 0) {
                 $s.sfu.channels[groupId].clientCount = ($s.sfu.channels[groupId].clientCount || 0) - 1
@@ -212,9 +227,32 @@ const initPresenceSubscriptions = () => {
         ws.on('/presence/:groupId/status', (data) => {
             const {status, timestamp, userId} = data
 
+            // Update presence status in chat.users
+            if ($s.chat.users && userId) {
+                const normalizedUserId = String(userId)
+                if ($s.chat.users[normalizedUserId]) {
+                    // Update status if provided in the status object
+                    if (status && typeof status === 'object' && 'status' in status) {
+                        $s.chat.users[normalizedUserId].status = status.status as 'online' | 'offline' | 'busy'
+                    }
+                }
+            }
+
             const user = $s.users.find((u) => u.id === userId)
             if (user) {
                 Object.assign(user.data, status)
+            }
+        })
+
+        // Listen for user presence updates (from /users/presence broadcast)
+        ws.on('/users/presence', (data) => {
+            const {status, userid, timestamp} = data
+
+            if ($s.chat.users && userid) {
+                const normalizedUserId = String(userid)
+                if ($s.chat.users[normalizedUserId]) {
+                    $s.chat.users[normalizedUserId].status = status as 'online' | 'offline' | 'busy'
+                }
             }
         })
     })

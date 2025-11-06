@@ -116,6 +116,26 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
     })
 
     /**
+     * Get all online users (presence status)
+     * GET /api/presence/users
+     */
+    api.get('/api/presence/users', async (context, request) => {
+        // Return all users with their presence status
+        const onlineUsers: Record<string, 'online' | 'offline' | 'busy'> = {}
+        
+        // All users in presence state are online
+        for (const [userId, user] of state.users.entries()) {
+            // Check if user has a status property (busy, etc.)
+            const userStatus = (user as any).status || 'online'
+            onlineUsers[userId] = userStatus === 'busy' ? 'busy' : 'online'
+        }
+
+        return {
+            users: onlineUsers,
+        }
+    })
+
+    /**
      * Update user status (availability, mic state, etc.)
      * POST /api/presence/:groupId/status
      */

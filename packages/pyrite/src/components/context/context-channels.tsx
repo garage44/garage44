@@ -86,8 +86,12 @@ export default function ChannelsContext() {
 
     return (
         <section class={classnames('c-channels-context presence', {collapsed: $s.panels.context.collapsed})}>
-            <div class="channels-list">
-                {$s.channels.map((channel) => {
+            <div class="channels-section">
+                <div class="channels-header">
+                    <span class="channels-title">Channels</span>
+                </div>
+                <div class="channels-list">
+                    {$s.channels.map((channel) => {
                     const channelKey = channel.slug
                     const channelData = $s.chat.channels[channelKey]
                     const unreadCount = channelData?.unread || 0
@@ -127,6 +131,7 @@ export default function ChannelsContext() {
                         </div>
                     </div>
                 )}
+                </div>
             </div>
 
             {/* People List Section */}
@@ -136,10 +141,21 @@ export default function ChannelsContext() {
                 </div>
                 <div class="people-list">
                     {(() => {
-                        // Get all chat users from global users map
+                        // Get all chat users from global users map and deduplicate by ID
                         const chatUsers = $s.chat.users ? Object.entries($s.chat.users) : []
 
-                        if (chatUsers.length === 0) {
+                        // Deduplicate by converting IDs to strings and using a Set
+                        const seenIds = new Set<string>()
+                        const uniqueUsers = chatUsers.filter(([userId, userInfo]) => {
+                            const idStr = String(userId)
+                            if (seenIds.has(idStr)) {
+                                return false
+                            }
+                            seenIds.add(idStr)
+                            return true
+                        })
+
+                        if (uniqueUsers.length === 0) {
                             return (
                                 <div class="person item no-presence">
                                     <span class="person-name">No users found</span>
@@ -147,11 +163,14 @@ export default function ChannelsContext() {
                             )
                         }
 
-                        return chatUsers.map(([userId, userInfo]) => {
+                        return uniqueUsers.map(([userId, userInfo]) => {
                             const avatarUrl = getAvatarUrl(userInfo.avatar, userId)
-                            const isCurrentUser = $s.profile.id === userId
+                            const isCurrentUser = String($s.profile.id) === String(userId)
+                            const status = userInfo.status || 'offline'
+                            const statusClass = status === 'online' ? 'online' : status === 'busy' ? 'busy' : 'offline'
 
-                            return <div key={userId} class="person item">
+                            return <div key={String(userId)} class="person item">
+                                <span class={`status-indicator ${statusClass}`} />
                                 <img src={avatarUrl} alt={userInfo.username} class="person-avatar" />
                                 <span class="person-name">
                                     {userInfo.username || $t('user.anonymous')}

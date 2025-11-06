@@ -11,6 +11,27 @@
         padding: 0;
     }
 
+    /* Channels section with header */
+    .channels-section {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+
+        .channels-header {
+            padding: var(--spacer-1) var(--spacer-2) var(--spacer-05);
+
+            .channels-title {
+                color: var(--surface-5);
+                font-size: var(--font-xs);
+                font-weight: var(--font-weight-semibold, 600);
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+            }
+        }
+    }
+
     /* Channels list wrapper - scrollable area */
     .channels-list {
         display: flex;
@@ -170,8 +191,8 @@
                         box-shadow: 0 0 0 2px var(--surface-1);
                     }
 
-                    &.away {
-                        background: var(--warning-4);
+                    &.offline {
+                        background: var(--surface-4);
                         box-shadow: 0 0 0 2px var(--surface-1);
                     }
 
