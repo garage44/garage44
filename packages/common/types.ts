@@ -34,6 +34,8 @@ interface CommonState {
         }
     }
     profile: {
+        admin: boolean
+        authenticated: boolean
         avatar: string
         displayName: string
         id: string | null
@@ -41,10 +43,6 @@ interface CommonState {
         username: string
     }
     theme: 'dark' | 'light' | 'system'
-    user: DeepSignal<{
-        admin: boolean
-        authenticated: boolean
-    }>
 }
 
 

@@ -22,8 +22,8 @@ export const Login = () => {
                 const config = await api.get('/api/config')
                 // result from login already includes full profile from /api/context
                 // Set user authentication/admin flags
-                $s.user.admin = result.admin || false
-                $s.user.authenticated = result.authenticated || false
+                $s.profile.admin = result.admin || false
+                $s.profile.authenticated = result.authenticated || false
                 // Set profile data from result
                 if (result.id) $s.profile.id = result.id
                 if (result.username) $s.profile.username = result.username

@@ -45,7 +45,7 @@ The Garage44 monorepo contains multiple applications (Expressio and Pyrite) with
 
 **Common Package:**
 - Shared state structure already exists in `packages/common/lib/state.ts`
-- `volatileState.user` has required fields: `admin`, `authenticated`, `password`, `username`
+- `volatileState.profile` has required fields: `admin`, `authenticated`, `password`, `username`
 - No shared authentication components
 
 ### Business Drivers
@@ -98,7 +98,7 @@ Basic styling with modern CSS nesting:
 - Implement `handleLogin` callback that:
   - Calls `/api/login` endpoint with credentials
   - Updates `$s.admin` state with authentication response
-  - Stores credentials in `$s.user.{username, password}` for Galene reuse
+  - Stores credentials in `$s.profile.{username, password}` for Galene reuse
   - Sets `$s.admin.authenticated = true` on success
   - Returns error message for display on failure
 
@@ -134,7 +134,7 @@ Add connection logic in `useEffect`:
 - Remove or modify `/groups/:groupId/login` route
 - When routing to `/groups/:groupId`, check authentication state:
   - If anonymous group: connect anonymously
-  - If credentials stored: connect with `$s.user.{username, password}`
+  - If credentials stored: connect with `$s.profile.{username, password}`
   - If connection fails with auth error: show login screen as fallback
 
 ### 4. Maintain Fallback Login Screen
@@ -142,7 +142,7 @@ Add connection logic in `useEffect`:
 **Conference Login Component**: `packages/pyrite/src/components/conference/login/login.tsx`
 
 - Keep as fallback for connection failures
-- Pre-populate with `$s.user.{username, password}` if available
+- Pre-populate with `$s.profile.{username, password}` if available
 - Show only when auto-connect fails with authentication errors
 - Maintain existing functionality for edge cases
 
@@ -272,8 +272,8 @@ const AppMain = () => {
     try {
       const response = await api.post('/api/login', {username, password})
       $s.admin = response.data
-      $s.user.username = username
-      $s.user.password = password
+      $s.profile.username = username
+      $s.profile.password = password
       $s.admin.authenticated = true
       return null // Success
     } catch (error) {
@@ -301,9 +301,9 @@ const GroupComponent = () => {
         if (group['allow-anonymous'] && group['public-access']) {
           // Anonymous connection
           await connect('', '')
-        } else if ($s.user.username && $s.user.password) {
+        } else if ($s.profile.username && $s.profile.password) {
           // Authenticated connection with stored credentials
-          await connect($s.user.username, $s.user.password)
+          await connect($s.profile.username, $s.profile.password)
         } else {
           // Fallback to login screen
           showLoginScreen()

@@ -39,6 +39,8 @@ const volatileState = {
     },
     notifications: [] as unknown[],
     profile: {
+        admin: false,
+        authenticated: false,
         avatar: 'placeholder-1.png',
         displayName: '',
         id: null,

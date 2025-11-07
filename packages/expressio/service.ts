@@ -89,7 +89,7 @@ void cli.usage('Usage: $0 [task]')
 
         const inputFile = path.resolve(argv.input)
         logger.info(`Importing from: ${inputFile}`)
-        
+
         if (!await fs.pathExists(inputFile)) {
             logger.error(`Input file not found: ${inputFile}`)
             process.exit(1)
@@ -116,7 +116,7 @@ void cli.usage('Usage: $0 [task]')
             if (typeof sourceRef[id] === 'string') {
                 // Check if tag already exists
                 const existingRef = keyPath(workspace.i18n, refPath)
-                
+
                 if (existingRef && 'source' in existingRef && !argv.merge) {
                     logger.debug(`skipping existing tag: ${refPath.join('.')}`)
                     skipTags.push(refPath.join('.'))
@@ -140,19 +140,19 @@ void cli.usage('Usage: $0 [task]')
         if (argv.translate && createTags.length > 0) {
             logger.info('Starting automatic translation...')
             await enola.init(config.enola, logger)
-            
+
             for (const tagPath of createTags) {
                 try {
                     const {id, ref} = pathRef(workspace.i18n, tagPath)
                     const sourceText = ref[id].source
-                    
+
                     logger.info(`Translating: ${tagPath.join('.')}`)
                     await translate_tag(workspace, tagPath, sourceText, true)
                 } catch (error) {
                     logger.error(`Failed to translate ${tagPath.join('.')}: ${error.message}`)
                 }
             }
-            
+
             await workspace.save()
             logger.info('Translation complete!')
         }
@@ -180,7 +180,7 @@ void cli.usage('Usage: $0 [task]')
         await enola.init(config.enola, logger)
 
         const tagsToTranslate = []
-        
+
         // Collect all tags that need translation
         keyMod(workspace.i18n, (ref, id, refPath) => {
             if (ref && 'source' in ref && typeof ref.source === 'string') {
@@ -189,8 +189,8 @@ void cli.usage('Usage: $0 [task]')
                     return
                 }
 
-                const needsTranslation = argv.force || 
-                    !ref.cache || 
+                const needsTranslation = argv.force ||
+                    !ref.cache ||
                     ref.cache !== hash(ref.source) ||
                     workspace.config.languages.target.some(lang => !ref.target[lang.id])
 
@@ -211,7 +211,7 @@ void cli.usage('Usage: $0 [task]')
             try {
                 const {id, ref} = pathRef(workspace.i18n, tagPath)
                 const sourceText = ref[id].source
-                
+
                 logger.info(`[${index + 1}/${tagsToTranslate.length}] Translating: ${tagPath.join('.')}`)
                 await translate_tag(workspace, tagPath, sourceText, true)
             } catch (error) {
@@ -318,7 +318,7 @@ void cli.usage('Usage: $0 [task]')
             const total = stats.translated[lang.id] + stats.untranslated[lang.id]
             const percentage = total > 0 ? Math.round((stats.translated[lang.id] / total) * 100) : 0
             const bar = '█'.repeat(Math.floor(percentage / 2)) + '░'.repeat(50 - Math.floor(percentage / 2))
-            
+
             // oxlint-disable-next-line no-console
             console.log(`  ${lang.name} (${lang.id}):`)
             // oxlint-disable-next-line no-console
@@ -374,7 +374,7 @@ void cli.usage('Usage: $0 [task]')
 
         await fs.mkdirp(outputDir)
 
-        const languagesToExport = argv.language 
+        const languagesToExport = argv.language
             ? workspace.config.languages.target.filter(lang => lang.id === argv.language)
             : workspace.config.languages.target
 
@@ -388,7 +388,7 @@ void cli.usage('Usage: $0 [task]')
             for (const language of languagesToExport) {
                 const outputFile = path.join(outputDir, `${outputBase}.${language.id}${outputExt}`)
                 const translations = i18nFormat(workspace.i18n, [language])
-                
+
                 await fs.writeFile(outputFile, JSON.stringify(translations, null, 2), 'utf8')
                 logger.info(`Exported ${language.name} to: ${outputFile}`)
             }
@@ -396,7 +396,7 @@ void cli.usage('Usage: $0 [task]')
             // Export all languages to a single file
             const bundleTarget = path.resolve(outputDir, `${outputBase}${outputExt}`)
             const translations = i18nFormat(workspace.i18n, languagesToExport)
-            
+
             await fs.writeFile(bundleTarget, JSON.stringify(translations, null, 2), 'utf8')
             logger.info(`Exported to: ${bundleTarget}`)
         }

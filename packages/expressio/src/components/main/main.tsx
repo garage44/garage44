@@ -20,8 +20,8 @@ export const Main = () => {
             const context = await api.get('/api/context')
             // Context now includes full user profile (id, username, profile.avatar, profile.displayName)
             // Set user authentication/admin flags
-            $s.user.admin = context.admin || false
-            $s.user.authenticated = context.authenticated || false
+            $s.profile.admin = context.admin || false
+            $s.profile.authenticated = context.authenticated || false
             // Set profile data from context
             if (context.id) $s.profile.id = context.id
             if (context.username) $s.profile.username = context.username
@@ -35,7 +35,7 @@ export const Main = () => {
                 ws.connect()
                 const config = await api.get('/api/config')
 
-                $s.user.authenticated = true
+                $s.profile.authenticated = true
                 mergeDeep($s, {
                     enola: config.enola,
                     workspaces: config.workspaces,
@@ -46,11 +46,11 @@ export const Main = () => {
         })()
     }, [])
 
-    if ($s.user.authenticated === null) {
+    if ($s.profile.authenticated === null) {
         return null
     }
 
-    if ($s.user.authenticated === false) {
+    if ($s.profile.authenticated === false) {
         return <Login />
     }
     const handleRoute = async({url}: {url: string}) => {
@@ -85,18 +85,18 @@ export const Main = () => {
         <AppLayout
             menu={
                 <PanelMenu
-                    collapsed={$s.panel.collapsed}
+                    collapsed={$s.panels.menu.collapsed}
                     onCollapseChange={(collapsed) => {
-                        $s.panel.collapsed = collapsed
+                        $s.panels.menu.collapsed = collapsed
                     }}
                     logoSrc="/public/img/logo.svg"
                     logoText="Expressio"
                     navigation={
 
-                        <MenuGroup collapsed={$s.panel.collapsed}>
-                            {$s.user.admin && <MenuItem
+                        <MenuGroup collapsed={$s.panels.menu.collapsed}>
+                            {$s.profile.admin && <MenuItem
                                 active={$s.env.url === '/'}
-                                collapsed={$s.panel.collapsed}
+                                collapsed={$s.panels.menu.collapsed}
                                 href="/"
                                 icon="settings"
                                 iconType="info"
@@ -131,7 +131,7 @@ export const Main = () => {
 
                             <MenuItem
                                 active={$s.env.url.endsWith('/settings')}
-                                collapsed={$s.panel.collapsed}
+                                collapsed={$s.panels.menu.collapsed}
                                 disabled={!$s.workspace}
                                 href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/settings` : ''}
                                 icon="workspace"
@@ -140,7 +140,7 @@ export const Main = () => {
                             />
                             <MenuItem
                                 active={$s.env.url.endsWith('/translations')}
-                                collapsed={$s.panel.collapsed}
+                                collapsed={$s.panels.menu.collapsed}
                                 disabled={!$s.workspace}
                                 href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/translations` : ''}
                                 icon="translate"
@@ -151,11 +151,11 @@ export const Main = () => {
                     }
                     actions={
                         <UserMenu
-                            collapsed={$s.panel.collapsed}
+                            collapsed={$s.panels.menu.collapsed}
                             onLogout={async() => {
                                 const result = await api.get('/api/logout')
-                                $s.user.authenticated = result.authenticated || false
-                                $s.user.admin = result.admin || false
+                                $s.profile.authenticated = result.authenticated || false
+                                $s.profile.admin = result.admin || false
                                 route('/')
                             }}
                             settingsHref="/settings"
@@ -190,7 +190,7 @@ export const Main = () => {
         >
             <div class="view">
                 <Router onChange={handleRoute}>
-                    {$s.user.admin && <Config path="/" />}
+                    {$s.profile.admin && <Config path="/" />}
                     <Settings path="/settings" />
                     <WorkspaceSettings path="/workspaces/:workspace/settings" />
                     <WorkspaceTranslations path="/workspaces/:workspace/translations" />

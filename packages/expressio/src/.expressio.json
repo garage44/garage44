@@ -65,7 +65,7 @@
                         "eng-gbr": "The API key for the Anthropic service",
                         "fra": "La clé API pour le service Anthropic",
                         "nld": "De API-sleutel voor de Anthropic-service",
-                        "zho-hans": ""
+                        "zho-hans": "Anthropic 服务的 API 密钥"
                     }
                 },
                 "deepl_base_url": {
@@ -727,6 +727,14 @@
                         "nld": "Verwijder deze tag groep"
                     }
                 }
+            }
+        },
+        "ui": {
+            "settings": {
+                "action": {},
+                "profile": {},
+                "users": {},
+                "workspaces": {}
             }
         },
         "users": {

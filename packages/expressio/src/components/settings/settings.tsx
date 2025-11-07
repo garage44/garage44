@@ -29,7 +29,7 @@ export function Settings({tabId}: SettingsProps) {
     }
 
     // Determine if user settings should be shown (admin only)
-    const showUserSettings = $s.user?.admin
+    const showUserSettings = $s.profile?.admin
 
     const tabs = [
         {
