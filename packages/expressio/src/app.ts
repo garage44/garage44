@@ -1,4 +1,4 @@
-import {App, store} from '@garage44/common/app'
+import {App, createTypedI18n, store} from '@garage44/common/app'
 import {h, render} from 'preact'
 import {persistantState, volatileState} from './lib/state'
 import type {ExpressioState} from './types'
@@ -15,4 +15,9 @@ const app = new App()
 
 app.init(Main, render, h, i18nFormat(workspace.i18n, workspace.config.languages.target), {bunchyPrefix: 'E'})
 
-export {$s, app}
+// Export typed i18n object for type-safe translation references
+// The type is inferred from the workspace JSON structure
+// This is the i18n for the Expressio UI itself, not the workspace being managed
+const i18n = createTypedI18n(workspace)
+
+export {$s, app, i18n}

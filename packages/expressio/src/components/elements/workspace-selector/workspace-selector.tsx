@@ -1,5 +1,6 @@
 import {FieldText, Icon} from '@garage44/common/components'
 import {$t} from '@garage44/common/app'
+import {i18n} from '@/app'
 import {DirectoryBrowser} from '../directory-browser/directory-browser'
 import type {WorkspaceDescription} from '@/types'
 import classnames from 'classnames'
@@ -12,7 +13,7 @@ export function WorkspaceSelector({workspaces}: WorkspaceSelectorProps) {
     return <div class="c-workspace-selector">
         <div class="field">
             <div class="label">
-                <Icon name="workspace" type="info"/>{$t('settings.label.workspaces')}
+                <Icon name="workspace" type="info"/>{$t(i18n.settings.label.workspaces)}
             </div>
 
             <div class="wrapper">
@@ -26,8 +27,8 @@ export function WorkspaceSelector({workspaces}: WorkspaceSelectorProps) {
                                 }}
                                 tip={
                                     workspace.status === 'existing' ?
-                                        $t('settings.tip.workspace_existing', {source_file: workspace.source_file}) :
-                                        $t('settings.tip.workspace_new', {source_file: workspace.source_file})
+                                        $t(i18n.settings.tip.workspace_existing, {source_file: workspace.source_file}) :
+                                        $t(i18n.settings.tip.workspace_new, {source_file: workspace.source_file})
                                 }
                                 type="info"
                             />
@@ -51,7 +52,7 @@ export function WorkspaceSelector({workspaces}: WorkspaceSelectorProps) {
             </div>
 
             <div class="help">
-                {$t('settings.help.workspaces')}
+                {$t(i18n.settings.help.workspaces)}
             </div>
         </div>
     </div>

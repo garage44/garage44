@@ -1,4 +1,4 @@
-import {$s} from '@/app'
+import {$s, i18n} from '@/app'
 import {$t, api, notifier, store} from '@garage44/common/app'
 import {Button, FieldSelect, FieldText} from '@garage44/common/components'
 import {createValidator, required} from '@garage44/common/lib/validation'
@@ -45,11 +45,11 @@ export function Config() {
     return (
         <div class="c-config view">
             <FieldSelect
-                help={$t('config.help.ui_language')}
-                label={$t('config.label.ui_language')}
+                help={$t(i18n.config.help.ui_language)}
+                label={$t(i18n.config.label.ui_language)}
                 model={$s.language_ui.$selection}
                 options={$s.language_ui.options}
-                placeholder={$t('config.placeholder.ui_language')}
+                placeholder={$t(i18n.config.placeholder.ui_language)}
                 validation={validation?.value.language_ui}
             />
 
@@ -67,8 +67,8 @@ export function Config() {
                         {/* $t('config.label.deepl_key') */}
                         {/* $t('config.label.deepl_base_url') */}
                         <FieldText
-                            help={$t(`config.help.${engine.name}_key`)}
-                            label={$t(`config.label.${engine.name}_key`)}
+                            help={$t(i18n.config.help[`${engine.name}_key` as keyof typeof i18n.config.help])}
+                            label={$t(i18n.config.label[`${engine.name}_key` as keyof typeof i18n.config.label])}
                             model={engine.$api_key}
                             type="password"
                             copyable={true}
@@ -76,8 +76,8 @@ export function Config() {
                         />
 
                         {'base_url' in engine && <FieldText
-                            help={$t(`config.help.${engine.name}_base_url`)}
-                            label={$t(`config.label.${engine.name}_base_url`)}
+                            help={$t(i18n.config.help[`${engine.name}_base_url` as keyof typeof i18n.config.help])}
+                            label={$t(i18n.config.label[`${engine.name}_base_url` as keyof typeof i18n.config.label])}
                             model={engine.$base_url}
                             validation={validation?.value[`${engine.name}_base_url`]}
                         />}
@@ -87,7 +87,7 @@ export function Config() {
 
             <Button
                 disabled={!isValid?.value}
-                label={$t('config.label.update_config')}
+                label={$t(i18n.config.label.update_config)}
                 onClick={async() => {
                     store.save()
                     await api.post('/api/config', {
@@ -97,7 +97,7 @@ export function Config() {
                     })
 
                     await loadConfig()
-                    notifier.notify({message: $t('notifications.config_updated'), type: 'info'})
+                    notifier.notify({message: $t(i18n.notifications.config_updated), type: 'info'})
                 }}
                 tip={errors?.value}
                 type="info"

@@ -1,5 +1,6 @@
 import {hash, keyMod, keyPath, mergeDeep} from './utils'
 import {logger} from './logger'
+import {I18N_PATH_SYMBOL} from './i18n'
 
 interface Tag {
     source: string
@@ -87,6 +88,11 @@ function pathCreate(sourceObject:Record<string, unknown>, tagPath:string[], valu
         if ('_soft' in value) {
             ref[id]._soft = value._soft
         }
+
+        // Attach path symbol for type-safe translation references
+        // Path format: i18n.path.to.translation
+        ref[id][I18N_PATH_SYMBOL] = `i18n.${tag}`
+
         logger.info(`create path tag: ${tag} ${'_soft' in value ? '(soft create)' : ''}`)
         targetLanguages.forEach((language) => {
             if (translations && translations[language.id]) {
@@ -242,6 +248,14 @@ function pathMove(source, oldPath, newPath) {
 
     newSourceRef[newId] = oldSourceRef[oldId]
     newSourceRef[newId]._id = newId
+
+    // Update path symbol for moved object
+    // Path format: i18n.path.to.translation
+    const newPathString = `i18n.${newPath.join('.')}`
+    if (typeof newSourceRef[newId] === 'object' && 'source' in newSourceRef[newId]) {
+        newSourceRef[newId][I18N_PATH_SYMBOL] = newPathString
+    }
+
     delete oldSourceRef[oldId]
 }
 

@@ -1,4 +1,4 @@
-import {$s} from '@/app'
+import {$s, i18n} from '@/app'
 import {notifier, ws} from '@garage44/common/app'
 import {randomId} from '@garage44/common/lib/utils'
 import classnames from 'classnames'
@@ -51,7 +51,7 @@ export function GroupActions({className, group, path}: {className?: string; grou
                     })
                 }}
                 size="s"
-                tip={group._collapsed ? $t('translation.tip.translation_view') : $t('translation.tip.translation_hide')}
+                tip={group._collapsed ? $t(i18n.translation.tip.translation_view) : $t(i18n.translation.tip.translation_hide)}
                 type="info"
             />
         </div>
@@ -66,7 +66,7 @@ export function GroupActions({className, group, path}: {className?: string; grou
                     })
                 }}
                 size="s"
-                tip={$t('translation_group.tip.add_group')}
+                tip={$t(i18n.translation_group.tip.add_group)}
                 type="info"
             />
             <Icon
@@ -90,7 +90,7 @@ export function GroupActions({className, group, path}: {className?: string; grou
                     })
                 }}
                 size="s"
-                tip={$t('translation_group.tip.add_tag')}
+                tip={$t(i18n.translation_group.tip.add_tag)}
                 type="info"
             />
 
@@ -103,7 +103,7 @@ export function GroupActions({className, group, path}: {className?: string; grou
                             ignore_cache: $s.env.ctrlKey,
                             path,
                         })
-                        
+
                         if (result?.success) {
                             const translatedCount = result.targets?.length || 0
                             const cachedCount = result.cached?.length || 0
@@ -125,7 +125,7 @@ export function GroupActions({className, group, path}: {className?: string; grou
                     }
                 }}
                 size="s"
-                tip={$s.env.ctrlKey ? $t('translation.tip.translate_group_force') : $t('translation.tip.translate_group')}
+                tip={$s.env.ctrlKey ? $t(i18n.translation.tip.translate_group_force) : $t(i18n.translation.tip.translate_group)}
                 type={$s.env.ctrlKey ? 'danger' : 'info'}
             />
 
@@ -137,7 +137,7 @@ export function GroupActions({className, group, path}: {className?: string; grou
                     })
                 }}
                 size="s"
-                tip={$t('translation_group.tip.remove_group')}
+                tip={$t(i18n.translation_group.tip.remove_group)}
                 type="info"
             />}
         </div>

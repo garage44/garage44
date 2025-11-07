@@ -6,6 +6,7 @@ import {
     mergeDeep,
     sortNestedObjectKeys,
 } from '@garage44/common/lib/utils.ts'
+import {I18N_PATH_SYMBOL} from '@garage44/common/lib/i18n'
 
 import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import fs from 'fs-extra'
@@ -154,6 +155,17 @@ export class Workspace {
             this.addToHistory(copyObject(this._i18n))
         }
 
+        // Attach path symbols to translation objects (needed when i18n is set via WebSocket)
+        // This ensures paths are available even after serialization/deserialization
+        // Path format: i18n.path.to.translation
+        keyMod(newI18n, (_srcRef, _id, refPath) => {
+            const sourceRef = keyPath(newI18n, refPath)
+            if (typeof sourceRef === 'object' && 'source' in sourceRef && refPath.length > 0) {
+                const pathString = `i18n.${refPath.join('.')}`
+                sourceRef[I18N_PATH_SYMBOL] = pathString
+            }
+        })
+
         // Create a deep proxy with the new i18n object
         this._i18n = this.createDeepProxy(
             // Make a deep copy to ensure we're starting with fresh objects
@@ -200,7 +212,7 @@ export class Workspace {
         const loadedSettings = JSON.parse((await fs.readFile(this.config.source_file, 'utf8')))
         const i18n = loadedSettings.i18n
 
-        // Augment with state keys
+        // Augment with state keys and attach path symbols
         keyMod(i18n, (_srcRef, _id, refPath) => {
             const key = refPath.at(-1)
             const sourceRef = keyPath(i18n, refPath)
@@ -209,6 +221,14 @@ export class Workspace {
                 // The _id field is a copy of the key, used to buffer a key rename.
                 sourceRef._id = key || 'root'
                 sourceRef._collapsed = !!key
+
+                // Attach path symbol for type-safe translation references
+                // Only attach to translation objects (those with 'source' property)
+                // Path format: i18n.path.to.translation
+                if ('source' in sourceRef && refPath.length > 0) {
+                    const pathString = `i18n.${refPath.join('.')}`
+                    sourceRef[I18N_PATH_SYMBOL] = pathString
+                }
             }
         })
 

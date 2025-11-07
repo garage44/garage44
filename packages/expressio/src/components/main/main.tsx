@@ -1,4 +1,4 @@
-import {$s} from '@/app'
+import {$s, i18n} from '@/app'
 import {$t, api, notifier, ws} from '@garage44/common/app'
 import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
 import {Settings} from '@/components/settings/settings'
@@ -70,7 +70,7 @@ export const Main = () => {
 
             if (result.error) {
                 // Replace console.log with proper error handling
-                notifier.notify({message: $t('workspace.error.not_found'), type: 'error'})
+                notifier.notify({message: $t(i18n.workspace.error.not_found), type: 'error'})
 
                 // Use route with replace option to avoid adding to history
                 route('/', true)
@@ -100,12 +100,12 @@ export const Main = () => {
                                 href="/"
                                 icon="settings"
                                 iconType="info"
-                                text={$t('menu.settings')}
+                                text={$t(i18n.menu.settings)}
                             />}
                             <FieldSelect
                                 disabled={!$s.workspaces.length}
-                                help={$t('menu.workspaces.help')}
-                                label={$t('menu.workspaces.label')}
+                                help={$t(i18n.menu.workspaces.help)}
+                                label={$t(i18n.menu.workspaces.label)}
                                 model={state.$workspace_id}
                                 onChange={async(workspace_id) => {
                                     $s.workspace = (await ws.get(`/api/workspaces/${workspace_id}`))
@@ -126,7 +126,7 @@ export const Main = () => {
                                     route(newRoute)
                                 }}
                                 options={$s.workspaces.map((i) => ({id: i.workspace_id, name: i.workspace_id}))}
-                                placeholder={$t('menu.workspaces.placeholder')}
+                                placeholder={$t(i18n.menu.workspaces.placeholder)}
                             />
 
                             <MenuItem
@@ -136,7 +136,7 @@ export const Main = () => {
                                 href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/settings` : ''}
                                 icon="workspace"
                                 iconType="info"
-                                text={$t('menu.workspace.config')}
+                                text={$t(i18n.menu.workspace.config)}
                             />
                             <MenuItem
                                 active={$s.env.url.endsWith('/translations')}
@@ -145,7 +145,7 @@ export const Main = () => {
                                 href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/translations` : ''}
                                 icon="translate"
                                 iconType="info"
-                                text={$t('menu.workspace.translations')}
+                                text={$t(i18n.menu.workspace.translations)}
                             />
                         </MenuGroup>
                     }
@@ -173,7 +173,7 @@ export const Main = () => {
                             <div class="engines">
                                 {Object.values($s.enola.engines).filter((i) => i.active).map((engine) =>
                                     <div class="usage" key={engine.name}>
-                                        {$t('menu.usage', {engine: engine.name})}
+                                        {$t(i18n.menu.usage, {engine: engine.name})}
                                         <Progress
                                             boundaries={[engine.usage.count, engine.usage.limit]}
                                             loading={engine.usage.loading}

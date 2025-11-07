@@ -1,4 +1,4 @@
-import {$s} from '@/app'
+import {$s, i18n} from '@/app'
 import {notifier, ws} from '@garage44/common/app'
 import {FieldText, Icon} from '@garage44/common/components'
 import {$t} from '@garage44/common/app'
@@ -15,10 +15,10 @@ export function Translation({group, path}) {
                 path,
                 value: group,
             })
-            
+
             if (result?.success) {
                 notifier.notify({
-                    message: $t('translation.message.translated'),
+                    message: $t(i18n.translation.message.translated),
                     type: 'success',
                 })
             } else if (result?.error) {
@@ -52,14 +52,14 @@ export function Translation({group, path}) {
                         })
                     }}
                     size="s"
-                    tip={$t('translation.tip.translation_view')}
+                    tip={$t(i18n.translation.tip.translation_view)}
                     type={Object.keys(group.target).length === $s.workspace.config.languages.target.length ? 'success' : 'warning'}
                 />
                 <Icon
                     name="translate"
                     onClick={translate}
                     size="s"
-                    tip={$t('translation.tip.translate')}
+                    tip={$t(i18n.translation.tip.translate)}
                     type="info"
                 />
                 <Icon
@@ -68,7 +68,7 @@ export function Translation({group, path}) {
                         await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {path})
                     }}
                     size="s"
-                    tip={$t('translation.tip.remove')}
+                    tip={$t(i18n.translation.tip.remove)}
                     type="info"
                 />
             </div>
@@ -107,7 +107,7 @@ export function Translation({group, path}) {
                         group._collapsed = !group._collapsed
                     }
                 }}
-                placeholder={$t('translation.placeholder.translate')}
+                placeholder={$t(i18n.translation.placeholder.translate)}
             />
         </div>
         <TranslationResult group={group} />

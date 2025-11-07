@@ -1,4 +1,4 @@
-import {$s} from '@/app'
+import {$s, i18n} from '@/app'
 import {$t, api, notifier, store} from '@garage44/common/app'
 import {Button, FieldCheckbox, FieldSelect, FieldText} from '@garage44/common/components'
 import {createValidator, required} from '@garage44/common/lib/validation'
@@ -65,17 +65,17 @@ export default function TabWorkspaces() {
     return (
         <section class="c-settings-tab-workspaces tab-content active">
             <FieldSelect
-                help={$t('settings.help.source_language')}
-                label={$t('settings.label.source_language')}
+                help={$t(i18n.settings.help.source_language)}
+                label={$t(i18n.settings.label.source_language)}
                 model={$s.workspace.config.languages.$source}
                 options={$s.enola.languages.source}
-                placeholder={`${$t('settings.placeholder.source_language')}...`}
+                placeholder={`${$t(i18n.settings.placeholder.source_language)}...`}
                 validation={validation.value.source}
             />
 
             <div class="c-settings-tab-workspaces__languages field">
                 <div class="label">
-                    {$t('settings.label.target_languages')}
+                    {$t(i18n.settings.label.target_languages)}
                 </div>
                 <div class="options">
                     {state.target_languages.toSorted((a, b) => a.name.localeCompare(b.name)).map((language) => {
@@ -100,16 +100,16 @@ export default function TabWorkspaces() {
                                         id: engine.name,
                                         name: engine.name,
                                     }))}
-                                    placeholder={$t('settings.placeholder.translation')}
+                                    placeholder={$t(i18n.settings.placeholder.translation)}
                                 />
                             </div>
                             {language.formality_supported.includes(language.engine) && <div class="language-options">
                                 <FieldSelect
                                     disabled={!language.selected}
-                                    label={$t('settings.label.formality')}
+                                    label={$t(i18n.settings.label.formality)}
                                     model={language.$formality}
                                     options={state.formality}
-                                    placeholder={$t('settings.placeholder.formality')}
+                                    placeholder={$t(i18n.settings.placeholder.formality)}
                                 />
                             </div>}
                             <div class="validation">
@@ -120,29 +120,29 @@ export default function TabWorkspaces() {
                     })}
                 </div>
                 <div class="help">
-                    {$t('settings.help.target_languages')}
+                    {$t(i18n.settings.help.target_languages)}
                 </div>
             </div>
 
             <FieldCheckbox
-                help={$t('settings.help.sync_enabled')}
+                help={$t(i18n.settings.help.sync_enabled)}
                 model={$s.workspace.config.sync.$enabled}
-                label={$t('settings.label.sync_enabled')}
+                label={$t(i18n.settings.label.sync_enabled)}
             />
             <FieldText
                 disabled={!$s.workspace.config.sync.enabled}
-                help={$t('settings.help.sync_dir')}
-                label={$t('settings.label.sync_dir')}
+                help={$t(i18n.settings.help.sync_dir)}
+                label={$t(i18n.settings.label.sync_dir)}
                 model={$s.workspace.config.sync.$dir}
             />
             <FieldCheckbox
                 disabled={!$s.workspace.config.sync.enabled}
-                help={$t('settings.help.sync_suggestions')}
+                help={$t(i18n.settings.help.sync_suggestions)}
                 model={$s.workspace.config.sync.$suggestions}
-                label={$t('settings.label.sync_suggestions')}
+                label={$t(i18n.settings.label.sync_suggestions)}
             />
             <Button
-                label={$t('settings.label.update_settings')}
+                label={$t(i18n.settings.label.update_settings)}
                 onClick={async() => {
                     if (!isValid.value) {
                         notifier.notify({message: 'Please fix validation errors', type: 'error'})
@@ -163,7 +163,7 @@ export default function TabWorkspaces() {
                     await api.post(`/api/workspaces/${$s.workspace.config.workspace_id}`, {
                         workspace: $s.workspace,
                     })
-                    notifier.notify({message: $t('notifications.settings_updated'), type: 'info'})
+                    notifier.notify({message: $t(i18n.notifications.settings_updated), type: 'info'})
                 }}
                 disabled={!isValid.value}
                 tip={errors.value}

@@ -16,7 +16,7 @@ export const Login = () => {
                     icon: 'check_circle',
                     link: {text: '', url: ''},
                     list: [],
-                    message: $t('notifications.logged_in'),
+                    message: $t($s.workspace.i18n.notifications.logged_in),
                     type: 'info',
                 })
                 const config = await api.get('/api/config')
@@ -45,19 +45,19 @@ export const Login = () => {
                 icon: 'warning',
                 link: {text: '', url: ''},
                 list: [],
-                message: $t('notifications.logged_in_fail'),
+                message: $t($s.workspace.i18n.notifications.logged_in_fail),
                 type: 'warning',
             })
-            return $t('notifications.logged_in_fail')
+            return $t($s.workspace.i18n.notifications.logged_in_fail)
         } catch (_error) {
             notifier.notify({
                 icon: 'warning',
                 link: {text: '', url: ''},
                 list: [],
-                message: $t('notifications.logged_in_fail'),
+                message: $t($s.workspace.i18n.notifications.logged_in_fail),
                 type: 'warning',
             })
-            return $t('notifications.logged_in_fail')
+            return $t($s.workspace.i18n.notifications.logged_in_fail)
         }
     }
 

@@ -1,6 +1,7 @@
 import type {CommonState, TargetLanguage} from '@garage44/common/types'
 import type {DeepSignal} from 'deepsignal'
 import type {EnolaConfig} from '@garage44/enola/types'
+import workspace from '@/.expressio.json'
 
 type TranslationTarget = Record<string, string>
 
@@ -14,7 +15,11 @@ interface TranslationGroup {
     [key: string]: TranslationEntry | TranslationGroup
 }
 
-type I18n = Record<string, TranslationGroup>
+// Extract i18n type from JSON structure
+type I18nType = typeof workspace.i18n
+
+// Keep I18n as alias for backward compatibility
+type I18n = I18nType
 
 interface WorkspaceConfig {
     languages: {
@@ -41,7 +46,40 @@ interface WorkspaceDescription {
     workspace_id?: string
 }
 
-interface ExpressioStateBase extends CommonState {
+interface ExpressioStateBase {
+    env: {
+        ctrlKey: boolean
+        isFirefox: boolean
+        layout: 'desktop' | 'mobile' | 'tablet'
+        shiftKey: boolean
+        url: string
+    }
+    language_ui: {
+        i18n: Record<string, Record<string, string>>
+        options: any[]
+        selection: string
+    }
+    notifications: []
+    panels: {
+        context: {
+            collapsed: boolean
+            width?: number
+        }
+        menu: {
+            collapsed: boolean
+            width?: number
+        }
+    }
+    profile: {
+        admin: boolean
+        authenticated: boolean
+        avatar: string
+        displayName: string
+        id: string | null
+        password: string
+        username: string
+    }
+    theme: 'dark' | 'light' | 'system'
     enola: EnolaConfig
     filter: string
     sort: 'asc' | 'desc'
@@ -58,6 +96,7 @@ type ExpressioState = DeepSignal<ExpressioStateBase>
 export {
     ExpressioState,
     type I18n,
+    type I18nType,
     type TranslationEntry,
     type TranslationGroup,
     type TranslationTarget,
