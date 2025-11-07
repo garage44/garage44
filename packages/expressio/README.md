@@ -31,7 +31,123 @@ bun run dev
 
 Access the web UI at `http://localhost:3030` (default login: `admin/admin`).
 
+## Frontend Setup
+
+To use Expressio in your frontend project, install the package and set up type-safe translations.
+
+### Installation
+
+```bash
+bun add @garage44/expressio
+```
+
+### Setup
+
+1. **Initialize a workspace file** using the CLI:
+
+```bash
+bunx @garage44/expressio init
+```
+
+This creates a template `.expressio.json` file in `./src/.expressio.json` by default. You can customize the output path and options:
+
+```bash
+bunx @garage44/expressio init --output ./src/.expressio.json --workspace-id my-app --source-language eng-gbr
+```
+
+**Options:**
+- `--output, -o`: Output path for the workspace file (default: `./src/.expressio.json`)
+- `--workspace-id, -w`: Workspace identifier (default: `my-app`)
+- `--source-language, -s`: Source language code (default: `eng-gbr`)
+
+2. **Set up Expressio in your app**:
+
+```typescript
+import {createTypedI18n, i18nFormat} from '@garage44/expressio'
+import workspace from '@/.expressio.json'
+
+// Create typed i18n object for type-safe translation references
+const i18n = createTypedI18n(workspace)
+
+// Format translations in i18next format
+const translations = i18nFormat(workspace.i18n, workspace.config.languages.target)
+
+export {i18n}
+```
+
+3. **Enable JSON module resolution** in `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "resolveJsonModule": true
+  }
+}
+```
+
+**Note:** Expressio currently only supports the deepSignal store from `@garage44/common/app`.
+Support for other state management solutions is welcome via pull requests.
+
+### Usage in Components
+
+Import `$t` from `@garage44/expressio` and `i18n` from your app entry point. Use object references instead of magic strings:
+
+```typescript
+import {$t} from '@garage44/expressio'
+import {i18n} from '@/app'
+
+export const WelcomeComponent = () => {
+  return (
+    <div>
+      <h1>{$t(i18n.welcome)}</h1>
+      <button>{$t(i18n.menu.settings)}</button>
+    </div>
+  )
+}
+```
+
+**Benefits:**
+- ✅ Type-safe: TypeScript will catch typos and missing translations
+- ✅ Autocomplete: Your IDE will suggest available translation keys
+- ✅ Refactoring: Rename keys safely with IDE support
+- ✅ AI-friendly: AI tools can easily scan for missing translations
+
+### Translation with Context
+
+You can pass context for interpolation:
+
+```typescript
+// In your workspace JSON:
+{
+  "i18n": {
+    "greeting": {
+      "source": "Hello, {{name}}!",
+      "target": {
+        "fra": "Bonjour, {{name}} !"
+      }
+    }
+  }
+}
+
+// In your component:
+$t(i18n.greeting, {name: 'John'})  // "Hello, John!"
+```
+
 ## CLI Commands
+
+### Initialize workspace
+
+Create a new `.expressio.json` workspace file template:
+
+```bash
+bunx @garage44/expressio init
+bunx @garage44/expressio init --output ./src/.expressio.json --workspace-id my-app
+```
+
+**Options:**
+- `--output, -o`: Output path for the workspace file (default: `./src/.expressio.json`)
+- `--workspace-id, -w`: Workspace identifier (default: `my-app`)
+- `--source-language, -s`: Source language code (default: `eng-gbr`)
 
 ### Import translations
 

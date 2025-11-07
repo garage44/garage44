@@ -55,6 +55,91 @@ if (BUN_ENV === 'development') {
 
 void cli.usage('Usage: $0 [task]')
     .detectLocale(false)
+    .command('init', 'Initialize a new .expressio.json workspace file', (yargs) =>
+        yargs
+            .option('output', {
+                alias: 'o',
+                default: './src/.expressio.json',
+                describe: 'Output path for the workspace file',
+                type: 'string',
+            })
+            .option('workspace-id', {
+                alias: 'w',
+                default: 'my-app',
+                describe: 'Workspace identifier',
+                type: 'string',
+            })
+            .option('source-language', {
+                alias: 's',
+                default: 'eng-gbr',
+                describe: 'Source language code',
+                type: 'string',
+            })
+    , async(argv) => {
+        const outputPath = path.resolve(argv.output)
+
+        if (await fs.pathExists(outputPath)) {
+            logger.error(`File already exists: ${outputPath}`)
+            logger.info('Use a different output path or remove the existing file')
+            process.exit(1)
+        }
+
+        // Create directory if it doesn't exist
+        const outputDir = path.dirname(outputPath)
+        await fs.ensureDir(outputDir)
+
+        // Create template workspace file
+        const template = {
+            config: {
+                languages: {
+                    source: argv.sourceLanguage,
+                    target: [
+                        {
+                            engine: 'deepl',
+                            formality: 'informal',
+                            id: 'deu',
+                        },
+                        {
+                            engine: 'deepl',
+                            formality: 'informal',
+                            id: 'fra',
+                        },
+                    ],
+                },
+                source_file: null,
+                sync: {
+                    dir: '**/*.{ts,tsx}',
+                    enabled: false,
+                    suggestions: false,
+                },
+                workspace_id: argv.workspaceId,
+            },
+            i18n: {
+                menu: {
+                    settings: {
+                        source: 'Settings',
+                        target: {
+                            deu: '',
+                            fra: '',
+                        },
+                    },
+                },
+                welcome: {
+                    source: 'Welcome',
+                    target: {
+                        deu: '',
+                        fra: '',
+                    },
+                },
+            },
+        }
+
+        await fs.writeFile(outputPath, JSON.stringify(template, null, 2) + '\n', 'utf8')
+        logger.info(`Created workspace file: ${outputPath}`)
+        logger.info(`Workspace ID: ${argv.workspaceId}`)
+        logger.info(`Source language: ${argv.sourceLanguage}`)
+        logger.info('Edit the file to add your translations and configure target languages')
+    })
     .command('import', 'Import source translations from i18next file', (yargs) =>
         yargs
             .option('workspace', {
@@ -192,7 +277,7 @@ void cli.usage('Usage: $0 [task]')
                 const needsTranslation = argv.force ||
                     !ref.cache ||
                     ref.cache !== hash(ref.source) ||
-                    workspace.config.languages.target.some(lang => !ref.target[lang.id])
+                    workspace.config.languages.target.some((lang) => !ref.target[lang.id])
 
                 if (needsTranslation) {
                     tagsToTranslate.push(refPath)
@@ -248,7 +333,7 @@ void cli.usage('Usage: $0 [task]')
         }
 
         // Initialize language stats
-        workspace.config.languages.target.forEach(lang => {
+        workspace.config.languages.target.forEach((lang) => {
             stats.translated[lang.id] = 0
             stats.untranslated[lang.id] = 0
         })
@@ -272,7 +357,7 @@ void cli.usage('Usage: $0 [task]')
                     }
 
                     // Check translation status per language
-                    workspace.config.languages.target.forEach(lang => {
+                    workspace.config.languages.target.forEach((lang) => {
                         if (ref.target[lang.id] && ref.target[lang.id] !== id) {
                             stats.translated[lang.id]++
                         } else {
@@ -314,7 +399,7 @@ void cli.usage('Usage: $0 [task]')
 
         // oxlint-disable-next-line no-console
         console.log(pc.bold('\nTranslation Progress:'))
-        workspace.config.languages.target.forEach(lang => {
+        workspace.config.languages.target.forEach((lang) => {
             const total = stats.translated[lang.id] + stats.untranslated[lang.id]
             const percentage = total > 0 ? Math.round((stats.translated[lang.id] / total) * 100) : 0
             const bar = '█'.repeat(Math.floor(percentage / 2)) + '░'.repeat(50 - Math.floor(percentage / 2))
@@ -375,7 +460,7 @@ void cli.usage('Usage: $0 [task]')
         await fs.mkdirp(outputDir)
 
         const languagesToExport = argv.language
-            ? workspace.config.languages.target.filter(lang => lang.id === argv.language)
+            ? workspace.config.languages.target.filter((lang) => lang.id === argv.language)
             : workspace.config.languages.target
 
         if (argv.language && languagesToExport.length === 0) {
