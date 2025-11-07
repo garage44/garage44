@@ -1,0 +1,19 @@
+[Unit]
+Description=Expressio i18n service
+After=network.target
+
+[Service]
+Type=simple
+User=garage44
+Group=garage44
+WorkingDirectory=/home/garage44/garage44/packages/expressio
+Environment="NODE_ENV=production"
+Environment="BUN_ENV=development"
+ExecStart=/usr/bin/bun run dev -- --port 3030
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

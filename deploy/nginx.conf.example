@@ -1,0 +1,88 @@
+# Nginx configuration for Garage44 services
+# Place this in /etc/nginx/sites-available/garage44
+# Then symlink to /etc/nginx/sites-enabled/garage44
+
+# Expressio service - expressio.garage44.org
+server {
+    listen 80;
+    server_name expressio.garage44.org;
+
+    location / {
+        proxy_pass http://127.0.0.1:3030;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# Pyrite service - pyrite.garage44.org
+server {
+    listen 80;
+    server_name pyrite.garage44.org;
+
+    location / {
+        proxy_pass http://127.0.0.1:3031;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# Styleguide service - styleguide.garage44.org
+server {
+    listen 80;
+    server_name styleguide.garage44.org;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# Webhook endpoint - can be on any subdomain or main domain
+# Restrict by IP if needed (GitHub Actions IP ranges)
+server {
+    listen 80;
+    server_name garage44.org www.garage44.org;
+
+    # Webhook endpoint
+    location /webhook {
+        # Optional: Restrict to GitHub Actions IP ranges
+        # allow 140.82.112.0/20;
+        # allow 143.55.64.0/20;
+        # allow 185.199.108.0/22;
+        # allow 192.30.252.0/22;
+        # deny all;
+
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Increase timeouts for deployment
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # Optional: Add other routes for main domain
+    # location / {
+    #     return 301 https://expressio.garage44.org$request_uri;
+    # }
+}
