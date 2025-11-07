@@ -1,0 +1,5 @@
+.c-settings-tab-users-misc {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-2);
+}

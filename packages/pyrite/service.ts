@@ -34,7 +34,13 @@ const cli = yargs(hideBin(process.argv))
 cli.scriptName('pyrite')
 
 if (BUN_ENV === 'development') {
-    bunchyConfig = setupBunchyConfig(runtime.service_dir, 'P', runtime.version)
+    bunchyConfig = setupBunchyConfig({
+        logPrefix: 'P',
+        reloadIgnore: [],
+        separateAssets: ['manifest.json', 'sw-loader.js', 'sw.js'],
+        serviceDir: runtime.service_dir,
+        version: runtime.version,
+    })
 
     bunchyArgs(cli, bunchyConfig)
 }

@@ -1,5 +1,5 @@
 import {$s} from '@/app'
-import {events, notifier, ws} from '@garage44/common/app'
+import {api, events, notifier, ws} from '@garage44/common/app'
 import {logger} from '@garage44/common/lib/logger'
 
 export function _events() {
@@ -144,30 +144,98 @@ const loadingChannels = new Set<string | number>()
  */
 export async function loadGlobalUsers() {
     try {
-        if (!$s.channels.length) return
-
         // Initialize global users map if needed
         if (!$s.chat.users) {
             $s.chat.users = {}
         }
 
-        // Load members from all channels
-        for (const channel of $s.channels) {
-            const membersResponse = await ws.get(`/channels/${channel.slug}/members`)
-            if (membersResponse && membersResponse.success && membersResponse.members) {
-                for (const member of membersResponse.members) {
-                    // Store user globally: userId -> {username, avatar}
-                    if (!$s.chat.users[member.user_id]) {
-                        $s.chat.users[member.user_id] = {
-                            username: member.username,
-                            avatar: member.avatar,
+        // Load all users from the API to ensure everyone is visible
+        try {
+            const allUsers = await api.get('/api/users')
+            if (Array.isArray(allUsers)) {
+                for (const user of allUsers) {
+                    if (user.id) {
+                        // Normalize user ID to string to prevent duplicates
+                        const userId = String(user.id)
+                        // Store user globally: userId -> {username, avatar}
+                        // Use normalized user ID as key to prevent duplicates
+                        $s.chat.users[userId] = {
+                            username: user.username || 'User',
+                            avatar: user.profile?.avatar || '',
                         }
                     }
-                    // Update if exists (in case avatar changed)
-                    else {
-                        $s.chat.users[member.user_id].avatar = member.avatar
-                        $s.chat.users[member.user_id].username = member.username
+                }
+            }
+        } catch (error) {
+            logger.warn('[Chat] Error loading all users from API:', error)
+        }
+
+        // Ensure current user is included (in case API didn't return it)
+        if ($s.profile.id) {
+            const currentUserId = String($s.profile.id)
+            if (!$s.chat.users[currentUserId]) {
+                $s.chat.users[currentUserId] = {
+                    username: $s.profile.username || 'User',
+                    avatar: $s.profile.avatar || '',
+                }
+            }
+        }
+
+        // Load presence status for all users
+        try {
+            const presenceResponse = await ws.get('/api/presence/users')
+            if (presenceResponse && presenceResponse.users) {
+                for (const [userId, status] of Object.entries(presenceResponse.users)) {
+                    const normalizedUserId = String(userId)
+                    if ($s.chat.users[normalizedUserId]) {
+                        $s.chat.users[normalizedUserId].status = status as 'online' | 'offline' | 'busy'
                     }
+                }
+            }
+        } catch (error) {
+            logger.warn('[Chat] Error loading presence status:', error)
+        }
+
+        // Also load members from all channels to get real-time presence and update avatars
+        if ($s.channels.length) {
+            for (const channel of $s.channels) {
+                const membersResponse = await ws.get(`/channels/${channel.slug}/members`)
+                if (membersResponse && membersResponse.success && membersResponse.members) {
+                    for (const member of membersResponse.members) {
+                        // Update existing user or create if doesn't exist
+                        if (member.user_id) {
+                            // Normalize user ID to string to prevent duplicates
+                            const userId = String(member.user_id)
+                            if (!$s.chat.users[userId]) {
+                                $s.chat.users[userId] = {
+                                    username: member.username,
+                                    avatar: member.avatar,
+                                    status: 'online', // Users in channels are online
+                                }
+                            } else {
+                                // Update avatar/username if changed
+                                if (member.avatar) {
+                                    $s.chat.users[userId].avatar = member.avatar
+                                }
+                                if (member.username) {
+                                    $s.chat.users[userId].username = member.username
+                                }
+                                // Mark as online if in channel
+                                if (!$s.chat.users[userId].status) {
+                                    $s.chat.users[userId].status = 'online'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Set offline status for users not in presence
+        if ($s.chat.users) {
+            for (const userId of Object.keys($s.chat.users)) {
+                if (!$s.chat.users[userId].status) {
+                    $s.chat.users[userId].status = 'offline'
                 }
             }
         }

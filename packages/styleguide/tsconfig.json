@@ -1,29 +1,25 @@
 {
-  "extends": "../common/tsconfig.json",
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "preact",
-    "module": "ESNext",
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@garage44/common/*": ["../common/*"]
-    }
-  },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx"
-  ]
+      "allowImportingTsExtensions": true,
+      "baseUrl": "./",
+      "esModuleInterop": true,
+      "lib": [
+          "DOM",
+          "DOM.Iterable",
+          "ES2023"
+      ],
+      "jsx": "react-jsx",
+      "jsxImportSource": "preact",
+      "module": "ES2022",
+      "moduleResolution": "bundler",
+      "noEmit": true,
+      "paths": {
+          "@/*": ["./src/*"],
+          "@garage44/common/*": ["../common/*"]
+      },
+      "skipLibCheck": true,
+      "sourceMap": true,
+      "target": "ES2023",
+      "types": ["bun", "node"]
+  }
 }

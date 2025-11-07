@@ -1,6 +1,5 @@
 import {$s} from '@/app'
-import {AppLayout, Icon, PanelMenu, ThemeToggle} from '@garage44/common/components'
-import {Link} from 'preact-router/match'
+import {AppLayout, MenuItem, PanelMenu, Submenu, ThemeToggle} from '@garage44/common/components'
 import {Router} from 'preact-router'
 import {useState, useEffect} from 'preact/hooks'
 import {Components} from './pages/components'
@@ -42,7 +41,7 @@ export const Main = () => {
         const id = componentName.toLowerCase().replaceAll(/\s+/g, '-')
         const element = document.querySelector(`#${id}`)
         if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            element.scrollIntoView({behavior: 'smooth', block: 'start'})
             setActiveComponent(id)
         }
     }
@@ -51,19 +50,25 @@ export const Main = () => {
     useEffect(() => {
         if (!isComponentsRoute) return
 
+        const viewElement = document.querySelector('.view')
+        if (!viewElement) return
+
         const handleScroll = () => {
-            const sections = components.map(name => {
+            const sections = components.map((name) => {
                 const id = name.toLowerCase().replaceAll(/\s+/g, '-')
                 const element = document.querySelector(`#${id}`)
-                return { id, element }
-            }).filter(s => s.element)
+                return {element, id}
+            }).filter((s) => s.element)
 
             // Find the section currently in view
-            const viewportMiddle = window.scrollY + window.innerHeight / 3
+            const scrollTop = viewElement.scrollTop
+            const viewportHeight = viewElement.clientHeight
+            const viewportMiddle = scrollTop + viewportHeight / 3
 
             for (const section of sections) {
                 const rect = section.element!.getBoundingClientRect()
-                const top = rect.top + window.scrollY
+                const containerRect = viewElement.getBoundingClientRect()
+                const top = rect.top - containerRect.top + scrollTop
                 const bottom = top + rect.height
 
                 if (viewportMiddle >= top && viewportMiddle < bottom) {
@@ -73,64 +78,65 @@ export const Main = () => {
             }
         }
 
-        window.addEventListener('scroll', handleScroll, { passive: true })
+        viewElement.addEventListener('scroll', handleScroll, {passive: true})
         handleScroll() // Initial check
 
-        return () => window.removeEventListener('scroll', handleScroll)
+        return () => viewElement.removeEventListener('scroll', handleScroll)
     }, [isComponentsRoute])
 
     return (
         <AppLayout
             menu={
                 <PanelMenu
-                    collapsed={$s.panel.collapsed}
+                    collapsed={$s.panels.menu.collapsed}
                     onCollapseChange={(collapsed) => {
-                        $s.panel.collapsed = collapsed
+                        $s.panels.menu.collapsed = collapsed
                     }}
                     logoSrc="/img/logo.png"
                     logoText="Common"
                     navigation={
                         <>
-                            <Link
-                                activeClassName="active"
+                            <MenuItem
+                                active={$s.currentRoute === '/tokens'}
+                                collapsed={$s.panels.menu.collapsed}
                                 href="/tokens"
+                                icon="settings"
+                                iconType="info"
                                 onClick={() => $s.currentRoute = '/tokens'}
-                            >
-                                <Icon name="palette" type="info"/>
-                                <span>Design Tokens</span>
-                            </Link>
-                            <Link
-                                activeClassName="active"
+                                text="Design Tokens"
+                            />
+                            <MenuItem
+                                active={$s.currentRoute === '/components' || $s.currentRoute === '/'}
+                                collapsed={$s.panels.menu.collapsed}
                                 href="/components"
+                                icon="dashboard"
+                                iconType="info"
                                 onClick={() => $s.currentRoute = '/components'}
-                            >
-                                <Icon name="extension" type="info"/>
-                                <span>Components</span>
-                            </Link>
+                                text="Components"
+                            />
                             {isComponentsRoute && (
-                                <div class="submenu">
-                                    {components.map(componentName => {
+                                <Submenu
+                                    collapsed={$s.panels.menu.collapsed}
+                                    items={components.map((componentName) => {
                                         const id = componentName.toLowerCase().replaceAll(/\s+/g, '-')
-                                        return (
-                                            <button
-                                                key={id}
-                                                class={`submenu-item ${activeComponent === id ? 'active' : ''}`}
-                                                onClick={() => scrollToComponent(componentName)}
-                                            >
-                                                {componentName}
-                                            </button>
-                                        )
+                                        return {
+                                            active: activeComponent === id,
+                                            id,
+                                            label: componentName,
+                                            onClick: () => scrollToComponent(componentName),
+                                        }
                                     })}
-                                </div>
+                                />
                             )}
-                            <Link
-                                activeClassName="active"
+                            <MenuItem
+                                active={$s.currentRoute === '/forms'}
+                                collapsed={$s.panels.menu.collapsed}
                                 href="/forms"
+                                icon="message"
+                                iconType="info"
                                 onClick={() => $s.currentRoute = '/forms'}
-                            >
-                                <Icon name="description" type="info"/>
-                                <span>Forms</span>
-                            </Link>
+                                text="Forms"
+                            />
                         </>
                     }
                     actions={

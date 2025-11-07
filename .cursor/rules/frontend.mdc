@@ -18,7 +18,7 @@ Frontend development guidelines for the Expressio AI-powered i18n tooling projec
 ## Tech Stack
 
 - **Framework**: Preact with JSX (`jsx: "react-jsx"`, `jsxImportSource: "preact"`)
-- **Styling**: CSS with modern nesting - NO inline styles, NO BEM
+- **Styling**: CSS with modern nesting - NO inline styles, **NO BEM (Block Element Modifier) naming convention**
 - **State**: DeepSignal (Proxy-based reactive objects) - NOT useState
 - **Icons**: Icon component from common library - NOT direct SVG/font icons
 - **Real-time**: WebSocket client for live updates
@@ -33,7 +33,7 @@ Frontend development guidelines for the Expressio AI-powered i18n tooling projec
 - Root element uses `.c-{component-name}` convention (e.g., `.c-button`, `.c-card`)
 - Products import components (not utility classes)
 - Custom styling in products = missing reusable component that should be extracted
-- Use modern CSS nesting (no BEM)
+- Use modern CSS nesting - **NEVER use BEM naming convention (no double underscores `__` or double dashes `--` for modifiers)**
 - Components bring their own styling automatically
 
 **Example Structure:**
@@ -282,6 +282,33 @@ class Store {
 ```
 
 ## CSS Guidelines
+
+### NO BEM Naming Convention
+
+**❌ NEVER use BEM (Block Element Modifier) naming:**
+- No double underscores `__` for elements (e.g., `.c-button__icon`)
+- No double dashes `--` for modifiers (e.g., `.c-button--disabled`)
+- No BEM-style class names anywhere in the codebase
+
+**✅ ALWAYS use modern CSS nesting instead:**
+```css
+/* ✅ Correct: Use nesting */
+.c-button {
+    display: flex;
+
+    .icon {
+        width: 16px;
+    }
+
+    &.disabled {
+        opacity: 0.5;
+    }
+}
+
+/* ❌ Wrong: BEM naming */
+.c-button__icon { }
+.c-button--disabled { }
+```
 
 ### Use Existing Variables
 ```css

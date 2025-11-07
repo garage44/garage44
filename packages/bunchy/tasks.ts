@@ -148,20 +148,17 @@ tasks.assets = new Task('assets', async function taskAssets() {
             from: path.join(settings.dir.assets, 'img'),
             to: path.join(settings.dir.public, 'img'),
         },
-        {
-            from: path.join(settings.dir.assets, 'manifest.json'),
-            to: path.join(settings.dir.public, 'manifest.json'),
-        },
-        {
-            from: path.join(settings.dir.assets, 'sw-loader.js'),
-            to: path.join(settings.dir.public, 'sw-loader.js'),
-        },
-        {
-            from: path.join(settings.dir.assets, 'sw.js'),
-            to: path.join(settings.dir.public, 'sw.js'),
-        },
     ]
 
+    // Handle separate assets config if provided (e.g., service worker files)
+    if (settings.separateAssets) {
+        for (const assetFile of settings.separateAssets) {
+            copyOperations.push({
+                from: path.join(settings.dir.assets, assetFile),
+                to: path.join(settings.dir.public, assetFile),
+            })
+        }
+    }
 
     // Execute copy operations, skipping if source doesn't exist
     for (const operation of copyOperations) {
@@ -177,6 +174,7 @@ tasks.assets = new Task('assets', async function taskAssets() {
         }
     }
 })
+
 
 
 tasks.build = new Task('build', async function taskBuild({minify = false, sourcemap = false} = {}) {

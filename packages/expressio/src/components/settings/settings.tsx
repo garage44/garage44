@@ -1,0 +1,71 @@
+import {useMemo} from 'preact/hooks'
+import {getCurrentUrl} from 'preact-router'
+import {$s} from '@/app'
+import {$t, store, notifier} from '@garage44/common/app'
+import {Settings as CommonSettings} from '@garage44/common/components/ui/settings/settings'
+import {Profile} from '@garage44/common/components/ui/settings/tabs/profile'
+import {UsersManagement} from '@garage44/common/components'
+import TabWorkspaces from './tabs/workspaces'
+
+interface SettingsProps {
+    tabId?: string
+}
+
+const getRoute = (tabId: string) => {
+    return `/settings?tab=${tabId}`
+}
+
+export function Settings({tabId}: SettingsProps) {
+    // Extract tab from query params if not provided as prop
+    const activeTabId = useMemo(() => {
+        if (tabId) return tabId
+        const url = getCurrentUrl()
+        const match = url.match(/[?&]tab=([^&]+)/)
+        return match ? match[1] : undefined
+    }, [tabId])
+    const saveSettings = async () => {
+        store.save()
+        notifier.notify({icon: 'Settings', message: $t('ui.settings.action.saved'), type: 'info'})
+    }
+
+    // Determine if user settings should be shown (admin only)
+    const showUserSettings = $s.user?.admin
+
+    const tabs = [
+        {
+            component: <Profile />,
+            icon: 'Settings',
+            id: 'profile',
+            label: $t('ui.settings.profile.name'),
+            tip: $t('ui.settings.profile.name'),
+        },
+        ...(showUserSettings ? [
+            {
+                component: <UsersManagement $t={$t} />,
+                icon: 'account',
+                id: 'users',
+                label: $t('ui.settings.users.name'),
+                tip: $t('ui.settings.users.name'),
+            },
+        ] : []),
+        {
+            component: <TabWorkspaces />,
+            icon: 'Workspace',
+            id: 'workspaces',
+            label: $t('ui.settings.workspaces.name'),
+            tip: $t('ui.settings.workspaces.name'),
+        },
+    ]
+
+    return (
+        <CommonSettings
+            title={$t('ui.settings.name')}
+            icon="settings"
+            tabs={tabs}
+            activeTabId={activeTabId}
+            defaultTab="profile"
+            getRoute={getRoute}
+            onSave={saveSettings}
+        />
+    )
+}

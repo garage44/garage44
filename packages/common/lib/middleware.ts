@@ -48,6 +48,58 @@ const sessionMiddleware = (request: Request, sessionCookieName: string) => {
     return {session: sessions.get(sessionId), sessionId}
 }
 
+// Helper to populate session with user when GARAGE44_NO_SECURITY is enabled
+// Supports per-session override via GARAGE44_DEBUG_USER cookie or query parameter
+const populateNoSecuritySession = async (session: unknown, userManager: UserManager, request?: Request): Promise<void> => {
+    const noSecurityValue = process.env.GARAGE44_NO_SECURITY
+    if (!noSecurityValue) return
+
+    // Check for per-session override via cookie or query parameter
+    let targetUsername: string | null = null
+
+    if (request) {
+        // Check cookie first (persists across requests)
+        const cookies = parseCookies(request)
+        if (cookies.GARAGE44_DEBUG_USER) {
+            targetUsername = cookies.GARAGE44_DEBUG_USER
+        }
+
+        // Check query parameter (for initial setup)
+        if (!targetUsername) {
+            const url = new URL(request.url)
+            const debugUser = url.searchParams.get('debug_user')
+            if (debugUser) {
+                targetUsername = debugUser
+            }
+        }
+    }
+
+    // If no per-session override, use environment variable
+    if (!targetUsername) {
+        // If GARAGE44_NO_SECURITY is set to a username (not '1' or 'true'), try to log in as that user
+        if (noSecurityValue !== '1' && noSecurityValue.toLowerCase() !== 'true') {
+            targetUsername = noSecurityValue
+        }
+    }
+
+    // Try to find the target user
+    if (targetUsername) {
+        const user = await userManager.getUserByUsername(targetUsername)
+        if (user) {
+            (session as {userid?: string}).userid = user.username
+            return
+        }
+        // If username not found, fall through to find admin user
+    }
+
+    // Default behavior: find the first admin user
+    const users = await userManager.listUsers()
+    const adminUser = users.find((user) => user.permissions?.admin)
+    if (adminUser) {
+        (session as {userid?: string}).userid = adminUser.username
+    }
+}
+
 // Auth middleware for Bun.serve
 const authMiddleware = async (request: Request, session: unknown, userManager: UserManager) => {
     const url = new URL(request.url)
@@ -70,12 +122,7 @@ const authMiddleware = async (request: Request, session: unknown, userManager: U
     }
 
     if (process.env.GARAGE44_NO_SECURITY) {
-        // Find the first admin user and set their userid in the session
-        const users = await userManager.listUsers()
-        const adminUser = users.find((user) => user.permissions?.admin)
-        if (adminUser) {
-            (session as {userid: string}).userid = adminUser.username
-        }
+        await populateNoSecuritySession(session, userManager, request)
         return true
     }
 
@@ -121,13 +168,9 @@ export const createMiddleware = (config: MiddlewareConfig, userManager: UserMana
                     // Get session before upgrade so it's available in WebSocket handlers
                     const {session} = sessionMiddleware(request, config.sessionCookieName)
 
-                    // Populate session with admin user if GARAGE44_NO_SECURITY is enabled
+                    // Populate session with user if GARAGE44_NO_SECURITY is enabled
                     if (process.env.GARAGE44_NO_SECURITY && !(session as {userid?: string}).userid) {
-                        const users = await userManager.listUsers()
-                        const adminUser = users.find((user) => user.permissions?.admin)
-                        if (adminUser) {
-                            (session as {userid: string}).userid = adminUser.username
-                        }
+                        await populateNoSecuritySession(session, userManager, request)
                     }
 
                     const success = (server as {upgrade: (req: Request, data: unknown) => boolean}).upgrade(request, {
@@ -208,16 +251,26 @@ export const createFinalHandler = (config: {
         // Get session early and populate it if needed (before unified middleware)
         let {session, sessionId} = unifiedMiddleware.sessionMiddleware(request)
 
-        // Populate session with admin user if GARAGE44_NO_SECURITY is enabled
+        // Populate session with user if GARAGE44_NO_SECURITY is enabled
         if (process.env.GARAGE44_NO_SECURITY && !(session as {userid?: string}).userid) {
-            const users = await config.userManager.listUsers()
-            const adminUser = users.find((user) => user.permissions?.admin)
-            if (adminUser) {
-                (session as {userid: string}).userid = adminUser.username
-                // Session is stored in Map, modifying it in place persists automatically
-                // But ensure it's set back in case of reference issues
-                sessions.set(sessionId, session)
-                config.logger.debug(`[Middleware] Populated session ${sessionId} with userid: ${adminUser.username}`)
+            await populateNoSecuritySession(session, config.userManager, request)
+            // Session is stored in Map, modifying it in place persists automatically
+            // But ensure it's set back in case of reference issues
+            sessions.set(sessionId, session)
+            const userId = (session as {userid?: string}).userid
+            if (userId) {
+                config.logger.debug(`[Middleware] Populated session ${sessionId} with userid: ${userId}`)
+            }
+
+            // Set cookie if query parameter was used (for persistence)
+            const url = new URL(request.url)
+            const debugUser = url.searchParams.get('debug_user')
+            if (debugUser) {
+                // Return a response that sets the cookie and redirects
+                const response = new Response(null, {status: 302})
+                response.headers.set('Location', url.pathname + url.search.replace(/[?&]debug_user=[^&]*/, '').replace(/^&/, '?'))
+                response.headers.set('Set-Cookie', `GARAGE44_DEBUG_USER=${debugUser}; Path=/; SameSite=Strict; Max-Age=86400`)
+                return response
             }
         }
 
@@ -231,14 +284,13 @@ export const createFinalHandler = (config: {
         // Re-get session after unified middleware to ensure we have the latest version
         const {session: finalSession, sessionId: finalSessionId} = unifiedMiddleware.sessionMiddleware(request)
 
-        // Populate session with admin user if GARAGE44_NO_SECURITY is enabled (again, in case unified middleware created a new session)
+        // Populate session with user if GARAGE44_NO_SECURITY is enabled (again, in case unified middleware created a new session)
         if (process.env.GARAGE44_NO_SECURITY && !(finalSession as {userid?: string}).userid) {
-            const users = await config.userManager.listUsers()
-            const adminUser = users.find((user) => user.permissions?.admin)
-            if (adminUser) {
-                (finalSession as {userid: string}).userid = adminUser.username
-                sessions.set(finalSessionId, finalSession)
-                config.logger.debug(`[Middleware] Re-populated session ${finalSessionId} with userid: ${adminUser.username}`)
+            await populateNoSecuritySession(finalSession, config.userManager, request)
+            sessions.set(finalSessionId, finalSession)
+            const userId = (finalSession as {userid?: string}).userid
+            if (userId) {
+                config.logger.debug(`[Middleware] Re-populated session ${finalSessionId} with userid: ${userId}`)
             }
         }
 
@@ -248,19 +300,51 @@ export const createFinalHandler = (config: {
 
             if (process.env.GARAGE44_NO_SECURITY) {
                 const baseContext = await Promise.resolve(config.contextFunctions.adminContext())
-                // Get user profile for admin
-                const users = await config.userManager.listUsers()
-                const adminUser = users.find((user) => user.permissions?.admin)
-                if (adminUser) {
+                // Get user profile for the user specified in GARAGE44_NO_SECURITY, cookie, query param, or admin
+                const noSecurityValue = process.env.GARAGE44_NO_SECURITY
+                let targetUser = null
+                let targetUsername: string | null = null
+
+                // Check for per-session override via cookie or query parameter
+                const cookies = parseCookies(request)
+                if (cookies.GARAGE44_DEBUG_USER) {
+                    targetUsername = cookies.GARAGE44_DEBUG_USER
+                }
+
+                if (!targetUsername) {
+                    const url = new URL(request.url)
+                    const debugUser = url.searchParams.get('debug_user')
+                    if (debugUser) {
+                        targetUsername = debugUser
+                    }
+                }
+
+                // If no per-session override, use environment variable
+                if (!targetUsername && noSecurityValue !== '1' && noSecurityValue.toLowerCase() !== 'true') {
+                    targetUsername = noSecurityValue
+                }
+
+                // Try to find the target user
+                if (targetUsername) {
+                    targetUser = await config.userManager.getUserByUsername(targetUsername)
+                }
+
+                // If username not found or not specified, find first admin user
+                if (!targetUser) {
+                    const users = await config.userManager.listUsers()
+                    targetUser = users.find((user) => user.permissions?.admin)
+                }
+
+                if (targetUser) {
                     context = {
                         ...baseContext,
-                        id: adminUser.id,
-                        password: adminUser.password.key, // Include password for SFU auth (will encrypt later)
+                        id: targetUser.id,
+                        password: targetUser.password.key, // Include password for SFU auth (will encrypt later)
                         profile: {
-                            avatar: adminUser.profile.avatar || 'placeholder-1.png',
-                            displayName: adminUser.profile.displayName || adminUser.username,
+                            avatar: targetUser.profile.avatar || 'placeholder-1.png',
+                            displayName: targetUser.profile.displayName || targetUser.username,
                         },
-                        username: adminUser.username,
+                        username: targetUser.username,
                     }
                 } else {
                     context = baseContext

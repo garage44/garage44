@@ -27,7 +27,7 @@ export interface ButtonProps {
     size?: 's' | 'm' | 'l'
     tip?: string
     type?: 'default' | 'success' | 'info' | 'warning' | 'danger'
-    variant?: 'default' | 'toggle' | 'menu' | 'unset'
+    variant?: 'default' | 'toggle' | 'menu' | 'unset' | 'context'
 }
 
 // Helper function to get DOM element from Preact ref

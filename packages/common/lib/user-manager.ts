@@ -209,8 +209,8 @@ export class UserManager {
         const updatedUser = {
             ...user,
             ...safeUpdates,
-            profile: mergedProfile,
             id: user.id, // Always use the original user ID - never allow ID changes
+            profile: mergedProfile,
             updatedAt: new Date().toISOString(),
         }
 
@@ -225,7 +225,7 @@ export class UserManager {
 
         console.log(`[UserManager] updateUser: Updating user ${userId}`)
         console.log(`[UserManager] updateUser: Avatar value: ${avatarValue}`)
-        console.log(`[UserManager] updateUser: Profile object:`, JSON.stringify(updatedUser.profile))
+        console.log('[UserManager] updateUser: Profile object:', JSON.stringify(updatedUser.profile))
         console.log(`[UserManager] updateUser: WHERE id = ${userId}`)
 
         const result = stmt.run(
@@ -244,10 +244,10 @@ export class UserManager {
             console.warn(`[UserManager] updateUser: No rows updated for userId ${userId}`)
             // Check if the user exists
             const checkUser = this.db.prepare('SELECT id FROM users WHERE id = ?').get(userId)
-            if (!checkUser) {
-                console.error(`[UserManager] updateUser: User ${userId} does not exist in database`)
+            if (checkUser) {
+                console.warn('[UserManager] updateUser: User exists but UPDATE affected 0 rows')
             } else {
-                console.warn(`[UserManager] updateUser: User exists but UPDATE affected 0 rows`)
+                console.error(`[UserManager] updateUser: User ${userId} does not exist in database`)
             }
             return null
         }

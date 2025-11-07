@@ -203,7 +203,7 @@ export async function loadGroups(publicEndpoint = false) {
     const glob = new Glob('**/*.json')
     const files = Array.from(glob.scanSync(groupsPath)).map((f) => path.join(groupsPath, f))
     const groupNames = files.map((i) => {
-        return i.substring(groupsPath.length+1, i.length-5)
+        return i.slice(groupsPath.length+1, i.length-5)
     })
     const fileData = await Promise.all(groupNames.map((i) => loadGroup(i)))
 
@@ -301,11 +301,11 @@ export async function saveGroup(groupName, data) {
 
         await fs.promises.writeFile(newGroupFile, JSON.stringify(saveData, null, '  '))
         return {data, groupId: data._newName}
-    } else {
+    }
         logger.debug(`save group ${groupName}`)
         await fs.promises.writeFile(currentGroupFile, JSON.stringify(saveData, null, '  '))
         return {data, groupId: data._name}
-    }
+    
 }
 
 /**

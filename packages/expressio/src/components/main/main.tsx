@@ -1,6 +1,7 @@
 import {$s} from '@/app'
 import {$t, api, notifier, ws} from '@garage44/common/app'
-import {Config, Profile, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
+import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
+import {Settings} from '@/components/settings/settings'
 import {AppLayout, FieldSelect, MenuGroup, MenuItem, Notifications, PanelMenu, Progress, UserMenu} from '@garage44/common/components'
 import {Router, getCurrentUrl, route} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
@@ -18,16 +19,16 @@ export const Main = () => {
         ;(async() => {
             const context = await api.get('/api/context')
             // Context now includes full user profile (id, username, profile.avatar, profile.displayName)
-            // Explicitly set user data from context to override any stale localStorage data
-            const userState = $s.user as any
-            userState.admin = context.admin || false
-            userState.authenticated = context.authenticated || false
-            if (context.id) userState.id = context.id
-            if (context.username) userState.username = context.username
+            // Set user authentication/admin flags
+            $s.user.admin = context.admin || false
+            $s.user.authenticated = context.authenticated || false
+            // Set profile data from context
+            if (context.id) $s.profile.id = context.id
+            if (context.username) $s.profile.username = context.username
+            if (context.password) $s.profile.password = context.password
             if (context.profile) {
-                if (!userState.profile) userState.profile = {}
-                userState.profile.avatar = context.profile.avatar || 'placeholder-1.png'
-                userState.profile.displayName = context.profile.displayName || context.username || 'User'
+                $s.profile.avatar = context.profile.avatar || 'placeholder-1.png'
+                $s.profile.displayName = context.profile.displayName || context.username || 'User'
             }
 
             if (context.authenticated) {
@@ -153,15 +154,16 @@ export const Main = () => {
                             collapsed={$s.panel.collapsed}
                             onLogout={async() => {
                                 const result = await api.get('/api/logout')
-                                mergeDeep($s.user, result)
+                                $s.user.authenticated = result.authenticated || false
+                                $s.user.admin = result.admin || false
                                 route('/')
                             }}
-                            settingsHref="/profile"
+                            settingsHref="/settings"
                             user={{
-                                id: ($s.user as any).id,
+                                id: $s.profile.id || null,
                                 profile: {
-                                    avatar: ($s.user as any).profile?.avatar || null,
-                                    displayName: ($s.user as any).profile?.displayName || ($s.user as any).username || 'User',
+                                    avatar: $s.profile.avatar || null,
+                                    displayName: $s.profile.displayName || $s.profile.username || 'User',
                                 },
                             }}
                         />
@@ -189,7 +191,7 @@ export const Main = () => {
             <div class="view">
                 <Router onChange={handleRoute}>
                     {$s.user.admin && <Config path="/" />}
-                    <Profile path="/profile" />
+                    <Settings path="/settings" />
                     <WorkspaceSettings path="/workspaces/:workspace/settings" />
                     <WorkspaceTranslations path="/workspaces/:workspace/translations" />
                 </Router>

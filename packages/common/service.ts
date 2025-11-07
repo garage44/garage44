@@ -148,11 +148,28 @@ ${pc.cyan(figlet.textSync(title))}\n
 `
 }
 
-export function setupBunchyConfig(serviceDir: string, logPrefix: string, version: string, reloadIgnore: string[] = []) {
+export interface BunchyConfigOptions {
+    logPrefix: string
+    reloadIgnore?: string[]
+    separateAssets?: string[]
+    serviceDir: string
+    version: string
+}
+
+export function setupBunchyConfig(options: BunchyConfigOptions) {
+    const {
+        logPrefix,
+        reloadIgnore = [],
+        separateAssets,
+        serviceDir,
+        version,
+    } = options
+
     return {
         common: path.resolve(serviceDir, '../', 'common'),
         logPrefix,
         reload_ignore: reloadIgnore,
+        separateAssets,
         version,
         workspace: serviceDir,
     }

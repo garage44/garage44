@@ -35,12 +35,6 @@ html, body {
     color: var(--primary-8);
 }
 
-#app {
-    height: 100%;
-}
-
-/* Scrollbar styling */
-
 .scroller {
     overflow-y: auto;
     scrollbar-color: var(--surface-4) var(--surface-2);

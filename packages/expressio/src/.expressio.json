@@ -36,7 +36,8 @@
         "source_file": "/home/deck/code/garage44/packages/expressio/src/.expressio.json",
         "sync": {
             "dir": "${workspaceFolder}/**/*.{ts,tsx}",
-            "enabled": true
+            "enabled": false,
+            "suggestions": false
         },
         "workspace_id": "expressio"
     },
@@ -417,6 +418,17 @@
                         "nld": "Werkruimte scannen en nieuwe & overbodige i18n-tags markeren"
                     }
                 },
+                "sync_suggestions": {
+                    "cache": "a1b2c3d4e5f6g7h8",
+                    "source": "Use AI to suggest source text for new translation tags",
+                    "target": {
+                        "ara": "استخدم الذكاء الاصطناعي لاقتراح نص المصدر لعلامات الترجمة الجديدة",
+                        "deu": "KI verwenden, um Quelltext für neue Übersetzungs-Tags vorzuschlagen",
+                        "eng-gbr": "Use AI to suggest source text for new translation tags",
+                        "fra": "Utiliser l'IA pour suggérer le texte source pour les nouvelles balises de traduction",
+                        "nld": "Gebruik AI om brontekst voor te stellen voor nieuwe vertaaltags"
+                    }
+                },
                 "target_languages": {
                     "cache": "f50bf2f15c4914b5",
                     "source": "The languages to translate to. Removing, adding or changing a language (e.g. formality) will retranslate all tags for that language.",
@@ -483,6 +495,17 @@
                         "eng-gbr": "Sync Workspace tags",
                         "fra": "Synchroniser les balises de l'espace de travail",
                         "nld": "Werkruimte synchroniseren"
+                    }
+                },
+                "sync_suggestions": {
+                    "cache": "b2c3d4e5f6g7h8i9",
+                    "source": "Suggest source text",
+                    "target": {
+                        "ara": "اقتراح نص المصدر",
+                        "deu": "Quelltext vorschlagen",
+                        "eng-gbr": "Suggest source text",
+                        "fra": "Suggérer le texte source",
+                        "nld": "Brontekst voorstellen"
                     }
                 },
                 "target_languages": {

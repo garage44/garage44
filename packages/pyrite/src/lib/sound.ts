@@ -1,4 +1,5 @@
-import {app} from '@/lib/main.js'
+import {$s} from '@/app'
+import {logger} from '@garage44/common/app'
 
 export default class Sound {
 
@@ -13,9 +14,9 @@ export default class Sound {
         if (!this.played) this.audio.addEventListener('ended', this.playEnd.bind(this))
         this.played = true
 
-        if (!sink) sink = app.$s.devices.audio.selected.id
+        if (!sink) sink = $s.devices.audio.selected.id
 
-        app.logger.debug(`play sound on sink ${sink}`)
+        logger.debug(`play sound on sink ${sink}`)
         if (this.audio.setSinkId) {
             this.audio.setSinkId(sink)
         }

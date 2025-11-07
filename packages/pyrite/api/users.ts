@@ -161,9 +161,33 @@ export default function(router: any) {
     router.post('/api/users/:userid', async (req: Request, params: Record<string, string>, session: any) => {
         const userId = params.param0
         const userData = await req.json()
-        await saveUser(userId, userData)
+
+        // Check if user exists (by ID or username)
+        let existingUser = await userManager.getUser(userId)
+        if (!existingUser) {
+            // Try to find by username if userId is actually a username
+            existingUser = await userManager.getUserByUsername(userId)
+        }
+
+        let user: any
+        if (!existingUser) {
+            // User doesn't exist - create new user
+            user = await userManager.createUser(userData)
+        } else {
+            // User exists - update it
+            await saveUser(existingUser.id, userData)
+            user = await loadUser(existingUser.id)
+        }
+
         await syncUsers()
-        const user = await loadUser(userId)
+
+        if (!user) {
+            return new Response(JSON.stringify({error: 'failed to save user'}), {
+                headers: {'Content-Type': 'application/json'},
+                status: 500,
+            })
+        }
+
         return new Response(JSON.stringify(user), {
             headers: {'Content-Type': 'application/json'},
         })

@@ -11,6 +11,7 @@
     width: 100%;
 
     /* Two-column layout when context not provided */
+
     &:not(:has(.c-panel-context)) {
         grid-template-columns:
             [menu] minmax(min-content, 240px)
@@ -21,6 +22,7 @@
         display: flex;
         flex-direction: column;
         grid-column: content;
+        height: 100vh;
 
         .view {
             flex: 1;

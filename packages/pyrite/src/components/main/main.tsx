@@ -1,12 +1,15 @@
-import {$s} from '../../app'
-import classnames from 'classnames'
-import {api, ws, notifier} from '@garage44/common/app'
-import {Router} from 'preact-router'
+import {$s} from '@/app'
+import {api, ws, notifier, logger, store} from '@garage44/common/app'
+import {Router, Route, route} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
-import {ConferenceApp} from '../conference/app'
-import {AdminApp} from '../admin/app'
-import {Login, Notifications} from '@garage44/common/components'
+import {Login, Notifications, AppLayout, PanelMenu, UserMenu, IconLogo} from '@garage44/common/components'
 import {useEffect} from 'preact/hooks'
+import {Link} from 'preact-router'
+import {emojiLookup} from '@/models/chat'
+import ChannelsContext from '../context/context-channels'
+import {Channel} from '../channel/channel'
+import Settings from '../settings/settings'
+import {PanelContextSfu} from '../panel-context-sfu'
 
 export const Main = () => {
     useEffect(() => {
@@ -32,12 +35,60 @@ export const Main = () => {
 
             if (context.authenticated) {
                 ws.connect()
-            }
 
-            // Load emoji list
-            if (!$s.chat.emoji?.list?.length) {
-                const emojiData = await api.get('/api/chat/emoji')
-                $s.chat.emoji.list = JSON.parse(emojiData)
+                // Set theme color
+                const appElement = document.querySelector('.app')
+                if (appElement) {
+                    const themeColor = getComputedStyle(appElement).getPropertyValue('--grey-4')
+                    const metaTheme = document.querySelector('meta[name="theme-color"]')
+                    if (metaTheme) (metaTheme as HTMLMetaElement).content = themeColor
+                }
+
+                // Load emoji list
+                if (!$s.chat.emoji.list.length) {
+                    logger.info('retrieving initial emoji list')
+                    $s.chat.emoji.list = JSON.parse(await api.get('/api/chat/emoji'))
+                    store.save()
+                }
+                for (const emoji of $s.chat.emoji.list) {
+                    emojiLookup.add(emoji.codePointAt())
+                }
+
+                // Load current user info to populate $s.profile
+                // IMPORTANT: Preserve existing credentials (username/password) that were set during login
+                try {
+                    const userData = await api.get('/api/users/me')
+                    if (userData?.id) {
+                        // Store existing credentials before loading user data
+                        const existingUsername = $s.profile.username || ''
+                        const existingPassword = $s.profile.password || ''
+
+                        $s.profile.id = userData.id
+                        // Only set username if not already set (preserve login credentials)
+                        if (!existingUsername && userData.username) {
+                            $s.profile.username = userData.username
+                        }
+                        $s.profile.displayName = userData.profile?.displayName || userData.username || 'User'
+                        $s.profile.avatar = userData.profile?.avatar || 'placeholder-1.png'
+
+                        // Restore password if it was set (it won't come from API)
+                        if (existingPassword) {
+                            $s.profile.password = existingPassword
+                        }
+
+                        // Ensure chat.users entry exists for backward compatibility
+                        if (!$s.chat.users) {
+                            $s.chat.users = {}
+                        }
+                        ;($s.chat.users as Record<string, {avatar: string; username: string}>)[userData.id] = {
+                            avatar: $s.profile.avatar,
+                            username: $s.profile.username,
+                        }
+                        logger.info(`[Main] Loaded user: ${userData.id}, avatar: ${$s.profile.avatar}, username preserved: ${!!existingUsername}, password preserved: ${!!existingPassword}`)
+                    }
+                } catch (error) {
+                    logger.warn('[Main] Failed to load current user:', error)
+                }
             }
         })()
     }, [])
@@ -77,13 +128,23 @@ export const Main = () => {
                     return 'No permission'
                 }
             } else {
-                notifier.notify({level: 'info', message: 'Login successful'})
+                notifier.notify({message: 'Login successful', type: 'info'})
                 ws.connect()
                 return null // Success
             }
-        } catch (err) {
+        } catch {
             return 'Login failed. Please try again.'
         }
+    }
+
+    const handleLogout = async () => {
+        const context = await api.get('/api/logout')
+        mergeDeep($s.admin, context)
+        // Clear stored credentials
+        $s.profile.username = ''
+        $s.profile.password = ''
+        store.save()
+        route('/')
     }
 
     if ($s.admin.authenticated === null) {
@@ -99,15 +160,58 @@ export const Main = () => {
         />
     }
 
-    return <div class="app">
-        <Router>
-            {/* Admin routes */}
-            <AdminApp path="/admin/*" />
-
-            {/* Conference routes (default) */}
-            <ConferenceApp default path="/*" />
-        </Router>
-        <Notifications notifications={$s.notifications}/>
-    </div>
+    return (
+        <div class="c-conference-app app">
+            <AppLayout
+                menu={
+                    <PanelMenu
+                        actions={
+                            <UserMenu
+                                collapsed={$s.panels.menu.collapsed}
+                                onLogout={handleLogout}
+                                settingsHref="/settings"
+                                user={{
+                                    id: $s.profile.id || undefined,
+                                    profile: {
+                                        avatar: $s.profile.avatar || undefined,
+                                        displayName: $s.profile.displayName || 'User',
+                                    },
+                                }}
+                            />
+                        }
+                        collapsed={$s.panels.menu.collapsed}
+                        onCollapseChange={(collapsed) => {
+                            // Synchronize collapse state: both panels collapse together
+                            $s.panels.menu.collapsed = collapsed
+                            store.save()
+                        }}
+                        logoHref="/settings/groups"
+                        logoText="PYRITE"
+                        logoVersion={process.env.APP_VERSION || '2.0.0'}
+                        LogoIcon={IconLogo}
+                        LinkComponent={Link}
+                        navigation={<ChannelsContext />}
+                    />
+                }
+                context={$s.chat.activeChannelSlug ? <PanelContextSfu /> : null}
+            >
+                <Router>
+                    <Route path="/channels/:channelSlug/devices" component={Channel} />
+                    <Route path="/channels/:channelSlug" component={Channel} />
+                    <Route path="/settings/users/new" component={Settings} />
+                    <Route path="/settings/users/:userId" component={Settings} />
+                    <Route path="/settings" component={Settings} />
+                    <Route path="/settings/:tabId" component={Settings} />
+                    <Route default component={() => (
+                        <div class="c-welcome">
+                            <IconLogo />
+                            <h1>Welcome to Pyrite</h1>
+                            <p>Select a channel from the sidebar to start chatting.</p>
+                        </div>
+                    )} />
+                </Router>
+                <Notifications notifications={$s.notifications} />
+            </AppLayout>
+        </div>
+    )
 }
-// test comment

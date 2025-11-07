@@ -9,6 +9,7 @@
 .styleguide-page {
     margin: 0 auto;
     max-width: 1800px;
+    overflow-y: scroll;
     padding: var(--spacer-6);
 
     /* Grid layout for component cards on wider screens */

@@ -1,3 +1,5 @@
+import {RingBuffer} from './ring-buffer'
+
 type HttpEvent = {
     method: string
     ms?: number
@@ -20,22 +22,7 @@ type LogEvent = {
     ts: number
 }
 
-class RingBuffer<T> {
-    #buf: T[] = []
-    #cap: number
-    constructor(capacity: number) {
-        this.#cap = capacity 
-    }
-    push(item: T) {
-        this.#buf.push(item)
-        if (this.#buf.length > this.#cap) {
-            this.#buf.shift() 
-        }
-    }
-    toArray(): T[] {
-        return [...this.#buf] 
-    }
-}
+
 
 class DevContext {
     http = new RingBuffer<HttpEvent>(500)
@@ -44,17 +31,17 @@ class DevContext {
     errors = new RingBuffer<LogEvent>(200)
 
     addHttp(e: HttpEvent) {
-        this.http.push(e) 
+        this.http.push(e)
     }
     addWs(e: WsEvent) {
-        this.ws.push(e) 
+        this.ws.push(e)
     }
     addLog(level: string, message: string) {
         const evt = {level, message, ts: Date.now()}
         if (level === 'error') {
-            this.errors.push(evt) 
+            this.errors.push(evt)
         } else {
-            this.logs.push(evt) 
+            this.logs.push(evt)
         }
     }
 

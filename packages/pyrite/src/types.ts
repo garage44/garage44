@@ -44,8 +44,8 @@ export interface PyriteState extends CommonState {
             lookup: any
         }
         message: string
-        // Global users map: userId -> {username, avatar}
-        users?: Record<string, {avatar: string; username: string}>
+        // Global users map: userId -> {username, avatar, status?}
+        users?: Record<string, {avatar: string; username: string; status?: 'online' | 'offline' | 'busy'}>
         width: number
     }
     devices: {

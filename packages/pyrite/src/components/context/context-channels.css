@@ -1,0 +1,218 @@
+.c-channels-context.presence {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+
+    .actions {
+        flex-shrink: 0;
+        padding: 0;
+    }
+
+    /* Channels section with header */
+    .channels-section {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+
+        .channels-header {
+            padding: var(--spacer-1) var(--spacer-2) var(--spacer-05);
+
+            .channels-title {
+                color: var(--surface-5);
+                font-size: var(--font-xs);
+                font-weight: var(--font-weight-semibold, 600);
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+            }
+        }
+    }
+
+    /* Channels list wrapper - scrollable area */
+    .channels-list {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0;
+
+        /* Custom scrollbar styling */
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: var(--surface-3);
+            border-radius: 3px;
+
+            &:hover {
+                background: var(--surface-4);
+            }
+        }
+    }
+
+    /* Channel Items - Slack-style clean design */
+    .channel.item {
+        align-items: center;
+        color: var(--surface-6);
+        display: flex;
+        padding: var(--spacer-1) var(--spacer-2);
+        text-decoration: none;
+        transition: background-color 0.2s ease, color 0.2s ease;
+
+        &:hover:not(.active) {
+            background: var(--surface-2);
+        }
+
+        &.active {
+            background: var(--surface-3);
+            color: var(--surface-8);
+        }
+
+        /* Bold font weight for channels with unread messages */
+        &.has-unread {
+            .name {
+                font-weight: var(--font-weight-semibold, 600);
+            }
+        }
+
+        .flex-column {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: var(--spacer-05);
+
+            .name {
+                color: inherit;
+                font-size: var(--font-d);
+                font-weight: var(--font-weight-normal, 400);
+                line-height: 1.4;
+            }
+
+            .item-properties {
+                color: var(--surface-5);
+                font-size: var(--font-s);
+                line-height: 1.3;
+            }
+        }
+
+        &.no-presence {
+            color: var(--surface-5);
+            font-style: italic;
+            padding: var(--spacer-2);
+            text-align: center;
+        }
+    }
+
+
+    /* People Section - Slack-style user list */
+    .people-section {
+        border-top: 1px solid var(--surface-2);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        margin-top: auto;
+        padding-top: var(--spacer-2);
+
+        .people-header {
+            padding: var(--spacer-1) var(--spacer-2) var(--spacer-05);
+
+            .people-title {
+                color: var(--surface-5);
+                font-size: var(--font-xs);
+                font-weight: var(--font-weight-semibold, 600);
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+            }
+        }
+
+        .people-list {
+            display: flex;
+            flex-direction: column;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-bottom: var(--spacer-1);
+
+            /* Custom scrollbar styling */
+            &::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            &::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: var(--surface-3);
+                border-radius: 3px;
+
+                &:hover {
+                    background: var(--surface-4);
+                }
+            }
+
+            .person.item {
+                align-items: center;
+                color: var(--surface-6);
+                display: flex;
+                gap: var(--spacer-1);
+                padding: var(--spacer-05) var(--spacer-2);
+                transition: background-color 0.2s ease;
+
+                &:hover {
+                    background: var(--surface-2);
+                }
+
+                .person-avatar {
+                    border-radius: var(--border-radius-d);
+                    flex-shrink: 0;
+                    height: 24px;
+                    object-fit: cover;
+                    width: 24px;
+                }
+
+                .status-indicator {
+                    border-radius: 50%;
+                    flex-shrink: 0;
+                    height: 8px;
+                    width: 8px;
+
+                    &.online {
+                        background: var(--success-4);
+                        box-shadow: 0 0 0 2px var(--surface-1);
+                    }
+
+                    &.offline {
+                        background: var(--surface-4);
+                        box-shadow: 0 0 0 2px var(--surface-1);
+                    }
+
+                    &.busy {
+                        background: var(--danger-4);
+                        box-shadow: 0 0 0 2px var(--surface-1);
+                    }
+                }
+
+                .person-name {
+                    color: var(--surface-7);
+                    font-size: var(--font-d);
+                    line-height: 1.4;
+
+                    .you-label {
+                        color: var(--surface-5);
+                        font-size: var(--font-s);
+                    }
+                }
+            }
+        }
+    }
+}

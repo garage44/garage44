@@ -4,7 +4,6 @@ import {Button, FieldCheckbox, FieldSelect, FieldText} from '@garage44/common/co
 import {createValidator, required} from '@garage44/common/lib/validation'
 import classnames from 'classnames'
 import {deepSignal} from 'deepsignal'
-import {persistantState} from '@/lib/state'
 import {useEffect} from 'preact/hooks'
 
 const state = deepSignal({
@@ -16,6 +15,25 @@ const state = deepSignal({
 })
 
 export function WorkspaceSettings() {
+    useEffect(() => {
+        if (!$s.workspace) {
+            return
+        }
+        state.target_languages.splice(0, state.target_languages.length, ...$s.enola.languages.target.map((language) => {
+            const selected = $s.workspace.config.languages.target.find((i) => i.id === language.id)
+            return {
+                engine: selected ? selected.engine : '',
+                engines: language.engines,
+                formality: selected ? selected.formality : 'less',
+                formality_supported: language.formality,
+                id: language.id,
+                name: language.name,
+                selected: !!selected,
+                transcription: language.transcription,
+            }
+        }))
+    }, [$s.enola.languages.target, $s.workspace?.config.languages.target])
+
     if (!$s.workspace) {
         return null
     }
@@ -45,22 +63,6 @@ export function WorkspaceSettings() {
         ])),
     })
 
-    useEffect(() => {
-        state.target_languages.splice(0, state.target_languages.length, ...$s.enola.languages.target.map((language) => {
-            const selected = $s.workspace.config.languages.target.find((i) => i.id === language.id)
-            return {
-                engine: selected ? selected.engine : '',
-                engines: language.engines,
-                formality: selected ? selected.formality : 'less',
-                formality_supported: language.formality,
-                id: language.id,
-                name: language.name,
-                selected: !!selected,
-                transcription: language.transcription,
-            }
-        }))
-    }, [$s.enola.languages.target, $s.workspace.config.languages.target])
-
     return (
         <div class="c-workspace-settings view">
             <FieldSelect
@@ -78,7 +80,7 @@ export function WorkspaceSettings() {
                 </div>
                 <div className="options">
                     {state.target_languages.toSorted((a, b) => a.name.localeCompare(b.name)).map((language) => {
-                        return <div class={classnames('option', {
+                        return <div key={language.id} class={classnames('option', {
                             'is-invalid': !validation.value[`target_${language.id}_engine`].isValid || !validation.value[`target_${language.id}_formality`].isValid,
                             'is-touched': validation.value[`target_${language.id}_engine`].isTouched || validation.value[`target_${language.id}_formality`].isTouched,
                         })}>
@@ -135,6 +137,12 @@ export function WorkspaceSettings() {
                 help={$t('settings.help.sync_dir')}
                 label={$t('settings.label.sync_dir')}
                 model={$s.workspace.config.sync.$dir}
+            />
+            <FieldCheckbox
+                disabled={!$s.workspace.config.sync.enabled}
+                help={$t('settings.help.sync_suggestions')}
+                model={$s.workspace.config.sync.$suggestions}
+                label={$t('settings.label.sync_suggestions')}
             />
             <Button
                 label={$t('settings.label.update_settings')}

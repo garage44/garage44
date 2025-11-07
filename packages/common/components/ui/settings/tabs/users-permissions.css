@@ -1,0 +1,33 @@
+.c-users-permissions-tab {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-2);
+
+    .group {
+        display: flex;
+        gap: var(--spacer-2);
+
+        &.item {
+            padding: var(--spacer-1);
+        }
+    }
+
+    .group-name {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .categories {
+        display: flex;
+        gap: var(--spacer-1);
+    }
+
+    .category {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        min-width: 40px;
+        padding: var(--spacer-1);
+    }
+}

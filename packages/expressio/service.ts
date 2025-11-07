@@ -44,7 +44,11 @@ const cli = yargs(hideBin(process.argv))
 cli.scriptName('expressio')
 
 if (BUN_ENV === 'development') {
-    bunchyConfig = setupBunchyConfig(runtime.service_dir, 'B', runtime.version)
+    bunchyConfig = setupBunchyConfig({
+        logPrefix: 'B',
+        serviceDir: runtime.service_dir,
+        version: runtime.version,
+    })
 
     bunchyArgs(cli, bunchyConfig)
 }
