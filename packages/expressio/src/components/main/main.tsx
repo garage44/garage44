@@ -1,5 +1,6 @@
 import {$s, i18n} from '@/app'
-import {$t, api, notifier, ws} from '@garage44/common/app'
+import {api, notifier, ws} from '@garage44/common/app'
+import {$t} from '@garage44/expressio'
 import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
 import {Settings} from '@/components/settings/settings'
 import {AppLayout, FieldSelect, MenuGroup, MenuItem, Notifications, PanelMenu, Progress, UserMenu} from '@garage44/common/components'

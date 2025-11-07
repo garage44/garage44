@@ -1,7 +1,7 @@
-import {logger} from './logger'
+import {logger} from '@garage44/common/lib/logger'
 // This is a workaround to avoid i18next import errors on succesive builds.
-import i18next from '@/lib/i18next'
-import {copyObject, keyMod, keyPath} from './utils'
+import i18next from '@garage44/common/lib/i18next'
+import {copyObject, keyMod, keyPath} from '@garage44/common/lib/utils'
 import {effect} from '@preact/signals'
 
 /**

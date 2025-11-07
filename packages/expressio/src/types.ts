@@ -46,6 +46,12 @@ interface WorkspaceDescription {
     workspace_id?: string
 }
 
+interface LanguageUI {
+    i18n: Record<string, Record<string, string>>
+    options: Array<{id: string; name: string}>
+    selection: string
+}
+
 interface ExpressioStateBase {
     env: {
         ctrlKey: boolean
@@ -54,11 +60,7 @@ interface ExpressioStateBase {
         shiftKey: boolean
         url: string
     }
-    language_ui: {
-        i18n: Record<string, Record<string, string>>
-        options: any[]
-        selection: string
-    }
+    language_ui: LanguageUI
     notifications: []
     panels: {
         context: {
@@ -97,6 +99,7 @@ export {
     ExpressioState,
     type I18n,
     type I18nType,
+    type LanguageUI,
     type TranslationEntry,
     type TranslationGroup,
     type TranslationTarget,

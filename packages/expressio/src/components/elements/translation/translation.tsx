@@ -1,7 +1,7 @@
 import {$s, i18n} from '@/app'
 import {notifier, ws} from '@garage44/common/app'
 import {FieldText, Icon} from '@garage44/common/components'
-import {$t} from '@garage44/common/app'
+import {$t} from '@garage44/expressio'
 import {TranslationResult} from '@/components/elements'
 import classnames from 'classnames'
 

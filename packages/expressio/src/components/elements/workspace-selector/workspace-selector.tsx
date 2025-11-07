@@ -1,5 +1,5 @@
 import {FieldText, Icon} from '@garage44/common/components'
-import {$t} from '@garage44/common/app'
+import {$t} from '@garage44/expressio'
 import {i18n} from '@/app'
 import {DirectoryBrowser} from '../directory-browser/directory-browser'
 import type {WorkspaceDescription} from '@/types'

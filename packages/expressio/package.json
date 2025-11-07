@@ -29,8 +29,15 @@
     "stylelint": "catalog:dev",
     "stylelint-order": "catalog:dev"
   },
+  "exports": {
+    ".": "./index.ts",
+    "./lib/i18n": "./lib/i18n.ts",
+    "./src/lib/state": "./src/lib/state.ts",
+    "./src/types": "./src/types.ts"
+  },
   "files": [
     "api/*",
+    "index.ts",
     "lib/*",
     "public/**/*",
     "LICENSE.md",

@@ -1,18 +1,18 @@
 import {hash, keyMod, keyPath, mergeDeep} from './utils'
 import {logger} from './logger'
-import {I18N_PATH_SYMBOL} from './i18n'
+import {I18N_PATH_SYMBOL} from '@garage44/expressio/lib/i18n'
 
 interface Tag {
-    source: string
     cache?: string
+    source: string
     target: Record<string, string>
 }
 
 interface TargetLanguage {
     engine: 'anthropic' | 'deepl'
+    formality: 'default' | 'more' | 'less'
     id: string
     name: string
-    formality: 'default' | 'more' | 'less'
 }
 
 function collectSource(source, path, ignore_cache = false) {
@@ -122,7 +122,7 @@ function pathHas(source, path, key) {
             if (key in sourceRef) {
                 has_key = true
             }
-       })
+        })
     }
 
     return has_key

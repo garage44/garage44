@@ -6,7 +6,7 @@ import {
     mergeDeep,
     sortNestedObjectKeys,
 } from '@garage44/common/lib/utils.ts'
-import {I18N_PATH_SYMBOL} from '@garage44/common/lib/i18n'
+import {I18N_PATH_SYMBOL} from './i18n.ts'
 
 import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import fs from 'fs-extra'

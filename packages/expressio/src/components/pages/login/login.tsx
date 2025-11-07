@@ -1,5 +1,6 @@
 import {$s} from '@/app'
-import {$t, api, logger, notifier, ws} from '@garage44/common/app'
+import {api, logger, notifier, ws} from '@garage44/common/app'
+import {$t} from '@garage44/expressio'
 import {Login as CommonLogin} from '@garage44/common/components'
 import {mergeDeep} from '@garage44/common/lib/utils'
 

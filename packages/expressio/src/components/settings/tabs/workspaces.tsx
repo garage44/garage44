@@ -1,5 +1,6 @@
 import {$s, i18n} from '@/app'
-import {$t, api, notifier, store} from '@garage44/common/app'
+import {api, notifier, store} from '@garage44/common/app'
+import {$t} from '@garage44/expressio'
 import {Button, FieldCheckbox, FieldSelect, FieldText} from '@garage44/common/components'
 import {createValidator, required} from '@garage44/common/lib/validation'
 import classnames from 'classnames'

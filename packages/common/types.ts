@@ -1,4 +1,4 @@
-import type {DeepSignal} from 'deepsignal'
+import type {LanguageUI} from '@garage44/expressio/src/types'
 
 type LogLevel = 'error' | 'warn' | 'info' | 'success' | 'verbose' | 'debug'
 
@@ -17,11 +17,7 @@ interface CommonState {
         shiftKey: boolean
         url: string
     }
-    language_ui: {
-        i18n: Record<string, Record<string, string>>
-        options: any[]
-        selection: string
-    }
+    language_ui: LanguageUI
     notifications: []
     panels: {
         context: {

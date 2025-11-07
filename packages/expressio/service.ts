@@ -12,7 +12,7 @@ import {createRuntime, createWelcomeBanner, setupBunchyConfig, createWebSocketMa
 import {initDatabase} from '@garage44/common/lib/database'
 import fs from 'fs-extra'
 import {hideBin} from 'yargs/helpers'
-import {i18nFormat} from '@garage44/common/lib//i18n.ts'
+import {i18nFormat} from '@garage44/expressio/lib/i18n'
 import {initMiddleware} from './lib/middleware.ts'
 import {lintWorkspace} from './lib/lint.ts'
 import path from 'node:path'

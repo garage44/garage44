@@ -1,7 +1,7 @@
 import {pathCreate, pathDelete, pathMove, pathRef, pathToggle} from '@garage44/common/lib/paths.ts'
 import {translate_path, translate_tag} from '../lib/translate.ts'
 import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
-import {i18nFormat} from '@garage44/common/lib/i18n.ts'
+import {i18nFormat} from '@garage44/expressio/lib/i18n'
 import {logger} from '@garage44/common/app'
 import {workspaces} from '../service.ts'
 
@@ -75,13 +75,13 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
             try {
                 const result = await translate_tag(workspace, path, sourceText, persist)
                 workspace.save()
-                
+
                 // Return proper translation result for UI feedback
                 return {
                     cached: [],
                     success: true,
                     targets: [result],
-                    translations: workspace.config.languages.target.map(lang => 
+                    translations: workspace.config.languages.target.map(lang =>
                         result.ref[result.id].target[lang.id]
                     ),
                 }

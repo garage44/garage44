@@ -1,9 +1,9 @@
-import {App, createTypedI18n, store} from '@garage44/common/app'
+import {App, store} from '@garage44/common/app'
+import {$t, createTypedI18n, i18nFormat} from '@garage44/expressio'
 import {h, render} from 'preact'
 import {persistantState, volatileState} from './lib/state'
 import type {ExpressioState} from './types'
 import {Main} from '@/components/main/main'
-import {i18nFormat} from '@garage44/common/lib/i18n'
 import workspace from '@/.expressio.json'
 import {type DeepSignal} from 'deepsignal'
 
@@ -20,4 +20,4 @@ app.init(Main, render, h, i18nFormat(workspace.i18n, workspace.config.languages.
 // This is the i18n for the Expressio UI itself, not the workspace being managed
 const i18n = createTypedI18n(workspace)
 
-export {$s, app, i18n}
+export {$s, app, i18n, $t}
