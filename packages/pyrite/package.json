@@ -10,6 +10,8 @@
   "dependencies": {
     "@garage44/bunchy": "workspace:^",
     "@garage44/common": "workspace:^",
+    "@garage44/expressio": "workspace:^",
+    "@preact/signals": "catalog:",
     "classnames": "catalog:",
     "deepsignal": "catalog:",
     "figlet": "catalog:",

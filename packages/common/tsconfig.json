@@ -14,7 +14,8 @@
         "noEmit": true,
         "paths": {
             "@/*": ["./*"],
-            "@garage44/bunchy/*": ["../bunchy/*"]
+	    "@garage44/bunchy/*": ["../bunchy/*"],
+            "@garage44/expressio/*": ["../expressio/*"]
         },
         "skipLibCheck": true,
         "sourceMap": true,
