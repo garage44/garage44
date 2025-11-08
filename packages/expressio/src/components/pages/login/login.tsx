@@ -12,19 +12,17 @@ export const Login = () => {
                 username,
             })
 
-            if (result.authenticated) {
-                notifier.notify({
-                    icon: 'check_circle',
-                    link: {text: '', url: ''},
-                    list: [],
-                    message: $t($s.workspace.i18n.notifications.logged_in),
-                    type: 'info',
-                })
+            // Check if user was authenticated - the response should have authenticated: true
+            // Also check if we have user data (id, username) as an alternative indicator
+            // This handles cases where authenticated might not be set but user data is present
+            const isAuthenticated = result.authenticated || (result.id && result.username)
+
+            if (isAuthenticated) {
                 const config = await api.get('/api/config')
                 // result from login already includes full profile from /api/context
                 // Set user authentication/admin flags
                 $s.profile.admin = result.admin || false
-                $s.profile.authenticated = result.authenticated || false
+                $s.profile.authenticated = true // Always set to true if we have user data
                 // Set profile data from result
                 if (result.id) $s.profile.id = result.id
                 if (result.username) $s.profile.username = result.username
@@ -38,27 +36,46 @@ export const Login = () => {
                     workspaces: config.workspaces,
                 }, {usage: {loading: false}})
 
+                // Now that workspace is loaded, we can safely access workspace.i18n
+                const loggedInMessage = $s.workspace?.i18n?.notifications?.logged_in
+                    ? $t($s.workspace.i18n.notifications.logged_in)
+                    : 'Login successful'
+                notifier.notify({
+                    icon: 'check_circle',
+                    link: {text: '', url: ''},
+                    list: [],
+                    message: loggedInMessage,
+                    type: 'info',
+                })
+
                 ws.connect()
                 return null // Success - no error message
             }
 
+            const failedMessage = $s.workspace?.i18n?.notifications?.logged_in_fail
+                ? $t($s.workspace.i18n.notifications.logged_in_fail)
+                : 'Failed to login; please check your credentials'
             notifier.notify({
                 icon: 'warning',
                 link: {text: '', url: ''},
                 list: [],
-                message: $t($s.workspace.i18n.notifications.logged_in_fail),
+                message: failedMessage,
                 type: 'warning',
             })
-            return $t($s.workspace.i18n.notifications.logged_in_fail)
-        } catch (_error) {
+            return failedMessage
+        } catch (error) {
+            logger.error('[Login] Login error:', error)
+            const failedMessage = $s.workspace?.i18n?.notifications?.logged_in_fail
+                ? $t($s.workspace.i18n.notifications.logged_in_fail)
+                : 'Failed to login; please check your credentials'
             notifier.notify({
                 icon: 'warning',
                 link: {text: '', url: ''},
                 list: [],
-                message: $t($s.workspace.i18n.notifications.logged_in_fail),
+                message: failedMessage,
                 type: 'warning',
             })
-            return $t($s.workspace.i18n.notifications.logged_in_fail)
+            return failedMessage
         }
     }
 

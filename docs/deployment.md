@@ -370,7 +370,7 @@ garage44 ALL=(ALL) NOPASSWD: /bin/systemctl restart expressio.service, /bin/syst
 ### 1. Test Webhook Server Locally
 
 ```bash
-cd /home/garage44/garage44
+
 WEBHOOK_SECRET="your-secret-here" bun lib/webhook-server.ts
 ```
 

@@ -121,18 +121,24 @@ export const Main = () => {
                 $s.profile.displayName = context.profile.displayName || context.username || 'User'
             }
 
-            if (!context.authenticated || (context.authenticated && !context.permission)) {
-                if (!context.authenticated) {
-                    return 'Invalid credentials'
-                } else if (context.authenticated && !context.permission) {
-                    return 'No permission'
-                }
+            // Check if user was authenticated - also check if we have user data (id, username) as fallback
+            // This handles cases where authenticated might not be set but user data is present
+            const isAuthenticated = context.authenticated || (context.id && context.username)
+
+            // Check permission - if permission is undefined, treat as false (no permission)
+            const hasPermission = context.permission === true
+
+            if (!isAuthenticated) {
+                return 'Invalid credentials'
+            } else if (!hasPermission) {
+                return 'No permission'
             } else {
                 notifier.notify({message: 'Login successful', type: 'info'})
                 ws.connect()
                 return null // Success
             }
-        } catch {
+        } catch (error) {
+            logger.error('[Login] Login error:', error)
             return 'Login failed. Please try again.'
         }
     }
