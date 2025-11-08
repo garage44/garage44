@@ -6,9 +6,9 @@
     "dev": "NODE_ENV=development BUN_ENV=development bun run --watch service.ts start",
     "clean": "rm -rf dist;rm -rf node_modules",
     "build": "NODE_ENV=production BUN_ENV=development bun service.ts build",
+    "server": "NODE_ENV=production BUN_ENV=production bun service.ts start",
     "lint:css": "stylelint src/**/*.css",
-    "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json",
-    "serve": "bun serve dist --port 8080"
+    "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json"
   },
   "type": "module",
   "dependencies": {
