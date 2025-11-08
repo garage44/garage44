@@ -260,7 +260,7 @@ sudo systemctl status styleguide.service
 # Check if services are accessible
 curl http://localhost:3030  # Expressio
 curl http://localhost:3031  # Pyrite
-curl http://localhost:8080  # Styleguide
+curl http://localhost:3032  # Styleguide
 ```
 
 ## Troubleshooting
@@ -328,7 +328,7 @@ Default ports for services:
 
 - **Expressio**: 3030
 - **Pyrite**: 3031
-- **Styleguide**: 8080
+- **Styleguide**: 3032
 - **Webhook Server**: 3001
 
 These can be changed in the systemd service files and nginx configuration.

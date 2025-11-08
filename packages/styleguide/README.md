@@ -37,7 +37,7 @@ bun install
 bun run dev
 ```
 
-The styleguide will be available at `http://localhost:8080` (or the next available port).
+The styleguide will be available at `http://localhost:3032` (or the next available port).
 
 ### Building for Production
 
