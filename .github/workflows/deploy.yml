@@ -19,8 +19,16 @@ jobs:
           # Get the webhook payload (compact JSON, no extra whitespace)
           PAYLOAD='{"ref":"refs/heads/main","repository":{"default_branch":"main"}}'
 
+          # Debug: Show payload details
+          echo "Payload length: ${#PAYLOAD}"
+          echo "Payload: $PAYLOAD"
+
           # Calculate HMAC SHA-256 signature
           SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" -binary | xxd -p -c 256)
+
+          # Debug: Show signature (safe to log)
+          echo "Calculated signature: sha256=$SIGNATURE"
+          echo "Signature length: ${#SIGNATURE}"
 
           # Send webhook request
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$WEBHOOK_URL" \

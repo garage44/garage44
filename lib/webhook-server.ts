@@ -171,12 +171,38 @@ async function handleWebhook(req: Request): Promise<Response> {
     // Read request body
     const payload = await req.text()
 
+    // Debug logging (remove after fixing)
+    console.log('[webhook] Received signature:', signature)
+    console.log('[webhook] Received payload length:', payload.length)
+    console.log('[webhook] Received payload (first 100 chars):', payload.substring(0, 100))
+    console.log('[webhook] WEBHOOK_SECRET length:', WEBHOOK_SECRET.length)
+    console.log('[webhook] WEBHOOK_SECRET set:', !!WEBHOOK_SECRET)
+
     // Validate signature
     const isValid = await validateSignature(payload, signature, WEBHOOK_SECRET)
     if (isValid) {
         // Continue processing
     } else {
         console.error('[webhook] Invalid signature')
+        // Calculate expected signature for debugging
+        const encoder = new TextEncoder()
+        const keyData = encoder.encode(WEBHOOK_SECRET)
+        const payloadData = encoder.encode(payload)
+        const key = await crypto.subtle.importKey(
+            'raw',
+            keyData,
+            {hash: 'SHA-256', name: 'HMAC'},
+            false,
+            ['sign'],
+        )
+        const hmacSignature = await crypto.subtle.sign('HMAC', key, payloadData)
+        const calculatedHash = Array.from(new Uint8Array(hmacSignature))
+            .map((b) => b.toString(16).padStart(2, '0'))
+            .join('')
+        const receivedHash = signature.replace('sha256=', '')
+        console.error('[webhook] Expected signature:', `sha256=${calculatedHash}`)
+        console.error('[webhook] Received signature:', signature)
+        console.error('[webhook] Hash match:', calculatedHash === receivedHash)
         return new Response(JSON.stringify({error: 'Invalid signature'}), {
             headers: {'Content-Type': 'application/json'},
             status: 401,
