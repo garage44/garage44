@@ -1,0 +1,19 @@
+[Unit]
+Description=Galène SFU server
+After=network.target
+
+[Service]
+Type=simple
+User=garage44
+Group=garage44
+WorkingDirectory=/home/garage44/galene
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/garage44/galene/galene -insecure
+LimitNOFILE=65536
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

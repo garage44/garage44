@@ -12,7 +12,7 @@ This guide covers setting up automatic deployment from GitHub to a private VPS u
 
 ## Prerequisites
 
-- VPS running Linux (Ubuntu/Debian recommended)
+- VPS running Linux (Arch Linux)
 - Bun installed on the VPS
 - Nginx installed and configured
 - Git repository cloned to `/home/garage44/garage44`
@@ -25,7 +25,7 @@ This guide covers setting up automatic deployment from GitHub to a private VPS u
 
 ```bash
 sudo useradd -m -s /bin/bash garage44
-sudo usermod -aG sudo garage44
+sudo usermod -aG wheel garage44
 ```
 
 ### 2. Clone Repository
@@ -59,6 +59,137 @@ Generate a secure webhook secret:
 openssl rand -hex 32
 ```
 
+## Galène Installation
+
+Galène is the SFU (Selective Forwarding Unit) required by Pyrite for video conferencing.
+
+### 1. Install Go (if not already installed)
+
+```bash
+# Arch Linux
+sudo pacman -S go
+
+# Or download from https://go.dev/dl/
+```
+
+### 2. Build Galène
+
+```bash
+# Clone Galène repository
+cd /home/garage44
+git clone https://github.com/jech/galene.git
+cd galene
+
+# Build Galène binary
+CGO_ENABLED=0 go build -ldflags='-s -w'
+
+# For different architecture (e.g., ARM64):
+# CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags='-s -w'
+```
+
+### 3. Set Up Directories
+
+```bash
+cd /home/garage44/galene
+mkdir -p groups data
+```
+
+### 4. Configure for Nginx SSL Termination
+
+Galène is configured to run with the `-insecure` flag since SSL/TLS termination is handled by nginx. The systemd service file already includes this flag.
+
+### 5. Install Systemd Service
+
+```bash
+sudo cp deploy/galene.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable galene.service
+sudo systemctl start galene.service
+```
+
+### 6. Set Up galenectl (Administration Tool)
+
+Build and install the `galenectl` utility:
+
+```bash
+cd /home/garage44/galene/galenectl
+go build -ldflags='-s -w'
+sudo cp galenectl /usr/local/bin/
+```
+
+Create administrator configuration:
+
+```bash
+cd /home/garage44
+galenectl -insecure -admin-username admin initial-setup
+```
+
+This creates `galenectl.conf` and `config.json`. Copy `config.json` to Galène's data directory:
+
+```bash
+cp config.json /home/garage44/galene/data/
+```
+
+### 7. Create Groups and Users
+
+Create a group:
+
+```bash
+galenectl -insecure create-group -group my-group
+```
+
+Create an operator (moderator) user:
+
+```bash
+galenectl -insecure create-user -group my-group -user admin -permissions op
+galenectl -insecure set-password -group my-group -user admin
+```
+
+Create a regular user:
+
+```bash
+galenectl -insecure create-user -group my-group -user user1
+galenectl -insecure set-password -group my-group -user user1
+```
+
+### 8. Configure Pyrite to Use Galène
+
+Update your `~/.pyriterc` file to point to Galène:
+
+```json
+{
+  "sfu": {
+    "path": "/home/garage44/galene/data",
+    "url": "http://localhost:8443",
+    "admin": {
+      "username": "admin",
+      "password": "your-admin-password"
+    }
+  }
+}
+```
+
+Note: Galène runs with the `-insecure` flag on `http://localhost:8443` since SSL/TLS termination is handled by nginx. The external URL will be `https://your-domain.com` through nginx.
+
+### 9. Check Galène Status
+
+```bash
+sudo systemctl status galene.service
+sudo journalctl -u galene.service -f
+```
+
+Galène should be accessible at `http://localhost:8443` (or the port you configured). It runs with the `-insecure` flag since SSL/TLS termination is handled by nginx.
+
+### 10. Firewall Configuration
+
+Galène requires the following ports to be open:
+
+- **TCP 8443**: HTTP/HTTPS (or your configured port)
+- **TCP/UDP 1194**: TURN server (or your configured port)
+- **UDP ports**: Media transfer (ephemeral ports, or restricted range)
+
+For better performance, you can restrict UDP ports using the `-udp-range` option in the systemd service file.
+
 ## Systemd Services
 
 ### 1. Install Service Files
@@ -69,6 +200,7 @@ Copy the service files to systemd directory:
 sudo cp deploy/expressio.service /etc/systemd/system/
 sudo cp deploy/pyrite.service /etc/systemd/system/
 sudo cp deploy/styleguide.service /etc/systemd/system/
+sudo cp deploy/galene.service /etc/systemd/system/
 ```
 
 ### 2. Reload Systemd
@@ -83,10 +215,12 @@ sudo systemctl daemon-reload
 sudo systemctl enable expressio.service
 sudo systemctl enable pyrite.service
 sudo systemctl enable styleguide.service
+sudo systemctl enable galene.service
 
 sudo systemctl start expressio.service
 sudo systemctl start pyrite.service
 sudo systemctl start styleguide.service
+sudo systemctl start galene.service
 ```
 
 ### 4. Check Service Status
@@ -95,6 +229,7 @@ sudo systemctl start styleguide.service
 sudo systemctl status expressio.service
 sudo systemctl status pyrite.service
 sudo systemctl status styleguide.service
+sudo systemctl status galene.service
 ```
 
 ### 5. View Logs
@@ -103,6 +238,7 @@ sudo systemctl status styleguide.service
 sudo journalctl -u expressio.service -f
 sudo journalctl -u pyrite.service -f
 sudo journalctl -u styleguide.service -f
+sudo journalctl -u galene.service -f
 ```
 
 ## Webhook Server
@@ -150,8 +286,7 @@ sudo systemctl status webhook.service
 ### 1. Install Nginx
 
 ```bash
-sudo apt update
-sudo apt install nginx
+sudo pacman -S nginx
 ```
 
 ### 2. Configure Nginx
