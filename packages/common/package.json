@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "clean": "rm -rf dist;rm -rf node_modules",
-    "lint:css": "stylelint src/**/*.css",
+    "lint:css": "stylelint components/**/*.css",
     "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json",
     "test": "bun test"
   },
