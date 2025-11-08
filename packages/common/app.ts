@@ -28,7 +28,13 @@ const i18n = {
 const api = new Api()
 const events = new EventEmitter()
 
-const ws = new WebSocketClient(`ws://${globalThis?.location?.hostname}:3030/ws`)
+// Helper function to construct WebSocket URL based on current protocol
+function getWebSocketUrl(hostname: string, port: number, path: string): string {
+    const protocol = globalThis?.location?.protocol === 'https:' ? 'wss:' : 'ws:'
+    return `${protocol}//${hostname}:${port}${path}`
+}
+
+const ws = new WebSocketClient(getWebSocketUrl(globalThis?.location?.hostname || 'localhost', 3030, '/ws'))
 
 interface InitOptions {
     enableBunchy?: boolean

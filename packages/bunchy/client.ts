@@ -279,11 +279,20 @@ function setupLoggerForwarding(client: WebSocketClient) {
     }
 }
 
+// Helper function to construct WebSocket URL based on current protocol
+function getWebSocketUrl(path: string): string {
+    const protocol = globalThis.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const hostname = globalThis.location.hostname
+    const port = (globalThis as any).location.port
+    return `${protocol}//${hostname}${port ? `:${port}` : ''}${path}`
+}
+
 class BunchyClient extends WebSocketClient {
     constructor() {
         // Use the full path to prevent WebSocketClient from appending /ws
         // The endpoint should match the path provided in the server configuration
-        const url = `ws://${globalThis.location.hostname}:${(globalThis as any).location.port}/bunchy`
+        // Detect HTTP/HTTPS and use ws:// or wss:// accordingly
+        const url = getWebSocketUrl('/bunchy')
 
         super(url)
 
