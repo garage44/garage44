@@ -11,6 +11,7 @@
     "@garage44/bunchy": "workspace:^",
     "@garage44/common": "workspace:^",
     "@garage44/enola": "workspace:^",
+    "@preact/signals": "catalog:",
     "classnames": "catalog:",
     "deepsignal": "catalog:",
     "figlet": "catalog:",
