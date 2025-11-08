@@ -229,22 +229,21 @@ function hideExceptionPage() {
     }
 }
 
-// Helper function to initialize Bunchy with configurable log forwarding
-function initializeBunchy(options: {logPrefix?: string} = {}) {
-    return new BunchyClient(options) 
+// Helper function to initialize Bunchy
+function initializeBunchy() {
+    return new BunchyClient()
 }
 
-function setupLoggerForwarding(client: WebSocketClient, options: {prefix?: string} = {}) {
-    const prefix = options.prefix || 'B'
+function setupLoggerForwarding(client: WebSocketClient) {
     // Set up log forwarding for the browser logger
     if (typeof (logger as any).setLogForwarder === 'function') {
-         
-        console.log('[Bunchy] Setting up log forwarder with prefix:', prefix)
+
+        console.log('[Bunchy] Setting up log forwarder')
         let isForwarding = false
         ;(logger as any).setLogForwarder((logLevel: any, msg: string, args: any[]) => {
             // Prevent recursive forwarding caused by logs emitted during forwarding (e.g., ws-client debug)
             if (isForwarding) {
-                return 
+                return
             }
             // Only forward if we're connected
             if ((client as any).isConnected && (client as any).isConnected()) {
@@ -262,12 +261,11 @@ function setupLoggerForwarding(client: WebSocketClient, options: {prefix?: strin
                         args: serializedArgs,
                         level: logLevel,
                         message: msg,
-                        prefix,
                         source: 'client',
                         timestamp: new Date().toISOString(),
                     })
                     .catch((error: any) => {
-                         
+
                         console.warn('[Bunchy] Failed to forward log:', error)
                     })
                     .finally(() => {
@@ -276,28 +274,25 @@ function setupLoggerForwarding(client: WebSocketClient, options: {prefix?: strin
             }
         })
     } else {
-         
+
         console.warn('[Bunchy] logger.setLogForwarder is not available')
     }
 }
 
 class BunchyClient extends WebSocketClient {
-    private logPrefix: string
-
-    constructor(options: {logPrefix?: string} = {}) {
+    constructor() {
         // Use the full path to prevent WebSocketClient from appending /ws
         // The endpoint should match the path provided in the server configuration
         const url = `ws://${globalThis.location.hostname}:${(globalThis as any).location.port}/bunchy`
 
         super(url)
-        this.logPrefix = options.logPrefix || 'B'
 
-        console.log('[Bunchy] Client initialized with prefix:', this.logPrefix)
+        console.log('[Bunchy] Client initialized')
 
         // Set up route handlers BEFORE connecting to avoid race condition
         this.setupRouter()
         // Use generic helper to attach forwarding
-        setupLoggerForwarding(this, {prefix: this.logPrefix})
+        setupLoggerForwarding(this)
 
         // Small delay to ensure handlers are fully registered before connecting
         setTimeout(() => {
@@ -337,7 +332,7 @@ class BunchyClient extends WebSocketClient {
 
     // Backwards compatible method (delegates to generic function)
     setupLogForwarding() {
-        setupLoggerForwarding(this, {prefix: this.logPrefix}) 
+        setupLoggerForwarding(this)
     }
 }
 

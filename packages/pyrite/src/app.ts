@@ -16,8 +16,7 @@ store.load(persistantState, volatileState)
 initWebSocketSubscriptions()
 
 const app = new App()
-
-app.init(Main, render, h, i18nFormat(workspace.i18n, workspace.config.languages.target), {bunchyPrefix: 'E'})
+app.init(Main, render, h, i18nFormat(workspace.i18n, workspace.config.languages.target), {enableBunchy: process.env.NODE_ENV !== 'production'})
 
 // Export typed i18n object for type-safe translation references
 // The type is inferred from the workspace JSON structure

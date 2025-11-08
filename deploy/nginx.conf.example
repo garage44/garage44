@@ -1,14 +1,50 @@
 # Nginx configuration for Garage44 services
-# Place this in /etc/nginx/sites-available/garage44
-# Then symlink to /etc/nginx/sites-enabled/garage44
+# Place this in /etc/nginx/sites-available/garage44.org
+# Then symlink to /etc/nginx/sites-enabled/garage44.org
 
 # Expressio service - expressio.garage44.org
+# HTTP to HTTPS redirect
 server {
     listen 80;
     server_name expressio.garage44.org;
+    return 301 https://$server_name$request_uri;
+}
+
+# HTTPS server
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name expressio.garage44.org;
+
+    # SSL certificates (Let's Encrypt)
+    ssl_certificate /etc/letsencrypt/live/expressio.garage44.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/expressio.garage44.org/privkey.pem;
+
+    # SSL configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
+    # WebSocket endpoint
+    location /ws {
+        proxy_pass http://localhost:3030;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket timeouts
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
 
     location / {
-        proxy_pass http://127.0.0.1:3030;
+        proxy_pass http://localhost:3030;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -20,12 +56,64 @@ server {
 }
 
 # Pyrite service - pyrite.garage44.org
+# HTTP to HTTPS redirect
 server {
     listen 80;
     server_name pyrite.garage44.org;
+    return 301 https://$server_name$request_uri;
+}
+
+# HTTPS server
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name pyrite.garage44.org;
+
+    # SSL certificates (Let's Encrypt)
+    ssl_certificate /etc/letsencrypt/live/pyrite.garage44.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/pyrite.garage44.org/privkey.pem;
+
+    # SSL configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
+    # SFU WebSocket endpoint (Galène)
+    location /sfu {
+        proxy_pass http://localhost:3031;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket timeouts
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
+
+    # WebSocket endpoint
+    location /ws {
+        proxy_pass http://localhost:3031;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket timeouts
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
 
     location / {
-        proxy_pass http://127.0.0.1:3031;
+        proxy_pass http://localhost:3031;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -37,12 +125,48 @@ server {
 }
 
 # Styleguide service - styleguide.garage44.org
+# HTTP to HTTPS redirect
 server {
     listen 80;
     server_name styleguide.garage44.org;
+    return 301 https://$server_name$request_uri;
+}
+
+# HTTPS server
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name styleguide.garage44.org;
+
+    # SSL certificates (Let's Encrypt)
+    ssl_certificate /etc/letsencrypt/live/styleguide.garage44.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/styleguide.garage44.org/privkey.pem;
+
+    # SSL configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
+    # WebSocket endpoint
+    location /ws {
+        proxy_pass http://localhost:3032;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket timeouts
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
 
     location / {
-        proxy_pass http://127.0.0.1:3032;
+        proxy_pass http://localhost:3032;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -54,10 +178,29 @@ server {
 }
 
 # Webhook endpoint - can be on any subdomain or main domain
-# Restrict by IP if needed (GitHub Actions IP ranges)
+# HTTP to HTTPS redirect
 server {
     listen 80;
     server_name garage44.org www.garage44.org;
+    return 301 https://$server_name$request_uri;
+}
+
+# HTTPS server
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name garage44.org www.garage44.org;
+
+    # SSL certificates (Let's Encrypt)
+    ssl_certificate /etc/letsencrypt/live/garage44.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/garage44.org/privkey.pem;
+
+    # SSL configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
 
     # Webhook endpoint
     location /webhook {
@@ -68,7 +211,7 @@ server {
         # allow 192.30.252.0/22;
         # deny all;
 
-        proxy_pass http://127.0.0.1:3001;
+        proxy_pass http://localhost:3001;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

@@ -31,7 +31,7 @@ const events = new EventEmitter()
 const ws = new WebSocketClient(`ws://${globalThis?.location?.hostname}:3030/ws`)
 
 interface InitOptions {
-    bunchyPrefix?: string
+    enableBunchy?: boolean
 }
 
 
@@ -50,10 +50,11 @@ class App {
         }
         events.emit('app:init')
 
-        // Initialize Bunchy centrally when a prefix is provided (apps pass this in dev)
-        if (options.bunchyPrefix) {
+        // Initialize Bunchy when enabled
+        if (options.enableBunchy) {
+            console.log('[App] Initializing Bunchy')
             try {
-                initializeBunchy({logPrefix: options.bunchyPrefix})
+                initializeBunchy()
             } catch (error) {
                 // Silently fail if bunchy is not available
                 console.warn('[App] Bunchy not available for development features:', error.message)

@@ -26,6 +26,6 @@ const mockTranslations = {
     'styleguide.tokens': 'Design Tokens',
 }
 
-app.init(Main, render, h, mockTranslations, {bunchyPrefix: 'S'})
+app.init(Main, render, h, mockTranslations, {enableBunchy: process.env.NODE_ENV !== 'production'})
 
 export {$s, app}

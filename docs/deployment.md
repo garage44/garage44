@@ -91,7 +91,7 @@ CGO_ENABLED=0 go build -ldflags='-s -w'
 
 ```bash
 cd /home/garage44/galene
-mkdir -p groups data
+mkdir -p groups data recordings
 ```
 
 ### 4. Configure for Nginx SSL Termination
@@ -107,71 +107,22 @@ sudo systemctl enable galene.service
 sudo systemctl start galene.service
 ```
 
-### 6. Set Up galenectl (Administration Tool)
-
-Build and install the `galenectl` utility:
-
-```bash
-cd /home/garage44/galene/galenectl
-go build -ldflags='-s -w'
-sudo cp galenectl /usr/local/bin/
-```
-
-Create administrator configuration:
-
-```bash
-cd /home/garage44
-galenectl -insecure -admin-username admin initial-setup
-```
-
-This creates `galenectl.conf` and `config.json`. Copy `config.json` to Galène's data directory:
-
-```bash
-cp config.json /home/garage44/galene/data/
-```
-
-### 7. Create Groups and Users
-
-Create a group:
-
-```bash
-galenectl -insecure create-group -group my-group
-```
-
-Create an operator (moderator) user:
-
-```bash
-galenectl -insecure create-user -group my-group -user admin -permissions op
-galenectl -insecure set-password -group my-group -user admin
-```
-
-Create a regular user:
-
-```bash
-galenectl -insecure create-user -group my-group -user user1
-galenectl -insecure set-password -group my-group -user user1
-```
-
-### 8. Configure Pyrite to Use Galène
+### 6. Configure Pyrite to Use Galène
 
 Update your `~/.pyriterc` file to point to Galène:
 
 ```json
 {
   "sfu": {
-    "path": "/home/garage44/galene/data",
-    "url": "http://localhost:8443",
-    "admin": {
-      "username": "admin",
-      "password": "your-admin-password"
-    }
+    "path": "/home/garage44/galene",
+    "url": "http://localhost:8443"
   }
 }
 ```
 
 Note: Galène runs with the `-insecure` flag on `http://localhost:8443` since SSL/TLS termination is handled by nginx. The external URL will be `https://your-domain.com` through nginx.
 
-### 9. Check Galène Status
+### 7. Check Galène Status
 
 ```bash
 sudo systemctl status galene.service
@@ -180,7 +131,7 @@ sudo journalctl -u galene.service -f
 
 Galène should be accessible at `http://localhost:8443` (or the port you configured). It runs with the `-insecure` flag since SSL/TLS termination is handled by nginx.
 
-### 10. Firewall Configuration
+### 8. Firewall Configuration
 
 Galène requires the following ports to be open:
 
@@ -289,29 +240,94 @@ sudo systemctl status webhook.service
 sudo pacman -S nginx
 ```
 
-### 2. Configure Nginx
+### 2. Install Certbot
+
+```bash
+sudo pacman -S certbot certbot-nginx
+```
+
+### 3. Obtain SSL Certificates
+
+**Important**: SSL certificates must be generated before configuring nginx with SSL. The nginx configuration requires certificates to exist, otherwise nginx will fail to start.
+
+Obtain SSL certificates for each domain using standalone mode:
+
+```bash
+# Stop nginx temporarily (if running)
+sudo systemctl stop nginx
+
+# For expressio.garage44.org
+sudo certbot certonly --standalone -d expressio.garage44.org
+
+# For pyrite.garage44.org
+sudo certbot certonly --standalone -d pyrite.garage44.org
+
+# For styleguide.garage44.org
+sudo certbot certonly --standalone -d styleguide.garage44.org
+
+# For garage44.org (and www.garage44.org)
+sudo certbot certonly --standalone -d garage44.org -d www.garage44.org
+```
+
+Note: Certbot will need to verify domain ownership. Make sure your DNS records point to your VPS and port 80 is accessible before running certbot.
+
+After generating certificates, verify they exist:
+
+```bash
+ls -la /etc/letsencrypt/live/expressio.garage44.org/
+ls -la /etc/letsencrypt/live/pyrite.garage44.org/
+ls -la /etc/letsencrypt/live/styleguide.garage44.org/
+ls -la /etc/letsencrypt/live/garage44.org/
+```
+
+You should see `fullchain.pem` and `privkey.pem` files in each directory.
+
+### 4. Configure Nginx
 
 Copy the example configuration:
 
 ```bash
-sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/garage44
-sudo ln -s /etc/nginx/sites-available/garage44 /etc/nginx/sites-enabled/
+sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/garage44.org
+sudo ln -s /etc/nginx/sites-available/garage44.org /etc/nginx/sites-enabled/
 ```
 
 Edit the configuration to match your domain names:
 
 ```bash
-sudo nano /etc/nginx/sites-available/garage44
+sudo nano /etc/nginx/sites-available/garage44.org
 ```
 
-### 3. Test and Reload Nginx
+### 5. Test and Reload Nginx
+
+**Important**: Make sure all SSL certificates have been generated before testing nginx configuration. If certificates are missing, nginx will fail to start.
 
 ```bash
+# Test configuration
 sudo nginx -t
+
+# If test passes, reload nginx
 sudo systemctl reload nginx
+
+# If nginx is not running, start it
+sudo systemctl start nginx
 ```
 
-### 4. Optional: Restrict Webhook Endpoint by IP
+### 6. Set Up Automatic Certificate Renewal
+
+Certbot certificates expire every 90 days. Set up automatic renewal:
+
+```bash
+# Test renewal
+sudo certbot renew --dry-run
+
+# Certbot automatically sets up a systemd timer for renewal
+# Check timer status
+systemctl status certbot.timer
+```
+
+The timer will automatically renew certificates before they expire.
+
+### 7. Optional: Restrict Webhook Endpoint by IP
 
 To restrict the webhook endpoint to GitHub Actions IP ranges, uncomment the IP restrictions in the nginx configuration:
 
@@ -336,7 +352,7 @@ Go to your GitHub repository → Settings → Secrets and variables → Actions 
 
 Add the following secrets:
 
-- **WEBHOOK_URL**: The full URL to your webhook endpoint (e.g., `http://garage44.org/webhook` or `https://garage44.org/webhook`)
+- **WEBHOOK_URL**: The full URL to your webhook endpoint (e.g., `https://garage44.org/webhook`)
 - **WEBHOOK_SECRET**: The same secret you set in the VPS environment variables
 
 ### 2. Verify Secrets

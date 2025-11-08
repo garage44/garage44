@@ -155,7 +155,6 @@ function setupLogForwarding(wsManager: any, logPrefix: string) {
             args: string[]
             level: string
             message: string
-            prefix?: string
             source: string
             timestamp: string
         }
