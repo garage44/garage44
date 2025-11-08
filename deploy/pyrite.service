@@ -8,9 +8,9 @@ User=garage44
 Group=garage44
 WorkingDirectory=/home/garage44/garage44/packages/pyrite
 Environment="NODE_ENV=production"
-Environment="BUN_ENV=development"
+Environment="BUN_ENV=production"
 Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/garage44/.bun/bin/bun run dev -- --port 3031
+ExecStart=/home/garage44/.bun/bin/bun run server -- --port 3031
 Restart=always
 RestartSec=10
 StandardOutput=journal
