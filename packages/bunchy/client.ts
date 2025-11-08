@@ -284,7 +284,10 @@ function getWebSocketUrl(path: string): string {
     const protocol = globalThis.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const hostname = globalThis.location.hostname
     const port = (globalThis as any).location.port
-    return `${protocol}//${hostname}${port ? `:${port}` : ''}${path}`
+    // Only include port if it's explicitly set and not the default (80 for HTTP, 443 for HTTPS)
+    // When behind Nginx with SSL, the port will be empty (defaults to 443) and Nginx will proxy to backend
+    const portSuffix = port && port !== '80' && port !== '443' ? `:${port}` : ''
+    return `${protocol}//${hostname}${portSuffix}${path}`
 }
 
 class BunchyClient extends WebSocketClient {
