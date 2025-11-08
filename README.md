@@ -7,9 +7,9 @@ Modern web applications built with Bun, Preact, and DeepSignal.
 
 ## Projects
 
-### Expressio - AI-Powered i18n
+### Expressio - Translation automation through AI
 
-Translation automation through AI. Streamline internationalization workflows with intelligent translation. Connects to DeepL, Claude, and other providers through Enola.
+Streamline internationalization workflows with intelligent translation. Connects to DeepL, Claude, and other providers through Enola.
 
 ```bash
 bunx @garage44/expressio start
