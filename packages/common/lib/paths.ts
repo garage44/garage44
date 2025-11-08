@@ -1,6 +1,5 @@
 import {hash, keyMod, keyPath, mergeDeep} from './utils'
 import {logger} from './logger'
-import {I18N_PATH_SYMBOL} from '@garage44/expressio/lib/i18n'
 
 interface Tag {
     cache?: string
@@ -88,10 +87,6 @@ function pathCreate(sourceObject:Record<string, unknown>, tagPath:string[], valu
         if ('_soft' in value) {
             ref[id]._soft = value._soft
         }
-
-        // Attach path symbol for type-safe translation references
-        // Path format: i18n.path.to.translation
-        ref[id][I18N_PATH_SYMBOL] = `i18n.${tag}`
 
         logger.info(`create path tag: ${tag} ${'_soft' in value ? '(soft create)' : ''}`)
         targetLanguages.forEach((language) => {

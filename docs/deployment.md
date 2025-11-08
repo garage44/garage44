@@ -125,7 +125,7 @@ Environment="WEBHOOK_SECRET=your-secret-here"
 Environment="WEBHOOK_PORT=3001"
 Environment="REPO_PATH=/home/garage44/garage44"
 Environment="DEPLOY_USER=garage44"
-ExecStart=/usr/bin/bun lib/webhook-server.ts
+ExecStart=bun lib/webhook-server.ts
 Restart=always
 RestartSec=10
 StandardOutput=journal

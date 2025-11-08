@@ -9,7 +9,7 @@ Group=garage44
 WorkingDirectory=/home/garage44/garage44/packages/expressio
 Environment="NODE_ENV=production"
 Environment="BUN_ENV=development"
-ExecStart=/usr/bin/bun run dev -- --port 3030
+ExecStart=bun run dev -- --port 3030
 Restart=always
 RestartSec=10
 StandardOutput=journal
