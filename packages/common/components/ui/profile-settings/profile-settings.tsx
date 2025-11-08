@@ -1,8 +1,8 @@
 import {useEffect} from 'preact/hooks'
-import {Icon} from '@garage44/common/components'
-import {api, notifier, logger, store} from '@garage44/common/app'
+import {Icon} from '@/components'
+import {api, notifier, logger, store} from '@/app'
 import {AvatarUpload} from '../avatar-upload/avatar-upload'
-import {FieldSelect, ThemeToggle} from '@garage44/common/components'
+import {FieldSelect, ThemeToggle} from '@/components'
 import './profile-settings.css'
 
 interface ProfileSettingsProps {

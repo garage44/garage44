@@ -1,7 +1,7 @@
 import {useRef, useState, useEffect} from 'preact/hooks'
-import {Icon} from '@garage44/common/components'
-import {api, notifier, logger} from '@garage44/common/app'
-import {getAvatarUrl} from '@garage44/common/lib/avatar'
+import {Icon} from '@/components'
+import {api, notifier, logger} from '@/app'
+import {getAvatarUrl} from '@/lib/avatar'
 import './avatar-upload.css'
 
 interface AvatarUploadProps {

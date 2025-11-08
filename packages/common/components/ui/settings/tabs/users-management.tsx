@@ -1,7 +1,7 @@
 import {useEffect, useState, useCallback} from 'preact/hooks'
 import {route, getCurrentUrl} from 'preact-router'
-import {Icon, Button, CollectionView} from '@garage44/common/components'
-import {api, notifier} from '@garage44/common/app'
+import {Icon, Button, CollectionView} from '@/components'
+import {api, notifier} from '@/app'
 import {deepSignal} from 'deepsignal'
 import './users-management.css'
 

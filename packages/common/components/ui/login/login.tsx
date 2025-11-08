@@ -1,7 +1,7 @@
 import {useEffect, useState, useCallback, useMemo} from 'preact/hooks'
-import {Button, FieldText} from '@garage44/common/components'
+import {Button, FieldText} from '@/components'
 import {deepSignal} from 'deepsignal'
-import {createValidator, required} from '@garage44/common/lib/validation'
+import {createValidator, required} from '@/lib/validation'
 import {$t} from '@/app'
 
 const TRANSLATIONS = [

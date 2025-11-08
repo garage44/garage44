@@ -1,5 +1,5 @@
 import {Icon} from '../icon/icon'
-import {store} from '@garage44/common/app'
+import {store} from '@/app'
 
 const themes = ['light', 'dark', 'system'] as const
 

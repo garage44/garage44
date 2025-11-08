@@ -1,7 +1,7 @@
 import {useEffect} from 'preact/hooks'
 import {AvatarUpload} from '../../avatar-upload/avatar-upload'
-import {FieldSelect, ThemeToggle} from '@garage44/common/components'
-import {logger, store} from '@garage44/common/app'
+import {FieldSelect, ThemeToggle} from '@/components'
+import {logger, store} from '@/app'
 import './profile.css'
 
 export interface ProfileTabProps {

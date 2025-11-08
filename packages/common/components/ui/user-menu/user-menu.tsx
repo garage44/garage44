@@ -1,7 +1,7 @@
 import {ContextMenu} from '../context-menu/context-menu'
 import {MenuItem} from '../menu-item/menu-item'
-import {store} from '@garage44/common/app'
-import {getAvatarUrl} from '@garage44/common/lib/avatar'
+import {store} from '@/app'
+import {getAvatarUrl} from '@/lib/avatar'
 import classnames from 'classnames'
 import './user-menu.css'
 
