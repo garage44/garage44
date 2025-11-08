@@ -35,7 +35,7 @@ cli.usage('Usage: $0 [task]')
                 type: 'string',
             })
             .option('port', {
-                default: 8080,
+                default: 3032,
                 describe: 'Port to bind the server to',
                 type: 'number',
             })
