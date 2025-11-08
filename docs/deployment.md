@@ -152,6 +152,7 @@ sudo cp deploy/expressio.service /etc/systemd/system/
 sudo cp deploy/pyrite.service /etc/systemd/system/
 sudo cp deploy/styleguide.service /etc/systemd/system/
 sudo cp deploy/galene.service /etc/systemd/system/
+sudo cp deploy/webhook.service /etc/systemd/system/
 ```
 
 ### 2. Reload Systemd
@@ -167,11 +168,13 @@ sudo systemctl enable expressio.service
 sudo systemctl enable pyrite.service
 sudo systemctl enable styleguide.service
 sudo systemctl enable galene.service
+sudo systemctl enable webhook.service
 
 sudo systemctl start expressio.service
 sudo systemctl start pyrite.service
 sudo systemctl start styleguide.service
 sudo systemctl start galene.service
+sudo systemctl start webhook.service
 ```
 
 ### 4. Check Service Status
@@ -181,6 +184,7 @@ sudo systemctl status expressio.service
 sudo systemctl status pyrite.service
 sudo systemctl status styleguide.service
 sudo systemctl status galene.service
+sudo systemctl status webhook.service
 ```
 
 ### 5. View Logs
@@ -190,38 +194,26 @@ sudo journalctl -u expressio.service -f
 sudo journalctl -u pyrite.service -f
 sudo journalctl -u styleguide.service -f
 sudo journalctl -u galene.service -f
+sudo journalctl -u webhook.service -f
 ```
 
 ## Webhook Server
 
-### 1. Create Systemd Service for Webhook Server
+### 1. Install Systemd Service for Webhook Server
 
-Create `/etc/systemd/system/webhook.service`:
+The webhook service file is included in the repository. Copy it to systemd:
 
-```ini
-[Unit]
-Description=GitHub Webhook Server
-After=network.target
-
-[Service]
-Type=simple
-User=garage44
-Group=garage44
-WorkingDirectory=/home/garage44/garage44
-Environment="WEBHOOK_SECRET=your-secret-here"
-Environment="WEBHOOK_PORT=3001"
-Environment="REPO_PATH=/home/garage44/garage44"
-Environment="DEPLOY_USER=garage44"
-Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/garage44/.bun/bin/bun lib/webhook-server.ts
-Restart=always
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
+```bash
+sudo cp deploy/webhook.service /etc/systemd/system/
 ```
+
+**Important**: Before starting the service, edit the service file to set your webhook secret:
+
+```bash
+sudo nano /etc/systemd/system/webhook.service
+```
+
+Update the `WEBHOOK_SECRET` environment variable with your actual secret.
 
 ### 2. Enable and Start Webhook Server
 
@@ -370,7 +362,7 @@ sudo visudo
 Add this line:
 
 ```
-garage44 ALL=(ALL) NOPASSWD: /bin/systemctl restart expressio.service, /bin/systemctl restart pyrite.service, /bin/systemctl restart styleguide.service
+garage44 ALL=(ALL) NOPASSWD: /bin/systemctl restart expressio.service, /bin/systemctl restart pyrite.service, /bin/systemctl restart styleguide.service, /bin/systemctl restart webhook.service
 ```
 
 ## Testing the Deployment
