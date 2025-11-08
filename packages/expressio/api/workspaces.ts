@@ -3,16 +3,101 @@ import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import {config} from '../lib/config.ts'
 import fs from 'fs/promises'
 import path from 'node:path'
+import {homedir} from 'node:os'
 
 import {syncLanguage} from '../lib/sync.ts'
+
+/**
+ * Get the browse root directory using ~/.expressio/workspaces convention
+ * Following the same pattern as avatar storage (~/.{appName}/avatars)
+ */
+function getBrowseRoot(): string {
+    return path.join(homedir(), '.expressio', 'workspaces')
+}
+
+/**
+ * Ensure the browse root directory exists, creating it if missing
+ */
+async function ensureBrowseRootExists(): Promise<void> {
+    const browseRoot = getBrowseRoot()
+    try {
+        // Check if the directory already exists and is a directory
+        const stats = await fs.stat(browseRoot)
+        if (!stats.isDirectory()) {
+            throw new Error(`Path exists but is not a directory: ${browseRoot}`)
+        }
+    } catch (error: any) {
+        // If error is because path doesn't exist, create it
+        if (error.code === 'ENOENT') {
+            // Check parent directory first
+            const parentDir = path.dirname(browseRoot)
+            try {
+                const parentStats = await fs.stat(parentDir)
+                if (!parentStats.isDirectory()) {
+                    throw new Error(`Parent path exists but is not a directory: ${parentDir}. Cannot create ${browseRoot}`)
+                }
+            } catch (parentError: any) {
+                if (parentError.code === 'ENOENT') {
+                    // Parent doesn't exist, recursive mkdir will create it
+                } else {
+                    throw new Error(`Cannot create browse root: ${parentError.message}`)
+                }
+            }
+            // Create the directory (recursive will create parent if needed)
+            await fs.mkdir(browseRoot, {recursive: true})
+            logger.info(`[api] Created browse root directory: ${browseRoot}`)
+        } else {
+            // Other error (e.g., ENOTDIR - parent is a file)
+            throw new Error(`Cannot create browse root directory: ${error.message}`)
+        }
+    }
+}
+
+/**
+ * Validate that a path is within the browse root directory
+ * Returns the normalized absolute path if valid, throws error if outside root
+ */
+function validateBrowsePath(requestedPath: string | null | undefined): string {
+    const browseRoot = getBrowseRoot()
+    const resolvedRoot = path.resolve(browseRoot)
+
+    // Default to browse root if no path provided
+    const reqPath = requestedPath || browseRoot
+    const absPath = path.isAbsolute(reqPath) ? reqPath : path.resolve(browseRoot, reqPath)
+    const resolvedPath = path.resolve(absPath)
+
+    // Check if the resolved path is within the browse root
+    // Ensure the resolved path starts with the resolved root
+    if (!resolvedPath.startsWith(resolvedRoot + path.sep) && resolvedPath !== resolvedRoot) {
+        throw new Error(`Path is outside allowed browse root: ${resolvedPath}`)
+    }
+
+    return resolvedPath
+}
 
 export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // WebSocket API routes (unchanged) - these are for real-time features
     const api = wsManager.api
     api.get('/api/workspaces/browse', async(context, request) => {
-        // Determine the path to browse
-        const reqPath = request.data?.path || process.cwd() as any
-        const absPath = path.isAbsolute(reqPath) ? reqPath : path.resolve(process.cwd(), reqPath)
+        // Ensure browse root exists
+        try {
+            await ensureBrowseRootExists()
+        } catch (error: any) {
+            logger.error(`[api] Failed to ensure browse root exists: ${error.message}`)
+            throw new Error(`Cannot initialize browse root: ${error.message}. Please check that ~/.expressio is a directory, not a file.`)
+        }
+
+        // Validate and get the path to browse
+        let absPath: string
+        try {
+            absPath = validateBrowsePath(request.data?.path)
+        } catch (error: any) {
+            logger.error(`[api] Invalid browse path: ${error.message}`)
+            throw new Error(`Access denied: ${error.message}`)
+        }
+
+        const browseRoot = getBrowseRoot()
+        const resolvedRoot = path.resolve(browseRoot)
 
         // List directories
         let entries = []
@@ -20,6 +105,13 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
             const dirents = await fs.readdir(absPath, {withFileTypes: true})
             entries = await Promise.all(dirents.filter((d) => d.isDirectory()).map((dirent) => {
                 const dirPath = path.join(absPath, dirent.name)
+                // Validate that child directories are also within root
+                try {
+                    validateBrowsePath(dirPath)
+                } catch {
+                    // Skip directories outside the root
+                    return null
+                }
                 // Check if this directory is a workspace root
                 const is_workspace = workspaces.workspaces.some((ws) => path.dirname(ws.config.source_file) === dirPath)
                 return {
@@ -27,13 +119,25 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
                     name: dirent.name,
                     path: dirPath,
                 }
-            }))
+            }).filter((entry) => entry !== null))
         } catch (error) {
             logger.error(`[api] Failed to list directory: ${absPath} - ${error}`)
         }
 
-        // Find parent path
-        const parent = path.dirname(absPath)
+        // Find parent path - set to null if we're at the browse root
+        const resolvedPath = path.resolve(absPath)
+        let parent: string | null = null
+        if (resolvedPath !== resolvedRoot) {
+            const parentPath = path.dirname(absPath)
+            // Validate parent path is still within root (should always be true, but extra safety check)
+            try {
+                parent = validateBrowsePath(parentPath)
+            } catch {
+                // If parent is outside root, set to null (shouldn't happen, but safety check)
+                parent = null
+            }
+        }
+
         // Find current workspace if any
         const currentWorkspace = workspaces.workspaces.find((ws) => path.dirname(ws.config.source_file) === absPath) || null
 

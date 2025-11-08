@@ -57,11 +57,13 @@ export function DirectoryBrowser({onSelect}) {
         <div class="wrapper">
             <div class="current-path">{state.current.path}</div>
             <div class="directory-list">
-                <div class="directory-item">
-                    <div class="directory"
-                        onClick={() => loadDirectory(state.parentPath)}
-                    >..</div>
-                </div>
+                {state.parentPath && (
+                    <div class="directory-item">
+                        <div class="directory"
+                            onClick={() => loadDirectory(state.parentPath)}
+                        >..</div>
+                    </div>
+                )}
                 {state.directories.map((dir) => (
                     <div
                         class={classnames('directory', {'is-workspace': dir.is_workspace})}

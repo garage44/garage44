@@ -220,7 +220,10 @@ const EXTENDED_LANGUAGE_CODES = {
     'zh-hans': 'zho-hans', // Simplified Chinese (Han Simplified)
 }
 
-function toIso6391(iso6392Code: string): string | null {
+function toIso6391(iso6392Code: string | null | undefined): string | null {
+    if (!iso6392Code) {
+        return null
+    }
     const code = iso6392Code.toLowerCase()
     if (code.includes('-')) {
         // For codes like 'eng-gbr', convert to 'en-gb'
