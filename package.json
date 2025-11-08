@@ -8,6 +8,7 @@
     "@types/node": "^22.13.13",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
+    "eslint": "^9.17.0",
     "eslint-plugin-perfectionist": "^4.15.1",
     "eslint-plugin-react": "^7.37.5",
     "lightningcss": "^1.30.2",
@@ -54,6 +55,7 @@
           "@types/node": "^22.13.14",
           "@types/yargs": "^17.0.32",
           "bun-types": "^1.2.7",
+          "eslint": "^9.17.0",
           "oxlint": "^0.16.6",
           "stylelint": "^16.17.0",
           "stylelint-order": "^7.0.0"

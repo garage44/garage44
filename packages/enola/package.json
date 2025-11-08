@@ -13,9 +13,13 @@
     "types.ts"
   ],
   "main": "index.ts",
+  "devDependencies": {
+    "eslint": "catalog:dev",
+    "oxlint": "catalog:dev"
+  },
   "scripts": {
     "clean": "rm -rf dist;rm -rf node_modules",
-    "lint:ts": "oxlint **/*.ts --config ../../.oxlintrc.json;eslint **/*.{ts,tsx} --config ../../eslint.config.js",
+    "lint:ts": "oxlint **/*.ts --config ../../.oxlintrc.json;eslint **/*.ts --config ../../eslint.config.js",
     "test": "bun test"
   },
   "author": "Garage44",
