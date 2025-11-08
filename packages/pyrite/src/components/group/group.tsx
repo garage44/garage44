@@ -2,7 +2,7 @@ import {IconLogo} from '@garage44/common/components'
 import {Stream} from '../stream/stream'
 import {useEffect, useRef, useMemo, useCallback} from 'preact/hooks'
 import {$s} from '@/app'
-import {api, notifier} from '@garage44/common/app'
+import {notifier} from '@garage44/common/app'
 import {connect} from '@/models/sfu/sfu'
 import {currentGroup} from '@/models/group'
 
@@ -112,7 +112,7 @@ export const Group = () => {
         attemptAutoConnect()
     }, [])
 
-    const handleStreamUpdate = useCallback((updatedStream: any) => {
+    const handleStreamUpdate = useCallback((updatedStream: {id: string}) => {
         const streamIndex = $s.streams.findIndex((s) => s.id === updatedStream.id)
         if (streamIndex !== -1) {
             Object.assign($s.streams[streamIndex], updatedStream)

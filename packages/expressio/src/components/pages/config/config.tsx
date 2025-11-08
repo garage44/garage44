@@ -5,7 +5,6 @@ import {Button, FieldSelect, FieldText} from '@garage44/common/components'
 import {createValidator, required} from '@garage44/common/lib/validation'
 import {WorkspaceSelector} from '@/components/elements'
 import {loadConfig} from '@/lib/config'
-import {persistantState} from '@/lib/state'
 import {useEffect} from 'preact/hooks'
 
 export function Config() {

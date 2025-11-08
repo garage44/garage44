@@ -26,9 +26,10 @@ async function ensureBrowseRootExists(): Promise<void> {
         if (!stats.isDirectory()) {
             throw new Error(`Path exists but is not a directory: ${browseRoot}`)
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         // If error is because path doesn't exist, create it
-        if (error.code === 'ENOENT') {
+        const nodeError = error as NodeJS.ErrnoException
+        if (nodeError.code === 'ENOENT') {
             // Check parent directory first
             const parentDir = path.dirname(browseRoot)
             try {
@@ -36,11 +37,12 @@ async function ensureBrowseRootExists(): Promise<void> {
                 if (!parentStats.isDirectory()) {
                     throw new Error(`Parent path exists but is not a directory: ${parentDir}. Cannot create ${browseRoot}`)
                 }
-            } catch (parentError: any) {
-                if (parentError.code === 'ENOENT') {
+            } catch (parentError: unknown) {
+                const parentNodeError = parentError as NodeJS.ErrnoException
+                if (parentNodeError.code === 'ENOENT') {
                     // Parent doesn't exist, recursive mkdir will create it
                 } else {
-                    throw new Error(`Cannot create browse root: ${parentError.message}`)
+                    throw new Error(`Cannot create browse root: ${parentNodeError.message}`)
                 }
             }
             // Create the directory (recursive will create parent if needed)
@@ -48,7 +50,8 @@ async function ensureBrowseRootExists(): Promise<void> {
             logger.info(`[api] Created browse root directory: ${browseRoot}`)
         } else {
             // Other error (e.g., ENOTDIR - parent is a file)
-            throw new Error(`Cannot create browse root directory: ${error.message}`)
+            const nodeError = error as NodeJS.ErrnoException
+            throw new Error(`Cannot create browse root directory: ${nodeError.message}`)
         }
     }
 }
@@ -82,18 +85,20 @@ export function registerWorkspacesWebSocketApiRoutes(wsManager: WebSocketServerM
         // Ensure browse root exists
         try {
             await ensureBrowseRootExists()
-        } catch (error: any) {
-            logger.error(`[api] Failed to ensure browse root exists: ${error.message}`)
-            throw new Error(`Cannot initialize browse root: ${error.message}. Please check that ~/.expressio is a directory, not a file.`)
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error)
+            logger.error(`[api] Failed to ensure browse root exists: ${errorMessage}`)
+            throw new Error(`Cannot initialize browse root: ${errorMessage}. Please check that ~/.expressio is a directory, not a file.`)
         }
 
         // Validate and get the path to browse
         let absPath: string
         try {
             absPath = validateBrowsePath(request.data?.path)
-        } catch (error: any) {
-            logger.error(`[api] Invalid browse path: ${error.message}`)
-            throw new Error(`Access denied: ${error.message}`)
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error)
+            logger.error(`[api] Invalid browse path: ${errorMessage}`)
+            throw new Error(`Access denied: ${errorMessage}`)
         }
 
         const browseRoot = getBrowseRoot()

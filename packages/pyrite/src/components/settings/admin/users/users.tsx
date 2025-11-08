@@ -5,8 +5,8 @@ import {$s} from '@/app'
 import {logger, $t, api} from '@garage44/common/app'
 
 interface UsersProps {
-    userId?: string
     children?: ComponentChildren
+    userId?: string
 }
 
 /**
@@ -14,7 +14,7 @@ interface UsersProps {
  * track of the current user, so its child components
  * don't have to.
  */
-export const Users = ({ userId, children }: UsersProps) => {
+export const Users = ({children, userId}: UsersProps) => {
     const loadUser = async (userId: string) => {
         logger.debug(`load user ${userId}`)
         const user = $s.admin.users.find((i) => i.id === parseInt(userId))

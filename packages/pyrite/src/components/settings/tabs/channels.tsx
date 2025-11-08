@@ -1,7 +1,6 @@
-import {FieldText, FieldSelect, Button} from '@garage44/common/components'
+import {FieldText, Button} from '@garage44/common/components'
 import {useEffect, useState} from 'preact/hooks'
-import {$s} from '@/app'
-import {$t, api, notifier} from '@garage44/common/app'
+import {api, notifier} from '@garage44/common/app'
 import type {Channel} from '@/types'
 import './channels.css'
 
@@ -9,9 +8,9 @@ export default function TabChannels() {
     const [channels, setChannels] = useState<Channel[]>([])
     const [loading, setLoading] = useState(false)
     const [editing, setEditing] = useState<number | null>(null)
-    const [formData, setFormData] = useState<{name: string; description: string}>({
-        name: '',
+    const [formData, setFormData] = useState<{description: string; name: string}>({
         description: '',
+        name: '',
     })
 
     const loadChannels = async () => {
@@ -19,7 +18,7 @@ export default function TabChannels() {
         try {
             const data = await api.get('/api/channels')
             setChannels(Array.isArray(data) ? data : [])
-        } catch (error) {
+        } catch {
             notifier.notify({level: 'error', message: 'Failed to load channels'})
         } finally {
             setLoading(false)
@@ -34,9 +33,9 @@ export default function TabChannels() {
         try {
             const newChannel = await api.post('/api/channels', formData)
             setChannels([...channels, newChannel])
-            setFormData({name: '', description: ''})
+            setFormData({description: '', name: ''})
             notifier.notify({level: 'success', message: 'Channel created'})
-        } catch (error) {
+        } catch {
             notifier.notify({level: 'error', message: 'Failed to create channel'})
         }
     }
@@ -46,9 +45,9 @@ export default function TabChannels() {
             const updated = await api.put(`/api/channels/${channelId}`, formData)
             setChannels(channels.map((c) => c.id === channelId ? updated : c))
             setEditing(null)
-            setFormData({name: '', description: ''})
+            setFormData({description: '', name: ''})
             notifier.notify({level: 'success', message: 'Channel updated'})
-        } catch (error) {
+        } catch {
             notifier.notify({level: 'error', message: 'Failed to update channel'})
         }
     }
@@ -60,7 +59,7 @@ export default function TabChannels() {
             await api.delete(`/api/channels/${channelId}`)
             setChannels(channels.filter((c) => c.id !== channelId))
             notifier.notify({level: 'success', message: 'Channel deleted'})
-        } catch (error) {
+        } catch {
             notifier.notify({level: 'error', message: 'Failed to delete channel'})
         }
     }
@@ -68,14 +67,14 @@ export default function TabChannels() {
     const startEdit = (channel: Channel) => {
         setEditing(channel.id)
         setFormData({
-            name: channel.name,
             description: channel.description || '',
+            name: channel.name,
         })
     }
 
     const cancelEdit = () => {
         setEditing(null)
-        setFormData({name: '', description: ''})
+        setFormData({description: '', name: ''})
     }
 
     return (

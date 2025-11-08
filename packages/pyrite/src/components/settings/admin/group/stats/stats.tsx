@@ -19,8 +19,8 @@ interface StreamStats {
 }
 
 interface ClientStats {
-    id: string
     collapsed: boolean
+    id: string
     up: StreamStats[]
 }
 
@@ -28,15 +28,15 @@ interface Stats {
     clients: Record<string, ClientStats>
 }
 
-export default function Stats({ groupId }: StatsProps) {
-    const [stats, setStats] = useState<Stats>({ clients: {} })
+export default function Stats({groupId}: StatsProps) {
+    const [stats, setStats] = useState<Stats>({clients: {}})
     const [statProps, setStatProps] = useState({
         bitrate: false,
         jitter: false,
         loss: false,
         maxBitrate: false,
     })
-    const [intervalId, setIntervalId] = useState<number | null>(null)
+    const [setIntervalId] = useState<number | null>(null)
 
     const statEnabled = (track: TrackStats, property: keyof TrackStats) => {
         // Already enabled; return quick
@@ -52,12 +52,12 @@ export default function Stats({ groupId }: StatsProps) {
         const apiStats = await api.get(`/api/dashboard/${groupId}`)
 
         if (!apiStats || !apiStats.clients) {
-            setStats({ clients: {} })
+            setStats({clients: {}})
             return
         }
 
-        const clients = apiStats.clients.map((i: any) => i.id)
-        const newStats = { ...stats }
+        const clients = apiStats.clients.map((i: {id: string}) => i.id)
+        const newStats = {...stats}
 
         const removedClients = Object.keys(newStats.clients).filter((i) => !clients.includes(i))
         // A client was removed
@@ -103,16 +103,16 @@ export default function Stats({ groupId }: StatsProps) {
                             maxBitrate: [track.maxBitrate],
                         }
                     } else {
-                        if (statEnabled(trackRef[trackIndex], 'bitrate')) setStatProps(prev => ({ ...prev, bitrate: true }))
+                        if (statEnabled(trackRef[trackIndex], 'bitrate')) setStatProps((prev) => ({...prev, bitrate: true}))
                         trackRef[trackIndex].bitrate.push(track.bitrate)
 
-                        if (statEnabled(trackRef[trackIndex], 'jitter')) setStatProps(prev => ({ ...prev, jitter: true }))
+                        if (statEnabled(trackRef[trackIndex], 'jitter')) setStatProps((prev) => ({...prev, jitter: true}))
                         trackRef[trackIndex].jitter.push(track.jitter)
 
-                        if (statEnabled(trackRef[trackIndex], 'loss')) setStatProps(prev => ({ ...prev, loss: true }))
+                        if (statEnabled(trackRef[trackIndex], 'loss')) setStatProps((prev) => ({...prev, loss: true}))
                         trackRef[trackIndex].loss.push(track.loss)
 
-                        if (statEnabled(trackRef[trackIndex], 'maxBitrate')) setStatProps(prev => ({ ...prev, maxBitrate: true }))
+                        if (statEnabled(trackRef[trackIndex], 'maxBitrate')) setStatProps((prev) => ({...prev, maxBitrate: true}))
                         trackRef[trackIndex].maxBitrate.push(track.maxBitrate)
                     }
                 }
@@ -123,7 +123,7 @@ export default function Stats({ groupId }: StatsProps) {
     }
 
     const toggleCollapse = (clientId: string) => {
-        setStats(prev => ({
+        setStats((prev) => ({
             clients: {
                 ...prev.clients,
                 [clientId]: {

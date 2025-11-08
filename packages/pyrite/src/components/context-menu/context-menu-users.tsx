@@ -6,10 +6,10 @@ import {$t, events, notifier} from '@garage44/common/app'
 import {connection} from '@/models/sfu/sfu'
 
 interface UsersContextMenuProps {
-    user: any // TODO: Define proper user type
+    user: {data?: {availability?: string; raisehand?: boolean}; id: string; username: string}
 }
 
-export default function UsersContextMenu({ user }: UsersContextMenuProps) {
+export default function UsersContextMenu({user}: UsersContextMenuProps) {
     const [active, setActive] = useState(false)
 
     const statusOptions = [
@@ -62,18 +62,18 @@ export default function UsersContextMenu({ user }: UsersContextMenuProps) {
         toggleMenu()
     }
 
-    const setAvailability = (availability: any) => {
+    const setAvailability = (availability: string) => {
         connection?.userAction('setdata', connection.id, {availability})
     }
 
-    const toggleMenu = (e?: any, forceState?: any) => {
+    const toggleMenu = (e?: MouseEvent, forceState?: boolean | MouseEvent) => {
         // The click-outside
-        if (typeof forceState === 'object') {
+        if (forceState && typeof forceState === 'object' && !('button' in forceState)) {
             setActive(false)
             return
         }
 
-        setActive(prev => !prev)
+        setActive((prev) => !prev)
     }
 
     const toggleOperator = () => {

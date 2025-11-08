@@ -3,16 +3,15 @@ import {createAvatarRoutes, getAvatarStoragePath} from '@garage44/common/lib/ava
 import {logger, runtime} from '../service.ts'
 import {syncUsers} from '../lib/sync.ts'
 import path from 'node:path'
-import {homedir} from 'node:os'
 import fs from 'fs-extra'
 
 // Helper functions using UserManager
 const loadUser = (userId: string) => userManager.getUser(userId)
 const loadUsers = () => userManager.listUsers()
-const saveUser = (userId: string, data: any) => userManager.updateUser(userId, data)
-const saveUsers = async (users) => {
+const saveUser = (userId: string, data: unknown) => userManager.updateUser(userId, data)
+const saveUsers = async (users: unknown[]) => {
     for (const user of users) {
-        await userManager.updateUser(user.id || user.username || user.name, user)
+        await userManager.updateUser((user as {id?: string; name?: string; username?: string}).id || (user as {id?: string; name?: string; username?: string}).username || (user as {id?: string; name?: string; username?: string}).name, user)
     }
 }
 
@@ -53,7 +52,11 @@ export function registerUsersWebSocketApiRoutes(wsManager: WebSocketServerManage
     })
 }
 
-export default function(router: any) {
+export default function(router: unknown) {
+    const routerTyped = router as {
+        get: (path: string, handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>) => void
+        post: (path: string, handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>) => void
+    }
     // Register common avatar routes (placeholder images and uploaded avatars)
     const avatarRoutes = createAvatarRoutes({
         appName: 'pyrite',
@@ -63,14 +66,14 @@ export default function(router: any) {
     avatarRoutes.registerPlaceholderRoute(router)
     avatarRoutes.registerAvatarRoute(router)
 
-    router.get('/api/users', async (req: Request, params: Record<string, string>, session: any) => {
+    routerTyped.get('/api/users', async (_req: Request, _params: Record<string, string>, _session: unknown) => {
         const users = await loadUsers()
         return new Response(JSON.stringify(users), {
             headers: {'Content-Type': 'application/json'},
         })
     })
 
-    router.get('/api/users/template', async (req: Request, params: Record<string, string>, session: any) => {
+    routerTyped.get('/api/users/template', async (_req: Request, _params: Record<string, string>, _session: unknown) => {
         return new Response(JSON.stringify(userTemplate()), {
             headers: {'Content-Type': 'application/json'},
         })
@@ -81,7 +84,7 @@ export default function(router: any) {
      * GET /api/users/me
      * IMPORTANT: This must be registered BEFORE /api/users/:userid to avoid route matching issues
      */
-    router.get('/api/users/me', async (req: Request, params: Record<string, string>, session: any) => {
+    routerTyped.get('/api/users/me', async (_req: Request, _params: Record<string, string>, session: unknown) => {
         logger.info('[Users API] /api/users/me - HANDLER CALLED')
         logger.info(`[Users API] /api/users/me - session exists: ${!!session}, type: ${typeof session}`)
         logger.info(`[Users API] /api/users/me - session.userid: ${session?.userid || 'undefined/null'}`)
@@ -134,7 +137,7 @@ export default function(router: any) {
         }
     })
 
-    router.get('/api/users/:userid', async (req: Request, params: Record<string, string>, session: any) => {
+    routerTyped.get('/api/users/:userid', async (_req: Request, params: Record<string, string>, _session: unknown) => {
         const userId = params.param0
         // Basic path traversal protection
         if (userId.match(/\.\.\//g) !== null) {
@@ -158,7 +161,7 @@ export default function(router: any) {
         })
     })
 
-    router.post('/api/users/:userid', async (req: Request, params: Record<string, string>, session: any) => {
+    routerTyped.post('/api/users/:userid', async (req: Request, params: Record<string, string>, _session: unknown) => {
         const userId = params.param0
         const userData = await req.json()
 
@@ -169,14 +172,14 @@ export default function(router: any) {
             existingUser = await userManager.getUserByUsername(userId)
         }
 
-        let user: any
-        if (!existingUser) {
-            // User doesn't exist - create new user
-            user = await userManager.createUser(userData)
-        } else {
+        let user: unknown
+        if (existingUser) {
             // User exists - update it
             await saveUser(existingUser.id, userData)
             user = await loadUser(existingUser.id)
+        } else {
+            // User doesn't exist - create new user
+            user = await userManager.createUser(userData)
         }
 
         await syncUsers()
@@ -193,7 +196,7 @@ export default function(router: any) {
         })
     })
 
-    router.get('/api/users/:userid/delete', async (req: Request, params: Record<string, string>, session: any) => {
+    routerTyped.get('/api/users/:userid/delete', async (_req: Request, params: Record<string, string>, _session: unknown) => {
         const userId = params.param0
         const users = await loadUsers()
         for (let [index, user] of users.entries()) {
@@ -210,7 +213,7 @@ export default function(router: any) {
         })
     })
 
-    router.post('/api/users/:userid/avatar', async (req: Request, params: Record<string, string>, session: any) => {
+    routerTyped.post('/api/users/:userid/avatar', async (req: Request, params: Record<string, string>, _session: unknown) => {
         const userId = params.param0
 
         logger.info(`[Users API] POST /api/users/:userid/avatar - userId from params: ${userId}`)

@@ -67,8 +67,7 @@ export class Workspace {
     // ms to consider related operations as a single action
 
     // Add a proxy handler for tracking object changes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private createDeepProxy(obj: any, onChange: () => void) {
+    private createDeepProxy<T extends Record<string, unknown>>(obj: T, onChange: () => void): T {
         return new Proxy(obj, {
             deleteProperty: (target, prop) => {
                 if (prop in target && !this.isHistoryOperation) {

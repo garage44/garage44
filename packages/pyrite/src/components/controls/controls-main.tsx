@@ -4,7 +4,7 @@ import {getCurrentUrl, route} from 'preact-router'
 import {$s} from '@/app'
 import {$t, store, logger} from '@garage44/common/app'
 import {currentGroup} from '@/models/group'
-import {connection, disconnect} from '@/models/sfu/sfu'
+import {connection} from '@/models/sfu/sfu'
 import * as media from '@/models/media'
 import * as sfu from '@/models/sfu/sfu'
 import './controls-main.css'
@@ -13,16 +13,9 @@ interface ControlsMainProps {
     path?: string
 }
 
-export function ControlsMain({path}: ControlsMainProps) {
+export function ControlsMain({path: _path}: ControlsMainProps) {
     // DeepSignal is reactive - accessing $s properties makes components reactive automatically
     const currentGroupData = useMemo(() => currentGroup(), [])
-
-    const groupRoute = useMemo(() => {
-        if ($s.sfu.channel.name) {
-            return `/groups/${$s.sfu.channel.name}`
-        }
-        return '/'
-    }, [])
 
     const currentChannelSlug = $s.chat.activeChannelSlug
 

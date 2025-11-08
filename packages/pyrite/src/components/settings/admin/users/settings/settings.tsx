@@ -3,17 +3,16 @@ import classnames from 'classnames'
 import {Icon} from '@garage44/common/components'
 import TabMisc from './tab-misc'
 import TabPermissions from './tab-permissions'
-import {Link, route} from 'preact-router'
+import {Link} from 'preact-router'
 import {$s} from '@/app'
-import {$t} from '@garage44/common/app'
 import {saveUser} from '@/models/user'
 
 interface SettingsProps {
-    userId?: string
     tabId?: string
+    userId?: string
 }
 
-export default function Settings({ userId, tabId = 'misc' }: SettingsProps) {
+export default function Settings({tabId = 'misc', userId}: SettingsProps) {
     const routeSettings = (tab: string) => {
         return `/settings/users/${$s.admin.user.id}?tab=${tab}`
     }
@@ -38,7 +37,7 @@ export default function Settings({ userId, tabId = 'misc' }: SettingsProps) {
 
             <ul class="tabs">
                 <Link
-                    class={classnames('btn btn-menu', { active: tabId === 'misc' })}
+                    class={classnames('btn btn-menu', {active: tabId === 'misc'})}
                     href={routeSettings('misc')}
                 >
                     <Icon class="icon-d" name="pirate" />

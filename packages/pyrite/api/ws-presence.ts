@@ -9,10 +9,10 @@ import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 interface PresenceState {
     groups: Map<string, Set<string>> // groupId -> Set of userIds
     users: Map<string, {
+        connected: Date
+        groupId: string | null
         id: string
         username: string
-        groupId: string | null
-        connected: Date
     }>
 }
 
@@ -56,7 +56,7 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
 
         // Return current group members to joining user
         const members = Array.from(state.groups.get(groupId) || [])
-            .map(id => state.users.get(id))
+            .map((id) => state.users.get(id))
             .filter(Boolean)
 
         return {
@@ -106,7 +106,7 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
         const {groupId} = request.params
 
         const members = Array.from(state.groups.get(groupId) || [])
-            .map(id => state.users.get(id))
+            .map((id) => state.users.get(id))
             .filter(Boolean)
 
         return {
@@ -119,14 +119,14 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
      * Get all online users (presence status)
      * GET /api/presence/users
      */
-    api.get('/api/presence/users', async (context, request) => {
+    api.get('/api/presence/users', async (_context, _request) => {
         // Return all users with their presence status
         const onlineUsers: Record<string, 'online' | 'offline' | 'busy'> = {}
-        
+
         // All users in presence state are online
         for (const [userId, user] of state.users.entries()) {
             // Check if user has a status property (busy, etc.)
-            const userStatus = (user as any).status || 'online'
+            const userStatus = (user as {status?: 'online' | 'offline' | 'busy'}).status || 'online'
             onlineUsers[userId] = userStatus === 'busy' ? 'busy' : 'online'
         }
 
@@ -141,7 +141,7 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
      */
     api.post('/api/presence/:groupId/status', async (context, request) => {
         const {groupId} = request.params
-        const {userId, status} = request.data
+        const {status, userId} = request.data
 
         const user = state.users.get(userId)
         if (user) {

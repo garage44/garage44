@@ -6,7 +6,7 @@ import {Icon} from '@garage44/common/components'
 import './video-strip.css'
 
 interface VideoStripProps {
-    streams?: any[]
+    streams?: Array<{[key: string]: unknown; id: string; username: string}>
 }
 
 /**
@@ -27,7 +27,7 @@ export const VideoStrip = ({streams}: VideoStripProps) => {
         return sorted
     }, [streams, $s.streams])
 
-    const handleStreamUpdate = useCallback((updatedStream: any) => {
+    const handleStreamUpdate = useCallback((updatedStream: {[key: string]: unknown; id: string}) => {
         logger.debug(`[VideoStrip] handleStreamUpdate: stream ${updatedStream.id}`)
         const streamIndex = $s.streams.findIndex((s) => s.id === updatedStream.id)
         if (streamIndex >= 0) {

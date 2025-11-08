@@ -3,13 +3,13 @@ import {$t} from '@garage44/common/app'
 import {connection} from '@/models/sfu/sfu'
 
 interface ReportsProps {
-    description: any // TODO: Define proper stream description type
+    description: {id: string; settings?: {audio?: Record<string, unknown>; video?: Record<string, unknown>}}
     onClick?: () => void
 }
 
-export const Reports = ({ description, onClick }: ReportsProps) => {
-    const [stats, setStats] = useState<Record<string, any>>({})
-    const [glnStream, setGlnStream] = useState<any>(null)
+export const Reports = ({description, onClick}: ReportsProps) => {
+    const [stats, setStats] = useState<Record<string, Record<string, string>>>({})
+    const [glnStream, setGlnStream] = useState<{onstats: (() => void) | null; pc: RTCPeerConnection; setStatsInterval: (interval: number) => void; stats?: Record<string, Record<string, unknown>>} | null>(null)
 
     const hasAudioStats = useMemo(() => {
         if (description.settings && description.settings.audio && Object.keys(description.settings.audio).length) {
@@ -27,16 +27,16 @@ export const Reports = ({ description, onClick }: ReportsProps) => {
 
     const onDownStats = () => {
         if (!glnStream) return
-        glnStream.pc.getReceivers().forEach((r: any) => {
+        glnStream.pc.getReceivers().forEach((r: RTCRtpReceiver) => {
             let tid = r.track && r.track.id
 
             const streamStats = tid && glnStream.stats[tid]
             if (streamStats) {
-                const filtered: Record<string, any> = {}
+                const filtered: Record<string, Record<string, string>> = {}
                 for (const [categoryName, category] of Object.entries(streamStats)) {
                     filtered[categoryName] = {}
                     if (categoryName === 'track') {
-                        for (const [statName, stat] of Object.entries(category as any)) {
+                        for (const [statName, stat] of Object.entries(category as Record<string, unknown>)) {
                             if (statName === 'timestamp') {
                                 continue
                             } else if (statName === 'totalAudioEnergy') {
@@ -54,16 +54,16 @@ export const Reports = ({ description, onClick }: ReportsProps) => {
 
     const onUpStats = () => {
         if (!glnStream) return
-        glnStream.pc.getSenders().forEach((s: any) => {
+        glnStream.pc.getSenders().forEach((s: RTCRtpSender) => {
             let tid = s.track && s.track.id
             const streamStats = glnStream.stats[tid]
 
             if (streamStats) {
-                const filtered: Record<string, any> = {}
+                const filtered: Record<string, Record<string, string>> = {}
                 for (const [categoryName, category] of Object.entries(streamStats)) {
                     filtered[categoryName] = {}
                     if (categoryName === 'outbound-rtp') {
-                        for (const [statName, stat] of Object.entries(category as any)) {
+                        for (const [statName, stat] of Object.entries(category as Record<string, unknown>)) {
                             if (statName === 'timestamp') {
                                 continue
                             } else if (statName === 'rate') {
@@ -121,7 +121,7 @@ export const Reports = ({ description, onClick }: ReportsProps) => {
                                 {statName}
                             </div>
                             <div class="value">
-                                {stat as any}
+                                {String(stat)}
                             </div>
                         </div>
                     ))}
@@ -139,7 +139,7 @@ export const Reports = ({ description, onClick }: ReportsProps) => {
                                 {statName}
                             </div>
                             <div class="value">
-                                {stat as any}
+                                {String(stat)}
                             </div>
                         </div>
                     ))}
@@ -157,7 +157,7 @@ export const Reports = ({ description, onClick }: ReportsProps) => {
                                 {statName}
                             </div>
                             <div class="value">
-                                {stat as any}
+                                {String(stat)}
                             </div>
                         </div>
                     ))}

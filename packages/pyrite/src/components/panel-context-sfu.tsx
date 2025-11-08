@@ -6,12 +6,6 @@ import {store} from '@garage44/common/app'
 import {DeviceSettings} from './device-settings'
 
 export function PanelContextSfu() {
-    // Check current route to determine if device settings should be shown
-    // $s.env.url is a DeepSignal that updates when routes change
-    const isDevicesRoute = $s.env.url?.includes('/devices') || false
-    // Show device settings if on devices route OR if not connected to channel
-    const showDeviceSettings = isDevicesRoute || !$s.sfu.channel.connected
-
     return <PanelContext
         className="c-panel-context-conference"
         collapsed={$s.panels.context.collapsed}

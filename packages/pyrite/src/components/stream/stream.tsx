@@ -8,8 +8,8 @@ import * as sfu from '@/models/sfu/sfu'
 
 interface StreamProps {
     controls?: boolean
-    modelValue: any
-    onUpdate?: (value: any) => void
+    modelValue: {hasAudio?: boolean; id: string; settings?: {audio?: Record<string, unknown>; video?: Record<string, unknown>}; src?: File | string}
+    onUpdate?: (value: unknown) => void
 }
 
 export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => {
@@ -21,29 +21,21 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
     const [pip, setPip] = useState({active: false, enabled: false})
     const [stats, setStats] = useState({visible: false})
     const [stream, setStream] = useState<MediaStream | null>(null)
-    const glnStreamRef = useRef<any>(null)
-    const resizeObserverRef = useRef<ResizeObserver | null>(null)
+    const glnStreamRef = useRef<{[key: string]: unknown; stream?: MediaStream} | null>(null)
 
     // Computed values
     const audioEnabled = useMemo(() => {
         return !!(modelValue.hasAudio && stream && stream.getAudioTracks().length)
     }, [modelValue.hasAudio, stream])
 
-    const fullscreenEnabled = useMemo(() => {
-        return mediaRef.current?.requestFullscreen ? true : false
-    }, [mediaRef.current])
 
     const hasSettings = useMemo(() => {
         if (!modelValue?.settings) return false
         return (
-            Object.keys(modelValue.settings.audio).length ||
-            Object.keys(modelValue.settings.video).length
+            Object.keys(modelValue.settings.audio || {}).length ||
+            Object.keys(modelValue.settings.video || {}).length
         )
     }, [modelValue?.settings])
-
-    const pipEnabled = useMemo(() => {
-        return mediaRef.current?.requestPictureInPicture ? true : false
-    }, [mediaRef.current])
 
     // Methods
     const loadSettings = async () => {
@@ -132,10 +124,10 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
                 mediaRef.current.srcObject = streamToMount
 
                 // Firefox doesn't have a working setSinkId
-                if (audioEnabled && (mediaRef.current as any).setSinkId && $s.devices.audio.selected.id) {
+                if (audioEnabled && 'setSinkId' in (mediaRef.current as HTMLVideoElement) && $s.devices.audio.selected.id) {
                     try {
                         logger.debug(`[Stream] setting stream sink: ${$s.devices.audio.selected.id}`)
-                        await (mediaRef.current as any).setSinkId($s.devices.audio.selected.id)
+                        await ((mediaRef.current as HTMLVideoElement & {setSinkId: (id: string) => Promise<void>}).setSinkId($s.devices.audio.selected.id))
                     } catch (error) {
                         logger.warn(`[Stream] failed to set stream sink: ${error}`)
                     }
@@ -186,10 +178,10 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
                 }
 
                 let capturedStream: MediaStream | null = null
-                if ((mediaRef.current as any)?.captureStream) {
-                    capturedStream = (mediaRef.current as any).captureStream()
-                } else if ((mediaRef.current as any)?.mozCaptureStream) {
-                    capturedStream = (mediaRef.current as any).mozCaptureStream()
+                if ('captureStream' in (mediaRef.current as HTMLVideoElement)) {
+                    capturedStream = ((mediaRef.current as HTMLVideoElement & {captureStream: () => MediaStream}).captureStream())
+                } else if ('mozCaptureStream' in (mediaRef.current as HTMLVideoElement)) {
+                    capturedStream = ((mediaRef.current as HTMLVideoElement & {mozCaptureStream: () => MediaStream}).mozCaptureStream())
                 }
 
                 if (capturedStream) {
@@ -336,7 +328,7 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
         rootRef.current.style.setProperty('--aspect-ratio', String(modelValue.aspectRatio))
 
         // Firefox doesn't support this API (yet).
-        if ((mediaRef.current as any).requestPictureInPicture) {
+        if ('requestPictureInPicture' in (mediaRef.current as HTMLVideoElement)) {
             const enterPip = () => setPip({...pip, active: true})
             const leavePip = () => setPip({...pip, active: false})
 

@@ -1,5 +1,4 @@
 import classnames from 'classnames'
-import {Icon} from '@garage44/common/components'
 import {getAvatarUrl} from '@garage44/common/lib/avatar'
 import {Link, route} from 'preact-router'
 import {useEffect, useMemo, useRef} from 'preact/hooks'
@@ -21,7 +20,7 @@ export default function ChannelsContext() {
     const currentChannel = useMemo(() => {
         if (!$s.chat.activeChannelSlug) return null
         return $s.channels.find((c) => c.slug === $s.chat.activeChannelSlug)
-    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [])
 
     const pollChannels = async () => {
         try {
@@ -70,11 +69,11 @@ export default function ChannelsContext() {
             logger.debug(`updating channel route: ${$s.chat.activeChannelSlug}`)
             updateRoute()
         }
-    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [])
 
     // Setup polling
     useEffect(() => {
-        intervalRef.current = setInterval(pollChannels, 3000) as any
+        intervalRef.current = setInterval(pollChannels, 3000) as unknown as number
         pollChannels()
 
         return () => {
@@ -92,45 +91,45 @@ export default function ChannelsContext() {
                 </div>
                 <div class="channels-list">
                     {$s.channels.map((channel) => {
-                    const channelKey = channel.slug
-                    const channelData = $s.chat.channels[channelKey]
-                    const unreadCount = channelData?.unread || 0
-                    const hasUnread = unreadCount > 0
+                        const channelKey = channel.slug
+                        const channelData = $s.chat.channels[channelKey]
+                        const unreadCount = channelData?.unread || 0
+                        const hasUnread = unreadCount > 0
 
-                    return (
-                        <Link
-                            key={channel.id}
-                            class={classnames('channel item', {
-                                active: currentChannel?.slug === channel.slug,
-                                'has-unread': hasUnread,
-                            })}
-                            href={channelLink(channel.slug)}
-                            onClick={() => {
-                                $s.chat.activeChannelSlug = channel.slug
-                                setAutofocus()
-                            }}
-                        >
-                            <div class="flex-column">
-                                <div class="name">
-                                    #{channel.name}
-                                </div>
-                                {channel.description && (
-                                    <div class="item-properties">
-                                        {channel.description}
+                        return (
+                            <Link
+                                key={channel.id}
+                                class={classnames('channel item', {
+                                    active: currentChannel?.slug === channel.slug,
+                                    'has-unread': hasUnread,
+                                })}
+                                href={channelLink(channel.slug)}
+                                onClick={() => {
+                                    $s.chat.activeChannelSlug = channel.slug
+                                    setAutofocus()
+                                }}
+                            >
+                                <div class="flex-column">
+                                    <div class="name">
+                                        #{channel.name}
                                     </div>
-                                )}
-                            </div>
-                        </Link>
-                    )
-                })}
+                                    {channel.description && (
+                                        <div class="item-properties">
+                                            {channel.description}
+                                        </div>
+                                    )}
+                                </div>
+                            </Link>
+                        )
+                    })}
 
-                {!$s.channels.length && (
-                    <div class="channel item no-presence">
-                        <div class="name">
-                            {$t('channel.no_channels')}
+                    {!$s.channels.length && (
+                        <div class="channel item no-presence">
+                            <div class="name">
+                                {$t('channel.no_channels')}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
                 </div>
             </div>
 
@@ -146,7 +145,7 @@ export default function ChannelsContext() {
 
                         // Deduplicate by converting IDs to strings and using a Set
                         const seenIds = new Set<string>()
-                        const uniqueUsers = chatUsers.filter(([userId, userInfo]) => {
+                        const uniqueUsers = chatUsers.filter(([userId, _userInfo]) => {
                             const idStr = String(userId)
                             if (seenIds.has(idStr)) {
                                 return false

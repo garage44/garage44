@@ -8,13 +8,13 @@ interface RecordingsProps {
 }
 
 interface Recording {
-    filename: string
-    extension: string
-    size: number
     atime: string
+    extension: string
+    filename: string
+    size: number
 }
 
-export default function Recordings({ groupId }: RecordingsProps) {
+export default function Recordings({groupId}: RecordingsProps) {
     const [recordings, setRecordings] = useState<Recording[]>([])
 
     const loadRecordings = async (group: string) => {
@@ -28,7 +28,7 @@ export default function Recordings({ groupId }: RecordingsProps) {
         await api.get(`/api/recordings/${groupId}/${rec.filename}.${rec.extension}/delete`)
         notifier.notify({
             level: 'info',
-            message: $t('group.recording.deleted', { recording: rec.filename }),
+            message: $t('group.recording.deleted', {recording: rec.filename}),
         })
         // Reload recordings after deletion
         loadRecordings(groupId)

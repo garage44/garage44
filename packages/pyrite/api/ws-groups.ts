@@ -67,7 +67,7 @@ export const registerGroupsWebSocket = (wsManager: WebSocketServerManager) => {
      * POST /api/groups/update
      */
     api.post('/api/groups/update', async (context, request) => {
-        const {groupId, action, group} = request.data
+        const {action, group, groupId} = request.data
 
         // Broadcast group update to all clients
         wsManager.broadcast('/groups/update', {
@@ -86,7 +86,7 @@ export const registerGroupsWebSocket = (wsManager: WebSocketServerManager) => {
      */
     api.post('/api/groups/:groupId/op-action', async (context, request) => {
         const {groupId} = request.params
-        const {action, targetUserId, actionData} = request.data
+        const {action, actionData, targetUserId} = request.data
 
         // Broadcast operator action to all clients in group
         wsManager.broadcast(`/groups/${groupId}/op-action`, {

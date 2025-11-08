@@ -1,12 +1,11 @@
-import {h} from 'preact'
 import {useState} from 'preact/hooks'
 
 interface StateViewProps {
-    state?: any
+    state?: unknown
     title?: string
 }
 
-const renderValue = (value: any): string => {
+const renderValue = (value: unknown): string => {
     if (value === null) {
         return 'null'
     }
@@ -38,14 +37,14 @@ const renderValue = (value: any): string => {
     return String(value)
 }
 
-export const StateView = ({state, title = "Component State"}: StateViewProps) => {
+export const StateView = ({state, title = 'Component State'}: StateViewProps) => {
     const [isOpen, setIsOpen] = useState(false)
 
     if (!state) {
         return null
     }
 
-    const renderStateEntry = (key: string, value: any) => (
+    const renderStateEntry = (key: string, value: unknown) => (
         <div class="entry" key={key}>
             <span class="key">{key}:</span>
             <span class="value">{renderValue(value)}</span>

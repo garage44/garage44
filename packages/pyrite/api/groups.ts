@@ -1,4 +1,4 @@
-import {groupTemplate, loadGroup, loadGroups, pingGroups, saveGroup, syncGroup} from '../lib/group.ts'
+import {groupTemplate, loadGroup, loadGroups, saveGroup, syncGroup} from '../lib/group.ts'
 import {syncUsers} from '../lib/sync.ts'
 import {config} from '../lib/config.ts'
 import fs from 'fs-extra'
@@ -23,31 +23,30 @@ export function registerGroupsWebSocketApiRoutes(wsManager: WebSocketServerManag
     })
 }
 
-export default function(router: any) {
+export default function(router: unknown) {
+    const routerTyped = router as {get: (path: string, handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>) => void}
 
-    router.get('/api/groups', async (req: Request, params: Record<string, string>, session: any) => {
-        const {groupNames, groupsData} = await loadGroups()
-        // await pingGroups(groupNames) // Commented out - Galene doesn't have individual group endpoints
+    routerTyped.get('/api/groups', async (_req: Request, _params: Record<string, string>, _session: unknown) => {
+        const {groupsData} = await loadGroups()
         return new Response(JSON.stringify(groupsData), {
             headers: {'Content-Type': 'application/json'},
         })
     })
 
-    router.get('/api/groups/public', async (req: Request, params: Record<string, string>, session: any) => {
-        const {groupNames, groupsData} = await loadGroups(true)
-        // await pingGroups(groupNames) // Commented out - Galene doesn't have individual group endpoints
+    routerTyped.get('/api/groups/public', async (_req: Request, _params: Record<string, string>, _session: unknown) => {
+        const {groupsData} = await loadGroups(true)
         return new Response(JSON.stringify(groupsData), {
             headers: {'Content-Type': 'application/json'},
         })
     })
 
-    router.get('/api/groups/template', async (req: Request, params: Record<string, string>, session: any) => {
+    routerTyped.get('/api/groups/template', async (_req: Request, _params: Record<string, string>, _session: unknown) => {
         return new Response(JSON.stringify(groupTemplate()), {
             headers: {'Content-Type': 'application/json'},
         })
     })
 
-    router.get('/api/groups/:groupid', async (req: Request, params: Record<string, string>, session: any) => {
+    routerTyped.get('/api/groups/:groupid', async (_req: Request, params: Record<string, string>, _session: unknown) => {
         const groupId = params.param0
         // Basic path traversal protection
         if (groupId.match(/\.\.\//g) !== null) {
@@ -69,7 +68,7 @@ export default function(router: any) {
         })
     })
 
-    router.post('/api/groups/:groupid', async (req: Request, params: Record<string, string>, session: any) => {
+    routerTyped.post('/api/groups/:groupid', async (req: Request, params: Record<string, string>, _session: unknown) => {
         const body = await req.json()
         const {data, groupId} = await saveGroup(params.param0, body)
         await syncGroup(groupId, data)
@@ -78,19 +77,17 @@ export default function(router: any) {
         const group = await loadGroup(groupId)
         group._name = params.param0
         group._newName = groupId
-        // await pingGroups([groupId]) // Commented out - Galene doesn't have individual group endpoints
         return new Response(JSON.stringify(group), {
             headers: {'Content-Type': 'application/json'},
         })
     })
 
-    router.get('/api/groups/:groupid/delete', async (req: Request, params: Record<string, string>, session: any) => {
+    routerTyped.get('/api/groups/:groupid/delete', async (_req: Request, params: Record<string, string>, _session: unknown) => {
         const groupId = params.param0
         const groupFile = path.join(config.sfu.path, 'groups', `${groupId}.json`)
         await fs.remove(groupFile)
         const {groupNames} = await loadGroups()
         await syncUsers()
-        // await pingGroups([groupId]) // Commented out - Galene doesn't have individual group endpoints
         return new Response(JSON.stringify(groupNames), {
             headers: {'Content-Type': 'application/json'},
         })

@@ -1,12 +1,10 @@
-import {h} from 'preact'
-
 interface ComponentDemoProps {
-    children: any
+    children: unknown
     component: string
     title: string
 }
 
-export const ComponentDemo = ({title, component, children}: ComponentDemoProps) => {
+export const ComponentDemo = ({children, component, title}: ComponentDemoProps) => {
     // Create slug from title for anchor links
     const id = title.toLowerCase().replaceAll(/\s+/g, '-')
 

@@ -4,14 +4,14 @@ import {$s} from '@/app'
 
 export default function TabMisc() {
     const codecs = [
-        { help: $t('group.settings.misc.codec_vp8_help'), id: 'vp8', name: 'VP8' },
-        { help: $t('group.settings.misc.codec_vp9_help'), id: 'vp9', name: 'VP9' },
-        { help: $t('group.settings.misc.codec_av1_help'), id: 'av1', name: 'AV1' },
-        { help: $t('group.settings.misc.codec_h264_help'), id: 'h264', name: 'H264' },
-        { help: $t('group.settings.misc.codec_opus_help'), id: 'opus', name: 'Opus' },
-        { help: $t('group.settings.misc.codec_g722_help'), id: 'g722', name: 'G722' },
-        { help: $t('group.settings.misc.codec_pcmu_help'), id: 'pcmu', name: 'PCMU' },
-        { help: $t('group.settings.misc.codec_pcma_help'), id: 'pcma', name: 'PCMA' },
+        {help: $t('group.settings.misc.codec_vp8_help'), id: 'vp8', name: 'VP8'},
+        {help: $t('group.settings.misc.codec_vp9_help'), id: 'vp9', name: 'VP9'},
+        {help: $t('group.settings.misc.codec_av1_help'), id: 'av1', name: 'AV1'},
+        {help: $t('group.settings.misc.codec_h264_help'), id: 'h264', name: 'H264'},
+        {help: $t('group.settings.misc.codec_opus_help'), id: 'opus', name: 'Opus'},
+        {help: $t('group.settings.misc.codec_g722_help'), id: 'g722', name: 'G722'},
+        {help: $t('group.settings.misc.codec_pcmu_help'), id: 'pcmu', name: 'PCMU'},
+        {help: $t('group.settings.misc.codec_pcma_help'), id: 'pcma', name: 'PCMA'},
     ]
 
     return (

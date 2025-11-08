@@ -7,11 +7,11 @@ import {$s} from '@/app'
 import {saveGroup} from '@/models/group'
 
 interface ContextGroupsProps {
-    path?: string
     groupId?: string
+    path?: string
 }
 
-export default function ContextGroups({ path, groupId }: ContextGroupsProps) {
+export default function ContextGroups({groupId, path}: ContextGroupsProps) {
     const deletionGroups = useMemo(() => {
         return $s.admin.groups.filter((i) => i._delete)
     }, [$s.admin.groups])
@@ -33,7 +33,7 @@ export default function ContextGroups({ path, groupId }: ContextGroupsProps) {
     }
 
     const deleteGroups = async () => {
-        notifier.notify({ level: 'info', message: $tc('deleting one group | deleting {count} groups', deletionGroups.length) })
+        notifier.notify({level: 'info', message: $tc('deleting one group | deleting {count} groups', deletionGroups.length)})
         const deleteRequests = []
         for (const group of deletionGroups) {
             $s.admin.groups.splice($s.admin.groups.findIndex((i) => i._name === group._name), 1)
@@ -56,10 +56,6 @@ export default function ContextGroups({ path, groupId }: ContextGroupsProps) {
         } else {
             return `/settings/groups/${groupId}/misc`
         }
-    }
-
-    const loadGroups = async () => {
-        $s.admin.groups = await api.get('/api/groups')
     }
 
     const saveGroupAction = async () => {
@@ -136,7 +132,7 @@ export default function ContextGroups({ path, groupId }: ContextGroupsProps) {
             {orderedGroups.map((group) => (
                 <Link
                     key={group._name}
-                    class={classnames('group item', { active: groupId === group._name })}
+                    class={classnames('group item', {active: groupId === group._name})}
                     href={groupLink(group._name)}
                 >
                     <Icon

@@ -13,11 +13,11 @@ import './device-settings.css'
  * Contains only device selection (cam, mic, audio) - no media settings
  */
 export function DeviceSettings() {
-    const [description, setDescription] = useState<any>(null)
+    const [description, setDescription] = useState<MediaDeviceInfo | null>(null)
     const [stream, setStream] = useState<MediaStream | null>(null)
     const [streamId, setStreamId] = useState<string | null>(null)
     const [soundAudio, setSoundAudio] = useState<Sound | null>(null)
-    const [playing, setPlaying] = useState(false)
+    const [playing] = useState(false)
 
     const remountStream = async () => {
         const newStream = await getUserMedia()

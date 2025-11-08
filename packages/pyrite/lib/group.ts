@@ -37,7 +37,7 @@ const PUBLIC_GROUP_FIELDS = [
 
 export function groupTemplate(groupId = null) {
     const template = {
-        _name: groupId ? groupId : uniqueNamesGenerator({
+        _name: groupId || uniqueNamesGenerator({
             dictionaries: [dictionary.adjs, dictionary.nouns],
             length: 2,
             separator: '-',
@@ -104,10 +104,8 @@ export async function saveGroupPermissions(groupName, groupPermissions) {
                 }
             }
 
-            if (!userGroupMatch) {
-                if (user.groups[permissionName].includes(groupName)) {
-                    user.groups[permissionName].splice(user.groups[permissionName].indexOf(groupName), 1)
-                }
+            if (!userGroupMatch && user.groups[permissionName].includes(groupName)) {
+                user.groups[permissionName].splice(user.groups[permissionName].indexOf(groupName), 1)
             }
         }
     }
@@ -165,11 +163,11 @@ export async function loadGroup(groupName) {
         const public_access_idx = groupData.other.findIndex(
             (obj) => obj && typeof obj === 'object' && Object.keys(obj).length === 0 && Object.getPrototypeOf(obj) === Object.prototype,
         )
-        if (public_access_idx !== -1) {
+        if (public_access_idx === -1) {
+            groupData['public-access'] = false
+        } else {
             groupData['public-access'] = true
             groupData.other.splice(public_access_idx, 1)
-        } else {
-            groupData['public-access'] = false
         }
     }
 
@@ -194,7 +192,7 @@ export async function loadGroups(publicEndpoint = false) {
     let galeneGroups
     try {
         galeneGroups = await (await fetch(endpoint)).json()
-    } catch (err) {
+    } catch {
         galeneGroups = []
     }
 
@@ -231,7 +229,7 @@ export async function loadGroups(publicEndpoint = false) {
         if (galeneGroup) {
             Object.assign(data, {
                 clientCount: galeneGroup.clientCount,
-                locked: galeneGroup.locked ? true : false,
+                locked: !!galeneGroup.locked,
                 name: groupName,
             })
         }
@@ -302,10 +300,10 @@ export async function saveGroup(groupName, data) {
         await fs.promises.writeFile(newGroupFile, JSON.stringify(saveData, null, '  '))
         return {data, groupId: data._newName}
     }
-        logger.debug(`save group ${groupName}`)
-        await fs.promises.writeFile(currentGroupFile, JSON.stringify(saveData, null, '  '))
-        return {data, groupId: data._name}
-    
+    logger.debug(`save group ${groupName}`)
+    await fs.promises.writeFile(currentGroupFile, JSON.stringify(saveData, null, '  '))
+    return {data, groupId: data._name}
+
 }
 
 /**
@@ -320,12 +318,10 @@ export async function syncGroup(groupId, groupData) {
             const _user = users.find((i) => i.name === username)
             // User from groups definition is in settings.users;
             // Make sure the group is there as well...
-            if (_user) {
-                if (!_user.groups[role].includes(groupId)) {
-                    logger.debug(`add group ${groupId} to user ${_user.name}`)
-                    _user.groups[role].push(groupId)
-                    changed = true
-                }
+            if (_user && !_user.groups[role].includes(groupId)) {
+                logger.debug(`add group ${groupId} to user ${_user.name}`)
+                _user.groups[role].push(groupId)
+                changed = true
             }
         }
     }

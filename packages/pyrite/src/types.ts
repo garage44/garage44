@@ -14,10 +14,10 @@ export interface Channel {
 export interface PyriteState extends CommonState {
     admin: {
         authenticated: boolean | null
-        group: any
+        group: Record<string, unknown>
         permission: boolean
-        user: any
-        users: any[]
+        user: Record<string, unknown>
+        users: Array<Record<string, unknown>>
     }
     channels: Channel[]
     chat: {
@@ -27,7 +27,7 @@ export interface PyriteState extends CommonState {
             [key: string]: {
                 id: string
                 members?: Record<string, {avatar: string}>
-                messages: any[]
+                messages: Array<Record<string, unknown>>
                 typing?: {
                     [userId: string]: {
                         timestamp: number
@@ -40,29 +40,29 @@ export interface PyriteState extends CommonState {
         }
         emoji: {
             active: boolean
-            list?: any[]
-            lookup: any
+            list?: Array<unknown>
+            lookup: Record<string, unknown>
         }
         message: string
         // Global users map: userId -> {username, avatar, status?}
-        users?: Record<string, {avatar: string; username: string; status?: 'online' | 'offline' | 'busy'}>
+        users?: Record<string, {avatar: string; status?: 'online' | 'offline' | 'busy'; username: string}>
         width: number
     }
     devices: {
         audio: {
             enabled: boolean
-            options: any[]
+            options: Array<{id: string; name: string}>
             selected: {id: string | null; name: string}
         }
         cam: {
             enabled: boolean
-            options: any[]
+            options: Array<{id: string; name: string}>
             resolution: {id: string; name: string}
             selected: {id: string | null; name: string}
         }
         mic: {
             enabled: boolean
-            options: any[]
+            options: Array<{id: string; name: string}>
             selected: {id: string | null; name: string}
         }
     }
@@ -74,13 +74,13 @@ export interface PyriteState extends CommonState {
         ua: string
     }
     files: {
-        playing: any[]
-        upload: any[]
+        playing: Array<unknown>
+        upload: Array<unknown>
     }
     language: {id: string | null}
     language_ui: {
         i18n: Record<string, Record<string, string>>
-        options: any[]
+        options: Array<{id: string; name: string}>
         selection: string
     }
     loading: boolean
@@ -92,7 +92,7 @@ export interface PyriteState extends CommonState {
         upstream: {id: string; name: string}
     }
     mediaReady: boolean
-    notifications: any[]
+    notifications: Array<Record<string, unknown>>
     permissions: {
         op: boolean
         present: boolean
@@ -125,13 +125,13 @@ export interface PyriteState extends CommonState {
             raisehand: boolean
         }
     }
-    streams: any[]
+    streams: Array<{[key: string]: unknown; id: string; username: string}>
     theme: 'light' | 'dark' | 'system'
     upMedia: {
-        audio: any[]
-        camera: any[]
-        screenshare: any[]
-        video: any[]
+        audio: Array<unknown>
+        camera: Array<unknown>
+        screenshare: Array<unknown>
+        video: Array<unknown>
     }
-    users: any[]
+    users: Array<Record<string, unknown>>
 }

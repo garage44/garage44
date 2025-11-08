@@ -12,45 +12,39 @@ import {
     FieldTextarea,
     FieldUpload,
     Icon,
-    Notifications,
 } from '@garage44/common/components'
-import {Notifier} from '@garage44/common/lib/notifier'
 import {deepSignal} from 'deepsignal'
 
 
 
 // Form data model
 const formData = deepSignal({
+    age: 0,
+    // Additional Info
+    bio: '',
+    confirmPassword: '',
+    country: '',
+
+    email: '',
+    experienceLevel: {locked: false, value: 0},
     // Personal Information
     firstName: '',
+
+    interests: [],
     lastName: '',
-    email: '',
-    age: 0,
-
-    // Account Settings
-    password: '',
-    confirmPassword: '',
-    termsAccepted: false,
-
-    // Preferences
-    themePreference: 'auto',
     notifications: {
         email: false,
         push: false,
         sms: false,
     },
-    interests: [],
 
-    // Additional Info
-    bio: '',
-    country: '',
-    experienceLevel: {value: 0, locked: false},
+    // Account Settings
+    password: '',
     profilePicture: '',
+    termsAccepted: false,
+    // Preferences
+    themePreference: 'auto',
 })
-
-// Notifications for form feedback
-const notifications = deepSignal([])
-const notifier = new Notifier(notifications)
 
 // Form submission handler
 const handleSubmit = async (e: Event) => {
@@ -91,7 +85,7 @@ const handleReset = () => {
     formData.interests = []
     formData.bio = ''
     formData.country = ''
-    formData.experienceLevel = {value: 0, locked: false}
+    formData.experienceLevel = {locked: false, value: 0}
     formData.profilePicture = ''
 
     alert('Form has been reset')

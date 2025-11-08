@@ -13,7 +13,7 @@ interface SettingsProps {
     tabId?: string
 }
 
-export default function Settings({ tabId }: SettingsProps) {
+export default function Settings({tabId}: SettingsProps) {
     // Detect if we're on a users route and set active tab to 'users'
     const activeTabId = useMemo(() => {
         if (tabId) return tabId
@@ -47,11 +47,11 @@ export default function Settings({ tabId }: SettingsProps) {
 
     const tabs = [
         {
+            component: <Profile />,
+            icon: 'Settings',
             id: 'profile',
             label: $t('ui.settings.profile.name'),
-            icon: 'Settings',
             tip: $t('ui.settings.profile.name'),
-            component: <Profile />,
         },
         ...(showUserSettings ? [
             {
@@ -63,25 +63,25 @@ export default function Settings({ tabId }: SettingsProps) {
             },
         ] : []),
         {
+            component: <TabChannels />,
+            icon: 'Channel',
             id: 'channels',
             label: $t('ui.settings.channels.name'),
-            icon: 'Channel',
             tip: $t('ui.settings.channels.name'),
-            component: <TabChannels />,
         },
         {
+            component: <TabDevices />,
+            icon: 'Webcam',
             id: 'devices',
             label: $t('ui.settings.devices'),
-            icon: 'Webcam',
             tip: $t('ui.settings.devices'),
-            component: <TabDevices />,
         },
         {
+            component: <TabMedia />,
+            icon: 'Media',
             id: 'media',
             label: $t('ui.settings.media.name'),
-            icon: 'Media',
             tip: $t('ui.settings.media.name'),
-            component: <TabMedia />,
         },
     ]
 

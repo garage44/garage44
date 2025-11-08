@@ -8,14 +8,14 @@ interface AdminControlsProps {
     path?: string
 }
 
-export default function AdminControls({ path }: AdminControlsProps) {
+export default function AdminControls({path}: AdminControlsProps) {
     const groupRoute = useMemo(() => {
         if ($s.admin.group) {
             return `/settings/groups/${$s.admin.group._name}/misc`
         } else {
             // Use first channel from sfu.channels that has metadata
             const firstChannel = Object.entries($s.sfu.channels).find(([_, data]) =>
-                data.description || data.comment || data.clientCount !== undefined
+                data.description || data.comment || data.clientCount !== undefined,
             )
             if (firstChannel) {
                 return `/settings/groups/${firstChannel[0]}/misc`

@@ -12,7 +12,7 @@ interface ContextUsersProps {
     userId?: string
 }
 
-export default function ContextUsers({ path, userId }: ContextUsersProps) {
+export default function ContextUsers({path: _path, userId}: ContextUsersProps) {
     const deletionUsers = useMemo(() => {
         return $s.admin.users.filter((i) => i._delete)
     }, [$s.admin.users])
@@ -34,7 +34,7 @@ export default function ContextUsers({ path, userId }: ContextUsersProps) {
     }
 
     const deleteUsers = async () => {
-        notifier.notify({ level: 'info', message: `deleting ${deletionUsers.length} users` })
+        notifier.notify({level: 'info', message: `deleting ${deletionUsers.length} users`})
         const deleteRequests = []
         for (const user of deletionUsers) {
             $s.admin.users.splice($s.admin.users.findIndex((i) => i.id === user.id), 1)
@@ -144,7 +144,7 @@ export default function ContextUsers({ path, userId }: ContextUsersProps) {
                     href={userLink(user.id)}
                 >
                     <Icon
-                        class={classnames('item-icon icon-d', { delete: user._delete, unsaved: user._unsaved })}
+                        class={classnames('item-icon icon-d', {delete: user._delete, unsaved: user._unsaved})}
                         name={user._delete ? 'Trash' : 'User'}
                     />
 

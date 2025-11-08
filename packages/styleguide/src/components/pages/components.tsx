@@ -40,7 +40,7 @@ const data = deepSignal({
         numberValue: 0,
         radioValue: 'option1',
         selectValue: '',
-        sliderValue: {value: 50, locked: false},
+        sliderValue: {locked: false, value: 50},
         textareaValue: '',
         textInput: '',
         uploadValue: '',
@@ -155,7 +155,7 @@ export const Components = () => (
 
         <ComponentDemo title="Icon" component="Icon">
             <div class="icon-grid">
-                {Object.keys(svg).map(iconName => (
+                {Object.keys(svg).map((iconName) => (
                     <div key={iconName} class="item">
                         <Icon name={iconName} tip={iconName} />
                     </div>
@@ -221,14 +221,14 @@ export const Components = () => (
             <Button
                 label="Add notification"
                 onClick={() => {
-                    console.log("CLICK")
+                    console.log('CLICK')
                     notifier.notify({
                         icon: 'info',
                         id: Date.now(),
                         link: {text: '', url: ''},
                         list: [],
                         message: 'Hello there',
-                        type: 'info'
+                        type: 'info',
                     })
                 }}
             />
@@ -264,7 +264,7 @@ export const Components = () => (
         </ComponentDemo>
 
         <ComponentDemo title="Splash" component="Splash">
-            <div style={{height: '300px', background: 'var(--bg-secondary)'}}>
+            <div style={{background: 'var(--bg-secondary)', height: '300px'}}>
                 <Splash
                     header="Welcome"
                     instruction="This is a splash screen"
@@ -276,19 +276,19 @@ export const Components = () => (
         <ComponentDemo title="Icon Chat" component="IconChat">
             <div class="c-icon-grid">
                 <div class="item">
-                    <svg viewBox="0 0 24 24" style={{width: '48px', height: '48px'}}>
+                    <svg viewBox="0 0 24 24" style={{height: '48px', width: '48px'}}>
                         <IconChat />
                     </svg>
                     <span class="label">No unread</span>
                 </div>
                 <div class="item">
-                    <svg viewBox="0 0 24 24" style={{width: '48px', height: '48px'}}>
+                    <svg viewBox="0 0 24 24" style={{height: '48px', width: '48px'}}>
                         <IconChat iconProps={{unread: 3}} />
                     </svg>
                     <span class="label">3 unread</span>
                 </div>
                 <div class="item">
-                    <svg viewBox="0 0 24 24" style={{width: '48px', height: '48px'}}>
+                    <svg viewBox="0 0 24 24" style={{height: '48px', width: '48px'}}>
                         <IconChat iconProps={{unread: 10}} />
                     </svg>
                     <span class="label">10 unread</span>
@@ -299,7 +299,7 @@ export const Components = () => (
         <ComponentDemo title="Icon Logo" component="IconLogo">
             <div class="c-icon-grid">
                 <div class="item">
-                    <svg viewBox="0 0 24 24" style={{width: '96px', height: '96px'}}>
+                    <svg viewBox="0 0 24 24" style={{height: '96px', width: '96px'}}>
                         <IconLogo />
                     </svg>
                     <span class="label">Logo</span>
@@ -342,7 +342,7 @@ export const Components = () => (
 
         <ComponentDemo title="Field Slider" component="FieldSlider">
             <div class="demo-grid">
-                <div style={{height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <div style={{alignItems: 'center', display: 'flex', height: '150px', justifyContent: 'center'}}>
                     <FieldSlider
                         value={data.model.sliderValue}
                         onChange={(v) => data.model.sliderValue = v}

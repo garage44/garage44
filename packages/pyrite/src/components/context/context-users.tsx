@@ -21,12 +21,12 @@ export default function UsersContext() {
         return users
     }, [$s.users])
 
-    const className = (user: any) => {
-        const classes: any = {}
-        if (user.data.raisehand) {
+    const className = (user: {data?: {availability?: {id: string}; raisehand?: boolean}}) => {
+        const classes: Record<string, boolean> = {}
+        if (user.data?.raisehand) {
             classes.hand = true
         }
-        if (user.data.availability) {
+        if (user.data?.availability) {
             if (user.data.availability.id === 'away') {
                 classes.away = true
             } else if (user.data.availability.id === 'busy') {

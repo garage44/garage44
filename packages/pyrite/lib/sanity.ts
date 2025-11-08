@@ -117,7 +117,7 @@ export async function verifySFU() {
         if (res.status === 401) {
             app.logger.error('sfu endpoint unauthorized; check sfu config')
         }
-    } catch(err) {
+    } catch {
         app.logger.error(`sfu not detected (${app.settings.sfu.url})`)
     }
 }

@@ -1,4 +1,4 @@
-import type {CommonState, TargetLanguage} from '@garage44/common/types'
+import type {TargetLanguage} from '@garage44/common/types'
 import type {DeepSignal} from 'deepsignal'
 import type {EnolaConfig} from '@garage44/enola/types'
 import workspace from '@/.expressio.json'
@@ -53,6 +53,7 @@ interface LanguageUI {
 }
 
 interface ExpressioStateBase {
+    enola: EnolaConfig
     env: {
         ctrlKey: boolean
         isFirefox: boolean
@@ -60,6 +61,7 @@ interface ExpressioStateBase {
         shiftKey: boolean
         url: string
     }
+    filter: string
     language_ui: LanguageUI
     notifications: []
     panels: {
@@ -81,14 +83,12 @@ interface ExpressioStateBase {
         password: string
         username: string
     }
-    theme: 'dark' | 'light' | 'system'
-    enola: EnolaConfig
-    filter: string
     sort: 'asc' | 'desc'
     /** Keeps track which tags have been updated for visual feedback */
     tags: {
         updated: string
     }
+    theme: 'dark' | 'light' | 'system'
     workspace: Workspace
     workspaces: DeepSignal<[WorkspaceDescription]>
 }

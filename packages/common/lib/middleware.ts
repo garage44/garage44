@@ -75,11 +75,9 @@ const populateNoSecuritySession = async (session: unknown, userManager: UserMana
     }
 
     // If no per-session override, use environment variable
-    if (!targetUsername) {
+    if (!targetUsername && noSecurityValue !== '1' && noSecurityValue.toLowerCase() !== 'true') {
         // If GARAGE44_NO_SECURITY is set to a username (not '1' or 'true'), try to log in as that user
-        if (noSecurityValue !== '1' && noSecurityValue.toLowerCase() !== 'true') {
-            targetUsername = noSecurityValue
-        }
+        targetUsername = noSecurityValue
     }
 
     // Try to find the target user

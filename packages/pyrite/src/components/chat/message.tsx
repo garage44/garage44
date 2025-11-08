@@ -13,20 +13,20 @@ interface MessageBlock {
 }
 
 interface MessageProps {
+    channelSlug?: string
     message: {
+        kind: string
         message: string
         nick?: string
         time: number
-        kind: string
         user_id?: string
     }
-    channelSlug?: string
 }
 
-export default function Message({ message, channelSlug }: MessageProps) {
+export default function Message({channelSlug, message}: MessageProps) {
     const messageModel = useMemo(() => {
         let messageData: MessageBlock[] = []
-        let textBlock: MessageBlock = { type: 'text', value: '' }
+        let textBlock: MessageBlock = {type: 'text', value: ''}
 
         // Spread takes care of properly separating most special symbols
         // with multiple characters(e.g. emoji characters)
@@ -35,10 +35,10 @@ export default function Message({ message, channelSlug }: MessageProps) {
             if (emojiLookup.has(char.codePointAt(0)!)) {
                 if (textBlock.value.length) {
                     messageData.push(textBlock)
-                    textBlock = { type: 'text', value: '' }
+                    textBlock = {type: 'text', value: ''}
                 }
 
-                messageData.push({ type: 'emoji', value: char })
+                messageData.push({type: 'emoji', value: char})
             } else {
                 textBlock.value = textBlock.value + char
             }
@@ -54,9 +54,9 @@ export default function Message({ message, channelSlug }: MessageProps) {
             const replaceBlocks: MessageBlock[] = []
             for (const node of nodes) {
                 if (node.match(urlRegex)) {
-                    replaceBlocks.push({ type: 'url', value: node })
+                    replaceBlocks.push({type: 'url', value: node})
                 } else {
-                    replaceBlocks.push({ type: 'text', value: node })
+                    replaceBlocks.push({type: 'text', value: node})
                 }
             }
             messageData.splice(index, 1, ...replaceBlocks)
@@ -90,14 +90,14 @@ export default function Message({ message, channelSlug }: MessageProps) {
     const getInitials = (name: string) => {
         return name
             .split(' ')
-            .map(n => n[0])
+            .map((n) => n[0])
             .join('')
             .toUpperCase()
             .slice(0, 2)
     }
 
     return (
-        <div class={classnames('message', { command: !message.nick, [message.kind]: true })}>
+        <div class={classnames('message', {command: !message.nick, [message.kind]: true})}>
             {message.kind === 'me' && (
                 <div>
                     <div class="text">

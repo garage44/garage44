@@ -30,13 +30,18 @@ export default function apiConfig(router) {
             })
         }
 
-        const body = await req.json()
+        const body = await req.json() as {enola: {engines: Record<string, {api_key?: string; base_url?: string}>}; language_ui: string; workspaces: Array<{source_file?: string; workspace_id: string}>}
         config.enola = body.enola
 
         for (const [engineName, engine] of Object.entries(config.enola.engines)) {
-            const engineConfig = engine as any
+            const engineConfig: {api_key?: string; base_url?: string} = engine
             if (engineConfig.api_key && enola.engines[engineName] && typeof enola.engines[engineName].init === 'function') {
-                await enola.engines[engineName].init(engineConfig, logger)
+                // init requires base_url, so provide a default if missing
+                const initConfig: {api_key: string; base_url: string} = {
+                    api_key: engineConfig.api_key,
+                    base_url: engineConfig.base_url || '',
+                }
+                await enola.engines[engineName].init(initConfig, logger)
             }
         }
 
@@ -54,10 +59,10 @@ export default function apiConfig(router) {
             logger.info(`[api] [settings] removing redundant workspace ${workspace.config.workspace_id}`)
             await workspaces.delete(workspace.config.workspace_id)
         }
-        // Add missing workspaces
+        // Add missing workspaces (only if source_file is provided)
         for (const description of body.workspaces) {
-            if (!workspaces.get(description.workspace_id)) {
-                await workspaces.add(description)
+            if (!workspaces.get(description.workspace_id) && description.source_file) {
+                await workspaces.add({source_file: description.source_file, workspace_id: description.workspace_id})
             }
         }
 

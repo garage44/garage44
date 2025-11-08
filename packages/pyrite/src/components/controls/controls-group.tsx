@@ -7,7 +7,7 @@ import * as sfu from '@/models/sfu/sfu'
 import * as media from '@/models/media'
 
 export const GroupControls = () => {
-    const [volume, setVolume] = useState({ locked: null, value: 100 })
+    const [volume, setVolume] = useState({locked: null, value: 100})
 
     const fileMediaAccept = useMemo(() => {
         if ($s.env.isFirefox) {
@@ -28,7 +28,7 @@ export const GroupControls = () => {
         } else {
             formats.push('.mp4', 'webm', 'mkv')
         }
-        return $t('file.stream', { formats: formats.join(',') })
+        return $t('file.stream', {formats: formats.join(',')})
     }, [$s.files.playing.length, $s.env.isFirefox])
 
     const unreadCount = useMemo(() => unreadMessages(), [$s.chat.channels])
@@ -41,11 +41,11 @@ export const GroupControls = () => {
 
         if (!newState) {
             // Camera disabled - remove existing camera stream
-            logger.debug(`[GroupControls] removing camera stream`)
+            logger.debug('[GroupControls] removing camera stream')
             sfu.delUpMediaKind('camera')
         } else {
             // Camera enabled - get new media
-            logger.debug(`[GroupControls] requesting camera media`)
+            logger.debug('[GroupControls] requesting camera media')
             media.getUserMedia($s.devices)
         }
     }
@@ -55,7 +55,7 @@ export const GroupControls = () => {
         // too heavy due to the 1800+ items grid layout.
         $s.chat.emoji.active = false
         // Wait a tick for state to update
-        await new Promise(resolve => setTimeout(resolve, 0))
+        await new Promise((resolve) => setTimeout(resolve, 0))
         $s.panels.chat.collapsed = !$s.panels.chat.collapsed
         store.save()
     }
@@ -73,10 +73,10 @@ export const GroupControls = () => {
             // When both the camera is off, toggling the microphone should also restart the stream.
             // Otherwise, we would either continue to stream empty data (when both camera and mic are
             // off), or we would not send our audio stream altogether.
-            logger.debug(`[GroupControls] camera is off, restarting stream for mic toggle`)
+            logger.debug('[GroupControls] camera is off, restarting stream for mic toggle')
             media.getUserMedia($s.devices)
         } else {
-            logger.debug(`[GroupControls] camera is on, mic toggle handled by muteMicrophone`)
+            logger.debug('[GroupControls] camera is on, mic toggle handled by muteMicrophone')
         }
     }
 
@@ -90,7 +90,7 @@ export const GroupControls = () => {
     }
 
     const toggleRaiseHand = () => {
-        sfu.connection?.userAction('setdata', sfu.connection.id, { raisehand: !$s.sfu.profile.raisehand })
+        sfu.connection?.userAction('setdata', sfu.connection.id, {raisehand: !$s.sfu.profile.raisehand})
         if (!$s.sfu.profile.raisehand) {
             sfu.connection?.userMessage('raisehand')
         }
@@ -110,7 +110,7 @@ export const GroupControls = () => {
     // Watch mic enabled
     useEffect(() => {
         if (sfu.connection) {
-            sfu.connection.userAction('setdata', sfu.connection.id, { mic: $s.devices.mic.enabled })
+            sfu.connection.userAction('setdata', sfu.connection.id, {mic: $s.devices.mic.enabled})
         }
     }, [$s.devices.mic.enabled])
 
@@ -133,7 +133,7 @@ export const GroupControls = () => {
             <Button
                 active={!$s.panels.chat.collapsed}
                 icon="Chat"
-                icon-props={{ unread: unreadCount }}
+                icon-props={{unread: unreadCount}}
                 tip={$s.panels.chat.collapsed ? $t('ui.panel_chat.expand') : $t('ui.panel_chat.collapse')}
                 variant="toggle"
                 onClick={toggleChat}

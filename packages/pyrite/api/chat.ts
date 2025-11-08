@@ -13,21 +13,21 @@ export function registerChatWebSocketApiRoutes(wsManager: WebSocketServerManager
         // Broadcast message to all clients in the group
         wsManager.broadcast(`/chat/${groupId}`, {
             message,
-            user,
             timestamp: Date.now(),
+            user,
         })
 
         return {status: 'ok'}
     })
 }
 
-export default async function(router: any) {
+export default async function(router: unknown) {
     const emojiPath = path.join(runtime.service_dir, 'lib', 'emoji', 'data-ordered-emoji.json')
     const emoji = await fs.readFile(emojiPath, 'utf8')
 
-    router.get('/api/chat/emoji', async (req: Request, params: Record<string, string>, session: any) => {
+    ;(router as {get: (path: string, handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>) => void}).get('/api/chat/emoji', async (_req: Request, _params: Record<string, string>, _session: unknown) => {
         return new Response(JSON.stringify(emoji), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {'Content-Type': 'application/json'},
         })
     })
 }

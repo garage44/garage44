@@ -1,7 +1,6 @@
 import {Database} from 'bun:sqlite'
 import {logger} from '../service.ts'
-import type {User} from './database.ts'
-import {groupTemplate, saveGroup, loadGroup} from './group.ts'
+import {groupTemplate, loadGroup} from './group.ts'
 import {config} from './config.ts'
 import fs from 'fs-extra'
 import path from 'node:path'
@@ -12,22 +11,22 @@ import path from 'node:path'
  */
 
 export interface Channel {
+    created_at: number
+    description: string
     id: number
+    member_count?: number
     name: string
     slug: string
-    description: string
-    created_at: number
-    member_count?: number
     unread_count?: number
 }
 
 export interface ChannelMember {
-    channel_id: number
-    user_id: string
-    role: 'member' | 'admin'
-    joined_at: number
-    username: string
     avatar: string
+    channel_id: number
+    joined_at: number
+    role: 'member' | 'admin'
+    user_id: string
+    username: string
 }
 
 export class ChannelManager {
@@ -300,13 +299,7 @@ export class ChannelManager {
             const existingGroup = await loadGroup(groupName)
 
             let groupData
-            if (!existingGroup) {
-                // Group file doesn't exist - create new one
-                logger.info(`[ChannelManager] Creating new Galene group file for channel "${channel.name}" (slug: ${groupName})`)
-                groupData = groupTemplate(groupName)
-                groupData.displayName = channel.name
-                groupData.description = channel.description || ''
-            } else {
+            if (existingGroup) {
                 // Group file exists - update it with channel info
                 logger.info(`[ChannelManager] Updating existing Galene group file for channel "${channel.name}" (slug: ${groupName})`)
                 groupData = existingGroup
@@ -314,6 +307,12 @@ export class ChannelManager {
                 if (!groupData._name) {
                     groupData._name = groupName
                 }
+                groupData.displayName = channel.name
+                groupData.description = channel.description || ''
+            } else {
+                // Group file doesn't exist - create new one
+                logger.info(`[ChannelManager] Creating new Galene group file for channel "${channel.name}" (slug: ${groupName})`)
+                groupData = groupTemplate(groupName)
                 groupData.displayName = channel.name
                 groupData.description = channel.description || ''
             }
@@ -337,7 +336,7 @@ export class ChannelManager {
      * Sync all channels to Galene group files
      * Creates group files for channels that don't have them yet
      */
-    async syncAllChannelsToGalene(): Promise<{success: number; failed: number}> {
+    async syncAllChannelsToGalene(): Promise<{failed: number; success: number}> {
         try {
             const channels = await this.listChannels()
             let success = 0
@@ -355,10 +354,10 @@ export class ChannelManager {
             }
 
             logger.info(`[ChannelManager] Sync complete: ${success} succeeded, ${failed} failed`)
-            return {success, failed}
+            return {failed, success}
         } catch (error) {
             logger.error('[ChannelManager] Failed to sync channels to Galene:', error)
-            return {success: 0, failed: 0}
+            return {failed: 0, success: 0}
         }
     }
 
@@ -366,9 +365,9 @@ export class ChannelManager {
      * Save group file in native Galene format (without Pyrite-specific op/other/presenter arrays)
      * Galene only understands the native format with users dictionary
      */
-    private async saveGroupNativeGalene(groupName: string, groupData: any): Promise<void> {
+    private async saveGroupNativeGalene(groupName: string, groupData: Record<string, unknown>): Promise<void> {
         // Create a clean copy without Pyrite-specific fields
-        const nativeData: any = {
+        const nativeData: Record<string, unknown> = {
             // Copy all native Galene fields
             'allow-anonymous': groupData['allow-anonymous'] ?? false,
             'allow-recording': groupData['allow-recording'] ?? true,
@@ -389,7 +388,7 @@ export class ChannelManager {
         if (groupData['allow-anonymous'] || groupData.public) {
             nativeData['wildcard-user'] = {
                 password: {type: 'wildcard'},
-                permissions: 'present'
+                permissions: 'present',
             }
         }
 
@@ -421,9 +420,9 @@ export class ChannelManager {
                 logger.info(`[ChannelManager] Deleted Galene group file: ${groupFile}`)
                 return true
             }
-                logger.warn(`[ChannelManager] Galene group file not found: ${groupFile}`)
-                return false
-            
+            logger.warn(`[ChannelManager] Galene group file not found: ${groupFile}`)
+            return false
+
         } catch (error) {
             logger.error(`[ChannelManager] Failed to delete Galene group file for slug "${slug}":`, error)
             return false

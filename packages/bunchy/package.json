@@ -30,7 +30,7 @@
   },
   "scripts": {
     "clean": "rm -rf dist;rm -rf node_modules",
-    "lint:ts": "oxlint **/*.ts --config ../../.oxlintrc.json",
+    "lint:ts": "oxlint **/*.ts --config ../../.oxlintrc.json;eslint **/*.ts --config ../../eslint.config.js",
     "test": "bun test"
   }
 }

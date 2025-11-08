@@ -11,26 +11,28 @@ import apiWorkspaces from '../api/workspaces'
 import path from 'node:path'
 
 // Simple HTTP router for Bun.serve that mimics Express pattern
-class Router {
-    routes: {handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>; method: string; path: RegExp}[] = []
+type Session = Record<string, string> | undefined
 
-    get(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
+class Router {
+    routes: {handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>; method: string; path: RegExp}[] = []
+
+    get(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
         this.add('GET', path, handler)
     }
 
-    post(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
+    post(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
         this.add('POST', path, handler)
     }
 
-    put(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
+    put(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
         this.add('PUT', path, handler)
     }
 
-    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
+    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
         this.add('DELETE', path, handler)
     }
 
-    private add(method: string, path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
+    private add(method: string, path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
         // Convert path params (e.g. /api/workspaces/:id) to regex
         const regex = new RegExp('^' + path.replaceAll(/:[^/]+/g, '([^/]+)') + '$')
         this.routes.push({

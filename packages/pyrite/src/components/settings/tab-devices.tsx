@@ -3,16 +3,16 @@ import Sound from '@/lib/sound'
 import {Stream} from '@/components/stream/stream'
 import {useState, useEffect} from 'preact/hooks'
 import {$s} from '@/app'
-import {$t, notifier} from '@garage44/common/app'
+import {$t} from '@garage44/common/app'
 import {getUserMedia, queryDevices, localStream} from '@/models/media'
 import * as sfu from '@/models/sfu/sfu'
 
 export default function TabDevices() {
-    const [description, setDescription] = useState<any>(null)
+    const [description, setDescription] = useState<MediaDeviceInfo | null>(null)
     const [stream, setStream] = useState<MediaStream | null>(null)
     const [streamId, setStreamId] = useState<string | null>(null)
     const [soundAudio, setSoundAudio] = useState<Sound | null>(null)
-    const [playing, setPlaying] = useState(false)
+    const [playing] = useState(false)
 
     const remountStream = async () => {
         const newStream = await getUserMedia()
@@ -22,7 +22,7 @@ export default function TabDevices() {
             setDescription(null)
 
             // Give the stream time to unmount first...
-            await new Promise(resolve => setTimeout(resolve, 0))
+            await new Promise((resolve) => setTimeout(resolve, 0))
 
             setDescription({
                 direction: 'up',
@@ -50,7 +50,7 @@ export default function TabDevices() {
     useEffect(() => {
         const init = async () => {
             await queryDevices()
-            setSoundAudio(new Sound({ file: '/audio/power-on.ogg', playing: false }))
+            setSoundAudio(new Sound({file: '/audio/power-on.ogg', playing: false}))
 
             // Only use existing stream if available - don't auto-start media
             // Media should only start when user explicitly clicks camera/mic buttons

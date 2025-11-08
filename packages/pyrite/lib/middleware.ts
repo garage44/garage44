@@ -16,25 +16,25 @@ import path from 'node:path'
 
 // Simple HTTP router for Bun.serve that mimics Express pattern
 class Router {
-    routes: {handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>; method: string; path: RegExp}[] = []
+    routes: {handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>; method: string; path: RegExp}[] = []
 
-    get(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
+    get(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
         this.add('GET', path, handler)
     }
 
-    post(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
+    post(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
         this.add('POST', path, handler)
     }
 
-    put(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
+    put(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
         this.add('PUT', path, handler)
     }
 
-    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
+    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
         this.add('DELETE', path, handler)
     }
 
-    private add(method: string, path: string, handler: (req: Request, params: Record<string, string>, session?: any) => Promise<Response>) {
+    private add(method: string, path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
         // Convert path params (e.g. /api/groups/:id) to regex
         const regex = new RegExp('^' + path.replaceAll(/:[^/]+/g, '([^/]+)') + '$')
         this.routes.push({
@@ -44,7 +44,7 @@ class Router {
         })
     }
 
-    async route(req: Request, session?: any): Promise<Response | null> {
+    async route(req: Request, session?: unknown): Promise<Response | null> {
         const url = new URL(req.url)
         const pathname = url.pathname
         for (const {handler, method, path} of this.routes) {
@@ -64,7 +64,7 @@ class Router {
 
 // SFU Proxy - proxies WebSocket connections to Galène
 // This is a pass-through proxy that doesn't require WebSocket server management
-async function proxySFUWebSocket(request: Request, server: any) {
+async function proxySFUWebSocket(request: Request, server: unknown) {
     const sfuUrl = config.sfu.url.replace('http://', 'ws://').replace('https://', 'wss://')
     const url = new URL(request.url)
 
@@ -98,7 +98,7 @@ async function proxySFUWebSocket(request: Request, server: any) {
                 clearTimeout(timeout)
                 logger.error(`[SFU Proxy] Upstream WebSocket error for ${targetUrl}:`, error)
                 if ('message' in error) {
-                    logger.error(`[SFU Proxy] Error message: ${(error as any).message}`)
+                    logger.error(`[SFU Proxy] Error message: ${(error as {message?: string}).message}`)
                 }
                 logger.error(`[SFU Proxy] Upstream connection state: ${upstream.readyState}`)
 
@@ -133,12 +133,12 @@ async function proxySFUWebSocket(request: Request, server: any) {
         })
 
         if (upgraded) {
-            logger.info(`[SFU Proxy] Client connection upgraded successfully`)
+            logger.info('[SFU Proxy] Client connection upgraded successfully')
             // Bidirectional message forwarding will be handled by common WebSocket handler
             return
         }
 
-        logger.error(`[SFU Proxy] Failed to upgrade client connection`)
+        logger.error('[SFU Proxy] Failed to upgrade client connection')
         upstream.close()
         return new Response('WebSocket upgrade failed', {status: 400})
     } catch (error) {

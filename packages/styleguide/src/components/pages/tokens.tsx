@@ -1,5 +1,3 @@
-import {h} from 'preact'
-
 const colors = [
     {id: 'surface', name: 'Surface (Neutral)'},
     {id: 'primary', name: 'Primary'},
@@ -20,7 +18,7 @@ export const Tokens = () => (
             {colors.map((color) => <div class="" key={color.id}>
                 <h3>{color.name}</h3>
                 <div class="color-grid">
-                    {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(level => (
+                    {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((level) => (
                         <div key={level} class="c-color-swatch">
                             <div class="color" style={{background: `var(--${color.id}-${level})`}}/>
                             <div class="label">
@@ -94,7 +92,7 @@ export const Tokens = () => (
                     {name: '--spacer-6', px: '48px', value: 'calc(var(--spacer-1) * 6)'},
                     {name: '--spacer-7', px: '56px', value: 'calc(var(--spacer-1) * 7)'},
                     {name: '--spacer-8', px: '64px', value: 'calc(var(--spacer-1) * 8)'},
-                ].map(({name, value, px}) => (
+                ].map(({name, px, value}) => (
                     <div key={name} class="spacing-item">
                         <div class="spacing-visual" style={{height: `var(${name})`, width: `var(${name})`}}/>
                         <div class="spacing-info">
@@ -117,7 +115,7 @@ export const Tokens = () => (
                     {name: '--icon-xl', px: '36px'},
                 ].map(({name, px}) => (
                     <div key={name} class="icon-size-item">
-                        <div class="icon-size-visual" style={{width: `var(${name})`, height: `var(${name})`}}></div>
+                        <div class="icon-size-visual" style={{height: `var(${name})`, width: `var(${name})`}}></div>
                         <div class="icon-size-info">
                             <code>{name}</code>
                             <div class="icon-size-value">{px}</div>

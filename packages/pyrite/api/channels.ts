@@ -30,10 +30,10 @@ export default async function apiChannels(router: Router) {
             // If no authenticated user, return empty channels
             if (!userId) {
                 return new Response(JSON.stringify({
+                    channels: [],
                     success: true,
-                    channels: []
                 }), {
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: {'Content-Type': 'application/json'},
                 })
             }
 
@@ -47,19 +47,19 @@ export default async function apiChannels(router: Router) {
             }
 
             return new Response(JSON.stringify({
+                channels: accessibleChannels,
                 success: true,
-                channels: accessibleChannels
             }), {
-                headers: { 'Content-Type': 'application/json' }
+                headers: {'Content-Type': 'application/json'},
             })
         } catch (error) {
             logger.error('[Channels API] Error listing channels:', error)
             return new Response(JSON.stringify({
+                error: error.message,
                 success: false,
-                error: error.message
             }), {
+                headers: {'Content-Type': 'application/json'},
                 status: 500,
-                headers: { 'Content-Type': 'application/json' }
             })
         }
     })
@@ -74,11 +74,11 @@ export default async function apiChannels(router: Router) {
 
             if (isNaN(channelId)) {
                 return new Response(JSON.stringify({
+                    error: 'Invalid channel ID',
                     success: false,
-                    error: 'Invalid channel ID'
                 }), {
+                    headers: {'Content-Type': 'application/json'},
                     status: 400,
-                    headers: { 'Content-Type': 'application/json' }
                 })
             }
 
@@ -93,11 +93,11 @@ export default async function apiChannels(router: Router) {
 
             if (!userId || !channelManager!.canAccessChannel(channelId, userId)) {
                 return new Response(JSON.stringify({
+                    error: 'Access denied',
                     success: false,
-                    error: 'Access denied'
                 }), {
+                    headers: {'Content-Type': 'application/json'},
                     status: 403,
-                    headers: { 'Content-Type': 'application/json' }
                 })
             }
 
@@ -105,28 +105,28 @@ export default async function apiChannels(router: Router) {
 
             if (!channel) {
                 return new Response(JSON.stringify({
+                    error: 'Channel not found',
                     success: false,
-                    error: 'Channel not found'
                 }), {
+                    headers: {'Content-Type': 'application/json'},
                     status: 404,
-                    headers: { 'Content-Type': 'application/json' }
                 })
             }
 
             return new Response(JSON.stringify({
+                channel,
                 success: true,
-                channel
             }), {
-                headers: { 'Content-Type': 'application/json' }
+                headers: {'Content-Type': 'application/json'},
             })
         } catch (error) {
             logger.error('[Channels API] Error getting channel:', error)
             return new Response(JSON.stringify({
+                error: error.message,
                 success: false,
-                error: error.message
             }), {
+                headers: {'Content-Type': 'application/json'},
                 status: 500,
-                headers: { 'Content-Type': 'application/json' }
             })
         }
     })

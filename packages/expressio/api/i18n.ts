@@ -13,7 +13,7 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
     apiWs.post('/api/workspaces/:workspace_id/paths', async(_context, request) => {
         const {workspace_id} = request.params
         const workspace = workspaces.get(workspace_id)
-        const {path, value} = request.data as {path: string[]; value: any}
+        const {path, value} = request.data as {path: string[]; value: unknown}
         pathCreate(workspace.i18n, path, value, workspace.config.languages.target)
         workspace.save()
     })
@@ -38,7 +38,7 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
     // oxlint-disable-next-line require-await
     apiWs.post('/api/workspaces/:workspace_id/collapse', async(_context, request) => {
         const {workspace_id} = request.params
-        const {path, tag_modifier, value} = request.data as {path: string[]; tag_modifier?: boolean; value?: any}
+        const {path, tag_modifier, value} = request.data as {path: string[]; tag_modifier?: boolean; value?: unknown}
         const workspace = workspaces.get(workspace_id)
 
         // Determine which mode to use based on the request
@@ -81,9 +81,7 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
                     cached: [],
                     success: true,
                     targets: [result],
-                    translations: workspace.config.languages.target.map(lang =>
-                        result.ref[result.id].target[lang.id]
-                    ),
+                    translations: workspace.config.languages.target.map((lang) => result.ref[result.id].target[lang.id]),
                 }
             } catch (error) {
                 logger.error('Translation error:', error)
@@ -127,9 +125,9 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
 }
 
 // Default export for backward compatibility
-export default function apiI18n(router: any) {
+export default function apiI18n(router: {get: (path: string, handler: (req: Request, params: Record<string, string>) => Response) => void}) {
     // HTTP API endpoints using familiar Express-like pattern
-    router.get('/api/workspaces/:workspace_id/translations', (req: any, params: any) => {
+    router.get('/api/workspaces/:workspace_id/translations', (req: Request, params: Record<string, string>) => {
         const workspaceId = params.param0 // Extract workspace_id from path params
         const workspace = workspaces.get(workspaceId)
         return new Response(JSON.stringify(i18nFormat(workspace.i18n, workspace.config.languages.target)), {

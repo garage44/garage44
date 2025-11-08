@@ -5,8 +5,8 @@ import {$s} from '@/app'
 import {$t, api, logger} from '@garage44/common/app'
 
 interface GroupsProps {
-    groupId?: string
     children?: ComponentChildren
+    groupId?: string
 }
 
 /**
@@ -14,7 +14,7 @@ interface GroupsProps {
  * track of the current group, so its child components
  * don't have to.
  */
-export const Groups = ({ groupId, children }: GroupsProps) => {
+export const Groups = ({children, groupId}: GroupsProps) => {
     const loadGroup = async (groupId: string) => {
         logger.debug(`load group ${groupId}`)
         let group = $s.admin.groups.find((i) => i._name === groupId)

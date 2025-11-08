@@ -1,17 +1,17 @@
 import {userManager} from '@garage44/common/service'
 import {getAvatarStoragePath} from '@garage44/common/lib/avatar-routes'
-import {logger, runtime} from '../service.ts'
+import {logger} from '../service.ts'
 import fs from 'fs-extra'
 import path from 'node:path'
 
-export default function apiUsers(router: any) {
+export default function apiUsers(router) {
     /**
      * Upload avatar for a user
      * POST /api/users/:userid/avatar
      * Note: /api/users/me is handled by common middleware
      * IMPORTANT: This must be registered BEFORE any other /api/users/:userid routes to avoid route matching issues
      */
-    router.post('/api/users/:userid/avatar', async (req: Request, params: Record<string, string>, session: any) => {
+    router.post('/api/users/:userid/avatar', async (req: Request, params: Record<string, string>) => {
         const userId = params.param0
 
         logger.info(`[Users API] POST /api/users/:userid/avatar - userId from params: ${userId}`)

@@ -15,11 +15,11 @@ const handleKeyDown = (e: KeyboardEvent) => {
 }
 
 interface ChannelChatProps {
+    channel?: {id: string; messages: unknown[]; name: string; unread: number}
     channelSlug: string
-    channel?: any
 }
 
-export default function ChannelChat({channelSlug, channel}: ChannelChatProps) {
+export default function ChannelChat({channel, channelSlug}: ChannelChatProps) {
     const viewRef = useRef<HTMLDivElement>(null)
     const messagesRef = useRef<HTMLDivElement>(null)
     const chatInputRef = useRef<HTMLTextAreaElement>(null)

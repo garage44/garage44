@@ -42,10 +42,10 @@ export default function GroupsContext() {
 
                 // Update group metadata in channel entry
                 Object.assign($s.sfu.channels[channelSlug], {
-                    locked: group.locked,
                     clientCount: group.clientCount,
                     comment: group.comment,
                     description: group.description,
+                    locked: group.locked,
                 })
 
                 // Update current group data if this is the active group
@@ -92,7 +92,7 @@ export default function GroupsContext() {
 
     // Setup polling
     useEffect(() => {
-        intervalRef.current = setInterval(pollGroups, 3000) as any
+        intervalRef.current = setInterval(pollGroups, 3000) as unknown as number
         pollGroups()
 
         return () => {
