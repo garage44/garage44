@@ -1,0 +1,22 @@
+[Unit]
+Description=GitHub Webhook Server
+After=network.target
+
+[Service]
+Type=simple
+User=garage44
+Group=garage44
+WorkingDirectory=/home/garage44/garage44
+Environment="WEBHOOK_SECRET=your-secret-here"
+Environment="WEBHOOK_PORT=3001"
+Environment="REPO_PATH=/home/garage44/garage44"
+Environment="DEPLOY_USER=garage44"
+Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/garage44/.bun/bin/bun lib/webhook-server.ts
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
