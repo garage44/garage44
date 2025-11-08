@@ -83,6 +83,10 @@ bun run dev
 # Or start Pyrite
 cd packages/pyrite
 bun run dev
+
+# Or start Styleguide
+cd packages/styleguide
+bun run dev
 ```
 
 ### Production
