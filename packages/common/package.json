@@ -30,6 +30,7 @@
     "./lib/logger.ts": "./lib/logger.browser.ts"
   },
   "dependencies": {
+    "@garage44/expressio": "workspace:^",
     "@preact/signals": "catalog:",
     "classnames": "catalog:",
     "deepsignal": "catalog:",
