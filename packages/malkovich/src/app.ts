@@ -2,7 +2,7 @@ import {
     App,
     store,
 } from '@garage44/common/app'
-import {render} from 'preact'
+import {h, render} from 'preact'
 import {persistantState, volatileState} from './lib/state'
 import {Main} from '@/components/main'
 import type {StyleguideState} from './types'
@@ -26,6 +26,6 @@ const mockTranslations = {
     'styleguide.tokens': 'Design Tokens',
 }
 
-app.init(Main, render, () => null, mockTranslations, {enableBunchy: process.env.NODE_ENV !== 'production'})
+app.init(Main, render, h, mockTranslations, {enableBunchy: process.env.NODE_ENV !== 'production'})
 
 export {$s, app}

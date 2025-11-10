@@ -1,0 +1,194 @@
+/* Markdown Page Component */
+.c-markdown-page {
+    color: var(--surface-7);
+    line-height: 1.7;
+    max-width: 900px;
+}
+
+/* Headings */
+.c-markdown-page h1 {
+    color: var(--surface-8);
+    font-size: var(--font-xxl);
+    font-weight: 700;
+    line-height: 1.2;
+    margin: var(--spacer-6) 0 var(--spacer-3) 0;
+    padding-bottom: var(--spacer-2);
+    border-bottom: 1px solid var(--surface-3);
+}
+
+.c-markdown-page h2 {
+    color: var(--surface-8);
+    font-size: var(--font-xl);
+    font-weight: 600;
+    line-height: 1.3;
+    margin: var(--spacer-5) 0 var(--spacer-2) 0;
+    padding-top: var(--spacer-3);
+}
+
+.c-markdown-page h3 {
+    color: var(--surface-8);
+    font-size: var(--font-l);
+    font-weight: 600;
+    line-height: 1.4;
+    margin: var(--spacer-4) 0 var(--spacer-2) 0;
+}
+
+.c-markdown-page h4 {
+    color: var(--surface-7);
+    font-size: var(--font-d);
+    font-weight: 600;
+    line-height: 1.4;
+    margin: var(--spacer-3) 0 var(--spacer-1) 0;
+}
+
+.c-markdown-page h5,
+.c-markdown-page h6 {
+    color: var(--surface-7);
+    font-size: var(--font-d);
+    font-weight: 600;
+    line-height: 1.4;
+    margin: var(--spacer-2) 0 var(--spacer-1) 0;
+}
+
+/* Paragraphs */
+.c-markdown-page p {
+    color: var(--surface-7);
+    margin: var(--spacer-2) 0;
+}
+
+/* Links */
+.c-markdown-page a {
+    color: var(--primary-4);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.c-markdown-page a:hover {
+    color: var(--primary-3);
+    text-decoration: underline;
+}
+
+.c-markdown-page a:visited {
+    color: var(--primary-5);
+}
+
+/* Lists */
+.c-markdown-page ul,
+.c-markdown-page ol {
+    color: var(--surface-7);
+    margin: var(--spacer-2) 0;
+    padding-left: var(--spacer-4);
+}
+
+.c-markdown-page li {
+    margin: var(--spacer-1) 0;
+    line-height: 1.6;
+}
+
+.c-markdown-page li p {
+    margin: var(--spacer-1) 0;
+}
+
+/* Code blocks */
+.c-markdown-page code {
+    background-color: var(--surface-2);
+    border: 1px solid var(--surface-3);
+    border-radius: var(--border-radius-s);
+    color: var(--primary-3);
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    padding: 0.2em 0.4em;
+}
+
+.c-markdown-page pre {
+    background-color: var(--surface-1);
+    border: 1px solid var(--surface-3);
+    border-radius: var(--border-radius-d);
+    color: var(--surface-7);
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    font-size: var(--font-s);
+    line-height: 1.6;
+    margin: var(--spacer-3) 0;
+    overflow-x: auto;
+    padding: var(--spacer-3);
+}
+
+.c-markdown-page pre code {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: inherit;
+    padding: 0;
+}
+
+/* Blockquotes */
+.c-markdown-page blockquote {
+    border-left: 4px solid var(--primary-4);
+    color: var(--surface-6);
+    font-style: italic;
+    margin: var(--spacer-3) 0;
+    padding: var(--spacer-2) var(--spacer-3);
+    background-color: var(--surface-1);
+    border-radius: var(--border-radius-s);
+}
+
+/* Tables */
+.c-markdown-page table {
+    border-collapse: collapse;
+    margin: var(--spacer-3) 0;
+    width: 100%;
+}
+
+.c-markdown-page th {
+    background-color: var(--surface-2);
+    border: 1px solid var(--surface-3);
+    color: var(--surface-8);
+    font-weight: 600;
+    padding: var(--spacer-2);
+    text-align: left;
+}
+
+.c-markdown-page td {
+    border: 1px solid var(--surface-3);
+    color: var(--surface-7);
+    padding: var(--spacer-2);
+}
+
+.c-markdown-page tr:nth-child(even) {
+    background-color: var(--surface-1);
+}
+
+/* Horizontal rules */
+.c-markdown-page hr {
+    border: none;
+    border-top: 1px solid var(--surface-3);
+    margin: var(--spacer-4) 0;
+}
+
+/* Images */
+.c-markdown-page img {
+    border-radius: var(--border-radius-d);
+    max-width: 100%;
+    height: auto;
+    margin: var(--spacer-3) 0;
+}
+
+/* Strong and emphasis */
+.c-markdown-page strong {
+    color: var(--surface-8);
+    font-weight: 600;
+}
+
+.c-markdown-page em {
+    color: var(--surface-7);
+    font-style: italic;
+}
+
+/* First paragraph after heading */
+.c-markdown-page h1 + p,
+.c-markdown-page h2 + p,
+.c-markdown-page h3 + p {
+    font-size: var(--font-l);
+    color: var(--surface-6);
+    margin-top: var(--spacer-2);
+}

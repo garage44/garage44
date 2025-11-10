@@ -10,7 +10,7 @@ globs:
 alwaysApply: true
 ---
 
-# Expressio Backend Development Rules
+# Garage44 Backend Development Rules
 
 Backend development guidelines for the Expressio AI-powered i18n tooling project.
 

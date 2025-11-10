@@ -1,7 +1,7 @@
 {
-  "name": "@garage44/styleguide",
+  "name": "@garage44/malkovich",
   "version": "1.0.0",
-  "description": "Component styleguide for @garage44/common",
+  "description": "Platform documentation and deployment tool for Garage44 monorepo",
   "scripts": {
     "dev": "NODE_ENV=development BUN_ENV=development bun run --watch service.ts start",
     "clean": "rm -rf dist;rm -rf node_modules",
@@ -14,9 +14,10 @@
   "dependencies": {
     "@garage44/bunchy": "workspace:*",
     "@garage44/common": "workspace:*",
+    "deepsignal": "catalog:",
+    "marked": "^17.0.0",
     "preact": "catalog:",
     "preact-router": "catalog:",
-    "deepsignal": "catalog:",
     "yargs": "catalog:"
   },
   "devDependencies": {

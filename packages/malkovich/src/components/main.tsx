@@ -5,6 +5,10 @@ import {useState, useEffect} from 'preact/hooks'
 import {Components} from './pages/components'
 import {Forms} from './pages/forms'
 import {Tokens} from './pages/tokens'
+import {Home} from './pages/home'
+import {Frontend} from './pages/frontend'
+import {Backend} from './pages/backend'
+import {Markdown} from './pages/markdown'
 
 // List of all components for the submenu
 const components = [
@@ -34,7 +38,12 @@ const components = [
 
 export const Main = () => {
     const [activeComponent, setActiveComponent] = useState<string | null>(null)
-    const isComponentsRoute = $s.currentRoute === '/components' || $s.currentRoute === '/'
+    const isComponentsRoute = $s.currentRoute === '/components'
+
+    // Handle route changes
+    const handleRouteChange = (e: any) => {
+        $s.currentRoute = e.url
+    }
 
     // Scroll to component section
     const scrollToComponent = (componentName: string) => {
@@ -97,6 +106,33 @@ export const Main = () => {
                     navigation={
                         <>
                             <MenuItem
+                                active={$s.currentRoute === '/'}
+                                collapsed={$s.panels.menu.collapsed}
+                                href="/"
+                                icon="home"
+                                iconType="info"
+                                onClick={() => $s.currentRoute = '/'}
+                                text="Home"
+                            />
+                            <MenuItem
+                                active={$s.currentRoute === '/frontend'}
+                                collapsed={$s.panels.menu.collapsed}
+                                href="/frontend"
+                                icon="code"
+                                iconType="info"
+                                onClick={() => $s.currentRoute = '/frontend'}
+                                text="Frontend"
+                            />
+                            <MenuItem
+                                active={$s.currentRoute === '/backend'}
+                                collapsed={$s.panels.menu.collapsed}
+                                href="/backend"
+                                icon="server"
+                                iconType="info"
+                                onClick={() => $s.currentRoute = '/backend'}
+                                text="Backend"
+                            />
+                            <MenuItem
                                 active={$s.currentRoute === '/tokens'}
                                 collapsed={$s.panels.menu.collapsed}
                                 href="/tokens"
@@ -106,7 +142,7 @@ export const Main = () => {
                                 text="Design Tokens"
                             />
                             <MenuItem
-                                active={$s.currentRoute === '/components' || $s.currentRoute === '/'}
+                                active={$s.currentRoute === '/components'}
                                 collapsed={$s.panels.menu.collapsed}
                                 href="/components"
                                 icon="dashboard"
@@ -146,11 +182,14 @@ export const Main = () => {
             }
         >
             <div class="view">
-                <Router>
+                <Router onChange={handleRouteChange}>
+                    <Home path="/" default />
+                    <Frontend path="/frontend" />
+                    <Backend path="/backend" />
                     <Components path="/components" />
-                    <Components path="/" default />
                     <Forms path="/forms" />
                     <Tokens path="/tokens" />
+                    <Markdown path="/:path*" />
                 </Router>
             </div>
         </AppLayout>

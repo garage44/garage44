@@ -47,6 +47,7 @@ AI Decision Records (ADRs) are structured documents that capture important archi
 | [016](./ADR-016-three-column-conference-layout.md) | Three-Column Conference Layout with Right-Side Video Panel | Architecture | Proposed | 2025-01-27 |
 | [017](./ADR-017-galene-direct-connection-revival.md) | Direct Galene Connection Revival for Video Conferencing | Architecture | Proposed | 2025-01-27 |
 | [019](./ADR-019-type-safe-i18n-system.md) | Type-Safe i18n System with Object References | Architecture | Accepted | 2025-01-27 |
+| [020](./ADR-020-malkovich-platform-documentation-system.md) | Malkovich Platform Documentation System | Architecture | Accepted | 2025-01-27 |
 
 ### ADRs by Decision Type
 

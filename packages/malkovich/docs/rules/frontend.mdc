@@ -3,7 +3,7 @@ description: "Frontend development rules - Preact, CSS (modern nesting), DeepSig
 globs:
   - "packages/expressio/src/**"
   - "packages/pyrite/src/**"
-  - "packages/styleguide/src/**"
+  - "packages/malkovich/src/**"
   - "packages/common/components/**"
   - "packages/common/css/**"
   - "**/*.css"
@@ -11,7 +11,7 @@ globs:
 alwaysApply: true
 ---
 
-# Expressio Frontend Development Rules
+# Garage44 Frontend Development Rules
 
 Frontend development guidelines for the Expressio AI-powered i18n tooling project.
 

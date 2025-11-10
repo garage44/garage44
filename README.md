@@ -57,7 +57,7 @@ Benefits: consistent development experience, reusable components, unified build 
 | [enola](./packages/enola/) | Translation engine wrapper | MIT |
 | [bunchy](./packages/bunchy/) | Development tooling | MIT |
 | [common](./packages/common/) | Shared components & utilities | MIT |
-| [styleguide](./packages/styleguide/) | Design system docs | MIT |
+| [malkovich](./packages/malkovich/) | Platform documentation & deployment | MIT |
 
 ## Getting Started
 
@@ -84,8 +84,8 @@ bun run dev
 cd packages/pyrite
 bun run dev
 
-# Or start Styleguide
-cd packages/styleguide
+# Or start Malkovich
+cd packages/malkovich
 bun run dev
 ```
 
@@ -110,7 +110,7 @@ garage44/
 │   ├── enola/          # Translation services
 │   ├── bunchy/         # Dev server
 │   ├── common/         # Shared library
-│   └── styleguide/     # Design system
+│   └── malkovich/      # Platform documentation & deployment
 ├── docs/
 │   └── adr/            # Architecture decisions
 └── bun.lock

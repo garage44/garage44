@@ -7,7 +7,7 @@ This guide covers setting up automatic deployment from GitHub to a private VPS u
 - **Webhook Server**: Standalone Bun script that validates GitHub webhooks and triggers deployment
 - **Deployment**: Pulls code, removes databases, builds packages, and restarts systemd services
 - **GitHub Actions**: Workflow that calls the webhook endpoint on merge to main
-- **Systemd**: Services for each package (expressio, pyrite, styleguide) running `bun run dev`
+- **Systemd**: Services for each package (expressio, pyrite, malkovich) running `bun run dev`
 - **Nginx**: Reverse proxy configuration for subdomains and webhook endpoint
 
 ## Prerequisites
@@ -150,7 +150,7 @@ Copy the service files to systemd directory:
 ```bash
 sudo cp deploy/expressio.service /etc/systemd/system/
 sudo cp deploy/pyrite.service /etc/systemd/system/
-sudo cp deploy/styleguide.service /etc/systemd/system/
+sudo cp deploy/malkovich.service /etc/systemd/system/
 sudo cp deploy/galene.service /etc/systemd/system/
 sudo cp deploy/webhook.service /etc/systemd/system/
 ```
@@ -166,13 +166,13 @@ sudo systemctl daemon-reload
 ```bash
 sudo systemctl enable expressio.service
 sudo systemctl enable pyrite.service
-sudo systemctl enable styleguide.service
+sudo systemctl enable malkovich.service
 sudo systemctl enable galene.service
 sudo systemctl enable webhook.service
 
 sudo systemctl start expressio.service
 sudo systemctl start pyrite.service
-sudo systemctl start styleguide.service
+sudo systemctl start malkovich.service
 sudo systemctl start galene.service
 sudo systemctl start webhook.service
 ```
@@ -192,7 +192,7 @@ sudo systemctl status webhook.service
 ```bash
 sudo journalctl -u expressio.service -f
 sudo journalctl -u pyrite.service -f
-sudo journalctl -u styleguide.service -f
+sudo journalctl -u malkovich.service -f
 sudo journalctl -u galene.service -f
 sudo journalctl -u webhook.service -f
 ```
@@ -254,8 +254,8 @@ sudo certbot certonly --standalone -d expressio.garage44.org
 # For pyrite.garage44.org
 sudo certbot certonly --standalone -d pyrite.garage44.org
 
-# For styleguide.garage44.org
-sudo certbot certonly --standalone -d styleguide.garage44.org
+# For garage44.org (malkovich main domain)
+sudo certbot certonly --standalone -d garage44.org
 
 # For garage44.org (and www.garage44.org)
 sudo certbot certonly --standalone -d garage44.org -d www.garage44.org
@@ -268,7 +268,7 @@ After generating certificates, verify they exist:
 ```bash
 ls -la /etc/letsencrypt/live/expressio.garage44.org/
 ls -la /etc/letsencrypt/live/pyrite.garage44.org/
-ls -la /etc/letsencrypt/live/styleguide.garage44.org/
+ls -la /etc/letsencrypt/live/garage44.org/
 ls -la /etc/letsencrypt/live/garage44.org/
 ```
 
@@ -362,7 +362,7 @@ sudo visudo
 Add this line:
 
 ```
-garage44 ALL=(ALL) NOPASSWD: /bin/systemctl restart expressio.service, /bin/systemctl restart pyrite.service, /bin/systemctl restart styleguide.service, /bin/systemctl restart webhook.service
+garage44 ALL=(ALL) NOPASSWD: /bin/systemctl restart expressio.service, /bin/systemctl restart pyrite.service, /bin/systemctl restart malkovich.service
 ```
 
 ## Testing the Deployment
@@ -403,7 +403,7 @@ sudo systemctl status styleguide.service
 # Check if services are accessible
 curl http://localhost:3030  # Expressio
 curl http://localhost:3031  # Pyrite
-curl http://localhost:3032  # Styleguide
+curl http://localhost:3032  # Malkovich
 ```
 
 ## Troubleshooting
@@ -450,7 +450,7 @@ Services will automatically restart when code is deployed via the webhook. To ma
 ```bash
 sudo systemctl restart expressio.service
 sudo systemctl restart pyrite.service
-sudo systemctl restart styleguide.service
+sudo systemctl restart malkovich.service
 ```
 
 ### Updating Webhook Server
@@ -471,7 +471,7 @@ Default ports for services:
 
 - **Expressio**: 3030
 - **Pyrite**: 3031
-- **Styleguide**: 3032
+- **Malkovich**: 3032
 - **Webhook Server**: 3001
 
 These can be changed in the systemd service files and nginx configuration.
