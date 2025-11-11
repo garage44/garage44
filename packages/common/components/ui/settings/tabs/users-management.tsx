@@ -3,7 +3,6 @@ import {route, getCurrentUrl} from 'preact-router'
 import {Icon, Button, CollectionView} from '@/components'
 import {api, notifier} from '@/app'
 import {deepSignal} from 'deepsignal'
-import './users-management.css'
 
 export interface User {
     createdAt?: string

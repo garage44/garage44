@@ -3,7 +3,6 @@ import {useMemo, useCallback, useEffect} from 'preact/hooks'
 import {$s} from '@/app'
 import {logger} from '@garage44/common/app'
 import {Icon} from '@garage44/common/components'
-import './video-strip.css'
 
 interface VideoStripProps {
     streams?: Array<{[key: string]: unknown; id: string; username: string}>

@@ -29,7 +29,7 @@ if (BUN_ENV === 'development') {
     bunchyArgs(cli, bunchyConfig)
 }
 
-cli.usage('Usage: $0 [task]')
+const _ = cli.usage('Usage: $0 [task]')
     .command('start', 'Start the malkovich development server', (yargs) =>
         yargs
             .option('host', {
@@ -79,35 +79,21 @@ cli.usage('Usage: $0 [task]')
             // API endpoint: /api/markdown?path=README.md
             if (pathname === '/api/markdown') {
                 const params = new URLSearchParams(url.search)
-                const filePath = params.get('path')
+                let filePath = params.get('path')
 
                 if (!filePath) {
-                    return new Response(JSON.stringify({ error: 'Missing path parameter' }), {
-                        headers: { 'Content-Type': 'application/json' },
-                        status: 400
+                    return new Response(JSON.stringify({error: 'Missing path parameter'}), {
+                        headers: {'Content-Type': 'application/json'},
+                        status: 400,
                     })
                 }
 
-                // Handle paths relative to workspace root or malkovich docs
-                let fullPath: string
-
-                // If path starts with packages/, read from workspace
-                if (filePath.startsWith('packages/')) {
-                    fullPath = path.join(workspaceRoot, filePath)
-                } else if (filePath.startsWith('adr/') || filePath.startsWith('rules/')) {
-                    // ADR and rules are in malkovich docs directory
-                    fullPath = path.join(import.meta.dir, 'docs', filePath)
-                } else if (filePath === 'README.md') {
-                    // Main README from workspace root
-                    fullPath = path.join(workspaceRoot, 'README.md')
-                } else {
-                    // Try malkovich docs directory first
-                    fullPath = path.join(import.meta.dir, 'docs', filePath)
-                    if (!existsSync(fullPath)) {
-                        // Fallback to workspace root
-                        fullPath = path.join(workspaceRoot, filePath)
-                    }
+                // All paths are relative to workspace root
+                // Remove leading slash if present
+                if (filePath.startsWith('/')) {
+                    filePath = filePath.slice(1)
                 }
+                let fullPath = path.join(workspaceRoot, filePath)
 
                 // Handle directory paths (check for README.md)
                 if (!filePath.endsWith('.md') && !filePath.endsWith('.mdc')) {
@@ -123,20 +109,20 @@ cli.usage('Usage: $0 [task]')
                 if (existsSync(fullPath)) {
                     try {
                         const content = readFileSync(fullPath, 'utf-8')
-                        return new Response(JSON.stringify({ content }), {
-                            headers: { 'Content-Type': 'application/json' }
+                        return new Response(JSON.stringify({content}), {
+                            headers: {'Content-Type': 'application/json'},
                         })
                     } catch (error) {
-                        return new Response(JSON.stringify({ error: 'Failed to read file' }), {
-                            headers: { 'Content-Type': 'application/json' },
-                            status: 500
+                        return new Response(JSON.stringify({error: 'Failed to read file'}), {
+                            headers: {'Content-Type': 'application/json'},
+                            status: 500,
                         })
                     }
                 }
 
-                return new Response(JSON.stringify({ error: 'File not found' }), {
-                    headers: { 'Content-Type': 'application/json' },
-                    status: 404
+                return new Response(JSON.stringify({error: 'File not found'}), {
+                    headers: {'Content-Type': 'application/json'},
+                    status: 404,
                 })
             }
 
@@ -208,9 +194,9 @@ cli.usage('Usage: $0 [task]')
     .command('generate-systemd', 'Generate systemd service files', (yargs) =>
         yargs
             .option('domain', {
-                type: 'string',
                 demandOption: true,
                 describe: 'Domain name (e.g., garage44.org)',
+                type: 'string',
             })
     , async (argv) => {
         const {generateSystemd} = await import('./lib/deploy/systemd')
@@ -220,9 +206,9 @@ cli.usage('Usage: $0 [task]')
     .command('generate-nginx', 'Generate nginx configuration', (yargs) =>
         yargs
             .option('domain', {
-                type: 'string',
                 demandOption: true,
                 describe: 'Domain name (e.g., garage44.org)',
+                type: 'string',
             })
     , async (argv) => {
         const {generateNginx} = await import('./lib/deploy/nginx')

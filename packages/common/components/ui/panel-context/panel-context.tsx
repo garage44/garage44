@@ -1,7 +1,6 @@
 import classnames from 'classnames'
 import {ComponentChildren} from 'preact'
 import {useEffect, useRef, useState} from 'preact/hooks'
-import './panel-context.css'
 
 interface PanelContextProps {
     children: ComponentChildren

@@ -1,6 +1,5 @@
 import {ComponentChildren} from 'preact'
 import classnames from 'classnames'
-import './submenu.css'
 
 interface SubmenuItem {
     id: string

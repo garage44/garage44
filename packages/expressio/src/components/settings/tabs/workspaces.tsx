@@ -6,7 +6,6 @@ import {createValidator, required} from '@garage44/common/lib/validation'
 import classnames from 'classnames'
 import {deepSignal} from 'deepsignal'
 import {useEffect} from 'preact/hooks'
-import './workspaces.css'
 
 const state = deepSignal({
     formality: [

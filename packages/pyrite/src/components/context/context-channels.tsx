@@ -6,7 +6,6 @@ import {$s} from '@/app'
 import {$t, ws, logger} from '@garage44/common/app'
 import {loadGlobalUsers} from '@/models/chat'
 import type {Channel} from '../../types.ts'
-import './context-channels.css'
 
 // Helper function outside component to avoid recreation
 const channelLink = (channelSlug: string) => {

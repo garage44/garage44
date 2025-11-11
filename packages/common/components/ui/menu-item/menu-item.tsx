@@ -1,7 +1,6 @@
 import {ComponentChildren} from 'preact'
 import {Icon} from '../icon/icon'
 import classnames from 'classnames'
-import './menu-item.css'
 
 interface MenuItemProps {
     active?: boolean

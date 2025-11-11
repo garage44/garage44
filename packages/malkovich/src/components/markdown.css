@@ -1,19 +1,22 @@
 /* Markdown Page Component */
+
 .c-markdown-page {
     color: var(--surface-7);
     line-height: 1.7;
     max-width: 900px;
+    padding: var(--spacer-6);
 }
 
 /* Headings */
+
 .c-markdown-page h1 {
+    border-bottom: 1px solid var(--surface-3);
     color: var(--surface-8);
     font-size: var(--font-xxl);
     font-weight: 700;
     line-height: 1.2;
     margin: var(--spacer-6) 0 var(--spacer-3) 0;
     padding-bottom: var(--spacer-2);
-    border-bottom: 1px solid var(--surface-3);
 }
 
 .c-markdown-page h2 {
@@ -51,12 +54,14 @@
 }
 
 /* Paragraphs */
+
 .c-markdown-page p {
     color: var(--surface-7);
     margin: var(--spacer-2) 0;
 }
 
 /* Links */
+
 .c-markdown-page a {
     color: var(--primary-4);
     text-decoration: none;
@@ -73,6 +78,7 @@
 }
 
 /* Lists */
+
 .c-markdown-page ul,
 .c-markdown-page ol {
     color: var(--surface-7);
@@ -81,8 +87,8 @@
 }
 
 .c-markdown-page li {
-    margin: var(--spacer-1) 0;
     line-height: 1.6;
+    margin: var(--spacer-1) 0;
 }
 
 .c-markdown-page li p {
@@ -90,6 +96,7 @@
 }
 
 /* Code blocks */
+
 .c-markdown-page code {
     background-color: var(--surface-2);
     border: 1px solid var(--surface-3);
@@ -122,17 +129,19 @@
 }
 
 /* Blockquotes */
+
 .c-markdown-page blockquote {
+    background-color: var(--surface-1);
     border-left: 4px solid var(--primary-4);
+    border-radius: var(--border-radius-s);
     color: var(--surface-6);
     font-style: italic;
     margin: var(--spacer-3) 0;
     padding: var(--spacer-2) var(--spacer-3);
-    background-color: var(--surface-1);
-    border-radius: var(--border-radius-s);
 }
 
 /* Tables */
+
 .c-markdown-page table {
     border-collapse: collapse;
     margin: var(--spacer-3) 0;
@@ -159,6 +168,7 @@
 }
 
 /* Horizontal rules */
+
 .c-markdown-page hr {
     border: none;
     border-top: 1px solid var(--surface-3);
@@ -166,14 +176,16 @@
 }
 
 /* Images */
+
 .c-markdown-page img {
     border-radius: var(--border-radius-d);
-    max-width: 100%;
     height: auto;
     margin: var(--spacer-3) 0;
+    max-width: 100%;
 }
 
 /* Strong and emphasis */
+
 .c-markdown-page strong {
     color: var(--surface-8);
     font-weight: 600;
@@ -185,10 +197,11 @@
 }
 
 /* First paragraph after heading */
+
 .c-markdown-page h1 + p,
 .c-markdown-page h2 + p,
 .c-markdown-page h3 + p {
-    font-size: var(--font-l);
     color: var(--surface-6);
+    font-size: var(--font-l);
     margin-top: var(--spacer-2);
 }

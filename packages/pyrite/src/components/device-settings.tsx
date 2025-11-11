@@ -6,7 +6,6 @@ import {$s} from '@/app'
 import {$t} from '@garage44/common/app'
 import {getUserMedia, queryDevices, localStream} from '@/models/media'
 import * as sfu from '@/models/sfu/sfu'
-import './device-settings.css'
 
 /**
  * Device Settings Component for PanelContext Quick Access

@@ -3,7 +3,6 @@ import {Link} from 'preact-router'
 import {Button} from '../button/button'
 import {Icon} from '../icon/icon'
 import type {ComponentChildren} from 'preact'
-import './tabs.css'
 
 export interface TabConfig {
     /**
@@ -127,4 +126,3 @@ export function Tabs({
         </ul>
     )
 }
-

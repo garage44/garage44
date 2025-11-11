@@ -7,7 +7,6 @@ import {currentGroup} from '@/models/group'
 import {connection} from '@/models/sfu/sfu'
 import * as media from '@/models/media'
 import * as sfu from '@/models/sfu/sfu'
-import './controls-main.css'
 
 interface ControlsMainProps {
     path?: string

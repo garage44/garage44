@@ -2,7 +2,6 @@ import {useRef, useState, useEffect} from 'preact/hooks'
 import {Icon} from '@/components'
 import {api, notifier, logger} from '@/app'
 import {getAvatarUrl} from '@/lib/avatar'
-import './avatar-upload.css'
 
 interface AvatarUploadProps {
     /**

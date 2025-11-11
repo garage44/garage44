@@ -3,7 +3,6 @@ import {MenuItem} from '../menu-item/menu-item'
 import {store} from '@/app'
 import {getAvatarUrl} from '@/lib/avatar'
 import classnames from 'classnames'
-import './user-menu.css'
 
 interface UserMenuProps {
     className?: string

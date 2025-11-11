@@ -15,6 +15,12 @@ function stripFrontmatter(markdown: string): string {
  */
 export async function fetchMarkdown(path: string): Promise<string | null> {
   try {
+    // Validate path is not empty
+    if (!path || path.trim() === '') {
+      console.error('fetchMarkdown: path is empty')
+      return null
+    }
+    
     const response = await fetch(`/api/markdown?path=${encodeURIComponent(path)}`)
     if (!response.ok) {
       return null
@@ -37,7 +43,7 @@ export async function fetchMarkdown(path: string): Promise<string | null> {
 export function convertLinksToLocalRoutes(markdown: string, basePath?: string): string {
   // Convert relative links to absolute routes
   // Pattern: [text](./path/to/file.md) → [text](/path/to/file.md)
-  let converted = markdown.replace(
+  let converted = markdown.replaceAll(
     /\[([^\]]+)\]\(\.\/([^)]+)\)/g,
     (match, text, link) => {
       // Handle directory links (e.g., ./packages/expressio/)
@@ -53,7 +59,7 @@ export function convertLinksToLocalRoutes(markdown: string, basePath?: string): 
   )
 
   // Also handle links without ./ prefix
-  converted = converted.replace(
+  converted = converted.replaceAll(
     /\[([^\]]+)\]\(([^)]+\.md)\)/g,
     (match, text, link) => {
       // If it's already absolute, keep it

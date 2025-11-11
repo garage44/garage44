@@ -1,7 +1,6 @@
 import {useEffect} from 'preact/hooks'
 import {Icon} from '@/components'
 import {api} from '@/app'
-import './users-permissions.css'
 
 export interface UsersPermissionsTabProps {
     /**

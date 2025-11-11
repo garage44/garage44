@@ -1,5 +1,4 @@
 import {FieldCheckbox, FieldText} from '@/components'
-import './users-misc.css'
 
 export interface UsersMiscTabProps {
     /**

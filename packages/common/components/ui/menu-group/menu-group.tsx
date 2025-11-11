@@ -1,6 +1,5 @@
 import {ComponentChildren} from 'preact'
 import classnames from 'classnames'
-import './menu-group.css'
 
 interface MenuGroupProps {
     children: ComponentChildren

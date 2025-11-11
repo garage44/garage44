@@ -2,7 +2,6 @@ import type {ComponentChildren} from 'preact'
 import {Icon} from '../icon/icon'
 import {Button} from '../button/button'
 import {Tabs, type TabConfig} from '../tabs/tabs'
-import './settings.css'
 
 export interface SettingsTab {
     /**

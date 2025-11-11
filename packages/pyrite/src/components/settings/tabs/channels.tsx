@@ -2,7 +2,6 @@ import {FieldText, Button} from '@garage44/common/components'
 import {useEffect, useState} from 'preact/hooks'
 import {api, notifier} from '@garage44/common/app'
 import type {Channel} from '@/types'
-import './channels.css'
 
 export default function TabChannels() {
     const [channels, setChannels] = useState<Channel[]>([])

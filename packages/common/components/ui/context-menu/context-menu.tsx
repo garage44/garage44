@@ -1,6 +1,5 @@
 import {ComponentChildren, useEffect, useRef, useState} from 'preact/hooks'
 import classnames from 'classnames'
-import './context-menu.css'
 
 interface ContextMenuProps {
     anchor: ComponentChildren

@@ -3,7 +3,6 @@ import {Icon} from '@/components'
 import {api, notifier, logger, store} from '@/app'
 import {AvatarUpload} from '../avatar-upload/avatar-upload'
 import {FieldSelect, ThemeToggle} from '@/components'
-import './profile-settings.css'
 
 interface ProfileSettingsProps {
     /**

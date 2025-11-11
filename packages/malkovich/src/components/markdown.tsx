@@ -1,12 +1,12 @@
 import {useState, useEffect} from 'preact/hooks'
 import {fetchMarkdown, convertLinksToLocalRoutes, renderMarkdown} from '../lib/markdown'
-import './markdown.css'
+
 
 interface MarkdownPageProps {
-    path: string
+    filePath: string
 }
 
-export const MarkdownPage = ({path}: MarkdownPageProps) => {
+export const MarkdownPage = ({filePath}: MarkdownPageProps) => {
     const [content, setContent] = useState<string>('')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -16,10 +16,18 @@ export const MarkdownPage = ({path}: MarkdownPageProps) => {
             setLoading(true)
             setError(null)
 
-            const markdown = await fetchMarkdown(path)
+            // Ensure filePath is not empty - trim whitespace
+            const trimmedPath = filePath?.trim() || ''
+            if (!trimmedPath) {
+                setError('Path is required')
+                setLoading(false)
+                return
+            }
+
+            const markdown = await fetchMarkdown(trimmedPath)
 
             if (markdown) {
-                const converted = convertLinksToLocalRoutes(markdown, path)
+                const converted = convertLinksToLocalRoutes(markdown, trimmedPath)
                 setContent(converted)
             } else {
                 setError('File not found')
@@ -27,7 +35,7 @@ export const MarkdownPage = ({path}: MarkdownPageProps) => {
             setLoading(false)
         }
         loadMarkdown()
-    }, [path])
+    }, [filePath])
 
     if (loading) {
         return <div class="styleguide-page">Loading...</div>
@@ -39,9 +47,5 @@ export const MarkdownPage = ({path}: MarkdownPageProps) => {
 
     const html = renderMarkdown(content)
 
-    return (
-        <div class="styleguide-page">
-            <div class="c-markdown-page" dangerouslySetInnerHTML={{ __html: html }} />
-        </div>
-    )
+    return <div class="c-markdown-page" dangerouslySetInnerHTML={{__html: html}} />
 }

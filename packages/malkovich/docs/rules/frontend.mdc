@@ -283,6 +283,37 @@ class Store {
 
 ## CSS Guidelines
 
+### NO CSS Imports in Components
+
+**❌ NEVER import CSS files in component code:**
+- CSS files are automatically collected and bundled by Bunchy
+- Bunchy scans component directories and bundles all `.css` files automatically
+- Importing CSS in components is unnecessary and should be avoided
+
+**✅ Correct approach:**
+- Place CSS files alongside components (e.g., `button.tsx` + `button.css`)
+- Bunchy automatically discovers and bundles component CSS files
+- No import statements needed in component code
+
+```tsx
+// ✅ Correct: No CSS import needed
+import {Button} from '../button/button'
+import {Icon} from '../icon/icon'
+
+export function MyComponent() {
+  return <div class="c-my-component">...</div>
+}
+
+// ❌ Wrong: Don't import CSS files
+import './my-component.css'  // Wrong! Bunchy handles this automatically
+```
+
+**How Bunchy handles CSS:**
+- Automatically scans `src/components/**/*.css` and `packages/common/components/**/*.css`
+- Bundles all component CSS into `components.<buildId>.css`
+- Hot-reloads CSS changes without page refresh
+- See `packages/bunchy/tasks.ts` for implementation details
+
 ### NO BEM Naming Convention
 
 **❌ NEVER use BEM (Block Element Modifier) naming:**
@@ -536,8 +567,8 @@ import {classes} from '@garage44/common/lib/utils'
 // Component imports
 import {TranslationGroup} from '@/components/elements'
 
-// Relative imports
-import './translation-group.css'
+// ❌ DO NOT import CSS files - Bunchy handles this automatically
+// import './translation-group.css'  // Wrong!
 ```
 
 ### File Naming Conventions
@@ -636,6 +667,7 @@ const BadList = () => {
 - Create inline styles - use CSS classes with modern nesting
 - Use direct SVG/font icons - use Icon component
 - Use BEM naming (`.c-button__icon`) - use nesting instead
+- Import CSS files in components - Bunchy handles this automatically
 - Mutate props directly
 - Block the UI during translation API calls
 - Forget to handle WebSocket disconnections

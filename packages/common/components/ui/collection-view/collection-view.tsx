@@ -1,11 +1,27 @@
 import {ComponentChildren} from 'preact'
-import './collection-view.css'
+
 
 export interface CollectionColumn {
+    /**
+     * Whether to align content to center
+     */
+    center?: boolean
+    /**
+     * Additional CSS class for the column
+     */
+    className?: string
+    /**
+     * Whether this column should flex to fill available space
+     */
+    flex?: boolean | number
     /**
      * Column label (header text)
      */
     label?: ComponentChildren
+    /**
+     * Minimum width for flex columns
+     */
+    minWidth?: string
     /**
      * Function to render the cell content for this column
      * Receives (item, index) and returns the cell content
@@ -16,29 +32,25 @@ export interface CollectionColumn {
      * If not provided, defaults to 'auto'
      */
     width?: string
-    /**
-     * Whether this column should flex to fill available space
-     */
-    flex?: boolean | number
-    /**
-     * Minimum width for flex columns
-     */
-    minWidth?: string
-    /**
-     * Additional CSS class for the column
-     */
-    className?: string
-    /**
-     * Whether to align content to center
-     */
-    center?: boolean
 }
 
 export interface CollectionViewProps {
     /**
+     * Additional CSS class for the collection view
+     */
+    className?: string
+    /**
      * Column definitions with render functions
      */
     columns: CollectionColumn[]
+    /**
+     * Empty state message (shown when items.length === 0)
+     */
+    emptyMessage?: ComponentChildren
+    /**
+     * Key function for React keys (defaults to item.id or index)
+     */
+    getKey?: (item: any, index: number) => string | number
     /**
      * Array of items to render
      */
@@ -48,18 +60,6 @@ export interface CollectionViewProps {
      * Receives (item) and should return Button components with variant="toggle"
      */
     row_actions?: (item: any) => ComponentChildren
-    /**
-     * Empty state message (shown when items.length === 0)
-     */
-    emptyMessage?: ComponentChildren
-    /**
-     * Additional CSS class for the collection view
-     */
-    className?: string
-    /**
-     * Key function for React keys (defaults to item.id or index)
-     */
-    getKey?: (item: any, index: number) => string | number
 }
 
 /**
@@ -99,12 +99,12 @@ export interface CollectionViewProps {
  * />
  */
 export function CollectionView({
+    className = '',
     columns,
+    emptyMessage,
+    getKey,
     items,
     row_actions,
-    emptyMessage,
-    className = '',
-    getKey,
 }: CollectionViewProps) {
     const getItemKey = (item: any, index: number) => {
         if (getKey) return getKey(item, index)
@@ -114,14 +114,14 @@ export function CollectionView({
     // Add actions column if row_actions is provided
     const allColumns = row_actions
         ? [
-              ...columns,
-              {
-                  label: '',
-                  width: '100px',
-                  render: () => null, // Actions column doesn't render in cells
-                  className: 'collection-actions-column',
-              },
-          ]
+            ...columns,
+            {
+                className: 'collection-actions-column',
+                label: '',
+                render: () => null, // Actions column doesn't render in cells
+                width: '100px',
+            },
+        ]
         : columns
 
     return (
@@ -136,10 +136,10 @@ export function CollectionView({
                                 key={index}
                                 class={`collection-header-cell ${column.className || ''}`}
                                 style={{
-                                    width: column.flex ? undefined : column.width || 'auto',
                                     flex: column.flex ? (typeof column.flex === 'number' ? column.flex : 1) : undefined,
-                                    minWidth: column.minWidth,
                                     justifyContent: column.center ? 'center' : undefined,
+                                    minWidth: column.minWidth,
+                                    width: column.flex ? undefined : column.width || 'auto',
                                 }}
                             >
                                 {column.label}
@@ -158,10 +158,10 @@ export function CollectionView({
                                         key={colIndex}
                                         class={`collection-cell ${column.className || ''}`}
                                         style={{
-                                            width: column.flex ? undefined : column.width || 'auto',
                                             flex: column.flex ? (typeof column.flex === 'number' ? column.flex : 1) : undefined,
-                                            minWidth: column.minWidth,
                                             justifyContent: column.center ? 'center' : undefined,
+                                            minWidth: column.minWidth,
+                                            width: column.flex ? undefined : column.width || 'auto',
                                         }}
                                     >
                                         {isActionsColumn ? (

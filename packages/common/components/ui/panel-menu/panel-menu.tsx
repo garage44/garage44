@@ -1,6 +1,5 @@
 import classnames from 'classnames'
 import {ComponentChildren} from 'preact'
-import './panel-menu.css'
 
 interface PanelMenuProps {
     actions?: ComponentChildren
