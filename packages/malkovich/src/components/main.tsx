@@ -41,7 +41,7 @@ export const Main = () => {
     const isComponentsRoute = $s.currentRoute === '/components'
 
     // Handle route changes
-    const handleRouteChange = (e: any) => {
+    const handleRouteChange = (e) => {
         $s.currentRoute = e.url
     }
 

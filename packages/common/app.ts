@@ -1,7 +1,6 @@
 import {create$t, init as i18nInit} from './lib/i18n'
 import {Api} from './lib/api'
 import type {CommonState} from './types'
-import {initializeBunchy} from '@garage44/bunchy/client'
 import {EventEmitter} from 'node:events'
 import {Notifier} from './lib/notifier'
 import {Store} from './lib/store'
@@ -57,14 +56,17 @@ class App {
         }
         events.emit('app:init')
 
-        // Initialize Bunchy when enabled
+        // Initialize Bunchy when enabled (lazy import to avoid circular dependency)
         if (options.enableBunchy) {
             console.log('[App] Initializing Bunchy')
             try {
-                initializeBunchy()
+                // Dynamic import to break circular dependency: common -> bunchy -> common
+                const bunchyModule = await import('@garage44/bunchy/client')
+                bunchyModule.initializeBunchy()
             } catch (error) {
                 // Silently fail if bunchy is not available
-                console.warn('[App] Bunchy not available for development features:', error.message)
+                const errorMessage = error instanceof Error ? error.message : String(error)
+                console.warn('[App] Bunchy not available for development features:', errorMessage)
             }
         }
     }

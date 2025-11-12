@@ -66,7 +66,7 @@ async function bunchyService(server, config, wsManager?) {
         logger.info('[bunchy] connected to WebSocket broadcast system')
 
         // Set up log forwarding route
-        setupLogForwarding(wsManager, config.logPrefix || 'B')
+        setupLogForwarding(wsManager)
     } else {
         logger.warn('[bunchy] no WebSocket manager provided - broadcasts will be disabled')
     }
@@ -147,8 +147,7 @@ const broadcast = (url: string, data: MessageData, method = 'POST') => {
 }
 
 // Set up log forwarding from client to server
-function setupLogForwarding(wsManager: any, logPrefix: string) {
-    logger.info(`[bunchy] Setting up log forwarding route with prefix: ${logPrefix}`)
+function setupLogForwarding(wsManager) {
 
     wsManager.api.post('/logs/forward', async (ctx, req) => {
         const {args, level, message, source, timestamp} = req.data as {
@@ -160,7 +159,7 @@ function setupLogForwarding(wsManager: any, logPrefix: string) {
         }
 
         // Format the log message for server output
-        const formattedMessage = `[${logPrefix}] ${message}`
+        const formattedMessage = `[BROWSER] ${message}`
         const formattedArgs = args && args.length > 0 ? args : []
 
         // Log using the server logger with appropriate level

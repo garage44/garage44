@@ -10,11 +10,11 @@
         ],
         "jsx": "react-jsx",
         "jsxImportSource": "preact",
+        "module": "ES2022",
         "moduleResolution": "bundler",
         "noEmit": true,
         "paths": {
-            "@/*": ["./*"],
-	    "@garage44/bunchy/*": ["../bunchy/*"]
+            "@/*": ["./*"]
         },
         "skipLibCheck": true,
         "sourceMap": true,

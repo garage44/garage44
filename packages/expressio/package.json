@@ -1,6 +1,6 @@
 {
   "name": "@garage44/expressio",
-  "description": "Expressio CE - I18n for humans, through AI...",
+  "description": "Expressio - I18n for humans, through AI...",
   "version": "2.1.20",
   "author": "Garage44",
   "main": "service.ts",
