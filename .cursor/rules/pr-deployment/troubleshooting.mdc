@@ -1,0 +1,119 @@
+---
+description: "Common deployment issues and troubleshooting solutions"
+globs:
+  - "deploy/**"
+  - "docs/deployment.md"
+alwaysApply: false
+---
+
+# Troubleshooting Deployment
+
+Common issues and solutions for deployment problems.
+
+## Webhook Not Triggering
+
+**Symptoms:**
+- GitHub Actions workflow runs but deployment doesn't start
+- No webhook logs on VPS
+
+**Solutions:**
+1. Check GitHub Actions workflow run
+2. Verify `WEBHOOK_URL` and `WEBHOOK_SECRET` secrets are set
+3. Check webhook server logs: `journalctl -u malkovich.service -f`
+4. Verify nginx is routing `/webhook` correctly
+
+## Deployment Failing
+
+**Symptoms:**
+- Webhook received but deployment fails
+- Build errors during deployment
+
+**Solutions:**
+1. Check webhook server logs for errors
+2. Verify git repository is accessible
+3. Check build logs for compilation errors
+4. Verify sudo permissions for service restart
+5. Check disk space on VPS
+
+## Services Not Restarting
+
+**Symptoms:**
+- Deployment completes but services don't restart
+- Services remain in old state
+
+**Solutions:**
+1. Verify sudo configuration allows service restart
+2. Check service status: `systemctl status <service>`
+3. Check service logs: `journalctl -u <service> -f`
+4. Verify service files are correct
+
+## Build Failures
+
+**Symptoms:**
+- Build fails during deployment
+- TypeScript compilation errors
+
+**Solutions:**
+1. Check build logs in deployment output
+2. Verify all dependencies are installed
+3. Check for TypeScript compilation errors
+4. Verify Bun version compatibility
+
+## Webhook Signature Validation Fails
+
+**Symptoms:**
+- Webhook requests rejected with "Invalid signature"
+- 401 errors in webhook logs
+
+**Solutions:**
+1. Verify `WEBHOOK_SECRET` matches between GitHub and VPS
+2. Check signature calculation in GitHub Actions workflow
+3. Verify webhook payload format is correct
+
+## Database Issues
+
+**Symptoms:**
+- Database files not cleaned
+- Database locked errors
+
+**Solutions:**
+1. Check file permissions
+2. Verify homedir path
+3. Manually remove database files if needed
+4. Ensure services are stopped before cleanup
+
+## Common Commands
+
+```bash
+# Check service status
+systemctl status expressio.service
+
+# View service logs
+journalctl -u expressio.service -f
+
+# Check webhook logs
+journalctl -u malkovich.service -f | grep webhook
+
+# Test webhook locally
+WEBHOOK_SECRET="test-secret" bun packages/malkovich/lib/webhook.ts
+
+# Check nginx configuration
+sudo nginx -t
+
+# View nginx logs
+sudo tail -f /var/log/nginx/error.log
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Ignore deployment errors
+- Skip log checking
+- Deploy without testing locally first
+- Forget to check service status after deployment
+
+✅ **Do:**
+- Check logs after every deployment
+- Test locally before pushing
+- Verify services are running after deployment
+- Monitor deployment process

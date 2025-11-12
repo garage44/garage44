@@ -1,0 +1,127 @@
+---
+description: "File I/O patterns and path validation"
+globs:
+  - "**/lib/**"
+alwaysApply: false
+---
+
+# File Operations
+
+Async file I/O and path validation patterns.
+
+## Async File I/O
+
+```typescript
+// ✅ Use Bun's async file operations
+import {readFile, writeFile, mkdir} from 'fs/promises'
+
+// Read file
+const content = await readFile('path/to/file.json', 'utf-8')
+
+// Write file
+await writeFile('path/to/file.json', JSON.stringify(data, null, 2))
+
+// Create directory
+await mkdir('path/to/dir', {recursive: true})
+
+// Check if file exists
+import {existsSync} from 'fs'
+if (existsSync('path/to/file.json')) {
+  // File exists
+}
+
+// ❌ Don't use synchronous file operations
+const content = require('fs').readFileSync('path/to/file.json') // Wrong!
+```
+
+## Path Validation
+
+```typescript
+// ✅ Validate and sanitize file paths
+import path from 'node:path'
+
+function validatePath(userPath: string, baseDir: string): string {
+  // Resolve to absolute path
+  const resolved = path.resolve(baseDir, userPath)
+  
+  // Ensure path is within base directory
+  const baseResolved = path.resolve(baseDir)
+  if (!resolved.startsWith(baseResolved)) {
+    throw new Error('Path outside base directory')
+  }
+  
+  // Check for directory traversal attempts
+  if (resolved.includes('..')) {
+    throw new Error('Invalid path')
+  }
+  
+  return resolved
+}
+
+// Usage
+const safePath = validatePath(userInput, '/allowed/directory')
+const content = await readFile(safePath, 'utf-8')
+
+// ❌ Don't trust user-provided paths
+const filePath = path.join(baseDir, userInput) // Wrong! Validate first
+```
+
+## File Operations with Error Handling
+
+```typescript
+// ✅ Handle file operation errors
+async function readConfigFile(filePath: string): Promise<Config | null> {
+  try {
+    const content = await readFile(filePath, 'utf-8')
+    return JSON.parse(content)
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      logger.warn('Config file not found', {filePath})
+      return null
+    }
+    throw error
+  }
+}
+```
+
+## Directory Operations
+
+```typescript
+// ✅ Work with directories
+import {readdir, stat} from 'fs/promises'
+
+async function listFiles(dirPath: string): Promise<string[]> {
+  const entries = await readdir(dirPath)
+  const files: string[] = []
+  
+  for (const entry of entries) {
+    const fullPath = path.join(dirPath, entry)
+    const stats = await stat(fullPath)
+    
+    if (stats.isFile()) {
+      files.push(fullPath)
+    } else if (stats.isDirectory()) {
+      const subFiles = await listFiles(fullPath)
+      files.push(...subFiles)
+    }
+  }
+  
+  return files
+}
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Use synchronous file operations
+- Trust user-provided paths without validation
+- Skip error handling for file operations
+- Hardcode file paths
+- Allow directory traversal attacks
+
+✅ **Do:**
+- Use async file operations
+- Validate all file paths
+- Check paths are within allowed directories
+- Handle file operation errors gracefully
+- Use path.join() for cross-platform compatibility

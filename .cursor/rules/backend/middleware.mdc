@@ -1,0 +1,178 @@
+---
+description: "HTTP and WebSocket middleware patterns, authentication, and request handling"
+globs:
+  - "**/middleware.ts"
+alwaysApply: false
+---
+
+# Middleware Patterns
+
+HTTP and WebSocket middleware for authentication, logging, and request processing.
+
+## HTTP Middleware
+
+```typescript
+// ✅ Use middleware from common/lib/middleware.ts
+import {createFinalHandler} from '@garage44/common/lib/middleware'
+
+const finalHandleRequest = createFinalHandler({
+  configPath: '~/.expressiorc',
+  contextFunctions: {
+    adminContext,
+    deniedContext,
+    userContext,
+  },
+  devContext,
+  endpointAllowList: ['/api/translations', '/api/login'],
+  logger,
+  packageName: 'expressio',
+  publicPath: path.join(runtime.service_dir, 'public'),
+  router,
+  sessionCookieName: 'expressio-session',
+  userManager,
+})
+
+// Handle requests
+const response = await finalHandleRequest(req)
+```
+
+## Authentication Middleware
+
+```typescript
+// ✅ Require authentication
+const requireAuth = async (ctx, next) => {
+  if (!ctx.session?.userid) {
+    throw new Error('Unauthorized')
+  }
+  return next(ctx)
+}
+
+// ✅ Require admin
+const requireAdmin = async (ctx, next) => {
+  if (!ctx.session?.userid) {
+    throw new Error('Unauthorized')
+  }
+  
+  const user = await userManager.getUser(ctx.session.userid)
+  if (!user?.admin) {
+    throw new Error('Forbidden')
+  }
+  
+  return next(ctx)
+}
+
+// ✅ Check workspace access
+const requireWorkspaceAccess = async (ctx, next) => {
+  if (!ctx.session?.userid) {
+    throw new Error('Unauthorized')
+  }
+  
+  const workspaceId = ctx.params.workspaceId
+  const hasAccess = await checkWorkspaceAccess(ctx.session.userid, workspaceId)
+  
+  if (!hasAccess) {
+    throw new Error('Forbidden')
+  }
+  
+  return next(ctx)
+}
+```
+
+## WebSocket Middleware
+
+```typescript
+// ✅ WebSocket middleware pattern
+type WebSocketContext = {
+  ws: WebSocket
+  session?: {userid: string}
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  url: string
+  broadcast: (url: string, data: Record<string, unknown>) => void
+}
+
+type Middleware = (ctx: WebSocketContext, next: () => Promise<unknown>) => Promise<unknown>
+
+// Example: Authentication middleware
+const authMiddleware: Middleware = async (ctx, next) => {
+  if (!ctx.session?.userid) {
+    throw new Error('Unauthorized')
+  }
+  return next(ctx)
+}
+
+// Example: Logging middleware
+const loggingMiddleware: Middleware = async (ctx, next) => {
+  logger.info(`WebSocket ${ctx.method} ${ctx.url}`)
+  const result = await next(ctx)
+  logger.info(`WebSocket ${ctx.method} ${ctx.url} completed`)
+  return result
+}
+
+// Example: Rate limiting middleware
+const rateLimitMiddleware: Middleware = async (ctx, next) => {
+  const userId = ctx.session?.userid
+  if (userId && !checkRateLimit(userId)) {
+    throw new Error('Rate limit exceeded')
+  }
+  return next(ctx)
+}
+```
+
+## Custom Middleware
+
+```typescript
+// ✅ Create custom middleware
+const validateInput = (schema) => {
+  return async (ctx, next) => {
+    const validation = schema.safeParse(ctx.data)
+    if (!validation.success) {
+      throw new Error(`Validation failed: ${validation.error.message}`)
+    }
+    ctx.validatedData = validation.data
+    return next(ctx)
+  }
+}
+
+// Usage
+wsHandler.post('/api/workspaces', 
+  validateInput(workspaceSchema),
+  async (ctx, req) => {
+    const workspace = ctx.validatedData
+    return await createWorkspace(workspace)
+  }
+)
+```
+
+## Middleware Composition
+
+```typescript
+// ✅ Compose multiple middlewares
+const protectedRoute = [
+  authMiddleware,
+  loggingMiddleware,
+  rateLimitMiddleware,
+]
+
+wsHandler.get('/api/workspaces', 
+  ...protectedRoute,
+  async (ctx, req) => {
+    return await getWorkspaces(ctx.session.userid)
+  }
+)
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Skip authentication checks
+- Hardcode user IDs or permissions
+- Ignore rate limiting
+- Forget to validate input
+- Mix HTTP and WebSocket middleware incorrectly
+
+✅ **Do:**
+- Always check authentication in middleware
+- Use userManager for user lookups
+- Implement rate limiting for public endpoints
+- Validate all user input
+- Separate HTTP and WebSocket middleware concerns

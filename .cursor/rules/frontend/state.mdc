@@ -1,0 +1,200 @@
+---
+description: "DeepSignal state management patterns and best practices"
+globs:
+  - "**/*.tsx"
+alwaysApply: false
+---
+
+# State Management with DeepSignal
+
+DeepSignal patterns for reactive state management in Preact components.
+
+## Basic Patterns
+
+```tsx
+// ✅ Use DeepSignal - regular JavaScript objects that are reactive
+import {deepSignal} from 'deepsignal'
+
+// ✅ CRITICAL: Define state OUTSIDE component to prevent infinite re-renders
+const state = deepSignal({
+    username: '',
+    password: '',
+    activeWords: [] as AnimatedWord[],
+    // ... other state properties
+})
+
+const MyComponent = () => {
+  // ✅ State is stable across renders
+  return <div onClick={() => state.count++}>{state.count}</div>
+}
+
+// ❌ DON'T define state inside component - causes infinite re-renders
+const BadComponent = () => {
+  const state = deepSignal({count: 0}) // Wrong! Recreated on every render
+  return <div onClick={() => state.count++}>{state.count}</div>
+}
+```
+
+## Field Component Integration
+
+```tsx
+// ✅ Field components with signals and validation
+import {FieldText, FieldSelect} from '@garage44/common/components'
+import {createValidator, required} from '@garage44/common/lib/validation'
+
+// State defined outside component (CRITICAL for stability)
+const state = deepSignal({
+    username: '',
+    password: '',
+    workspace_id: null
+})
+
+const LoginForm = () => {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  // ✅ Validation with signals
+  const {validation, isValid, resetTouched} = createValidator({
+    password: [state.$password, required('Password is required')],
+    username: [state.$username, required('Username is required')],
+  })
+
+  return (
+    <div>
+      <FieldText
+        model={state.$username}  // ✅ Pass signal directly
+        label="Username"
+        placeholder="Enter username"
+        validation={validation.value.username}
+      />
+      <FieldText
+        model={state.$password}  // ✅ Pass signal directly
+        label="Password"
+        type="password"
+        validation={validation.value.password}
+      />
+      <FieldSelect
+        model={state.$workspace_id}  // ✅ Signal for select
+        label="Workspace"
+        options={workspaces.map(w => ({id: w.id, name: w.name}))}
+      />
+    </div>
+  )
+}
+```
+
+## Accessing Underlying Signals
+
+```tsx
+// ✅ Access underlying signal with $ prefix for performance
+const state = deepSignal({workspace_id: null})
+
+// Pass signal directly to form fields (prevents component re-renders)
+const WorkspaceSelector = () => (
+  <FieldSelect
+    model={state.$workspace_id}
+    onChange={async(workspace_id) => {
+      // Handle workspace change
+      $s.workspace = await ws.get(`/api/workspaces/${workspace_id}`)
+    }}
+    options={$s.workspaces.map(i => ({id: i.workspace_id, name: i.workspace_id}))}
+  />
+)
+```
+
+## useEffect with Signals
+
+```tsx
+// ✅ Proper useEffect with signals - avoid infinite loops
+const LoginComponent = () => {
+  const [loading, setLoading] = useState(false)
+
+  // State defined outside component (prevents recreation)
+  const state = deepSignal({
+    username: '',
+    password: ''
+  })
+
+  const handleKeyPress = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      handleLogin()
+    }
+  }, [loading, handleLogin])
+
+  // ✅ useEffect with minimal dependencies
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyPress)
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress)
+    }
+  }, [animated]) // ✅ Only depend on stable props, not functions
+
+  // ❌ DON'T include functions in dependency array if they depend on signals
+  // This causes infinite re-renders:
+  // }, [animated, handleKeyPress]) // Wrong!
+}
+```
+
+## Global State Access
+
+```tsx
+// ✅ Access global state with $s
+import {$s} from '@/app'
+
+const WorkspaceComponent = () => {
+  // Access global workspace state
+  if (!$s.workspace) return null
+
+  return <div>
+    <h1>{$s.workspace.config.workspace_id}</h1>
+    <p>Authenticated: {$s.user.authenticated}</p>
+  </div>
+}
+```
+
+## Store Pattern (Global State)
+
+```tsx
+// ✅ Global store pattern from common/lib/store.ts
+import {deepSignal} from 'deepsignal'
+
+class Store {
+  state = deepSignal({})
+
+  load(persistantState, volatileState) {
+    this.persistantState = copyObject(persistantState)
+
+    let restoredState
+    try {
+      restoredState = JSON.parse(localStorage.getItem('store'))
+    } catch (err) {
+      restoredState = {}
+    }
+
+    Object.assign(this.state, mergeDeep(mergeDeep(persistantState, restoredState), volatileState))
+  }
+
+  save() {
+    localStorage.setItem('store', JSON.stringify(this.filterKeys(this.state, this.persistantState)))
+  }
+}
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Use useState instead of deepSignal for component state
+- Define deepSignal state inside components (causes infinite re-renders)
+- Include functions in useEffect dependencies that depend on signals
+- Pass non-signal values to Field model props
+- Forget to pass validation prop to Field components
+- Use .value syntax with DeepSignal (it's not needed)
+
+✅ **Do:**
+- Define deepSignal state OUTSIDE components for stability
+- Use deepSignal for component-level reactive state
+- Pass signals directly to Field components (model={state.$field})
+- Include validation prop in Field components
+- Access global state through $s object
+- Access underlying signals with $ prefix for form fields
+- Keep useEffect dependencies minimal and stable

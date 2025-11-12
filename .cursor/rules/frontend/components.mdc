@@ -1,0 +1,112 @@
+---
+description: "Component architecture, structure, and patterns"
+globs:
+  - "**/*.tsx"
+  - "packages/common/components/**"
+alwaysApply: false
+---
+
+# Component Architecture
+
+Component-driven design patterns for Preact components.
+
+## Architecture Principles
+
+**Component-Driven Design:**
+- Each component = `.tsx` + `.css` file in `/packages/common/components/`
+- Root element uses `.c-{component-name}` convention (e.g., `.c-button`, `.c-card`)
+- Products import components (not utility classes)
+- Custom styling in products = missing reusable component that should be extracted
+- Components bring their own styling automatically
+
+**Example Structure:**
+```
+/packages/common/components/ui/
+├── button/
+│   ├── button.tsx       # Component logic
+│   └── button.css       # Styles with .c-button root
+├── card/
+│   ├── card.tsx
+│   └── card.css         # Styles with .c-card root
+└── app-layout/
+    ├── app-layout.tsx
+    └── app-layout.css   # Styles with .c-app-layout root
+```
+
+## Component Structure
+
+```
+src/components/
+├── elements/     # Reusable UI components
+├── pages/        # Page-level components
+└── main/         # Layout and shell components
+```
+
+## Component Patterns
+
+```tsx
+// ✅ Proper component structure
+interface TranslationProps {
+    translations: Translation[];
+    onSelect?: (id: string) => void;
+}
+
+export const TranslationGroup = ({ translations, onSelect }: TranslationProps) => {
+  const selectedId = useSignal<string | null>(null);
+
+  return (
+    <div class="c-translation-group">
+      {translations.map(t => (
+        <div key={t.id} onClick={() => selectedId.value = t.id}>
+          {t.key}
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+## File Organization
+
+### Import Order
+```tsx
+// Global app imports
+import {$s, ws} from '@/app'
+import {$t, api, notify} from '@garage44/common/app'
+
+// External dependencies
+import {h} from 'preact'
+import {useEffect} from 'preact/hooks'
+import {Router, route} from 'preact-router'
+
+// Common package imports
+import {Icon, Notifications} from '@garage44/common/components'
+import {deepSignal} from 'deepsignal'
+import {classes} from '@garage44/common/lib/utils'
+
+// Component imports
+import {TranslationGroup} from '@/components/elements'
+
+// ❌ DO NOT import CSS files - Bunchy handles this automatically
+// import './translation-group.css'  // Wrong!
+```
+
+### File Naming Conventions
+- Components: `translation-group.tsx`
+- Styles: `translation-group.css` (modern CSS with nesting)
+- Barrel exports: `elements.ts`
+- Hooks: `useWebSocketSubscription.ts`
+
+## Anti-patterns
+
+❌ **Don't:**
+- Import CSS files in components - Bunchy handles this automatically
+- Create utility CSS classes - create components instead
+- Mutate props directly
+- Create components without proper TypeScript types
+
+✅ **Do:**
+- Place CSS files alongside components
+- Extract reusable patterns as components
+- Use proper TypeScript interfaces for props
+- Follow component naming conventions

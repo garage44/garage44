@@ -1,0 +1,91 @@
+---
+description: "Icon component usage patterns"
+globs:
+  - "**/*.tsx"
+alwaysApply: false
+---
+
+# Icon Component Usage
+
+Icon component patterns from `@garage44/common/components`.
+
+## Basic Usage
+
+```tsx
+// ✅ Use Icon component from common library
+import {Icon} from '@garage44/common/components'
+
+const TranslateButton = () => (
+  <button class="translate-button">
+    <Icon name="translate" />
+    Translate
+  </button>
+)
+```
+
+## Navigation Icons
+
+```tsx
+// ✅ Real example from main component
+const Navigation = () => (
+  <div class="menu-group">
+    <Link activeClassName="active" href="/">
+      <Icon name="settings" type="info"/>
+      <span>{$t('menu.settings')}</span>
+    </Link>
+    <Link href={`/workspaces/${$s.workspace.config.workspace_id}/translations`}>
+      <Icon name="translate" type="info"/>
+      <span>{$t('menu.workspace.translations')}</span>
+    </Link>
+  </div>
+)
+```
+
+## Icon with Click Handlers
+
+```tsx
+// ✅ Icon with click handlers
+const HistoryActions = () => (
+  <div class="history-actions">
+    <Icon
+      name="chevron_left"
+      onClick={async() => {
+        ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/undo`, {})
+      }}
+      tip="Undo"
+      type="info"
+    />
+    <Icon
+      name="chevron_right"
+      onClick={async() => {
+        ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/redo`, {})
+      }}
+      tip="Redo"
+      type="info"
+    />
+  </div>
+)
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Use direct SVG or font icons
+- Use emoji as icons
+- Import icon SVGs directly
+
+```tsx
+// ❌ Don't use direct SVG or font icons
+const BadComponent = () => (
+  <div>
+    <svg viewBox="0 0 24 24">...</svg> {/* Wrong! */}
+    <i class="fas fa-check"></i> {/* Wrong! */}
+    <span>🔍</span> {/* Wrong! Use Icon component */}
+  </div>
+)
+```
+
+✅ **Do:**
+- Use Icon component from @garage44/common/components
+- Use icon names from the icon library
+- Use tip prop for accessibility

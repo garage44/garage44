@@ -1,5 +1,5 @@
 ---
-description: "Backend development rules for Expressio - Bun server, CLI tools, and translation services"
+description: "Backend development rules index - see backend/index.mdc for modular patterns"
 globs:
   - "packages/expressio/api/**"
   - "packages/expressio/lib/**"
@@ -17,7 +17,19 @@ alwaysApply: true
 
 # Garage44 Backend Development Rules
 
-Backend development guidelines for the Expressio AI-powered i18n tooling project.
+**This file is a compatibility shim. See `backend/index.mdc` for the modular backend rules.**
+
+For detailed backend patterns, see:
+- `backend/index.mdc` - Main backend index
+- `backend/bun-serve.mdc` - Server setup and routing
+- `backend/websocket.mdc` - WebSocket patterns
+- `backend/database.mdc` - Database patterns
+- `backend/middleware.mdc` - Middleware patterns
+- `backend/cli.mdc` - CLI patterns
+- `backend/logging.mdc` - Logging patterns
+- `backend/config.mdc` - Configuration patterns
+- `backend/errors.mdc` - Error handling
+- `backend/files.mdc` - File I/O patterns
 
 ## Tech Stack
 

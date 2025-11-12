@@ -1,0 +1,164 @@
+---
+description: "SQLite database patterns, migrations, and query best practices"
+globs:
+  - "**/database.ts"
+  - "**/*.db"
+alwaysApply: false
+---
+
+# Database Patterns
+
+SQLite database initialization, migrations, and query patterns using `@garage44/common/lib/database`.
+
+## Database Initialization
+
+```typescript
+// ✅ Use database utilities from common/lib/database.ts
+import {initDatabase} from '@garage44/common/lib/database'
+
+const db = initDatabase({
+  path: '~/.expressio.db',
+  migrations: [
+    {
+      version: 1,
+      up: `CREATE TABLE workspaces (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )`,
+    },
+    {
+      version: 2,
+      up: `ALTER TABLE workspaces ADD COLUMN description TEXT`,
+    },
+  ],
+})
+
+// ❌ Don't use raw SQLite without migration support
+import Database from 'better-sqlite3' // Wrong! Use initDatabase instead
+```
+
+## Database Queries
+
+```typescript
+// ✅ Use prepared statements for performance
+const getWorkspace = db.prepare('SELECT * FROM workspaces WHERE id = ?')
+const workspace = getWorkspace.get(workspaceId)
+
+// ✅ Use transactions for multiple operations
+const insertWorkspace = db.transaction((workspace) => {
+  db.prepare('INSERT INTO workspaces (id, name, created_at) VALUES (?, ?, ?)')
+    .run(workspace.id, workspace.name, Date.now())
+  
+  db.prepare('INSERT INTO workspace_users (workspace_id, user_id) VALUES (?, ?)')
+    .run(workspace.id, workspace.ownerId)
+})
+
+// ✅ Batch operations
+const insertMany = db.transaction((items) => {
+  const stmt = db.prepare('INSERT INTO items (id, name) VALUES (?, ?)')
+  for (const item of items) {
+    stmt.run(item.id, item.name)
+  }
+})
+
+// ❌ Don't use string concatenation for queries (SQL injection risk)
+const badQuery = `SELECT * FROM workspaces WHERE id = '${workspaceId}'` // Wrong!
+```
+
+## Query Patterns
+
+### Single Row
+
+```typescript
+// ✅ Get single row
+const getWorkspace = db.prepare('SELECT * FROM workspaces WHERE id = ?')
+const workspace = getWorkspace.get(workspaceId)
+
+if (!workspace) {
+  throw new Error('Workspace not found')
+}
+```
+
+### Multiple Rows
+
+```typescript
+// ✅ Get multiple rows
+const getWorkspaces = db.prepare('SELECT * FROM workspaces WHERE user_id = ?')
+const workspaces = getWorkspaces.all(userId)
+```
+
+### Insert/Update
+
+```typescript
+// ✅ Insert with prepared statement
+const insertWorkspace = db.prepare(`
+  INSERT INTO workspaces (id, name, created_at)
+  VALUES (?, ?, ?)
+`)
+const result = insertWorkspace.run(workspaceId, name, Date.now())
+
+// ✅ Update with prepared statement
+const updateWorkspace = db.prepare(`
+  UPDATE workspaces
+  SET name = ?, updated_at = ?
+  WHERE id = ?
+`)
+updateWorkspace.run(newName, Date.now(), workspaceId)
+```
+
+### Complex Queries
+
+```typescript
+// ✅ Join queries
+const getWorkspaceWithUsers = db.prepare(`
+  SELECT 
+    w.*,
+    json_group_array(json_object('id', u.id, 'name', u.name)) as users
+  FROM workspaces w
+  LEFT JOIN workspace_users wu ON w.id = wu.workspace_id
+  LEFT JOIN users u ON wu.user_id = u.id
+  WHERE w.id = ?
+  GROUP BY w.id
+`)
+```
+
+## Migrations
+
+```typescript
+// ✅ Define migrations in order
+const migrations = [
+  {
+    version: 1,
+    up: `CREATE TABLE workspaces (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      created_at INTEGER NOT NULL
+    )`,
+    down: `DROP TABLE workspaces`,
+  },
+  {
+    version: 2,
+    up: `ALTER TABLE workspaces ADD COLUMN description TEXT`,
+    down: `ALTER TABLE workspaces DROP COLUMN description`,
+  },
+]
+
+// Migrations are applied automatically by initDatabase
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Use string concatenation for SQL queries (SQL injection risk)
+- Create tables without migrations
+- Use synchronous database operations that block
+- Forget to use transactions for multiple related operations
+- Hardcode database paths
+
+✅ **Do:**
+- Use prepared statements for all queries
+- Define migrations for schema changes
+- Use transactions for atomic operations
+- Use `~/.appname.db` pattern for database paths
+- Handle database errors gracefully

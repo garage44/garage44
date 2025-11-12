@@ -1,0 +1,181 @@
+---
+description: "Error handling patterns and response formatting"
+globs:
+  - "**/api/**"
+alwaysApply: false
+---
+
+# Error Handling Patterns
+
+Error handling and response formatting for HTTP and WebSocket requests.
+
+## Error Response Patterns
+
+```typescript
+// ✅ Return proper error responses
+async function handleRequest(req: Request): Promise<Response> {
+  try {
+    const result = await processRequest(req)
+    return new Response(JSON.stringify(result), {
+      headers: {'Content-Type': 'application/json'},
+      status: 200,
+    })
+  } catch (error) {
+    logger.error('Request failed', {error: error.message})
+    
+    const statusCode = error.statusCode || 500
+    const errorMessage = error.message || 'Internal server error'
+    
+    return new Response(JSON.stringify({
+      error: errorMessage,
+      status: 'error',
+    }), {
+      headers: {'Content-Type': 'application/json'},
+      status: statusCode,
+    })
+  }
+}
+```
+
+## Input Validation
+
+```typescript
+// ✅ Validate input early
+function validateWorkspace(data: unknown): Workspace {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid workspace data')
+  }
+  
+  const workspace = data as Workspace
+  if (!workspace.name || typeof workspace.name !== 'string') {
+    throw new Error('Workspace name is required')
+  }
+  
+  if (workspace.name.length > 100) {
+    throw new Error('Workspace name too long')
+  }
+  
+  return workspace
+}
+
+// ✅ Use validation in handlers
+async function createWorkspace(req: Request): Promise<Response> {
+  const body = await req.json()
+  const workspace = validateWorkspace(body)
+  
+  const created = await saveWorkspace(workspace)
+  return new Response(JSON.stringify(created), {
+    headers: {'Content-Type': 'application/json'},
+    status: 201,
+  })
+}
+```
+
+## Custom Error Classes
+
+```typescript
+// ✅ Create custom error classes
+class ValidationError extends Error {
+  statusCode = 400
+  constructor(message: string) {
+    super(message)
+    this.name = 'ValidationError'
+  }
+}
+
+class NotFoundError extends Error {
+  statusCode = 404
+  constructor(resource: string) {
+    super(`${resource} not found`)
+    this.name = 'NotFoundError'
+  }
+}
+
+class UnauthorizedError extends Error {
+  statusCode = 401
+  constructor(message = 'Unauthorized') {
+    super(message)
+    this.name = 'UnauthorizedError'
+  }
+}
+
+// Usage
+if (!workspace) {
+  throw new NotFoundError('Workspace')
+}
+
+if (!hasPermission) {
+  throw new UnauthorizedError()
+}
+```
+
+## Error Handling Middleware
+
+```typescript
+// ✅ Centralized error handling
+async function handleRequest(req: Request): Promise<Response> {
+  try {
+    return await processRequest(req)
+  } catch (error) {
+    return handleError(error)
+  }
+}
+
+function handleError(error: unknown): Response {
+  if (error instanceof ValidationError) {
+    return new Response(JSON.stringify({
+      error: error.message,
+      status: 'validation_error',
+    }), {
+      headers: {'Content-Type': 'application/json'},
+      status: 400,
+    })
+  }
+  
+  if (error instanceof NotFoundError) {
+    return new Response(JSON.stringify({
+      error: error.message,
+      status: 'not_found',
+    }), {
+      headers: {'Content-Type': 'application/json'},
+      status: 404,
+    })
+  }
+  
+  if (error instanceof UnauthorizedError) {
+    return new Response(JSON.stringify({
+      error: error.message,
+      status: 'unauthorized',
+    }), {
+      headers: {'Content-Type': 'application/json'},
+      status: 401,
+    })
+  }
+  
+  // Unknown error
+  logger.error('Unhandled error', {error: error.message, stack: error.stack})
+  return new Response(JSON.stringify({
+    error: 'Internal server error',
+    status: 'error',
+  }), {
+    headers: {'Content-Type': 'application/json'},
+    status: 500,
+  })
+}
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Expose internal error details to clients
+- Swallow errors silently
+- Return generic 500 errors for all failures
+- Skip input validation
+- Log sensitive information in errors
+
+✅ **Do:**
+- Use appropriate HTTP status codes
+- Provide clear error messages
+- Validate input early
+- Log errors with context
+- Use custom error classes for different error types

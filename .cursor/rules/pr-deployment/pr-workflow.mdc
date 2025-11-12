@@ -1,0 +1,80 @@
+---
+description: "PR creation, review process, and branch naming conventions"
+globs:
+  - ".github/**"
+alwaysApply: false
+---
+
+# Pull Request Workflow
+
+Guidelines for creating and reviewing pull requests.
+
+## PR Creation Guidelines
+
+**Before Creating a PR:**
+1. ✅ Ensure all lint checks pass locally: `bun run lint:ts && bun run lint:css`
+2. ✅ Run tests: `bun run test`
+3. ✅ Build successfully: `bun run build`
+4. ✅ Keep PRs focused on a single feature/fix
+5. ✅ Update documentation if needed
+6. ✅ Follow commit message conventions
+
+**PR Title Format:**
+- Use descriptive titles: `feat: Add translation batch processing`
+- Prefix with type: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
+- Reference issue numbers if applicable: `fix: Resolve WebSocket reconnection issue (#123)`
+
+**PR Description Template:**
+```markdown
+## Description
+Brief description of changes
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+- [ ] Tests pass locally
+- [ ] Manual testing completed
+- [ ] Tested in development environment
+
+## Checklist
+- [ ] Code follows project style guidelines
+- [ ] Self-review completed
+- [ ] Comments added for complex logic
+- [ ] Documentation updated
+- [ ] No new warnings generated
+```
+
+## PR Review Process
+
+**For Reviewers:**
+- Check that code follows architectural patterns (see `adr.mdc`)
+- Verify backend uses Bun.serve() patterns (not Express.js)
+- Verify frontend uses Preact + DeepSignal patterns
+- Ensure WebSocket patterns are correct (server/client)
+- Check CSS uses modern nesting (not BEM)
+- Verify no CSS imports in components (Bunchy handles this)
+- Ensure proper error handling and logging
+- Check for security concerns (input validation, path sanitization)
+
+**For Authors:**
+- Address all review comments
+- Keep PRs updated with main branch
+- Don't force push to PR branches (unless rebasing)
+- Respond to review feedback promptly
+
+## Branch Naming Conventions
+
+- Feature branches: `feature/description` or `feat/description`
+- Bug fixes: `fix/description` or `bugfix/description`
+- Hotfixes: `hotfix/description`
+- Documentation: `docs/description`
+- Refactoring: `refactor/description`
+
+**Examples:**
+- `feature/add-batch-translation`
+- `fix/websocket-reconnection`
+- `docs/update-deployment-guide`

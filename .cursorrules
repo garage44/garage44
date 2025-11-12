@@ -8,18 +8,52 @@ Cursor rules are organized in the `.cursor/rules/` directory for better modulari
 
 ```
 .cursor/rules/
-├── adr.mdc            # Architecture Decision Records consultation workflow
-├── backend.mdc        # Backend development (Bun.serve, WebSocket server, CLI)
-├── frontend.mdc       # Frontend development (Preact, DeepSignal, WebSocket client)
-└── pr-deployment.mdc  # PR workflow, deployment process, and CI/CD guidelines
+├── adr.mdc                    # Architecture Decision Records consultation workflow
+├── backend.mdc                # Backend index (compatibility shim)
+├── backend/
+│   ├── index.mdc              # Backend development overview
+│   ├── bun-serve.mdc         # Bun.serve() patterns
+│   ├── websocket.mdc         # WebSocket server patterns
+│   ├── database.mdc          # Database patterns
+│   ├── middleware.mdc        # Middleware patterns
+│   ├── cli.mdc               # CLI patterns
+│   ├── logging.mdc           # Logging patterns
+│   ├── config.mdc            # Configuration patterns
+│   ├── errors.mdc            # Error handling
+│   └── files.mdc             # File I/O patterns
+├── frontend.mdc               # Frontend index (compatibility shim)
+├── frontend/
+│   ├── index.mdc             # Frontend development overview
+│   ├── components.mdc       # Component architecture
+│   ├── state.mdc             # DeepSignal patterns
+│   ├── css.mdc               # CSS guidelines
+│   ├── websocket.mdc        # WebSocket client patterns
+│   ├── icons.mdc             # Icon component usage
+│   └── performance.mdc       # Optimization patterns
+├── pr-deployment.mdc          # PR/deployment index (compatibility shim)
+└── pr-deployment/
+    ├── index.mdc             # PR/deployment overview
+    ├── pr-workflow.mdc       # PR creation and review
+    ├── ci-cd.mdc             # CI/CD pipeline
+    ├── deployment.mdc        # Deployment architecture
+    └── troubleshooting.mdc   # Common issues and solutions
 ```
 
 ## Quick Reference
 
 - **Architecture & Decisions**: See `.cursor/rules/adr.mdc` and `adr/README.md`
-- **Backend Development**: See `.cursor/rules/backend.mdc`
-- **Frontend Development**: See `.cursor/rules/frontend.mdc`
-- **PR & Deployment**: See `.cursor/rules/pr-deployment.mdc` and `docs/deployment.md`
+- **Backend Development**: See `.cursor/rules/backend/index.mdc` (modular patterns in `backend/*.mdc`)
+- **Frontend Development**: See `.cursor/rules/frontend/index.mdc` (modular patterns in `frontend/*.mdc`)
+- **PR & Deployment**: See `.cursor/rules/pr-deployment/index.mdc` (modular patterns in `pr-deployment/*.mdc`)
+
+## Layered Context Lookup
+
+The rules use a **layered approach** for optimal LLM performance:
+1. **Index files** (`*/index.mdc`) provide lightweight overviews
+2. **Topic files** (`*/*.mdc`) contain focused, detailed patterns
+3. LLM loads only relevant topic files based on context, not entire rule sets
+
+This reduces context size and improves performance while maintaining comprehensive coverage.
 
 All rules use YAML frontmatter with glob patterns and are applied automatically based on context.
 

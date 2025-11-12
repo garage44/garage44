@@ -1,0 +1,79 @@
+---
+description: "Performance optimization patterns for frontend components"
+globs:
+  - "**/*.tsx"
+alwaysApply: false
+---
+
+# Performance Optimization
+
+Performance optimization patterns for Preact components and state management.
+
+## Translation Data Handling
+
+- Lazy load large translation sets
+- Virtualize translation lists with 100+ items
+- Debounce search/filter inputs (300ms)
+- Use signal batching for bulk updates
+
+## Re-render Optimization
+
+```tsx
+// ✅ Local state for component filtering
+import {deepSignal} from 'deepsignal'
+
+const TranslationComponent = () => {
+  const localState = deepSignal({
+    filter: '',
+    sort: 'asc' as 'asc' | 'desc'
+  })
+
+  // Filter translations directly - reactive to localState changes
+  const filteredTranslations = $s.workspace.i18n.filter(t =>
+    t.key.toLowerCase().includes(localState.filter.toLowerCase())
+  )
+
+  return <div>
+    <input
+      value={localState.filter}
+      onInput={e => localState.filter = (e.target as HTMLInputElement).value}
+    />
+    <TranslationGroup
+      group={{_id: 'root', ...$s.workspace.i18n}}
+      filter={localState.filter}
+      sort={localState.sort}
+    />
+  </div>
+}
+
+// ✅ Pass signals to form fields for performance
+const WorkspaceSelector = () => (
+  <FieldSelect
+    model={state.$workspace_id}  // Signal passed directly
+    onChange={async(workspace_id) => {
+      $s.workspace = await ws.get(`/api/workspaces/${workspace_id}`)
+    }}
+    options={$s.workspaces.map(i => ({id: i.workspace_id, name: i.workspace_id}))}
+  />
+)
+
+// ❌ Don't recreate objects in render
+const BadList = () => {
+  return translations.map(t => <Item data={{...t, extra: 'data'}} />) // Creates new objects
+}
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Recreate objects in render
+- Pass non-signal values to Field model props
+- Include functions in useEffect dependencies that depend on signals
+- Load all data upfront for large lists
+
+✅ **Do:**
+- Use local deepSignal state for component filtering
+- Pass signals directly to Field components
+- Use lazy loading for large datasets
+- Virtualize long lists
+- Debounce search/filter inputs

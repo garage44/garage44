@@ -1,0 +1,125 @@
+---
+description: "Structured logging patterns and best practices"
+globs:
+  - "**/logger.ts"
+alwaysApply: false
+---
+
+# Logging Patterns
+
+Structured logging patterns using the isomorphic logger from `@garage44/common/lib/logger`.
+
+## Structured Logging
+
+```typescript
+// ✅ Use isomorphic logger from common/lib/logger
+import {logger} from '@garage44/common/lib/logger'
+
+// Log with context
+logger.info('Workspace created', {
+  workspaceId: workspace.id,
+  userId: user.id,
+  timestamp: Date.now(),
+})
+
+logger.error('Translation failed', {
+  error: error.message,
+  workspaceId: workspace.id,
+  text: text.substring(0, 100), // Truncate long text
+})
+
+logger.warn('Rate limit approaching', {
+  userId: user.id,
+  requestCount: count,
+  limit: maxRequests,
+})
+
+// ❌ Don't use console.log in production code
+console.log('Workspace created') // Wrong! Use logger instead
+```
+
+## Log Levels
+
+```typescript
+// ✅ Use appropriate log levels
+logger.debug('Detailed debug information', {data})
+logger.info('General information', {data})
+logger.warn('Warning message', {data})
+logger.error('Error occurred', {error: error.message, stack: error.stack})
+```
+
+## Context Logging
+
+```typescript
+// ✅ Include relevant context in logs
+logger.info('User action', {
+  action: 'workspace.create',
+  userId: user.id,
+  workspaceId: workspace.id,
+  ip: req.headers.get('x-forwarded-for'),
+  userAgent: req.headers.get('user-agent'),
+})
+
+// ✅ Log request/response cycles
+logger.info('Request received', {
+  method: req.method,
+  url: req.url,
+  userId: session?.userid,
+})
+
+logger.info('Request completed', {
+  method: req.method,
+  url: req.url,
+  statusCode: response.status,
+  duration: Date.now() - startTime,
+})
+```
+
+## Error Logging
+
+```typescript
+// ✅ Log errors with full context
+try {
+  await processRequest(req)
+} catch (error) {
+  logger.error('Request processing failed', {
+    error: error.message,
+    stack: error.stack,
+    method: req.method,
+    url: req.url,
+    userId: session?.userid,
+  })
+  throw error
+}
+```
+
+## Performance Logging
+
+```typescript
+// ✅ Log performance metrics
+const startTime = Date.now()
+const result = await expensiveOperation()
+const duration = Date.now() - startTime
+
+logger.info('Operation completed', {
+  operation: 'expensiveOperation',
+  duration,
+  resultSize: result.length,
+})
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Use console.log in production code
+- Log sensitive information (passwords, tokens, API keys)
+- Log without context
+- Use wrong log levels
+- Log too frequently (performance impact)
+
+✅ **Do:**
+- Use structured logger with context objects
+- Include relevant identifiers (userId, workspaceId, etc.)
+- Use appropriate log levels
+- Truncate long strings in logs
+- Log errors with stack traces

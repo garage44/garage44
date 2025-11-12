@@ -1,0 +1,188 @@
+---
+description: "Bun.serve() server setup, routing, and Request/Response handling patterns"
+globs:
+  - "**/service.ts"
+  - "**/api/**"
+alwaysApply: false
+---
+
+# Bun.serve() Patterns
+
+Server setup, routing, and HTTP request/response handling for Bun runtime.
+
+## Basic Server Setup
+
+```typescript
+// ✅ Correct: Use Bun.serve() with native Request/Response
+import {Bun} from 'bun'
+
+Bun.serve({
+  port: 3030,
+  async fetch(req) {
+    const url = new URL(req.url)
+    
+    // Handle WebSocket upgrade
+    if (url.pathname === '/ws' && req.headers.get('upgrade') === 'websocket') {
+      return handleWebSocketUpgrade(req)
+    }
+    
+    // Handle HTTP requests
+    return handleRequest(req)
+  },
+  websocket: {
+    message(ws, message) {
+      // Handle WebSocket messages
+    },
+    open(ws) {
+      // Handle WebSocket connection
+    },
+    close(ws) {
+      // Handle WebSocket disconnection
+    },
+  },
+})
+
+// ❌ Wrong: Don't use Express.js patterns
+import express from 'express'
+const app = express() // Wrong!
+```
+
+## Request/Response Handling
+
+```typescript
+// ✅ Use native Request/Response APIs
+async function handleRequest(req: Request): Promise<Response> {
+  const url = new URL(req.url)
+  
+  // Parse query parameters
+  const params = Object.fromEntries(url.searchParams)
+  
+  // Parse JSON body
+  let body
+  if (req.method === 'POST' || req.method === 'PUT') {
+    body = await req.json()
+  }
+  
+  // Return Response
+  return new Response(JSON.stringify({data: 'response'}), {
+    headers: {'Content-Type': 'application/json'},
+    status: 200,
+  })
+}
+
+// ❌ Don't use Express req/res objects
+function badHandler(req, res) { // Wrong!
+  res.json({data: 'response'})
+}
+```
+
+## Custom Router Pattern
+
+```typescript
+// ✅ Custom router for Bun.serve (see expressio/lib/middleware.ts)
+class Router {
+  routes: Array<{
+    handler: (req: Request, params: Record<string, string>) => Promise<Response>
+    method: string
+    path: RegExp
+  }> = []
+
+  get(path: string, handler: (req: Request, params: Record<string, string>) => Promise<Response>) {
+    // Convert /api/workspaces/:id to regex
+    const regex = new RegExp('^' + path.replaceAll(/:[^/]+/g, '([^/]+)') + '$')
+    this.routes.push({handler, method: 'GET', path: regex})
+  }
+
+  post(path: string, handler: (req: Request, params: Record<string, string>) => Promise<Response>) {
+    const regex = new RegExp('^' + path.replaceAll(/:[^/]+/g, '([^/]+)') + '$')
+    this.routes.push({handler, method: 'POST', path: regex})
+  }
+
+  async route(req: Request): Promise<Response | null> {
+    const url = new URL(req.url)
+    for (const {handler, method, path} of this.routes) {
+      if (req.method === method && path.test(url.pathname)) {
+        const paramValues = url.pathname.match(path)?.slice(1) || []
+        const params: Record<string, string> = {}
+        paramValues.forEach((val, idx) => {
+          params[`param${idx}`] = val
+        })
+        return await handler(req, params)
+      }
+    }
+    return null
+  }
+}
+
+// Usage
+const router = new Router()
+router.get('/api/workspaces/:id', async (req, params) => {
+  const workspaceId = params.param0 // First capture group
+  return new Response(JSON.stringify({id: workspaceId}), {
+    headers: {'Content-Type': 'application/json'},
+  })
+})
+```
+
+## Common Patterns
+
+### CORS Headers
+
+```typescript
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+}
+
+async function handleRequest(req: Request): Promise<Response> {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {headers: corsHeaders(), status: 204})
+  }
+  
+  const response = await processRequest(req)
+  return new Response(JSON.stringify(response), {
+    headers: {...corsHeaders(), 'Content-Type': 'application/json'},
+  })
+}
+```
+
+### Static File Serving
+
+```typescript
+import {readFile} from 'fs/promises'
+import path from 'node:path'
+
+async function serveStatic(req: Request, publicPath: string): Promise<Response | null> {
+  const url = new URL(req.url)
+  const filePath = path.join(publicPath, url.pathname)
+  
+  try {
+    const content = await readFile(filePath)
+    const ext = path.extname(filePath)
+    const contentType = getContentType(ext)
+    
+    return new Response(content, {
+      headers: {'Content-Type': contentType},
+    })
+  } catch {
+    return null // File not found
+  }
+}
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Use Express.js patterns (`app.get()`, `app.post()`, etc.)
+- Use Express middleware (`express.json()`, `express.static()`, etc.)
+- Use `req.body`, `req.params` directly (parse from Request object)
+- Block the event loop with synchronous operations
+
+✅ **Do:**
+- Use native `Request` and `Response` objects
+- Parse query params from `URL.searchParams`
+- Parse JSON body with `req.json()`
+- Use async/await for all I/O operations

@@ -1,0 +1,89 @@
+---
+description: "WebSocket client patterns for real-time updates"
+globs:
+  - "**/*.tsx"
+alwaysApply: false
+---
+
+# WebSocket Client Patterns
+
+WebSocket client patterns for real-time communication in frontend components.
+
+## Real-time Translation Updates
+
+```tsx
+import {$s, ws} from '@/app'
+import {events} from '@garage44/common/app'
+import {pathCreate, pathDelete, pathUpdate} from '@garage44/common/lib/paths.ts'
+
+// ✅ Real WebSocket usage from translations component
+events.on('app:init', () => {
+  ws.on('/i18n/sync', ({create_tags, delete_tags, modify_tags}) => {
+    for (const tag of create_tags) {
+      const {path, value} = tag
+      pathCreate($s.workspace.i18n, path, value, $s.workspace.config.languages.target, value.target)
+    }
+    for (const tag of delete_tags) {
+      const {path} = tag
+      pathDelete($s.workspace.i18n, path)
+    }
+    for (const tag of modify_tags) {
+      const {path, value} = tag
+      pathUpdate($s.workspace.i18n, path, value)
+    }
+  })
+
+  // Handle full i18n state updates
+  ws.on('/i18n/state', ({workspace_id, i18n, timestamp}) => {
+    if (!$s.workspace || $s.workspace.config.workspace_id !== workspace_id) {
+      return
+    }
+
+    // Check if this update is newer (prevents race conditions)
+    if (!$s.workspace.lastStateUpdateTime || timestamp > ($s.workspace.lastStateUpdateTime ?? 0)) {
+      $s.workspace.i18n = i18n
+      $s.workspace.lastStateUpdateTime = timestamp
+    }
+  })
+})
+```
+
+## WebSocket API Calls
+
+```tsx
+// ✅ Direct WebSocket API usage
+const handleUndo = async () => {
+  ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/undo`, {})
+}
+
+const handleRedo = async () => {
+  ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/redo`, {})
+}
+
+// ✅ WebSocket connection management
+const Main = () => {
+  useEffect(() => {
+    (async() => {
+      const context = await api.get('/api/context')
+      if (context.authenticated) {
+        ws.connect() // Connect WebSocket when authenticated
+      }
+    })()
+  }, [])
+}
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Block the UI during WebSocket API calls
+- Forget to handle WebSocket disconnections
+- Ignore race conditions in state updates
+- Connect WebSocket before authentication
+
+✅ **Do:**
+- Use WebSocket events with `events.on('app:init', ...)` pattern
+- Handle loading/error states gracefully
+- Check timestamps to prevent race conditions
+- Connect WebSocket after authentication check
+- Clean up event listeners on component unmount

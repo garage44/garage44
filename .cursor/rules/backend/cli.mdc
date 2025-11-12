@@ -1,0 +1,134 @@
+---
+description: "Yargs CLI patterns and command structure"
+globs:
+  - "**/service.ts"
+alwaysApply: false
+---
+
+# CLI Patterns
+
+Yargs-based command-line interface patterns for service entry points.
+
+## Yargs CLI Setup
+
+```typescript
+// ✅ Use yargs for CLI (see expressio/service.ts)
+import yargs from 'yargs'
+import {hideBin} from 'yargs/helpers'
+
+const cli = yargs(hideBin(process.argv))
+cli.scriptName('expressio')
+
+cli.command('server', 'Start the server', (yargs) => {
+  return yargs.option('port', {
+    alias: 'p',
+    type: 'number',
+    default: 3030,
+    describe: 'Port to listen on',
+  })
+}, async (argv) => {
+  const port = argv.port
+  // Start server
+})
+
+cli.command('build', 'Build the project', {}, async () => {
+  // Build logic
+})
+
+cli.parse()
+```
+
+## Command Structure
+
+```typescript
+// ✅ Define commands with options
+cli.command('server', 'Start the server', (yargs) => {
+  return yargs
+    .option('port', {
+      alias: 'p',
+      type: 'number',
+      default: 3030,
+      describe: 'Port to listen on',
+    })
+    .option('host', {
+      alias: 'h',
+      type: 'string',
+      default: 'localhost',
+      describe: 'Host to bind to',
+    })
+    .option('dev', {
+      type: 'boolean',
+      default: false,
+      describe: 'Run in development mode',
+    })
+}, async (argv) => {
+  const {port, host, dev} = argv
+  await startServer({port, host, dev})
+})
+```
+
+## Subcommands
+
+```typescript
+// ✅ Use subcommands for complex CLIs
+cli.command('workspace', 'Manage workspaces', (yargs) => {
+  return yargs
+    .command('create', 'Create a new workspace', (yargs) => {
+      return yargs.option('name', {
+        type: 'string',
+        demandOption: true,
+        describe: 'Workspace name',
+      })
+    }, async (argv) => {
+      await createWorkspace(argv.name)
+    })
+    .command('list', 'List workspaces', {}, async () => {
+      await listWorkspaces()
+    })
+    .demandCommand(1, 'You need at least one command')
+})
+```
+
+## Global Options
+
+```typescript
+// ✅ Define global options
+cli
+  .option('verbose', {
+    alias: 'v',
+    type: 'boolean',
+    default: false,
+    describe: 'Run with verbose logging',
+  })
+  .option('config', {
+    alias: 'c',
+    type: 'string',
+    describe: 'Path to config file',
+  })
+```
+
+## Help and Version
+
+```typescript
+// ✅ Configure help and version
+cli
+  .help()
+  .alias('help', 'h')
+  .version()
+  .alias('version', 'V')
+  .epilog('For more information, visit https://garage44.org')
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Use process.argv directly (use yargs)
+- Hardcode default values (use yargs defaults)
+- Skip input validation
+- Forget to provide help text
+
+✅ **Do:**
+- Use yargs for all CLI parsing
+- Provide descriptive help text
+- Validate required options
+- Use consistent option naming (kebab-case)

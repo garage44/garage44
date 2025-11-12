@@ -1,0 +1,46 @@
+---
+description: "PR workflow and deployment index - lightweight overview pointing to specific topics"
+globs:
+  - ".github/workflows/**"
+  - "deploy/**"
+  - "docs/deployment.md"
+  - "**/webhook*.ts"
+alwaysApply: false
+---
+
+# Garage44 PR & Deployment Rules
+
+PR workflow, deployment process, and CI/CD guidelines. This is an **index file** - see specific topic files for detailed patterns.
+
+## Quick Reference
+
+For detailed patterns, see:
+- **PR Workflow**: `pr-deployment/pr-workflow.mdc` - PR creation, review, branch naming
+- **CI/CD**: `pr-deployment/ci-cd.mdc` - GitHub Actions workflows, pipeline
+- **Deployment**: `pr-deployment/deployment.mdc` - Deployment architecture, webhook, systemd
+- **Troubleshooting**: `pr-deployment/troubleshooting.mdc` - Common issues and solutions
+
+## Overview
+
+**Deployment Flow:**
+```
+GitHub Push to main → GitHub Actions → Webhook → VPS Deployment → Systemd Restart
+```
+
+**Key Components:**
+- GitHub Actions workflows (lint, deploy)
+- Webhook server (validates GitHub webhooks)
+- Deployment script (pulls code, builds, restarts services)
+- Systemd services (manages application lifecycle)
+
+## Context-Based Lookup
+
+When working on PR/deployment code, the LLM should:
+1. Load this index file for overview
+2. Load specific topic files based on what you're working on:
+   - Creating PRs? → Load `pr-deployment/pr-workflow.mdc`
+   - Working on CI/CD? → Load `pr-deployment/ci-cd.mdc`
+   - Deploying? → Load `pr-deployment/deployment.mdc`
+   - Debugging? → Load `pr-deployment/troubleshooting.mdc`
+
+This keeps context focused and improves performance.

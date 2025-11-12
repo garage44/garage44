@@ -1,0 +1,182 @@
+---
+description: "WebSocket server setup, middleware, and API route patterns"
+globs:
+  - "**/ws-server.ts"
+  - "**/ws-client.ts"
+  - "**/api/**"
+alwaysApply: false
+---
+
+# WebSocket Server Patterns
+
+WebSocket server setup, middleware, and API route handling for real-time communication.
+
+## WebSocket Server Setup
+
+```typescript
+// ✅ Use WebSocket server from common/lib/ws-server.ts
+import {createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
+
+const wsHandler = createBunWebSocketHandler({
+  endpoint: '/ws',
+  sessionMiddleware: sessionMiddleware,
+  authOptions: {
+    noSecurityEnv: 'BUN_ENV',
+    users: config.users,
+  },
+  globalMiddlewares: [loggingMiddleware],
+})
+
+// Register API routes
+wsHandler.get('/api/workspaces', async (ctx, req) => {
+  return {workspaces: await getWorkspaces()}
+})
+
+wsHandler.post('/api/workspaces/:id/translate', async (ctx, req) => {
+  const workspaceId = req.params.id
+  return await translateWorkspace(workspaceId)
+})
+
+// Use in Bun.serve()
+Bun.serve({
+  fetch(req) {
+    // Handle WebSocket upgrade
+    if (wsHandler.upgrade(req)) {
+      return // Upgrade handled
+    }
+    // Handle HTTP requests
+    return handleRequest(req)
+  },
+  websocket: wsHandler.websocket,
+})
+```
+
+## WebSocket Middleware
+
+```typescript
+// ✅ WebSocket middleware pattern
+type WebSocketContext = {
+  ws: WebSocket
+  session?: {userid: string}
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  url: string
+  broadcast: (url: string, data: Record<string, unknown>) => void
+}
+
+type Middleware = (ctx: WebSocketContext, next: () => Promise<unknown>) => Promise<unknown>
+
+// Example: Authentication middleware
+const authMiddleware: Middleware = async (ctx, next) => {
+  if (!ctx.session?.userid) {
+    throw new Error('Unauthorized')
+  }
+  return next(ctx)
+}
+
+// Example: Logging middleware
+const loggingMiddleware: Middleware = async (ctx, next) => {
+  logger.info(`WebSocket ${ctx.method} ${ctx.url}`)
+  const result = await next(ctx)
+  logger.info(`WebSocket ${ctx.method} ${ctx.url} completed`)
+  return result
+}
+```
+
+## WebSocket API Routes
+
+```typescript
+// ✅ Register WebSocket API routes
+wsHandler.get('/api/workspaces', async (ctx, req) => {
+  // ctx.session contains user session
+  // req.params contains route parameters
+  // req.query contains query parameters
+  // req.data contains request body (for POST/PUT)
+  
+  const workspaces = await getWorkspacesForUser(ctx.session.userid)
+  return {workspaces}
+})
+
+wsHandler.post('/api/workspaces/:id/translate', async (ctx, req) => {
+  const workspaceId = req.params.id
+  const {text, targetLanguage} = req.data
+  
+  const result = await translateText(text, targetLanguage)
+  
+  // Broadcast to all connected clients
+  ctx.broadcast('/i18n/sync', {
+    create_tags: [{path: workspaceId, value: result}],
+  })
+  
+  return {translation: result}
+})
+```
+
+## Broadcasting
+
+```typescript
+// ✅ Broadcast to all connected clients
+wsHandler.post('/api/workspaces/:id/update', async (ctx, req) => {
+  const workspaceId = req.params.id
+  const update = req.data
+  
+  // Save update
+  await saveUpdate(workspaceId, update)
+  
+  // Broadcast to all clients subscribed to this workspace
+  ctx.broadcast(`/workspaces/${workspaceId}/updates`, {
+    workspaceId,
+    update,
+    timestamp: Date.now(),
+  })
+  
+  return {success: true}
+})
+```
+
+## Connection Management
+
+```typescript
+// ✅ Handle WebSocket connection lifecycle
+Bun.serve({
+  websocket: {
+    open(ws) {
+      // Store connection metadata
+      ws.data = {
+        userId: extractUserId(ws),
+        connectedAt: Date.now(),
+      }
+      
+      logger.info('WebSocket connected', {userId: ws.data.userId})
+    },
+    
+    message(ws, message) {
+      // Messages are handled by wsHandler
+      wsHandler.handleMessage(ws, message)
+    },
+    
+    close(ws) {
+      logger.info('WebSocket disconnected', {userId: ws.data?.userId})
+      // Cleanup resources
+    },
+    
+    error(ws, error) {
+      logger.error('WebSocket error', {error: error.message})
+    },
+  },
+})
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Mix HTTP and WebSocket handling incorrectly
+- Ignore WebSocket connection cleanup
+- Send messages without checking connection state
+- Broadcast to all clients when only specific clients need updates
+
+✅ **Do:**
+- Use proper WebSocket middleware for authentication
+- Clean up resources on connection close
+- Check `ws.readyState` before sending messages
+- Use targeted broadcasting with topic subscriptions
+- Handle connection errors gracefully

@@ -1,5 +1,5 @@
 ---
-description: "PR workflow, deployment process, and CI/CD guidelines for Garage44 monorepo"
+description: "PR workflow and deployment index - see pr-deployment/index.mdc for modular patterns"
 globs:
   - ".github/workflows/**"
   - "deploy/**"
@@ -10,7 +10,14 @@ alwaysApply: false
 
 # Garage44 PR & Deployment Rules
 
-Guidelines for pull requests, deployment workflows, and CI/CD processes in the Garage44 monorepo.
+**This file is a compatibility shim. See `pr-deployment/index.mdc` for the modular PR/deployment rules.**
+
+For detailed PR/deployment patterns, see:
+- `pr-deployment/index.mdc` - Main PR/deployment index
+- `pr-deployment/pr-workflow.mdc` - PR creation and review
+- `pr-deployment/ci-cd.mdc` - CI/CD pipeline
+- `pr-deployment/deployment.mdc` - Deployment architecture
+- `pr-deployment/troubleshooting.mdc` - Common issues and solutions
 
 ## Pull Request Workflow
 

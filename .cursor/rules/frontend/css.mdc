@@ -1,0 +1,143 @@
+---
+description: "CSS guidelines, modern nesting, design tokens, and styling patterns"
+globs:
+  - "**/*.css"
+alwaysApply: false
+---
+
+# CSS Guidelines
+
+CSS styling patterns using modern nesting and design tokens.
+
+## NO CSS Imports in Components
+
+**❌ NEVER import CSS files in component code:**
+- CSS files are automatically collected and bundled by Bunchy
+- Bunchy scans component directories and bundles all `.css` files automatically
+- Importing CSS in components is unnecessary and should be avoided
+
+**✅ Correct approach:**
+- Place CSS files alongside components (e.g., `button.tsx` + `button.css`)
+- Bunchy automatically discovers and bundles component CSS files
+- No import statements needed in component code
+
+```tsx
+// ✅ Correct: No CSS import needed
+import {Button} from '../button/button'
+import {Icon} from '../icon/icon'
+
+export function MyComponent() {
+  return <div class="c-my-component">...</div>
+}
+
+// ❌ Wrong: Don't import CSS files
+import './my-component.css'  // Wrong! Bunchy handles this automatically
+```
+
+**How Bunchy handles CSS:**
+- Automatically scans `src/components/**/*.css` and `packages/common/components/**/*.css`
+- Bundles all component CSS into `components.<buildId>.css`
+- Hot-reloads CSS changes without page refresh
+
+## NO BEM Naming Convention
+
+**❌ NEVER use BEM (Block Element Modifier) naming:**
+- No double underscores `__` for elements (e.g., `.c-button__icon`)
+- No double dashes `--` for modifiers (e.g., `.c-button--disabled`)
+- No BEM-style class names anywhere in the codebase
+
+**✅ ALWAYS use modern CSS nesting instead:**
+```css
+/* ✅ Correct: Use nesting */
+.c-button {
+    display: flex;
+
+    .icon {
+        width: 16px;
+    }
+
+    &.disabled {
+        opacity: 0.5;
+    }
+}
+
+/* ❌ Wrong: BEM naming */
+.c-button__icon { }
+.c-button--disabled { }
+```
+
+## Use Existing Variables
+
+```css
+/* ✅ Use predefined CSS custom properties */
+.c-translation-item {
+    margin: var(--spacer-1);
+    padding: var(--spacer-2);
+    font-size: var(--font-d);
+}
+
+/* ❌ Don't use arbitrary values */
+.bad-item {
+    margin: 1rem;
+    padding: 2rem;
+}
+```
+
+## Component-Scoped Styles with Modern Nesting
+
+```css
+/* translation-group.css */
+.c-translation-group {
+    display: flex;
+    flex-direction: column;
+
+    /* ✅ Use modern CSS nesting */
+    .item {
+        padding: var(--spacer-1);
+
+        &:hover {
+            background: var(--surface-2);
+        }
+    }
+
+    /* ✅ State modifiers with nesting */
+    &.expanded {
+        max-height: none;
+    }
+}
+
+/* ❌ Don't use BEM naming */
+.c-translation-group__item { /* Wrong! Use nesting instead */
+}
+```
+
+## NO Inline Styles
+
+```tsx
+// ❌ Avoid inline styles
+<div style={{ margin: '1rem' }}>Bad</div>
+
+// ✅ Use CSS classes
+<div class="translation-item">Good</div>
+```
+
+## CSS Class Naming
+
+- Root element: `.c-{component-name}` (e.g., `.c-button`, `.c-card`)
+- Child elements: Use nesting, not BEM (e.g., `.item` inside `.c-card`, not `.c-card__item`)
+- State modifiers: Use `&.modifier` nesting (e.g., `&.active`, `&.disabled`)
+
+## Anti-patterns
+
+❌ **Don't:**
+- Import CSS files in components - Bunchy handles this automatically
+- Use BEM naming (`.c-button__icon`) - use nesting instead
+- Create inline styles - use CSS classes with modern nesting
+- Use arbitrary values - use design tokens (var(--spacer-1), var(--font-d))
+- Create utility CSS classes - create components instead
+
+✅ **Do:**
+- Place CSS files alongside components
+- Use modern CSS nesting in component CSS files
+- Use existing CSS custom properties (var(--spacer-1), var(--font-d))
+- Extract reusable patterns as components, not utility classes

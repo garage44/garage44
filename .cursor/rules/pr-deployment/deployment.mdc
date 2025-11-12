@@ -1,0 +1,136 @@
+---
+description: "Deployment architecture, webhook, systemd, and deployment process"
+globs:
+  - "deploy/**"
+  - "**/webhook*.ts"
+alwaysApply: false
+---
+
+# Deployment Architecture
+
+Deployment process, webhook server, and systemd service management.
+
+## Deployment Flow
+
+```
+GitHub Push to main
+  ↓
+GitHub Actions Workflow
+  ↓
+Webhook Request (HMAC SHA-256 signed)
+  ↓
+VPS Webhook Endpoint (/webhook)
+  ↓
+Signature Validation
+  ↓
+Deployment Script Execution:
+  1. git fetch && git reset --hard origin/main
+  2. Remove database files (~/.pyrite.db, ~/.expressio.db)
+  3. bun run build (all packages)
+  4. systemctl restart <package>.service (for each app)
+```
+
+## Webhook Implementation
+
+**Location**: `packages/malkovich/lib/webhook.ts`
+
+**Key Functions:**
+- `validateSignature()`: Validates GitHub webhook HMAC SHA-256 signature
+- `deploy()`: Executes deployment process
+- `handleWebhook()`: Handles incoming webhook requests
+
+**Security:**
+- ✅ HMAC SHA-256 signature validation
+- ✅ Constant-time comparison (prevents timing attacks)
+- ✅ Only processes push events to main branch
+- ✅ Webhook secret stored in environment variables
+
+**Environment Variables Required:**
+- `WEBHOOK_SECRET`: Shared secret between GitHub and VPS
+- `REPO_PATH`: Path to repository on VPS (defaults to workspace root)
+
+## Deployment Process
+
+**1. Code Update:**
+```bash
+git fetch origin main
+git reset --hard origin/main
+```
+
+**2. Database Cleanup:**
+- Removes `~/.pyrite.db` and `~/.expressio.db`
+- Also removes WAL and SHM files if present
+- Ensures clean state between deployments
+
+**3. Build Process:**
+```bash
+bun run build  # Builds all packages in workspace
+```
+
+**4. Service Restart:**
+- Auto-discovers application packages from workspace
+- Restarts systemd services for each application:
+  - `expressio.service`
+  - `pyrite.service`
+  - `malkovich.service`
+
+## Systemd Services
+
+**Service Files Location**: `deploy/*.service`
+
+**Service Configuration:**
+- User: `garage44`
+- Working Directory: Package directory
+- Environment: `NODE_ENV=production`, `BUN_ENV=production`
+- ExecStart: `bun run server -- --port <PORT>`
+- Restart: `always` with 10s delay
+
+**Ports:**
+- Expressio: 3030
+- Pyrite: 3031
+- Malkovich: 3032
+
+**Sudo Configuration:**
+The `garage44` user needs passwordless sudo for service restarts:
+```bash
+garage44 ALL=(ALL) NOPASSWD: /bin/systemctl restart expressio.service, /bin/systemctl restart pyrite.service, /bin/systemctl restart malkovich.service
+```
+
+## Manual Deployment
+
+```bash
+# SSH into VPS
+ssh garage44@your-vps
+
+# Navigate to repository
+cd /home/garage44/garage44
+
+# Pull latest code
+git fetch origin main
+git reset --hard origin/main
+
+# Remove databases
+rm -f ~/.pyrite.db ~/.expressio.db ~/.pyrite.db-* ~/.expressio.db-*
+
+# Build packages
+bun run build
+
+# Restart services
+sudo systemctl restart expressio.service
+sudo systemctl restart pyrite.service
+sudo systemctl restart malkovich.service
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Deploy without testing
+- Skip database cleanup
+- Restart services without building
+- Hardcode paths in deployment script
+
+✅ **Do:**
+- Test before deploying
+- Clean databases between deployments
+- Build before restarting services
+- Use environment variables for paths

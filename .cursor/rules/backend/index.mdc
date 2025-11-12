@@ -1,0 +1,92 @@
+---
+description: "Backend development index - lightweight overview pointing to specific backend patterns"
+globs:
+  - "packages/expressio/api/**"
+  - "packages/expressio/lib/**"
+  - "packages/expressio/service.ts"
+  - "packages/bunchy/**"
+  - "packages/enola/**"
+  - "packages/common/lib/**"
+  - "packages/pyrite/api/**"
+  - "packages/pyrite/lib/**"
+  - "packages/pyrite/service.ts"
+  - "packages/malkovich/lib/**"
+  - "packages/malkovich/service.ts"
+alwaysApply: true
+---
+
+# Garage44 Backend Development Rules
+
+Backend development guidelines for the Garage44 monorepo. This is an **index file** - see specific topic files for detailed patterns.
+
+## Quick Reference
+
+For detailed patterns, see:
+- **Bun.serve()**: `backend/bun-serve.mdc` - Server setup, routing, Request/Response handling
+- **WebSocket**: `backend/websocket.mdc` - WebSocket server, middleware, API routes
+- **Database**: `backend/database.mdc` - SQLite patterns, migrations, queries
+- **Middleware**: `backend/middleware.mdc` - HTTP/WebSocket middleware, authentication
+- **CLI**: `backend/cli.mdc` - Yargs CLI patterns, command structure
+- **Logging**: `backend/logging.mdc` - Structured logging patterns
+- **Config**: `backend/config.mdc` - RC files, environment variables
+- **Errors**: `backend/errors.mdc` - Error handling patterns
+- **Files**: `backend/files.mdc` - File I/O, path validation
+
+## Tech Stack Overview
+
+- **Runtime**: Bun (modern JavaScript runtime)
+- **Server**: Bun.serve() with custom routing - NOT Express.js
+- **Architecture**: Service-oriented with dependency injection
+- **CLI**: yargs-based command interface
+- **Logging**: Custom isomorphic logger service
+- **Config**: RC file-based configuration management
+- **WebSocket**: Custom WebSocket server with middleware support
+- **Database**: SQLite (via `@garage44/common/lib/database`)
+
+## Project Structure
+
+```
+packages/
+├── expressio/     # i18n service
+├── pyrite/        # Video conferencing service
+├── malkovich/     # Documentation platform (includes webhook)
+├── bunchy/        # Development tooling (build system)
+├── common/        # Shared backend utilities
+└── enola/         # Translation service wrapper
+```
+
+## Common Anti-patterns
+
+❌ **Don't do:**
+- Use Express.js patterns - this is Bun with custom routing
+- Block the main thread with synchronous file operations
+- Store sensitive API keys in workspace files
+- Skip input validation on user-provided paths
+- Ignore WebSocket connection cleanup
+- Use console.log instead of structured logger
+- Hardcode configuration values
+- Use string concatenation for SQL queries
+- Trust user-provided file paths without validation
+
+✅ **Do:**
+- Use Bun.serve() and native Web APIs (Request/Response)
+- Leverage Bun's fast file I/O with async operations
+- Use environment variables or rc config file for sensitive configuration
+- Validate and sanitize all file paths and user inputs
+- Use the websocket protocol with proper middleware
+- Use structured logging with relevant context
+- Use RC files or environment variables for configuration
+- Use prepared statements for database queries
+- Validate file paths and ensure they're within allowed directories
+
+## Context-Based Lookup
+
+When working on backend code, the LLM should:
+1. Load this index file for overview
+2. Load specific topic files based on what you're working on:
+   - Working with Bun.serve()? → Load `backend/bun-serve.mdc`
+   - Adding WebSocket routes? → Load `backend/websocket.mdc`
+   - Database operations? → Load `backend/database.mdc`
+   - etc.
+
+This keeps context focused and improves performance.

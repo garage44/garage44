@@ -1,0 +1,118 @@
+---
+description: "RC file configuration and environment variable patterns"
+globs:
+  - "**/config.ts"
+alwaysApply: false
+---
+
+# Configuration Management
+
+RC file configuration and environment variable patterns.
+
+## RC File Configuration
+
+```typescript
+// ✅ Use RC file for configuration (see common/lib/config.ts pattern)
+import rc from 'rc'
+
+const config = rc('expressio', {
+  port: 3030,
+  database: '~/.expressio.db',
+  users: [],
+})
+
+// Access configuration
+const port = config.port
+const dbPath = config.database
+
+// ❌ Don't hardcode configuration values
+const port = 3030 // Wrong! Use config file or environment variables
+```
+
+## Environment Variables
+
+```typescript
+// ✅ Use environment variables for sensitive data
+const webhookSecret = process.env.WEBHOOK_SECRET || ''
+const repoPath = process.env.REPO_PATH || findWorkspaceRoot()
+
+// ✅ Provide defaults
+const port = parseInt(process.env.PORT || '3030', 10)
+const nodeEnv = process.env.NODE_ENV || 'production'
+
+// ✅ Validate required environment variables
+const requiredEnvVars = ['WEBHOOK_SECRET', 'DATABASE_URL']
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    throw new Error(`Missing required environment variable: ${envVar}`)
+  }
+}
+
+// ❌ Don't store secrets in code
+const secret = 'my-secret-key' // Wrong! Use environment variables
+```
+
+## Configuration Merging
+
+```typescript
+// ✅ Merge RC config with environment variables
+import rc from 'rc'
+
+const defaultConfig = {
+  port: 3030,
+  host: 'localhost',
+  database: '~/.expressio.db',
+}
+
+const rcConfig = rc('expressio', defaultConfig)
+
+// Environment variables override RC config
+const config = {
+  ...rcConfig,
+  port: parseInt(process.env.PORT || String(rcConfig.port), 10),
+  database: process.env.DATABASE_PATH || rcConfig.database,
+}
+```
+
+## Type-Safe Configuration
+
+```typescript
+// ✅ Define configuration types
+interface Config {
+  port: number
+  host: string
+  database: string
+  users: Array<{name: string; password: string}>
+}
+
+function loadConfig(): Config {
+  const rcConfig = rc('expressio', {
+    port: 3030,
+    host: 'localhost',
+    database: '~/.expressio.db',
+    users: [],
+  })
+  
+  return {
+    port: parseInt(process.env.PORT || String(rcConfig.port), 10),
+    host: process.env.HOST || rcConfig.host,
+    database: process.env.DATABASE_PATH || rcConfig.database,
+    users: rcConfig.users,
+  }
+}
+```
+
+## Anti-patterns
+
+❌ **Don't:**
+- Hardcode configuration values
+- Store secrets in code or config files
+- Skip validation of required config
+- Mix configuration sources inconsistently
+
+✅ **Do:**
+- Use RC files for non-sensitive config
+- Use environment variables for secrets
+- Provide sensible defaults
+- Validate required configuration on startup
+- Use type-safe configuration objects

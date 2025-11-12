@@ -1,0 +1,66 @@
+---
+description: "Frontend development index - lightweight overview pointing to specific frontend patterns"
+globs:
+  - "packages/expressio/src/**"
+  - "packages/pyrite/src/**"
+  - "packages/malkovich/src/**"
+  - "packages/common/components/**"
+  - "packages/common/css/**"
+alwaysApply: true
+---
+
+# Garage44 Frontend Development Rules
+
+Frontend development guidelines for the Garage44 monorepo. This is an **index file** - see specific topic files for detailed patterns.
+
+## Quick Reference
+
+For detailed patterns, see:
+- **Components**: `frontend/components.mdc` - Component architecture, structure, patterns
+- **State**: `frontend/state.mdc` - DeepSignal patterns, state management
+- **CSS**: `frontend/css.mdc` - CSS guidelines, modern nesting, design tokens
+- **WebSocket**: `frontend/websocket.mdc` - WebSocket client patterns
+- **Icons**: `frontend/icons.mdc` - Icon component usage
+- **Performance**: `frontend/performance.mdc` - Optimization patterns
+
+## Tech Stack Overview
+
+- **Framework**: Preact with JSX (`jsx: "react-jsx"`, `jsxImportSource: "preact"`)
+- **Styling**: CSS with modern nesting - NO inline styles, **NO BEM naming**
+- **State**: DeepSignal (Proxy-based reactive objects) - NOT useState
+- **Icons**: Icon component from common library - NOT direct SVG/font icons
+- **Real-time**: WebSocket client for live updates
+- **Build**: Bun bundler with hot reload
+
+## Common Anti-patterns
+
+❌ **Don't:**
+- Use useState instead of deepSignal for component state
+- Define deepSignal state inside components (causes infinite re-renders)
+- Create inline styles - use CSS classes with modern nesting
+- Use direct SVG/font icons - use Icon component
+- Use BEM naming (`.c-button__icon`) - use nesting instead
+- Import CSS files in components - Bunchy handles this automatically
+- Pass non-signal values to Field model props
+
+✅ **Do:**
+- Define deepSignal state OUTSIDE components for stability
+- Use deepSignal for component-level reactive state
+- Pass signals directly to Field components (model={state.$field})
+- Use existing CSS custom properties (var(--spacer-1), var(--font-d))
+- Use Icon component from @garage44/common/components
+- Use modern CSS nesting in component CSS files
+- Extract reusable patterns as components, not utility classes
+
+## Context-Based Lookup
+
+When working on frontend code, the LLM should:
+1. Load this index file for overview
+2. Load specific topic files based on what you're working on:
+   - Creating components? → Load `frontend/components.mdc`
+   - Managing state? → Load `frontend/state.mdc`
+   - Writing CSS? → Load `frontend/css.mdc`
+   - Using WebSocket? → Load `frontend/websocket.mdc`
+   - etc.
+
+This keeps context focused and improves performance.

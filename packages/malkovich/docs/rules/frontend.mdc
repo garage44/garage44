@@ -1,5 +1,5 @@
 ---
-description: "Frontend development rules - Preact, CSS (modern nesting), DeepSignal, and component-driven architecture"
+description: "Frontend development rules index - see frontend/index.mdc for modular patterns"
 globs:
   - "packages/expressio/src/**"
   - "packages/pyrite/src/**"
@@ -13,7 +13,16 @@ alwaysApply: true
 
 # Garage44 Frontend Development Rules
 
-Frontend development guidelines for the Expressio AI-powered i18n tooling project.
+**This file is a compatibility shim. See `frontend/index.mdc` for the modular frontend rules.**
+
+For detailed frontend patterns, see:
+- `frontend/index.mdc` - Main frontend index
+- `frontend/components.mdc` - Component architecture
+- `frontend/state.mdc` - DeepSignal patterns
+- `frontend/css.mdc` - CSS guidelines
+- `frontend/websocket.mdc` - WebSocket client patterns
+- `frontend/icons.mdc` - Icon component usage
+- `frontend/performance.mdc` - Optimization patterns
 
 ## Tech Stack
 
