@@ -50,6 +50,19 @@ const runner = {
         }
         broadcast('/tasks/assets', result || {}, 'POST')
     }, debounce.wait, debounce.options),
+    code_bunchy: throttle(async() => {
+        const result = await tasks.code_bunchy.start({minify: false, sourcemap: true})
+        if (settings.reload_ignore.includes('/tasks/code_bunchy')) {
+            return
+        }
+        if (result) {
+            broadcast('/tasks/code_bunchy', {
+                filename: result.filename,
+                publicPath: path.relative(settings.dir.workspace, settings.dir.public),
+                size: result.size,
+            }, 'POST')
+        }
+    }, debounce.wait, debounce.options),
     code_frontend: throttle(async() => {
         const {filename, size} = await tasks.code_frontend.start({minify: false, sourcemap: true})
         if (settings.reload_ignore.includes('/tasks/code_frontend')) {
@@ -59,6 +72,19 @@ const runner = {
             filename,
             publicPath: path.relative(settings.dir.workspace, settings.dir.public),
             size,
+        }, 'POST')
+    }, debounce.wait, debounce.options),
+    hmr: throttle(async(filePath: string) => {
+        // Rebuild the frontend code
+        await tasks.code_frontend.start({minify: false, sourcemap: true})
+        if (settings.reload_ignore.includes('/tasks/hmr')) {
+            return
+        }
+        // Broadcast HMR update with workspace-relative file path
+        const workspaceRelativePath = `src/${filePath}`
+        broadcast('/tasks/hmr', {
+            filePath: workspaceRelativePath,
+            timestamp: Date.now(),
         }, 'POST')
     }, debounce.wait, debounce.options),
     html: throttle(async() => {
@@ -108,19 +134,6 @@ const runner = {
             }, 'POST')
         }, debounce.wait, debounce.options),
     },
-    hmr: throttle(async(filePath: string) => {
-        // Rebuild the frontend code
-        const {filename, size} = await tasks.code_frontend.start({minify: false, sourcemap: true})
-        if (settings.reload_ignore.includes('/tasks/hmr')) {
-            return
-        }
-        // Broadcast HMR update with workspace-relative file path
-        const workspaceRelativePath = `src/${filePath}`
-        broadcast('/tasks/hmr', {
-            filePath: workspaceRelativePath,
-            timestamp: Date.now(),
-        }, 'POST')
-    }, debounce.wait, debounce.options),
 }
 
 // Add this interface before the tasks declaration
@@ -129,6 +142,7 @@ interface Tasks {
     assets: Task
     build: Task
     clean: Task
+    code_bunchy: Task
     code_frontend: Task
     dev: Task
     html: Task
@@ -196,6 +210,7 @@ tasks.build = new Task('build', async function taskBuild({minify = false, source
         tasks.assets.start(),
         tasks.html.start({minify}),
         tasks.code_frontend.start({minify, sourcemap}),
+        tasks.code_bunchy.start({minify, sourcemap}),
         tasks.styles.start({minify, sourcemap}),
     ])
 })
@@ -261,10 +276,91 @@ tasks.code_frontend = new Task('code:frontend', async function taskCodeFrontend(
     }
 })
 
+tasks.code_bunchy = new Task('code:bunchy', async function taskCodeBunchy({minify = false, sourcemap = false} = {}) {
+    try {
+        const nodeEnv = process.env.NODE_ENV || 'development'
+        const result = await Bun.build({
+            define: {
+                'process.env.NODE_ENV': `'${nodeEnv}'`,
+            },
+            entrypoints: [path.join(settings.dir.bunchy, 'client.ts')],
+            format: 'esm',
+            minify: {
+                identifiers: false,
+                syntax: minify,
+                whitespace: minify,
+            },
+            naming: `[name].${settings.buildId}.[ext]`,
+            outdir: settings.dir.public,
+            sourcemap: nodeEnv === 'production' ? 'none' : 'linked',
+        })
+
+        if (!result.success) {
+            broadcast('/tasks/error', {
+                details: result.logs,
+                error: 'Build failed',
+                task: 'code:bunchy',
+                timestamp: new Date().toISOString(),
+            }, 'POST')
+            return
+        }
+
+        if (!result.outputs || result.outputs.length === 0) {
+            broadcast('/tasks/error', {
+                details: 'No output files generated',
+                error: 'Build failed',
+                task: 'code:bunchy',
+                timestamp: new Date().toISOString(),
+            }, 'POST')
+            return
+        }
+
+        const output = result.outputs[0]
+        const originalFilename = path.basename(output.path)
+        const expectedFilename = `bunchy.${settings.buildId}.js`
+
+        // Rename client.{buildId}.js to bunchy.{buildId}.js
+        if (originalFilename !== expectedFilename) {
+            const originalPath = path.join(settings.dir.public, originalFilename)
+            const newPath = path.join(settings.dir.public, expectedFilename)
+            await fs.move(originalPath, newPath, {overwrite: true})
+
+            // Also handle sourcemap if it exists
+            const originalSourceMap = originalFilename.replace('.js', '.js.map')
+            const newSourceMap = expectedFilename.replace('.js', '.js.map')
+            const originalSourceMapPath = path.join(settings.dir.public, originalSourceMap)
+            const newSourceMapPath = path.join(settings.dir.public, newSourceMap)
+            if (await fs.pathExists(originalSourceMapPath)) {
+                await fs.move(originalSourceMapPath, newSourceMapPath, {overwrite: true})
+            }
+        }
+
+        return {
+            filename: expectedFilename,
+            size: output.size,
+        }
+    } catch (error) {
+        // oxlint-disable-next-line no-console
+        console.error(error)
+        broadcast('/tasks/error', {
+            details: String(error),
+            error: 'Build failed',
+            task: 'code:bunchy',
+            timestamp: new Date().toISOString(),
+        }, 'POST')
+        return
+    }
+})
 
 tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = true} = {}) {
     await tasks.clean.start()
-    await tasks.build.start({minify, sourcemap})
+    await Promise.all([
+        tasks.assets.start(),
+        tasks.html.start({minify}),
+        tasks.code_frontend.start({minify, sourcemap}),
+        tasks.code_bunchy.start({minify, sourcemap}),
+        tasks.styles.start({minify, sourcemap}),
+    ])
 
     watch(settings.dir.common, {recursive: true}, (event, filename) => {
         const extension = path.extname(filename)
@@ -312,7 +408,12 @@ tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = 
 
 tasks.html = new Task('html', async function taskHtml() {
     const indexFile = await fs.readFile(path.join(settings.dir.src, 'index.html'))
-    const html = template(indexFile)({settings})
+    const html = template(indexFile)({
+        settings: {
+            ...settings,
+            enableBunchy: process.env.NODE_ENV !== 'production',
+        },
+    })
     const filename = 'index.html'
     await fs.writeFile(path.join(settings.dir.public, filename), html)
     return {filename, size: html.length}

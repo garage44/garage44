@@ -62,20 +62,6 @@ class App {
             console.error('Error rendering Main component:', error)
         }
         events.emit('app:init')
-
-        // Initialize Bunchy when enabled (lazy import to avoid circular dependency)
-        if (options.enableBunchy) {
-            console.log('[App] Initializing Bunchy')
-            try {
-                // Dynamic import to break circular dependency: common -> bunchy -> common
-                const bunchyModule = await import('@garage44/bunchy/client')
-                bunchyModule.initializeBunchy()
-            } catch (error) {
-                // Silently fail if bunchy is not available
-                const errorMessage = error instanceof Error ? error.message : String(error)
-                console.warn('[App] Bunchy not available for development features:', errorMessage)
-            }
-        }
     }
 }
 

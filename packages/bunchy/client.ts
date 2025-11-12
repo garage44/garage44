@@ -356,7 +356,12 @@ async function handleHMRUpdate(filePath: string, timestamp: number) {
 }
 
 // Helper function to initialize Bunchy
+// Only initialize once to prevent multiple connections
 function initializeBunchy() {
+    if ((globalThis as any).__BUNCHY_INITIALIZED__) {
+        return
+    }
+    ;(globalThis as any).__BUNCHY_INITIALIZED__ = true
     return new BunchyClient()
 }
 
@@ -478,5 +483,10 @@ class BunchyClient extends WebSocketClient {
         setupLoggerForwarding(this)
     }
 }
+
+// Auto-initialize when script loads (after BunchyClient is defined)
+// Since this script is only included in development mode (see index.html template),
+// we can always initialize it
+initializeBunchy()
 
 export {initializeBunchy, setupLoggerForwarding, BunchyClient}
