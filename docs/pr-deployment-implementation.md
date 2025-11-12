@@ -144,18 +144,14 @@ export interface PRMetadata {
 /**
  * Validate PR source for deployment
  */
-export function validatePRSource(pr: PRMetadata): 'trusted' | 'review-required' | 'untrusted' {
-    // Reject forks (for now - can be made configurable)
+export function validatePRSource(pr: PRMetadata): 'trusted' | 'untrusted' {
+    // Block forks completely - only contributors allowed
     if (pr.is_fork) {
-        console.log(`[pr-deploy] PR #${pr.number} is from a fork, requires review`)
-        return 'review-required'
+        console.log(`[pr-deploy] PR #${pr.number} is from a fork, deployment blocked`)
+        return 'untrusted'
     }
     
-    // Additional validations can be added here:
-    // - Check if author is a collaborator
-    // - Check branch naming conventions
-    // - Check PR labels
-    
+    // Main repo PRs are trusted and get public access
     return 'trusted'
 }
 
@@ -214,12 +210,12 @@ export async function deployPR(pr: PRMetadata): Promise<{
     try {
         console.log(`[pr-deploy] Starting deployment for PR #${pr.number}`)
         
-        // Validate PR source
+        // Validate PR source - block forks completely
         const trustLevel = validatePRSource(pr)
         if (trustLevel !== 'trusted') {
             return {
                 deployment: null,
-                message: `PR #${pr.number} requires manual approval (${trustLevel})`,
+                message: `PR #${pr.number} blocked - only contributor PRs allowed (no forks)`,
                 success: false,
             }
         }
@@ -326,10 +322,10 @@ export async function deployPR(pr: PRMetadata): Promise<{
         // Update deployment status
         await updatePRDeployment(pr.number, {status: 'running'})
         
-        const deploymentUrl = `https://pr-${pr.number}.garage44.org?token=${token}`
+        const deploymentUrl = `https://pr-${pr.number}.garage44.org`
         
         console.log(`[pr-deploy] PR #${pr.number} deployed successfully`)
-        console.log(`[pr-deploy] URL: ${deploymentUrl}`)
+        console.log(`[pr-deploy] URL: ${deploymentUrl} (public access, no token required)`)
         
         return {
             deployment: {
@@ -472,13 +468,17 @@ WantedBy=multi-user.target
 
 /**
  * Generate nginx configuration for PR deployment
+ * Public access for contributor PRs (no token required)
  */
 async function generateNginxConfig(deployment: PRDeployment): Promise<void> {
     const domain = `pr-${deployment.number}.garage44.org`
     const configFile = `/etc/nginx/sites-available/${domain}`
     const enabledLink = `/etc/nginx/sites-enabled/${domain}`
     
-    const content = `# PR #${deployment.number} deployment
+    const content = `# PR #${deployment.number} deployment (public access)
+# Rate limit zone (defined in main nginx.conf if not already present)
+# limit_req_zone $binary_remote_addr zone=pr_public:10m rate=10r/s;
+
 server {
     listen 80;
     server_name ${domain};
@@ -501,17 +501,15 @@ server {
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 10m;
     
-    # Token-based authentication
-    set $valid_token "";
-    if ($arg_token = "${deployment.token}") {
-        set $valid_token "1";
-    }
-    if ($http_x_pr_token = "${deployment.token}") {
-        set $valid_token "1";
-    }
-    if ($valid_token != "1") {
-        return 403 "Access denied. Token required.";
-    }
+    # Prevent search engine indexing
+    add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
+    
+    # PR deployment indicator
+    add_header X-PR-Deployment "${deployment.number}" always;
+    
+    # Rate limiting for public access
+    limit_req zone=pr_public burst=20 nodelay;
+    limit_req_status 429;
     
     # Malkovich (main)
     location / {
@@ -530,6 +528,9 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_read_timeout 86400;
         proxy_send_timeout 86400;
     }
@@ -820,7 +821,8 @@ jobs:
     name: Deploy or Cleanup PR
     runs-on: ubuntu-latest
     
-    # Skip deployment for forks (security)
+    # SECURITY: Only deploy PRs from main repo (no forks)
+    # This ensures only contributors can trigger deployments
     if: github.event.pull_request.head.repo.full_name == github.repository
     
     steps:
@@ -872,8 +874,9 @@ jobs:
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             echo "✅ PR deployment triggered (HTTP $HTTP_CODE)"
             
-            # Store for comment step
+            # Store PR number for comment step
             echo "deployment_triggered=true" >> $GITHUB_OUTPUT
+            echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
           else
             echo "❌ PR deployment failed (HTTP $HTTP_CODE)"
             exit 1
@@ -894,11 +897,11 @@ jobs:
             const domain = `pr-${prNumber}.garage44.org`;
             
             const body = `🚀 **PR Deployment Available**\n\n` +
-              `Your changes have been deployed for testing:\n\n` +
-              `- **Malkovich**: https://${domain}?token=<see-logs>\n` +
-              `- **Expressio**: https://expressio.${domain}?token=<see-logs>\n` +
-              `- **Pyrite**: https://pyrite.${domain}?token=<see-logs>\n\n` +
-              `⚠️ Note: Access tokens are available in the deployment logs.\n\n` +
+              `Your changes have been deployed and are publicly accessible:\n\n` +
+              `- **Malkovich**: https://${domain}\n` +
+              `- **Expressio**: https://expressio.${domain}\n` +
+              `- **Pyrite**: https://pyrite.${domain}\n\n` +
+              `✅ No authentication required - public access for contributors.\n\n` +
               `_This deployment will be automatically cleaned up when the PR is closed or after 7 days._`;
             
             await github.rest.issues.createComment({
@@ -982,6 +985,64 @@ Add to `packages/malkovich/service.ts`:
 
 ```typescript
 // Add new commands
+cli.command('deploy-pr', 'Deploy a PR branch manually (for Cursor agent)', (yargs) =>
+    yargs
+        .option('number', {
+            demandOption: true,
+            describe: 'PR number to deploy',
+            type: 'number',
+        })
+        .option('branch', {
+            demandOption: true,
+            describe: 'Branch name (e.g., feature/new-ui)',
+            type: 'string',
+        })
+        .option('sha', {
+            describe: 'Commit SHA (defaults to latest)',
+            type: 'string',
+        })
+        .option('author', {
+            default: 'local',
+            describe: 'Author name',
+            type: 'string',
+        })
+, async (argv) => {
+    const {deployPR} = await import('./lib/pr-deploy')
+    
+    // Get latest SHA if not provided
+    let sha = argv.sha
+    if (!sha) {
+        const {$} = await import('bun')
+        const result = await $`git rev-parse origin/${argv.branch}`.quiet()
+        sha = result.stdout.toString().trim()
+    }
+    
+    const pr = {
+        author: argv.author,
+        head_ref: argv.branch,
+        head_sha: sha,
+        is_fork: false,  // Local PRs are trusted
+        number: argv.number,
+        repo_full_name: 'garage44/garage44',
+    }
+    
+    const result = await deployPR(pr)
+    
+    if (result.success && result.deployment) {
+        console.log('\n✅ PR Deployment Successful!\n')
+        console.log(`URL: https://pr-${argv.number}.garage44.org`)
+        console.log(`Malkovich: https://pr-${argv.number}.garage44.org`)
+        console.log(`\nPorts:`)
+        console.log(`  Malkovich: ${result.deployment.ports.malkovich}`)
+        console.log(`  Expressio: ${result.deployment.ports.expressio}`)
+        console.log(`  Pyrite: ${result.deployment.ports.pyrite}`)
+        console.log(`\nNote: Deployment is publicly accessible (no token required)`)
+    } else {
+        console.error(`\n❌ Deployment failed: ${result.message}`)
+        process.exit(1)
+    }
+})
+
 cli.command('list-pr-deployments', 'List all active PR deployments', async () => {
     const {listPRDeployments} = await import('./lib/pr-cleanup')
     await listPRDeployments()
@@ -1020,9 +1081,17 @@ cli.command('cleanup-stale-prs', 'Cleanup stale PR deployments', (yargs) =>
 sudo certbot certonly --standalone -d "*.garage44.org" -d garage44.org
 ```
 
-2. **Set PR deployment secret:**
+2. **Configure nginx rate limiting:**
+
+Add to `/etc/nginx/nginx.conf` in the `http` block:
+```nginx
+# Rate limiting for PR deployments
+limit_req_zone $binary_remote_addr zone=pr_public:10m rate=10r/s;
+```
+
+Then reload nginx:
 ```bash
-echo 'export PR_DEPLOYMENT_SECRET="<random-secret>"' >> ~/.bashrc
+sudo nginx -s reload
 ```
 
 3. **Install cleanup timer:**
@@ -1041,30 +1110,36 @@ sudo visudo
 # garage44 ALL=(ALL) NOPASSWD: /bin/systemctl start pr-*, /bin/systemctl stop pr-*, /bin/systemctl restart pr-*, /bin/systemctl daemon-reload, /usr/sbin/nginx -s reload, /bin/rm -f /etc/systemd/system/pr-*.service, /bin/rm -f /etc/nginx/sites-*/pr-*.garage44.org, /bin/ln -s /etc/nginx/sites-available/pr-*.garage44.org /etc/nginx/sites-enabled/pr-*.garage44.org
 ```
 
-5. **Test PR deployment:**
+5. **Test PR deployment (Cursor agent can run this):**
 ```bash
-# List deployments
+# Deploy current branch as PR #999 (test number)
+bun run malkovich deploy-pr --number 999 --branch $(git branch --show-current)
+
+# Or deploy a specific branch
+bun run malkovich deploy-pr --number 123 --branch feature/new-ui
+
+# List active deployments
 bun run malkovich list-pr-deployments
 
-# Manual cleanup
-bun run malkovich cleanup-pr --number 123
-
-# Cleanup stale
-bun run malkovich cleanup-stale-prs --max-age-days 7
+# Cleanup test deployment
+bun run malkovich cleanup-pr --number 999
 ```
+
+6. **Test automatic deployment via GitHub:**
+Open a PR on GitHub and watch for the comment with the deployment URL.
 
 ## Security Checklist
 
 - [ ] Wildcard SSL certificate obtained
-- [ ] PR_DEPLOYMENT_SECRET configured
-- [ ] Fork PRs blocked in GitHub Actions
+- [ ] Fork PRs blocked in GitHub Actions (only contributors allowed)
 - [ ] Resource limits configured in systemd templates
 - [ ] Cleanup timer enabled
 - [ ] Sudo permissions restricted to necessary commands
-- [ ] Access tokens generated per deployment
 - [ ] Deployment directory isolated
 - [ ] Port range allocated (40000-49999)
-- [ ] Nginx token authentication configured
+- [ ] Nginx rate limiting configured
+- [ ] X-Robots-Tag header prevents search indexing
+- [ ] Public access enabled for contributor PRs (no token needed)
 
 ## Monitoring
 

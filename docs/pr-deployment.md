@@ -51,10 +51,9 @@ GitHub Actions (PR)
 
 ### 1. PR Validation
 
-**Trust Levels:**
-- ✅ **Trusted**: PRs from main repository branches
-- ⚠️ **Review-Required**: PRs from forks (require manual approval)
-- ❌ **Untrusted**: Rejected automatically
+**Simplified Trust Model:**
+- ✅ **Trusted**: PRs from main repository (contributors only) - **PUBLIC ACCESS**
+- ❌ **Blocked**: PRs from forks (rejected automatically)
 
 **Implementation:**
 ```typescript
@@ -67,17 +66,14 @@ interface PRMetadata {
     repo_full_name: string  // owner/repo
 }
 
-function validatePRSource(pr: PRMetadata): 'trusted' | 'review-required' | 'untrusted' {
-    // Only allow PRs from the main repository (not forks)
+function validatePRSource(pr: PRMetadata): 'trusted' | 'untrusted' {
+    // Block forks completely - only contributors allowed
     if (pr.is_fork) {
-        return 'review-required'
+        console.log(`[pr-deploy] PR #${pr.number} is from a fork, deployment blocked`)
+        return 'untrusted'
     }
     
-    // Additional checks could include:
-    // - Author is a collaborator
-    // - Branch naming conventions
-    // - PR labels (e.g., "safe-to-deploy")
-    
+    // Main repo PRs are trusted and get public access
     return 'trusted'
 }
 ```
@@ -134,9 +130,18 @@ function allocatePRPorts(prNumber: number) {
 
 ### 4. Access Control
 
-**Authentication Options:**
+**Public Access for Contributors:**
 
-**Option A: Token-based (Recommended)**
+Contributor PRs (from main repo) are **publicly accessible** with no authentication required. This simplifies workflow for agents and reviewers while maintaining security through:
+
+1. **Fork blocking** - Only contributors can deploy
+2. **Rate limiting** - Prevents abuse
+3. **Not indexed** - Search engines blocked
+4. **Resource limits** - Prevents resource exhaustion
+
+**Previous token-based approach (no longer needed):**
+
+~~**Option A: Token-based**~~
 ```typescript
 // Generate unique token for each PR deployment
 function generatePRToken(prNumber: number): string {
