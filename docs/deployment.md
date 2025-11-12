@@ -433,6 +433,87 @@ curl http://localhost:3032  # Malkovich
 2. Check nginx error logs: `sudo tail -f /var/log/nginx/error.log`
 3. Verify services are listening on the correct ports
 
+## PR-Triggered Deployments
+
+PR deployments allow you to test changes on the VPS before merging to main. This is useful for testing with real context and data.
+
+### Security Features
+
+PR deployments include several security measures:
+
+1. **Branch Pattern Filtering**: Only branches matching allowed patterns can be deployed (default: `cursor/*`)
+2. **Repository Validation**: Only PRs from the same repository (not forks) are allowed
+3. **PR Status Check**: Only open PRs can be deployed
+4. **Isolated Environment**: PR deployments use separate ports and database files
+5. **Same Webhook Secret**: Uses the same secure webhook validation as main deployments
+
+### Configuration
+
+Set the following environment variables on your VPS:
+
+```bash
+# Required: GitHub token for PR validation (create at https://github.com/settings/tokens)
+export GITHUB_TOKEN="your-github-token-here"
+
+# Optional: Allowed branch patterns (comma-separated, default: cursor/*)
+export PR_ALLOWED_BRANCH_PATTERNS="cursor/*"
+
+# Optional: Base port for PR deployments (default: 4000)
+export PR_BASE_PORT=4000
+```
+
+### How It Works
+
+1. **GitHub Actions**: When a PR is opened/updated, the `.github/workflows/deploy-pr.yml` workflow triggers
+2. **Webhook**: The workflow calls `/webhook/pr` endpoint with PR information
+3. **Validation**: The webhook validates:
+   - Webhook signature (same secret as main deployments)
+   - Branch name matches allowed patterns
+   - PR is from the same repository (not a fork)
+   - PR is open
+4. **Deployment**: If validation passes:
+   - Checks out the PR branch
+   - Builds all packages
+   - Creates PR-specific systemd services (e.g., `expressio-pr-123.service`)
+   - Starts services on isolated ports (e.g., PR #123 uses ports 4000-4010)
+   - Uses PR-specific database files (e.g., `~/.expressio-pr-123.db`)
+
+### Accessing PR Deployments
+
+PR deployments run on isolated ports. To access them:
+
+1. **Direct Port Access**: Connect directly to the port (e.g., `http://your-vps:4000`)
+2. **Nginx Configuration**: Optionally configure nginx to proxy `pr-{number}.your-domain.com` to the PR ports
+
+### Cleaning Up PR Deployments
+
+When a PR is closed or merged, you may want to clean up:
+
+```bash
+# Stop and disable PR services
+sudo systemctl stop expressio-pr-123.service
+sudo systemctl disable expressio-pr-123.service
+sudo rm /etc/systemd/system/expressio-pr-123.service
+sudo systemctl daemon-reload
+
+# Remove PR-specific database files
+rm ~/.expressio-pr-123.db*
+rm ~/.pyrite-pr-123.db*
+```
+
+### Sudo Configuration for PR Deployments
+
+Add PR service management to sudo configuration:
+
+```bash
+sudo visudo
+```
+
+Add:
+```
+garage44 ALL=(ALL) NOPASSWD: /bin/systemctl restart expressio-pr-*.service, /bin/systemctl restart pyrite-pr-*.service, /bin/systemctl restart malkovich-pr-*.service, /bin/systemctl enable expressio-pr-*.service, /bin/systemctl enable pyrite-pr-*.service, /bin/systemctl enable malkovich-pr-*.service, /bin/systemctl daemon-reload, /usr/bin/tee /etc/systemd/system/expressio-pr-*.service, /usr/bin/tee /etc/systemd/system/pyrite-pr-*.service, /usr/bin/tee /etc/systemd/system/malkovich-pr-*.service
+```
+
 ## Security Considerations
 
 1. **Webhook Secret**: Use a strong, randomly generated secret
@@ -440,6 +521,8 @@ curl http://localhost:3032  # Malkovich
 3. **HTTPS**: Use HTTPS for the webhook endpoint in production
 4. **User Permissions**: Run services as a dedicated user with minimal permissions
 5. **Sudo Access**: Limit sudo access to only necessary commands
+6. **PR Deployments**: Only allow PR deployments from trusted branch patterns and same repository
+7. **GitHub Token**: Use a GitHub token with minimal permissions (read-only for public repos)
 
 ## Maintenance
 

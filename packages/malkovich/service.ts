@@ -7,7 +7,7 @@ import {withSpaFallback, setupBunchyConfig} from '@garage44/common/service'
 import {devContext} from '@garage44/common/lib/dev-context'
 import {findWorkspaceRoot, readReadme} from './lib/workspace'
 import {existsSync, readFileSync} from 'fs'
-import {handleWebhook} from './lib/webhook'
+import {handleWebhook, handlePRWebhook} from './lib/webhook'
 import yargs from 'yargs'
 
 const BUN_ENV = process.env.BUN_ENV || 'production'
@@ -71,9 +71,14 @@ const _ = cli.usage('Usage: $0 [task]')
                 })), {headers: {'Content-Type': 'application/json'}})
             }
 
-            // Webhook endpoint: /webhook
+            // Webhook endpoint: /webhook (main branch deployments)
             if (pathname === '/webhook') {
                 return await handleWebhook(req)
+            }
+
+            // PR webhook endpoint: /webhook/pr (PR-triggered deployments)
+            if (pathname === '/webhook/pr') {
+                return await handlePRWebhook(req)
             }
 
             // API endpoint: /api/markdown?path=README.md
