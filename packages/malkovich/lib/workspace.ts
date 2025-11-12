@@ -1,6 +1,6 @@
-import { readFileSync, existsSync } from 'fs'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import {readFileSync, existsSync} from 'fs'
+import {join, dirname} from 'path'
+import {fileURLToPath} from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -9,76 +9,76 @@ const __dirname = dirname(__filename)
  * Find workspace root by looking for package.json with workspaces field
  */
 export function findWorkspaceRoot(startPath?: string): string | null {
-  let currentPath = startPath || __dirname
+    let currentPath = startPath || __dirname
 
-  // Go up from malkovich package to monorepo root
-  while (currentPath !== dirname(currentPath)) {
-    const packageJsonPath = join(currentPath, 'package.json')
+    // Go up from malkovich package to monorepo root
+    while (currentPath !== dirname(currentPath)) {
+        const packageJsonPath = join(currentPath, 'package.json')
 
-    if (existsSync(packageJsonPath)) {
-      try {
-        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+        if (existsSync(packageJsonPath)) {
+            try {
+                const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
 
-        // Check if this is a workspace root (has workspaces field)
-        if (packageJson.workspaces) {
-          return currentPath
+                // Check if this is a workspace root (has workspaces field)
+                if (packageJson.workspaces) {
+                    return currentPath
+                }
+            } catch {
+                // Continue searching
+            }
         }
-      } catch {
-        // Continue searching
-      }
+
+        currentPath = dirname(currentPath)
     }
 
-    currentPath = dirname(currentPath)
-  }
-
-  return null
+    return null
 }
 
 /**
  * Extract packages from workspace package.json
  */
 export function extractWorkspacePackages(workspaceRoot: string): string[] {
-  const packageJsonPath = join(workspaceRoot, 'package.json')
+    const packageJsonPath = join(workspaceRoot, 'package.json')
 
-  if (!existsSync(packageJsonPath)) {
-    return []
-  }
-
-  try {
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
-    const workspaces = packageJson.workspaces || []
-
-    const packages: string[] = []
-
-    for (const workspace of workspaces) {
-      // Handle patterns like "packages/*"
-      if (workspace.includes('*')) {
-        const pattern = workspace.replace('*', '')
-        const packagesDir = join(workspaceRoot, pattern)
-
-        // Read directory and find package.json files
-        try {
-          const dirs = Bun.readdirSync(packagesDir)
-          for (const dir of dirs) {
-            const pkgPath = join(packagesDir, dir, 'package.json')
-            if (existsSync(pkgPath)) {
-              packages.push(dir)
-            }
-          }
-        } catch {
-          // Directory doesn't exist or can't be read
-        }
-      } else {
-        // Direct package path
-        const pkgName = workspace.split('/').pop() || workspace
-        packages.push(pkgName)
-      }
+    if (!existsSync(packageJsonPath)) {
+        return []
     }
 
-    return packages
-  } catch {
-    return []
-  }
+    try {
+        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+        const workspaces = packageJson.workspaces || []
+
+        const packages: string[] = []
+
+        for (const workspace of workspaces) {
+            // Handle patterns like "packages/*"
+            if (workspace.includes('*')) {
+                const pattern = workspace.replace('*', '')
+                const packagesDir = join(workspaceRoot, pattern)
+
+                // Read directory and find package.json files
+                try {
+                    const dirs = Bun.readdirSync(packagesDir)
+                    for (const dir of dirs) {
+                        const pkgPath = join(packagesDir, dir, 'package.json')
+                        if (existsSync(pkgPath)) {
+                            packages.push(dir)
+                        }
+                    }
+                } catch {
+                    // Directory doesn't exist or can't be read
+                }
+            } else {
+                // Direct package path
+                const pkgName = workspace.split('/').pop() || workspace
+                packages.push(pkgName)
+            }
+        }
+
+        return packages
+    } catch {
+        return []
+    }
 }
 
 /**
@@ -86,53 +86,53 @@ export function extractWorkspacePackages(workspaceRoot: string): string[] {
  * Excludes malkovich and utility packages
  */
 export function isApplicationPackage(packageName: string): boolean {
-  // Exclude malkovich itself
-  if (packageName === 'malkovich') {
-    return false
-  }
+    // Exclude malkovich itself
+    if (packageName === 'malkovich') {
+        return false
+    }
 
-  // Utility packages that don't get subdomains
-  const utilityPackages = ['common', 'bunchy', 'enola']
-  if (utilityPackages.includes(packageName)) {
-    return false
-  }
+    // Utility packages that don't get subdomains
+    const utilityPackages = ['common', 'bunchy', 'enola']
+    if (utilityPackages.includes(packageName)) {
+        return false
+    }
 
-  // Everything else is considered an application
-  return true
+    // Everything else is considered an application
+    return true
 }
 
 /**
  * Read README file from workspace
  */
 export function readReadme(workspaceRoot: string, path: string): string | null {
-  const fullPath = join(workspaceRoot, path)
+    const fullPath = join(workspaceRoot, path)
 
-  if (existsSync(fullPath)) {
-    try {
-      return readFileSync(fullPath, 'utf-8')
-    } catch {
-      return null
+    if (existsSync(fullPath)) {
+        try {
+            return readFileSync(fullPath, 'utf-8')
+        } catch {
+            return null
+        }
     }
-  }
 
-  return null
+    return null
 }
 
 /**
  * Get all package README paths
  */
-export function getPackageReadmePaths(workspaceRoot: string): Array<{ package: string; path: string }> {
-  const packages = extractWorkspacePackages(workspaceRoot)
-  const readmePaths: Array<{ package: string; path: string }> = []
+export function getPackageReadmePaths(workspaceRoot: string): Array<{package: string; path: string}> {
+    const packages = extractWorkspacePackages(workspaceRoot)
+    const readmePaths: Array<{package: string; path: string}> = []
 
-  for (const pkg of packages) {
-    const readmePath = `packages/${pkg}/README.md`
-    const fullPath = join(workspaceRoot, readmePath)
+    for (const pkg of packages) {
+        const readmePath = `packages/${pkg}/README.md`
+        const fullPath = join(workspaceRoot, readmePath)
 
-    if (existsSync(fullPath)) {
-      readmePaths.push({ package: pkg, path: readmePath })
+        if (existsSync(fullPath)) {
+            readmePaths.push({package: pkg, path: readmePath})
+        }
     }
-  }
 
-  return readmePaths
+    return readmePaths
 }

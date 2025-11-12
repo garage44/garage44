@@ -5,7 +5,6 @@ import {findWorkspaceRoot, extractWorkspacePackages, isApplicationPackage} from 
 
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || ''
 const REPO_PATH = process.env.REPO_PATH || findWorkspaceRoot() || process.cwd()
-const DEPLOY_USER = process.env.DEPLOY_USER || 'garage44'
 
 /**
  * Validate GitHub webhook signature
@@ -121,7 +120,7 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
         // Auto-discover packages from workspace
         const workspaceRoot = findWorkspaceRoot() || REPO_PATH
         const allPackages = extractWorkspacePackages(workspaceRoot)
-        const appPackages = allPackages.filter(pkg => isApplicationPackage(pkg))
+        const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
 
         // Always include malkovich in deployment
         const packagesToDeploy = [...appPackages, 'malkovich']

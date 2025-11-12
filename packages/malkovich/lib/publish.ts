@@ -72,9 +72,9 @@ async function buildDependencyGraph(workspaceRoot: string, packages: string[]): 
             // Get dependencies from package.json
             const deps: string[] = []
             const allDeps = {
-                ...packageJson.dependencies || {},
-                ...packageJson.devDependencies || {},
-                ...packageJson.peerDependencies || {},
+                ...packageJson.dependencies,
+                ...packageJson.devDependencies,
+                ...packageJson.peerDependencies,
             }
 
             // Find which dependencies are workspace packages
@@ -107,7 +107,7 @@ export async function publish(): Promise<void> {
         console.log(`📦 Discovered packages: ${packages.join(', ')}\n`)
 
         // Build packages list with paths
-        const packageList = packages.map(pkg => ({
+        const packageList = packages.map((pkg) => ({
             name: `@garage44/${pkg}`,
             path: `packages/${pkg}`,
         }))
