@@ -268,10 +268,12 @@ async function handleHMRUpdate(filePath: string, timestamp: number) {
         ;(globalThis as any).__HMR_COMPONENT_STATES__ = componentStates
 
         // Find and reload the app script
+        // Look for script tags that match the app pattern (may have query params from previous HMR)
         const scriptTags = [...document.querySelectorAll('script[type="module"]')] as HTMLScriptElement[]
         const appScript = scriptTags.find((script) => {
             const src = script.src
-            return src.includes('/public/app.') && src.endsWith('.js')
+            // Match /public/app.{buildId}.js with optional query params
+            return src.includes('/public/app.') && /\/public\/app\.[^/]+\.js/.test(src.split('?')[0])
         })
 
         if (!appScript) {
@@ -280,18 +282,64 @@ async function handleHMRUpdate(filePath: string, timestamp: number) {
             return
         }
 
+        // Get the base URL without query params before removing the script
+        const originalSrc = appScript.src.split('?')[0]
+
         // Remove old script
         appScript.remove()
 
         // Create new script with cache busting
         const newScript = document.createElement('script')
         newScript.type = 'module'
-        const originalSrc = appScript.src.split('?')[0] // Remove any existing query params
         newScript.src = `${originalSrc}?t=${timestamp}`
 
         // Wait for script to load
-        newScript.onload = () => {
-            console.log('[Bunchy HMR] Script reloaded successfully')
+        newScript.onload = async () => {
+            // Wait for app.init() to complete by listening for the app:init event
+            try {
+                const {events} = await import('@garage44/common/app')
+                if (events) {
+                    await new Promise<void>((resolve) => {
+                        const handler = () => {
+                            events.removeListener('app:init', handler)
+                            resolve()
+                        }
+                        events.once('app:init', handler)
+                        // Fallback timeout
+                        setTimeout(() => {
+                            events.removeListener('app:init', handler)
+                            resolve()
+                        }, 200)
+                    })
+                }
+            } catch {
+                // Fallback: brief delay if events unavailable
+                await new Promise(resolve => setTimeout(resolve, 50))
+            }
+
+            // Re-render the Main component using stored references
+            const Main = (globalThis as any).__HMR_MAIN_COMPONENT__
+            const renderFn = (globalThis as any).__HMR_RENDER_FN__
+            const hFn = (globalThis as any).__HMR_H_FN__
+
+            if (Main && renderFn && hFn) {
+                renderFn(hFn(Main, {}), document.body)
+            } else {
+                // Fallback: trigger re-render via store update
+                try {
+                    const {store} = await import('@garage44/common/app')
+                    if (store?.state?.currentRoute) {
+                        const currentRoute = store.state.currentRoute
+                        store.state.currentRoute = currentRoute === '/' ? '/temp' : '/'
+                        await new Promise(resolve => setTimeout(resolve, 0))
+                        store.state.currentRoute = currentRoute
+                    } else {
+                        globalThis.location.reload()
+                    }
+                } catch {
+                    globalThis.location.reload()
+                }
+            }
         }
 
         newScript.onerror = () => {

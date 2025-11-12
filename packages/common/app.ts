@@ -48,6 +48,13 @@ class App {
         await i18n.init(translations, api, store)
         notifier.init(store.state.notifications)
 
+        // Store references for HMR re-rendering
+        if (globalThis !== undefined) {
+            ;(globalThis as any).__HMR_MAIN_COMPONENT__ = Main
+            ;(globalThis as any).__HMR_RENDER_FN__ = renderFn
+            ;(globalThis as any).__HMR_H_FN__ = hFn
+        }
+
         try {
             renderFn(hFn(Main, {}), document.body)
         } catch (error) {

@@ -102,7 +102,7 @@ export const Main = () => {
                         $s.panels.menu.collapsed = collapsed
                     }}
                     logoSrc="/img/logo.png"
-                    logoText="Garage44"
+                    logoText="Garage441"
                     navigation={
                         <>
                             <MenuItem
