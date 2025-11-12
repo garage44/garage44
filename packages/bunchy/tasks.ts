@@ -108,6 +108,19 @@ const runner = {
             }, 'POST')
         }, debounce.wait, debounce.options),
     },
+    hmr: throttle(async(filePath: string) => {
+        // Rebuild the frontend code
+        const {filename, size} = await tasks.code_frontend.start({minify: false, sourcemap: true})
+        if (settings.reload_ignore.includes('/tasks/hmr')) {
+            return
+        }
+        // Broadcast HMR update with workspace-relative file path
+        const workspaceRelativePath = `src/${filePath}`
+        broadcast('/tasks/hmr', {
+            filePath: workspaceRelativePath,
+            timestamp: Date.now(),
+        }, 'POST')
+    }, debounce.wait, debounce.options),
 }
 
 // Add this interface before the tasks declaration
@@ -268,7 +281,12 @@ tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = 
         if (filename.startsWith('assets/')) {
             runner.assets()
         } else if (extension === '.ts' || extension === '.tsx') {
-            runner.code_frontend()
+            // Check if it's a component file - if so, use HMR instead of full reload
+            if (filename.startsWith('components/')) {
+                runner.hmr(filename)
+            } else {
+                runner.code_frontend()
+            }
         } else if (filename === 'index.html') {
             runner.html()
         } else if (extension === '.css') {

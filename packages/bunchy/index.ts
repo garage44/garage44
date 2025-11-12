@@ -73,20 +73,6 @@ async function bunchyService(server, config, wsManager?) {
 
     logger.info('[bunchy] Development service ready')
 
-    // Expose a generic dev snapshot endpoint for all apps using Bunchy
-    const originalFetch = server.fetch
-    server.fetch = async (request: Request, ...rest: any[]) => {
-        try {
-            const url = new URL(request.url)
-            if (url.pathname === '/dev/snapshot') {
-                return new Response(JSON.stringify(devContext.snapshot({
-                    version: settings.version,
-                })), {headers: {'Content-Type': 'application/json'}})
-            }
-        } catch {}
-        return originalFetch.call(server, request, ...rest)
-    }
-
     await tasks.dev.start({minify: false, sourcemap: true})
     return server
 }
@@ -193,6 +179,38 @@ function setupLogForwarding(wsManager) {
     })
 }
 
+/**
+ * Wrap a fetch handler to automatically handle Bunchy WebSocket upgrades
+ * This should be used BEFORE Bun.serve() is called
+ */
+function wrapFetchHandler(fetchHandler: (request: Request, server: any) => Response | Promise<Response>) {
+    return async (request: Request, server: any) => {
+        try {
+            const url = new URL(request.url)
+
+            // Handle WebSocket upgrade requests for /bunchy FIRST
+            if (url.pathname === '/bunchy') {
+                if (server && typeof server.upgrade === 'function') {
+                    const success = server.upgrade(request, {
+                        data: {
+                            endpoint: '/bunchy',
+                        },
+                    })
+                    if (success) {
+                        return // Return undefined to indicate upgrade success
+                    }
+                    return new Response('WebSocket upgrade failed', {status: 400})
+                }
+                return new Response('WebSocket server not available', {status: 500})
+            }
+        } catch (error) {
+            logger.error(`[bunchy] Error in fetch wrapper: ${error}`)
+        }
+        // Call original fetch handler
+        return fetchHandler(request, server)
+    }
+}
+
 export {
     bunchyArgs,
     bunchyService,
@@ -201,4 +219,5 @@ export {
     logger,
     settings,
     tooling,
+    wrapFetchHandler,
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import {WebSocketServerManager, createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
-import {bunchyArgs, bunchyService} from '@garage44/bunchy'
+import {bunchyArgs, bunchyService, wrapFetchHandler} from '@garage44/bunchy'
 import {hideBin} from 'yargs/helpers'
 import path from 'path'
 import {withSpaFallback, setupBunchyConfig} from '@garage44/common/service'
@@ -126,18 +126,6 @@ const _ = cli.usage('Usage: $0 [task]')
                 })
             }
 
-            // Handle WebSocket upgrade requests
-            if (url.pathname === '/bunchy') {
-                if (server && typeof server.upgrade === 'function') {
-                    const success = server.upgrade(req, {data: {endpoint: url.pathname}})
-                    if (success) {
-                        return
-                    }
-                    return new Response('WebSocket upgrade failed', {status: 400})
-                }
-                return new Response('WebSocket server not available', {status: 500})
-            }
-
             // Default to index.html for root
             if (pathname === '/') {
                 pathname = '/index.html'
@@ -174,8 +162,9 @@ const _ = cli.usage('Usage: $0 [task]')
         }
 
         // Start Bun.serve server
+        // Wrap fetch handler to automatically handle Bunchy WebSocket upgrades
         const server = Bun.serve({
-            fetch: (req, server) => handleRequest(req, server),
+            fetch: wrapFetchHandler((req, server) => handleRequest(req, server)),
             hostname: argv.host,
             port: argv.port,
             websocket: enhancedWebSocketHandler,

@@ -229,6 +229,84 @@ function hideExceptionPage() {
     }
 }
 
+async function handleHMRUpdate(filePath: string, timestamp: number) {
+    try {
+        hideExceptionPage()
+
+        // Initialize HMR state storage if not exists
+        if (!(globalThis as any).__HMR_STATE__) {
+            ;(globalThis as any).__HMR_STATE__ = null
+        }
+        if (!(globalThis as any).__HMR_COMPONENT_STATES__) {
+            ;(globalThis as any).__HMR_COMPONENT_STATES__ = {}
+        }
+        if (!(globalThis as any).__HMR_REGISTRY__) {
+            ;(globalThis as any).__HMR_REGISTRY__ = {}
+        }
+
+        // Save global store state
+        try {
+            // Try to access store via dynamic import to avoid circular dependency
+            const {store} = await import('@garage44/common/app')
+            if (store && store.state) {
+                ;(globalThis as any).__HMR_STATE__ = JSON.parse(JSON.stringify(store.state))
+            }
+        } catch (error) {
+            console.warn('[Bunchy HMR] Could not access store state:', error)
+        }
+
+        // Save component-level states from registry
+        const registry = (globalThis as any).__HMR_REGISTRY__ || {}
+        const componentStates: Record<string, any> = {}
+        for (const [key, state] of Object.entries(registry)) {
+            try {
+                componentStates[key] = JSON.parse(JSON.stringify(state))
+            } catch (error) {
+                console.warn(`[Bunchy HMR] Could not serialize state for ${key}:`, error)
+            }
+        }
+        ;(globalThis as any).__HMR_COMPONENT_STATES__ = componentStates
+
+        // Find and reload the app script
+        const scriptTags = [...document.querySelectorAll('script[type="module"]')] as HTMLScriptElement[]
+        const appScript = scriptTags.find((script) => {
+            const src = script.src
+            return src.includes('/public/app.') && src.endsWith('.js')
+        })
+
+        if (!appScript) {
+            console.error('[Bunchy HMR] Could not find app script tag')
+            globalThis.location.reload()
+            return
+        }
+
+        // Remove old script
+        appScript.remove()
+
+        // Create new script with cache busting
+        const newScript = document.createElement('script')
+        newScript.type = 'module'
+        const originalSrc = appScript.src.split('?')[0] // Remove any existing query params
+        newScript.src = `${originalSrc}?t=${timestamp}`
+
+        // Wait for script to load
+        newScript.onload = () => {
+            console.log('[Bunchy HMR] Script reloaded successfully')
+        }
+
+        newScript.onerror = () => {
+            console.error('[Bunchy HMR] Failed to load new script')
+            globalThis.location.reload()
+        }
+
+        // Insert new script
+        document.head.appendChild(newScript)
+    } catch (error) {
+        console.error('[Bunchy HMR] Failed:', error)
+        globalThis.location.reload()
+    }
+}
+
 // Helper function to initialize Bunchy
 function initializeBunchy() {
     return new BunchyClient()
@@ -339,6 +417,11 @@ class BunchyClient extends WebSocketClient {
         this.onRoute('/tasks/error', (data) => {
             const {details, error, task, timestamp} = data as {details: string; error: string; task: string; timestamp: string}
             showExceptionPage(task, error, details, timestamp)
+        })
+
+        this.onRoute('/tasks/hmr', (data) => {
+            const {filePath, timestamp} = data as {filePath: string; timestamp: number}
+            handleHMRUpdate(filePath, timestamp)
         })
     }
 
