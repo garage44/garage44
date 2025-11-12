@@ -1,6 +1,6 @@
 import {hash, keyMod, keyPath, mergeDeep} from './utils'
 import {logger} from './logger'
-import {I18N_PATH_SYMBOL} from '@garage44/expressio/lib/i18n'
+import {I18N_PATH_SYMBOL} from './i18n'
 
 interface Tag {
     cache?: string

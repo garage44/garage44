@@ -8,7 +8,7 @@ const WEBHOOK_PORT = parseInt(process.env.WEBHOOK_PORT || '3001', 10)
 const REPO_PATH = process.env.REPO_PATH || '/home/garage44/garage44'
 const DEPLOY_USER = process.env.DEPLOY_USER || 'garage44'
 
-const PACKAGES = ['expressio', 'pyrite', 'styleguide']
+const PACKAGES = ['expressio', 'pyrite', 'malkovich']
 
 /**
  * Validate GitHub webhook signature

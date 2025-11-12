@@ -1,6 +1,10 @@
-import type {LanguageUI} from '@garage44/expressio/src/types'
-
 type LogLevel = 'error' | 'warn' | 'info' | 'success' | 'verbose' | 'debug'
+
+interface LanguageUI {
+    i18n: Record<string, Record<string, string>>
+    options: Array<{id: string; name: string}>
+    selection: string
+}
 
 interface LoggerConfig {
     colors?: boolean
@@ -50,6 +54,7 @@ interface TargetLanguage {
 
 export {
     type CommonState,
+    type LanguageUI,
     type LoggerConfig,
     type LogLevel,
     type TargetLanguage,

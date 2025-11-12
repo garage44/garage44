@@ -8,9 +8,9 @@
     "expressio": "./service.ts"
   },
   "dependencies": {
-    "@garage44/bunchy": "workspace:^",
-    "@garage44/common": "workspace:^",
-    "@garage44/enola": "workspace:^",
+    "@garage44/bunchy": "workspace:*",
+    "@garage44/common": "workspace:*",
+    "@garage44/enola": "workspace:*",
     "@preact/signals": "catalog:",
     "classnames": "catalog:",
     "deepsignal": "catalog:",

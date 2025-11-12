@@ -14,6 +14,7 @@
   "dependencies": {
     "@garage44/bunchy": "workspace:*",
     "@garage44/common": "workspace:*",
+    "@garage44/expressio": "workspace:*",
     "deepsignal": "catalog:",
     "marked": "^17.0.0",
     "preact": "catalog:",

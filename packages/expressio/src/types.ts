@@ -1,4 +1,4 @@
-import type {TargetLanguage} from '@garage44/common/types'
+import type {LanguageUI, TargetLanguage} from '@garage44/common/types'
 import type {DeepSignal} from 'deepsignal'
 import type {EnolaConfig} from '@garage44/enola/types'
 import workspace from '@/.expressio.json'
@@ -44,12 +44,6 @@ interface WorkspaceDescription {
     source_file: string
     status?: 'existing' | 'new'
     workspace_id?: string
-}
-
-interface LanguageUI {
-    i18n: Record<string, Record<string, string>>
-    options: Array<{id: string; name: string}>
-    selection: string
 }
 
 interface ExpressioStateBase {

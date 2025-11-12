@@ -15,8 +15,7 @@
         "noEmit": true,
         "resolveJsonModule": true,
         "paths": {
-            "@/*": ["./src/*"],
-            "@garage44/common/*": ["../common/*"]
+            "@/*": ["./src/*"]
         },
         "skipLibCheck": true,
         "sourceMap": true,

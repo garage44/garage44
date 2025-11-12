@@ -28,7 +28,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@garage44/common": "workspace:^",
+    "@garage44/common": "workspace:*",
     "html-entities": "^2.5.3"
   }
 }

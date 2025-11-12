@@ -1,5 +1,4 @@
-import {create$t, init as i18nInit} from '@garage44/expressio/lib/i18n'
-import {volatileState as expressioVolatileState} from '@garage44/expressio/src/lib/state'
+import {create$t, init as i18nInit} from './lib/i18n'
 import {Api} from './lib/api'
 import type {CommonState} from './types'
 import {initializeBunchy} from '@garage44/bunchy/client'
@@ -9,15 +8,12 @@ import {Store} from './lib/store'
 import env from './lib/env'
 import {logger} from './lib/logger'
 import {WebSocketClient} from './lib/ws-client'
-import {mergeDeep} from './lib/utils'
 import {persistentState, volatileState} from './lib/state'
 logger.setLevel('debug')
 
 const notifier = new Notifier()
 const store = new Store<CommonState>()
-// Merge language_ui from Expressio's volatileState into common's volatileState
-const mergedVolatileState = mergeDeep({}, volatileState, {language_ui: expressioVolatileState.language_ui})
-store.load(persistentState as unknown as CommonState, mergedVolatileState as Partial<CommonState>)
+store.load(persistentState as unknown as CommonState, volatileState as Partial<CommonState>)
 const $t = create$t(store)
 
 // Create i18n object with init function
