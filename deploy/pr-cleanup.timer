@@ -1,0 +1,10 @@
+[Unit]
+Description=Cleanup stale PR deployments
+Documentation=https://github.com/your-org/garage44
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target

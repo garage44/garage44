@@ -8,6 +8,7 @@ import {devContext} from '@garage44/common/lib/dev-context'
 import {findWorkspaceRoot, readReadme} from './lib/workspace'
 import {existsSync, readFileSync} from 'fs'
 import {handleWebhook} from './lib/webhook'
+import {$} from 'bun'
 import yargs from 'yargs'
 
 const BUN_ENV = process.env.BUN_ENV || 'production'
@@ -218,6 +219,89 @@ const _ = cli.usage('Usage: $0 [task]')
     .command('init', 'Initialize AGENTS.md file', async () => {
         const {init} = await import('./lib/init')
         await init()
+    })
+    .command('deploy-pr', 'Deploy a PR branch manually (for Cursor agent)', (yargs) =>
+        yargs
+            .option('number', {
+                demandOption: true,
+                describe: 'PR number to deploy',
+                type: 'number',
+            })
+            .option('branch', {
+                demandOption: true,
+                describe: 'Branch name (e.g., feature/new-ui)',
+                type: 'string',
+            })
+            .option('sha', {
+                describe: 'Commit SHA (defaults to latest)',
+                type: 'string',
+            })
+            .option('author', {
+                default: 'local',
+                describe: 'Author name',
+                type: 'string',
+            })
+    , async (argv) => {
+        const {deployPR} = await import('./lib/pr-deploy')
+        
+        // Get latest SHA if not provided
+        let sha = argv.sha
+        if (!sha) {
+            const result = await $`git rev-parse origin/${argv.branch}`.quiet()
+            sha = result.stdout.toString().trim()
+        }
+        
+        const pr = {
+            author: argv.author,
+            head_ref: argv.branch,
+            head_sha: sha,
+            is_fork: false,  // Local PRs are trusted
+            number: argv.number,
+            repo_full_name: 'garage44/garage44',
+        }
+        
+        const result = await deployPR(pr)
+        
+        if (result.success && result.deployment) {
+            console.log('\n✅ PR Deployment Successful!\n')
+            console.log(`URL: https://pr-${argv.number}.garage44.org`)
+            console.log(`Malkovich: https://pr-${argv.number}.garage44.org`)
+            console.log(`\nPorts:`)
+            console.log(`  Malkovich: ${result.deployment.ports.malkovich}`)
+            console.log(`  Expressio: ${result.deployment.ports.expressio}`)
+            console.log(`  Pyrite: ${result.deployment.ports.pyrite}`)
+            console.log(`\nNote: Deployment is publicly accessible (no token required)`)
+        } else {
+            console.error(`\n❌ Deployment failed: ${result.message}`)
+            process.exit(1)
+        }
+    })
+    .command('list-pr-deployments', 'List all active PR deployments', async () => {
+        const {listPRDeployments} = await import('./lib/pr-cleanup')
+        await listPRDeployments()
+    })
+    .command('cleanup-pr', 'Cleanup a specific PR deployment', (yargs) =>
+        yargs.option('number', {
+            demandOption: true,
+            describe: 'PR number to cleanup',
+            type: 'number',
+        })
+    , async (argv) => {
+        const {cleanupPRDeployment} = await import('./lib/pr-cleanup')
+        const result = await cleanupPRDeployment(argv.number)
+        console.log(result.message)
+        process.exit(result.success ? 0 : 1)
+    })
+    .command('cleanup-stale-prs', 'Cleanup stale PR deployments', (yargs) =>
+        yargs.option('max-age-days', {
+            default: 7,
+            describe: 'Maximum age in days',
+            type: 'number',
+        })
+    , async (argv) => {
+        const {cleanupStaleDeployments} = await import('./lib/pr-cleanup')
+        const result = await cleanupStaleDeployments(argv.maxAgeDays)
+        console.log(result.message)
     })
     .demandCommand()
     .help('help')

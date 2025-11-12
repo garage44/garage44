@@ -2,6 +2,8 @@ import {$} from 'bun'
 import {homedir} from 'node:os'
 import {existsSync, unlinkSync} from 'fs'
 import {findWorkspaceRoot, extractWorkspacePackages, isApplicationPackage} from './workspace'
+import {cleanupPRDeployment} from './pr-cleanup'
+import {deployPR, type PRMetadata} from './pr-deploy'
 
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || ''
 const REPO_PATH = process.env.REPO_PATH || findWorkspaceRoot() || process.cwd()
@@ -152,6 +154,71 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
 }
 
 /**
+ * Handle pull request events
+ */
+async function handlePullRequestEvent(event: any): Promise<Response> {
+	const action = event.action
+	const prNumber = event.pull_request?.number
+
+	if (!prNumber) {
+		return new Response(JSON.stringify({error: 'Missing PR number'}), {
+			headers: {'Content-Type': 'application/json'},
+			status: 400,
+		})
+	}
+
+	console.log(`[webhook] PR #${prNumber} event: ${action}`)
+
+	// Handle PR close/merge - cleanup
+	if (action === 'closed') {
+		const result = await cleanupPRDeployment(prNumber)
+		return new Response(JSON.stringify(result), {
+			headers: {'Content-Type': 'application/json'},
+			status: result.success ? 200 : 500,
+		})
+	}
+
+	// Handle PR open/sync - deploy
+	if (action === 'opened' || action === 'synchronize' || action === 'reopened') {
+		const pr: PRMetadata = {
+			author: event.pull_request.user.login,
+			head_ref: event.pull_request.head.ref,
+			head_sha: event.pull_request.head.sha,
+			is_fork: event.pull_request.head.repo.fork,
+			number: prNumber,
+			repo_full_name: event.pull_request.head.repo.full_name,
+		}
+
+		// Deploy asynchronously
+		deployPR(pr).then((result) => {
+			if (result.success) {
+				console.log(`[webhook] PR #${prNumber} deployment successful`)
+			} else {
+				console.error(`[webhook] PR #${prNumber} deployment failed: ${result.message}`)
+			}
+		}).catch((error) => {
+			console.error(`[webhook] PR #${prNumber} deployment error:`, error)
+		})
+
+		return new Response(JSON.stringify({
+			message: `PR #${prNumber} deployment triggered`,
+			timestamp: new Date().toISOString(),
+		}), {
+			headers: {'Content-Type': 'application/json'},
+			status: 202,
+		})
+	}
+
+	// Ignore other actions
+	return new Response(JSON.stringify({
+		message: `Ignored PR action: ${action}`,
+	}), {
+		headers: {'Content-Type': 'application/json'},
+		status: 200,
+	})
+}
+
+/**
  * Handle webhook request
  */
 export async function handleWebhook(req: Request): Promise<Response> {
@@ -198,6 +265,13 @@ export async function handleWebhook(req: Request): Promise<Response> {
 
     // Check event type
     const eventType = req.headers.get('x-github-event')
+
+    // Handle pull request events
+    if (eventType === 'pull_request') {
+        return await handlePullRequestEvent(event)
+    }
+
+    // Handle push events (main branch deployment)
     if (eventType !== 'push') {
         return new Response(JSON.stringify({message: `Ignored: event type ${eventType}`}), {
             headers: {'Content-Type': 'application/json'},
