@@ -2,7 +2,7 @@ import {copyFile, readFile, unlink, writeFile} from 'fs/promises'
 import {$} from 'bun'
 import {join} from 'path'
 import {findWorkspaceRoot, extractWorkspacePackages} from './workspace'
-import {takeScreenshots} from '../../lib/screenshot'
+import {takeScreenshots} from './screenshot'
 
 // Topological sort to determine publish order
 function topologicalSort(graph: Record<string, string[]>): string[] {
@@ -121,7 +121,7 @@ export async function publish(): Promise<void> {
         try {
             await takeScreenshots()
             console.log('✅ Screenshots updated\n')
-        } catch (error: any) {
+        } catch (error) {
             console.warn('⚠️ Screenshot generation failed:', error.message)
             process.exit(1)
         }
@@ -166,7 +166,7 @@ export async function publish(): Promise<void> {
                         await copyFile(join(workspaceRoot, 'README.md'), join(packagePath, 'README.md'))
                         console.log('📄 Copied root README.md to expressio package')
                         readmeCopied = true
-                    } catch (error: any) {
+                    } catch (error) {
                         console.warn('⚠️ Could not copy README.md:', error.message)
                     }
                 }
@@ -178,7 +178,7 @@ export async function publish(): Promise<void> {
                     // Publish
                     await $`cd ${packagePath} && bun publish`
                     console.log(`✅ ${packageName} published successfully`)
-                } catch (error: any) {
+                } catch (error) {
                     console.error(`❌ Failed to publish ${packageName}:`, error.message)
                     throw error
                 } finally {
@@ -187,7 +187,7 @@ export async function publish(): Promise<void> {
                         try {
                             await unlink(join(packagePath, 'README.md'))
                             console.log('🧹 Removed copied README.md from expressio package')
-                        } catch (error: any) {
+                        } catch (error) {
                             console.warn('⚠️ Could not remove copied README.md:', error.message)
                         }
                     }
@@ -222,11 +222,11 @@ export async function publish(): Promise<void> {
             console.log('🚀 Pushing changes to remote repository...')
             await $`git push`
             console.log('✅ Changes pushed to remote repository')
-        } catch (error: any) {
+        } catch (error) {
             console.warn('⚠️ Could not commit/push to git:', error.message)
             console.warn('📝 Please manually commit and push the version changes')
         }
-    } catch (error: any) {
+    } catch (error) {
         console.error('❌ Publish failed:', error.message)
         process.exit(1)
     }

@@ -54,7 +54,9 @@ export default [
             '@stylistic/semi': ['error', 'never'],
             '@typescript-eslint/no-explicit-any': 'warn',
             // TypeScript rules
-            '@typescript-eslint/no-unused-vars': ['warn', {argsIgnorePattern: '^_'}],
+            // Disable base rule to avoid conflicts with TypeScript version
+            'no-unused-vars': 'off',
+            '@typescript-eslint/no-unused-vars': ['warn', {argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_'}],
 
             'perfectionist/sort-interfaces': ['error', {
                 ignoreCase: true,

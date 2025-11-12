@@ -24,7 +24,7 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         waitForSelector: '.c-login',
     }, {
         actions: async (page: Page) => {
-        // Login first
+            // Login first
             await page.goto('http://localhost:3030')
             await page.waitForSelector('.c-login')
 
@@ -42,7 +42,7 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         url: 'http://localhost:3030',
     }, {
         actions: async (page: Page) => {
-        // Login first
+            // Login first
             await page.goto('http://localhost:3030')
             await page.waitForSelector('.c-login')
 
@@ -62,7 +62,7 @@ const SCREENSHOTS: ScreenshotConfig[] = [
     },
     {
         actions: async (page: Page) => {
-        // Login first
+            // Login first
             await page.goto('http://localhost:3030')
             await page.waitForSelector('.c-login')
 
@@ -91,9 +91,7 @@ async function waitForServer(maxAttempts = 30): Promise<boolean> {
             if (response.ok || response.status === 404) {
                 return true
             }
-        } catch (e) {
-            // Server not ready yet
-        }
+        } catch (_error) {}
 
         console.log(`Waiting for server... (${i + 1}/${maxAttempts})`)
         await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -145,14 +143,14 @@ async function takeScreenshot(browser: Browser, config: ScreenshotConfig): Promi
 
         console.log(`✅ Screenshot saved: ${config.name}`)
 
-    } catch (error: any) {
+    } catch (error) {
         console.error(`❌ Failed to take screenshot ${config.name}:`, error.message)
 
         // Log current URL for debugging
         try {
             const currentUrl = page.url()
             console.log(`  📍 Current URL: ${currentUrl}`)
-        } catch (e) {
+        } catch (_e) {
             // Ignore if page is closed
         }
 
@@ -168,7 +166,7 @@ export async function takeScreenshots(): Promise<void> {
     // Ensure .github directory exists
     await mkdir('.github', {recursive: true})
 
-    let serverProcess: any = null
+    let serverProcess = null
     let browser: Browser | null = null
 
     try {
@@ -208,7 +206,7 @@ export async function takeScreenshots(): Promise<void> {
 
         console.log('\n🎉 All screenshots captured successfully!')
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('❌ Screenshot capture failed:', error.message)
         throw error
     } finally {
@@ -227,5 +225,5 @@ export async function takeScreenshots(): Promise<void> {
 
 // Run if called directly
 if (import.meta.main) {
-    takeScreenshots()
+    await takeScreenshots()
 }
