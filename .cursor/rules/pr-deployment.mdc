@@ -1,0 +1,434 @@
+---
+description: "PR workflow, deployment process, and CI/CD guidelines for Garage44 monorepo"
+globs:
+  - ".github/workflows/**"
+  - "deploy/**"
+  - "docs/deployment.md"
+  - "**/webhook*.ts"
+alwaysApply: false
+---
+
+# Garage44 PR & Deployment Rules
+
+Guidelines for pull requests, deployment workflows, and CI/CD processes in the Garage44 monorepo.
+
+## Pull Request Workflow
+
+### PR Creation Guidelines
+
+**Before Creating a PR:**
+1. ✅ Ensure all lint checks pass locally: `bun run lint:ts && bun run lint:css`
+2. ✅ Run tests: `bun run test`
+3. ✅ Build successfully: `bun run build`
+4. ✅ Keep PRs focused on a single feature/fix
+5. ✅ Update documentation if needed
+6. ✅ Follow commit message conventions
+
+**PR Title Format:**
+- Use descriptive titles: `feat: Add translation batch processing`
+- Prefix with type: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`
+- Reference issue numbers if applicable: `fix: Resolve WebSocket reconnection issue (#123)`
+
+**PR Description Template:**
+```markdown
+## Description
+Brief description of changes
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Documentation update
+
+## Testing
+- [ ] Tests pass locally
+- [ ] Manual testing completed
+- [ ] Tested in development environment
+
+## Checklist
+- [ ] Code follows project style guidelines
+- [ ] Self-review completed
+- [ ] Comments added for complex logic
+- [ ] Documentation updated
+- [ ] No new warnings generated
+```
+
+### PR Review Process
+
+**For Reviewers:**
+- Check that code follows architectural patterns (see `adr.mdc`)
+- Verify backend uses Bun.serve() patterns (not Express.js)
+- Verify frontend uses Preact + DeepSignal patterns
+- Ensure WebSocket patterns are correct (server/client)
+- Check CSS uses modern nesting (not BEM)
+- Verify no CSS imports in components (Bunchy handles this)
+- Ensure proper error handling and logging
+- Check for security concerns (input validation, path sanitization)
+
+**For Authors:**
+- Address all review comments
+- Keep PRs updated with main branch
+- Don't force push to PR branches (unless rebasing)
+- Respond to review feedback promptly
+
+### Branch Naming Conventions
+
+- Feature branches: `feature/description` or `feat/description`
+- Bug fixes: `fix/description` or `bugfix/description`
+- Hotfixes: `hotfix/description`
+- Documentation: `docs/description`
+- Refactoring: `refactor/description`
+
+**Examples:**
+- `feature/add-batch-translation`
+- `fix/websocket-reconnection`
+- `docs/update-deployment-guide`
+
+## CI/CD Pipeline
+
+### GitHub Actions Workflows
+
+**Lint Workflow** (`.github/workflows/lint.yml`):
+- Runs on: push to main, pull requests to main
+- Steps:
+  1. Checkout code
+  2. Setup Bun (latest version)
+  3. Install dependencies (`bun install --frozen-lockfile`)
+  4. Lint TypeScript (`bun run lint:ts`)
+  5. Lint CSS (`bun run lint:css`)
+
+**Deploy Workflow** (`.github/workflows/deploy.yml`):
+- Runs on: push to main branch only
+- Steps:
+  1. Trigger webhook to VPS
+  2. Validates webhook signature (HMAC SHA-256)
+  3. Sends deployment request to VPS webhook endpoint
+
+### Deployment Architecture
+
+**Components:**
+1. **GitHub Actions**: Triggers webhook on merge to main
+2. **Webhook Server**: Validates GitHub webhook and triggers deployment
+3. **Deployment Script**: Pulls code, builds packages, restarts services
+4. **Systemd Services**: Manages application lifecycle
+5. **Nginx**: Reverse proxy for subdomains and webhook endpoint
+
+**Deployment Flow:**
+```
+GitHub Push to main
+  ↓
+GitHub Actions Workflow
+  ↓
+Webhook Request (HMAC SHA-256 signed)
+  ↓
+VPS Webhook Endpoint (/webhook)
+  ↓
+Signature Validation
+  ↓
+Deployment Script Execution:
+  1. git fetch && git reset --hard origin/main
+  2. Remove database files (~/.pyrite.db, ~/.expressio.db)
+  3. bun run build (all packages)
+  4. systemctl restart <package>.service (for each app)
+```
+
+### Webhook Implementation
+
+**Location**: `packages/malkovich/lib/webhook.ts`
+
+**Key Functions:**
+- `validateSignature()`: Validates GitHub webhook HMAC SHA-256 signature
+- `deploy()`: Executes deployment process
+- `handleWebhook()`: Handles incoming webhook requests
+
+**Security:**
+- ✅ HMAC SHA-256 signature validation
+- ✅ Constant-time comparison (prevents timing attacks)
+- ✅ Only processes push events to main branch
+- ✅ Webhook secret stored in environment variables
+- ✅ Optional IP restrictions via nginx
+
+**Environment Variables Required:**
+- `WEBHOOK_SECRET`: Shared secret between GitHub and VPS
+- `REPO_PATH`: Path to repository on VPS (defaults to workspace root)
+
+### Deployment Process Details
+
+**1. Code Update:**
+```bash
+git fetch origin main
+git reset --hard origin/main
+```
+
+**2. Database Cleanup:**
+- Removes `~/.pyrite.db` and `~/.expressio.db`
+- Also removes WAL and SHM files if present
+- Ensures clean state between deployments
+
+**3. Build Process:**
+```bash
+bun run build  # Builds all packages in workspace
+```
+
+**4. Service Restart:**
+- Auto-discovers application packages from workspace
+- Restarts systemd services for each application:
+  - `expressio.service`
+  - `pyrite.service`
+  - `malkovich.service`
+  - Always includes `malkovich` (webhook host)
+
+**Service Discovery:**
+- Uses `findWorkspaceRoot()` to locate monorepo root
+- Uses `extractWorkspacePackages()` to find all packages
+- Uses `isApplicationPackage()` to filter application packages
+- Application packages have `service.ts` entry point
+
+### Systemd Services
+
+**Service Files Location**: `deploy/*.service`
+
+**Service Configuration:**
+- User: `garage44`
+- Working Directory: Package directory
+- Environment: `NODE_ENV=production`, `BUN_ENV=production`
+- ExecStart: `bun run server -- --port <PORT>`
+- Restart: `always` with 10s delay
+
+**Ports:**
+- Expressio: 3030
+- Pyrite: 3031
+- Malkovich: 3032
+- Webhook: Handled by malkovich service
+
+**Sudo Configuration:**
+The `garage44` user needs passwordless sudo for service restarts:
+```bash
+garage44 ALL=(ALL) NOPASSWD: /bin/systemctl restart expressio.service, /bin/systemctl restart pyrite.service, /bin/systemctl restart malkovich.service
+```
+
+### Nginx Configuration
+
+**Location**: `deploy/nginx.conf.example`
+
+**Key Features:**
+- SSL/TLS termination (Let's Encrypt certificates)
+- Reverse proxy to application services
+- Webhook endpoint routing
+- Subdomain configuration (expressio.garage44.org, pyrite.garage44.org)
+- Main domain routing (garage44.org → malkovich)
+
+**Webhook Endpoint:**
+- Path: `/webhook`
+- Can be on any subdomain or main domain
+- Optional IP restrictions for GitHub Actions IP ranges
+
+### Deployment Checklist
+
+**Before Merging to Main:**
+- [ ] All CI checks pass (lint, tests)
+- [ ] Code reviewed and approved
+- [ ] No breaking changes (or documented)
+- [ ] Database migrations handled (if applicable)
+- [ ] Environment variables documented (if new ones added)
+- [ ] Service files updated (if ports/config changed)
+
+**After Deployment:**
+- [ ] Verify services are running: `systemctl status <service>`
+- [ ] Check service logs: `journalctl -u <service> -f`
+- [ ] Test application endpoints
+- [ ] Verify WebSocket connections work
+- [ ] Check for errors in logs
+
+### Troubleshooting Deployment
+
+**Webhook Not Triggering:**
+1. Check GitHub Actions workflow run
+2. Verify `WEBHOOK_URL` and `WEBHOOK_SECRET` secrets are set
+3. Check webhook server logs: `journalctl -u malkovich.service -f`
+4. Verify nginx is routing `/webhook` correctly
+
+**Deployment Failing:**
+1. Check webhook server logs for errors
+2. Verify git repository is accessible
+3. Check build logs for compilation errors
+4. Verify sudo permissions for service restart
+5. Check disk space on VPS
+
+**Services Not Restarting:**
+1. Verify sudo configuration allows service restart
+2. Check service status: `systemctl status <service>`
+3. Check service logs: `journalctl -u <service> -f`
+4. Verify service files are correct
+
+**Build Failures:**
+1. Check build logs in deployment output
+2. Verify all dependencies are installed
+3. Check for TypeScript compilation errors
+4. Verify Bun version compatibility
+
+### Manual Deployment
+
+**If webhook fails, deploy manually:**
+
+```bash
+# SSH into VPS
+ssh garage44@your-vps
+
+# Navigate to repository
+cd /home/garage44/garage44
+
+# Pull latest code
+git fetch origin main
+git reset --hard origin/main
+
+# Remove databases
+rm -f ~/.pyrite.db ~/.expressio.db ~/.pyrite.db-* ~/.expressio.db-*
+
+# Build packages
+bun run build
+
+# Restart services
+sudo systemctl restart expressio.service
+sudo systemctl restart pyrite.service
+sudo systemctl restart malkovich.service
+
+# Check status
+systemctl status expressio.service
+systemctl status pyrite.service
+systemctl status malkovich.service
+```
+
+### Environment Configuration
+
+**Required GitHub Secrets:**
+- `WEBHOOK_URL`: Full URL to webhook endpoint (e.g., `https://garage44.org/webhook`)
+- `WEBHOOK_SECRET`: Shared secret for webhook validation
+
+**VPS Environment Variables:**
+- `WEBHOOK_SECRET`: Same secret as GitHub (set in systemd service file)
+- `REPO_PATH`: Path to repository (defaults to workspace root)
+- `BUN_ENV`: Set to `production` in service files
+- `NODE_ENV`: Set to `production` in service files
+
+### Security Best Practices
+
+1. **Webhook Secret:**
+   - Use strong, randomly generated secret: `openssl rand -hex 32`
+   - Never commit secrets to repository
+   - Rotate secrets periodically
+
+2. **IP Restrictions:**
+   - Consider restricting webhook endpoint to GitHub Actions IP ranges
+   - Update IP ranges if GitHub changes them
+
+3. **HTTPS:**
+   - Always use HTTPS for webhook endpoint in production
+   - Use Let's Encrypt certificates (auto-renewal configured)
+
+4. **User Permissions:**
+   - Run services as dedicated user (`garage44`)
+   - Limit sudo access to only necessary commands
+   - Use minimal permissions principle
+
+5. **Database Security:**
+   - Database files are in user home directory
+   - Cleaned on each deployment (fresh state)
+   - Consider backup strategy for production data
+
+### Monitoring & Logging
+
+**Service Logs:**
+```bash
+# View logs for specific service
+journalctl -u expressio.service -f
+journalctl -u pyrite.service -f
+journalctl -u malkovich.service -f
+
+# View all service logs
+journalctl -u expressio.service -u pyrite.service -u malkovich.service -f
+```
+
+**Webhook Logs:**
+- Webhook logs are part of malkovich service logs
+- Check for deployment trigger messages
+- Monitor for signature validation failures
+
+**Application Logs:**
+- Applications use structured logging via `@garage44/common/lib/logger`
+- Logs go to journald (systemd journal)
+- Can be viewed via `journalctl` or application-specific log files
+
+### Rollback Procedure
+
+**If deployment causes issues:**
+
+1. **Quick Rollback:**
+   ```bash
+   # SSH into VPS
+   cd /home/garage44/garage44
+   
+   # Checkout previous commit
+   git log --oneline -10  # Find previous working commit
+   git reset --hard <commit-hash>
+   
+   # Rebuild and restart
+   bun run build
+   sudo systemctl restart expressio.service pyrite.service malkovich.service
+   ```
+
+2. **Revert via Git:**
+   ```bash
+   # Create revert commit
+   git revert <bad-commit-hash>
+   git push origin main
+   # Deployment will trigger automatically
+   ```
+
+### Pre-Deployment Testing
+
+**Local Testing:**
+```bash
+# Test webhook locally
+WEBHOOK_SECRET="test-secret" bun packages/malkovich/lib/webhook.ts
+
+# Test deployment script
+cd /home/garage44/garage44
+bun packages/malkovich/lib/webhook.ts  # Will run deploy() function
+```
+
+**Staging Environment:**
+- Consider setting up staging environment for testing deployments
+- Use separate VPS or Docker containers
+- Test webhook and deployment process before production
+
+## Common Issues & Solutions
+
+**Issue: Webhook signature validation fails**
+- Solution: Verify `WEBHOOK_SECRET` matches between GitHub and VPS
+- Check signature calculation in GitHub Actions workflow
+
+**Issue: Services fail to restart**
+- Solution: Check sudo permissions, verify service files are correct
+- Check service logs for startup errors
+
+**Issue: Build fails during deployment**
+- Solution: Check build logs, verify all dependencies are available
+- Ensure Bun version compatibility
+
+**Issue: Database files not cleaned**
+- Solution: Check file permissions, verify homedir path
+- Manually remove database files if needed
+
+## Best Practices
+
+1. **Always test locally before pushing**
+2. **Keep PRs small and focused**
+3. **Document breaking changes**
+4. **Monitor deployment logs after merge**
+5. **Have rollback plan ready**
+6. **Keep webhook secrets secure**
+7. **Regularly update dependencies**
+8. **Monitor service health after deployment**
+9. **Document environment-specific configurations**
+10. **Use feature flags for risky changes**

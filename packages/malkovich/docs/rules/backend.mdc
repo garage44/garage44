@@ -7,6 +7,11 @@ globs:
   - "packages/bunchy/**"
   - "packages/enola/**"
   - "packages/common/lib/**"
+  - "packages/pyrite/api/**"
+  - "packages/pyrite/lib/**"
+  - "packages/pyrite/service.ts"
+  - "packages/malkovich/lib/**"
+  - "packages/malkovich/service.ts"
 alwaysApply: true
 ---
 
@@ -22,6 +27,8 @@ Backend development guidelines for the Expressio AI-powered i18n tooling project
 - **CLI**: yargs-based command interface
 - **Logging**: Custom isomorphic logger service
 - **Config**: RC file-based configuration management
+- **WebSocket**: Custom WebSocket server with middleware support
+- **Database**: SQLite (via `@garage44/common/lib/database`)
 
 ## Project Structure (Backend Focus)
 
@@ -31,9 +38,535 @@ packages/
 │   ├── api/           # REST API endpoints
 │   ├── lib/           # Core business logic
 │   └── service.ts     # CLI entry point
-├── bunchy/            # Development tooling
+├── pyrite/
+│   ├── api/           # REST API endpoints
+│   ├── lib/           # Core business logic
+│   └── service.ts     # CLI entry point
+├── malkovich/
+│   ├── lib/           # Core business logic (includes webhook)
+│   └── service.ts     # CLI entry point
+├── bunchy/            # Development tooling (build system)
 ├── common/            # Shared backend utilities
+│   ├── lib/
+│   │   ├── api.ts           # HTTP client (fetch wrapper)
+│   │   ├── database.ts     # SQLite database utilities
+│   │   ├── middleware.ts   # HTTP/WebSocket middleware
+│   │   ├── ws-server.ts    # WebSocket server implementation
+│   │   ├── ws-client.ts    # WebSocket client implementation
+│   │   └── logger.ts       # Isomorphic logger
+│   └── service.ts     # Common service utilities
 └── enola/             # Translation service wrapper
+```
+
+## Bun.serve() Patterns
+
+### Basic Server Setup
+
+```typescript
+// ✅ Correct: Use Bun.serve() with native Request/Response
+import {Bun} from 'bun'
+
+Bun.serve({
+  port: 3030,
+  async fetch(req) {
+    const url = new URL(req.url)
+    
+    // Handle WebSocket upgrade
+    if (url.pathname === '/ws' && req.headers.get('upgrade') === 'websocket') {
+      return handleWebSocketUpgrade(req)
+    }
+    
+    // Handle HTTP requests
+    return handleRequest(req)
+  },
+  websocket: {
+    message(ws, message) {
+      // Handle WebSocket messages
+    },
+    open(ws) {
+      // Handle WebSocket connection
+    },
+    close(ws) {
+      // Handle WebSocket disconnection
+    },
+  },
+})
+
+// ❌ Wrong: Don't use Express.js patterns
+import express from 'express'
+const app = express() // Wrong!
+```
+
+### Request/Response Handling
+
+```typescript
+// ✅ Use native Request/Response APIs
+async function handleRequest(req: Request): Promise<Response> {
+  const url = new URL(req.url)
+  
+  // Parse query parameters
+  const params = Object.fromEntries(url.searchParams)
+  
+  // Parse JSON body
+  let body
+  if (req.method === 'POST' || req.method === 'PUT') {
+    body = await req.json()
+  }
+  
+  // Return Response
+  return new Response(JSON.stringify({data: 'response'}), {
+    headers: {'Content-Type': 'application/json'},
+    status: 200,
+  })
+}
+
+// ❌ Don't use Express req/res objects
+function badHandler(req, res) { // Wrong!
+  res.json({data: 'response'})
+}
+```
+
+### Custom Router Pattern
+
+```typescript
+// ✅ Custom router for Bun.serve (see expressio/lib/middleware.ts)
+class Router {
+  routes: Array<{
+    handler: (req: Request, params: Record<string, string>) => Promise<Response>
+    method: string
+    path: RegExp
+  }> = []
+
+  get(path: string, handler: (req: Request, params: Record<string, string>) => Promise<Response>) {
+    // Convert /api/workspaces/:id to regex
+    const regex = new RegExp('^' + path.replaceAll(/:[^/]+/g, '([^/]+)') + '$')
+    this.routes.push({handler, method: 'GET', path: regex})
+  }
+
+  async route(req: Request): Promise<Response | null> {
+    const url = new URL(req.url)
+    for (const {handler, method, path} of this.routes) {
+      if (req.method === method && path.test(url.pathname)) {
+        const params = this.extractParams(url.pathname, path)
+        return await handler(req, params)
+      }
+    }
+    return null
+  }
+}
+
+// Usage
+const router = new Router()
+router.get('/api/workspaces/:id', async (req, params) => {
+  const workspaceId = params.param0 // First capture group
+  return new Response(JSON.stringify({id: workspaceId}), {
+    headers: {'Content-Type': 'application/json'},
+  })
+})
+```
+
+## WebSocket Server Patterns
+
+### WebSocket Server Setup
+
+```typescript
+// ✅ Use WebSocket server from common/lib/ws-server.ts
+import {createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
+
+const wsHandler = createBunWebSocketHandler({
+  endpoint: '/ws',
+  sessionMiddleware: sessionMiddleware,
+  authOptions: {
+    noSecurityEnv: 'BUN_ENV',
+    users: config.users,
+  },
+  globalMiddlewares: [loggingMiddleware],
+})
+
+// Register API routes
+wsHandler.get('/api/workspaces', async (ctx, req) => {
+  return {workspaces: await getWorkspaces()}
+})
+
+wsHandler.post('/api/workspaces/:id/translate', async (ctx, req) => {
+  const workspaceId = req.params.id
+  return await translateWorkspace(workspaceId)
+})
+
+// Use in Bun.serve()
+Bun.serve({
+  fetch(req) {
+    // Handle WebSocket upgrade
+    if (wsHandler.upgrade(req)) {
+      return // Upgrade handled
+    }
+    // Handle HTTP requests
+    return handleRequest(req)
+  },
+  websocket: wsHandler.websocket,
+})
+```
+
+### WebSocket Middleware
+
+```typescript
+// ✅ WebSocket middleware pattern
+type WebSocketContext = {
+  ws: WebSocket
+  session?: {userid: string}
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  url: string
+  broadcast: (url: string, data: Record<string, unknown>) => void
+}
+
+type Middleware = (ctx: WebSocketContext, next: () => Promise<unknown>) => Promise<unknown>
+
+// Example: Authentication middleware
+const authMiddleware: Middleware = async (ctx, next) => {
+  if (!ctx.session?.userid) {
+    throw new Error('Unauthorized')
+  }
+  return next(ctx)
+}
+
+// Example: Logging middleware
+const loggingMiddleware: Middleware = async (ctx, next) => {
+  logger.info(`WebSocket ${ctx.method} ${ctx.url}`)
+  const result = await next(ctx)
+  logger.info(`WebSocket ${ctx.method} ${ctx.url} completed`)
+  return result
+}
+```
+
+### WebSocket API Routes
+
+```typescript
+// ✅ Register WebSocket API routes
+wsHandler.get('/api/workspaces', async (ctx, req) => {
+  // ctx.session contains user session
+  // req.params contains route parameters
+  // req.query contains query parameters
+  // req.data contains request body (for POST/PUT)
+  
+  const workspaces = await getWorkspacesForUser(ctx.session.userid)
+  return {workspaces}
+})
+
+wsHandler.post('/api/workspaces/:id/translate', async (ctx, req) => {
+  const workspaceId = req.params.id
+  const {text, targetLanguage} = req.data
+  
+  const result = await translateText(text, targetLanguage)
+  
+  // Broadcast to all connected clients
+  ctx.broadcast('/i18n/sync', {
+    create_tags: [{path: workspaceId, value: result}],
+  })
+  
+  return {translation: result}
+})
+```
+
+## Database Patterns
+
+### Database Initialization
+
+```typescript
+// ✅ Use database utilities from common/lib/database.ts
+import {initDatabase} from '@garage44/common/lib/database'
+
+const db = initDatabase({
+  path: '~/.expressio.db',
+  migrations: [
+    {
+      version: 1,
+      up: `CREATE TABLE workspaces (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )`,
+    },
+  ],
+})
+
+// ❌ Don't use raw SQLite without migration support
+import Database from 'better-sqlite3' // Wrong! Use initDatabase instead
+```
+
+### Database Queries
+
+```typescript
+// ✅ Use prepared statements for performance
+const getWorkspace = db.prepare('SELECT * FROM workspaces WHERE id = ?')
+const workspace = getWorkspace.get(workspaceId)
+
+// ✅ Use transactions for multiple operations
+const insertWorkspace = db.transaction((workspace) => {
+  db.prepare('INSERT INTO workspaces (id, name, created_at) VALUES (?, ?, ?)')
+    .run(workspace.id, workspace.name, Date.now())
+  
+  db.prepare('INSERT INTO workspace_users (workspace_id, user_id) VALUES (?, ?)')
+    .run(workspace.id, workspace.ownerId)
+})
+
+// ❌ Don't use string concatenation for queries (SQL injection risk)
+const badQuery = `SELECT * FROM workspaces WHERE id = '${workspaceId}'` // Wrong!
+```
+
+## HTTP Client Patterns
+
+### API Client Usage
+
+```typescript
+// ✅ Use API client from common/lib/api.ts
+import {api} from '@garage44/common/app'
+
+// GET request
+const workspaces = await api.get('/api/workspaces', {limit: 10})
+
+// POST request
+const result = await api.post('/api/workspaces', {
+  name: 'My Workspace',
+  languages: ['en', 'fr'],
+})
+
+// PUT request
+await api.put(`/api/workspaces/${id}`, {name: 'Updated Name'})
+
+// DELETE request
+await api.delete(`/api/workspaces/${id}`)
+```
+
+## Middleware Patterns
+
+### HTTP Middleware
+
+```typescript
+// ✅ Use middleware from common/lib/middleware.ts
+import {createFinalHandler} from '@garage44/common/lib/middleware'
+
+const finalHandleRequest = createFinalHandler({
+  configPath: '~/.expressiorc',
+  contextFunctions: {
+    adminContext,
+    deniedContext,
+    userContext,
+  },
+  devContext,
+  endpointAllowList: ['/api/translations', '/api/login'],
+  logger,
+  packageName: 'expressio',
+  publicPath: path.join(runtime.service_dir, 'public'),
+  router,
+  sessionCookieName: 'expressio-session',
+  userManager,
+})
+
+// Handle requests
+const response = await finalHandleRequest(req)
+```
+
+### Authentication Middleware
+
+```typescript
+// ✅ Require authentication
+const requireAuth = async (ctx, next) => {
+  if (!ctx.session?.userid) {
+    throw new Error('Unauthorized')
+  }
+  return next(ctx)
+}
+
+// ✅ Require admin
+const requireAdmin = async (ctx, next) => {
+  if (!ctx.session?.userid) {
+    throw new Error('Unauthorized')
+  }
+  
+  const user = await userManager.getUser(ctx.session.userid)
+  if (!user?.admin) {
+    throw new Error('Forbidden')
+  }
+  
+  return next(ctx)
+}
+```
+
+## Logging Patterns
+
+### Structured Logging
+
+```typescript
+// ✅ Use isomorphic logger from common/lib/logger
+import {logger} from '@garage44/common/lib/logger'
+
+// Log with context
+logger.info('Workspace created', {
+  workspaceId: workspace.id,
+  userId: user.id,
+  timestamp: Date.now(),
+})
+
+logger.error('Translation failed', {
+  error: error.message,
+  workspaceId: workspace.id,
+  text: text.substring(0, 100), // Truncate long text
+})
+
+// ❌ Don't use console.log in production code
+console.log('Workspace created') // Wrong! Use logger instead
+```
+
+## Configuration Management
+
+### RC File Configuration
+
+```typescript
+// ✅ Use RC file for configuration (see common/lib/config.ts pattern)
+import rc from 'rc'
+
+const config = rc('expressio', {
+  port: 3030,
+  database: '~/.expressio.db',
+  users: [],
+})
+
+// Access configuration
+const port = config.port
+const dbPath = config.database
+
+// ❌ Don't hardcode configuration values
+const port = 3030 // Wrong! Use config file or environment variables
+```
+
+### Environment Variables
+
+```typescript
+// ✅ Use environment variables for sensitive data
+const webhookSecret = process.env.WEBHOOK_SECRET || ''
+const repoPath = process.env.REPO_PATH || findWorkspaceRoot()
+
+// ✅ Provide defaults
+const port = parseInt(process.env.PORT || '3030', 10)
+const nodeEnv = process.env.NODE_ENV || 'production'
+
+// ❌ Don't store secrets in code
+const secret = 'my-secret-key' // Wrong! Use environment variables
+```
+
+## CLI Patterns
+
+### Yargs CLI Setup
+
+```typescript
+// ✅ Use yargs for CLI (see expressio/service.ts)
+import yargs from 'yargs'
+import {hideBin} from 'yargs/helpers'
+
+const cli = yargs(hideBin(process.argv))
+cli.scriptName('expressio')
+
+cli.command('server', 'Start the server', (yargs) => {
+  return yargs.option('port', {
+    alias: 'p',
+    type: 'number',
+    default: 3030,
+    describe: 'Port to listen on',
+  })
+}, async (argv) => {
+  const port = argv.port
+  // Start server
+})
+
+cli.command('build', 'Build the project', {}, async () => {
+  // Build logic
+})
+
+cli.parse()
+```
+
+## Error Handling
+
+### Error Response Patterns
+
+```typescript
+// ✅ Return proper error responses
+async function handleRequest(req: Request): Promise<Response> {
+  try {
+    const result = await processRequest(req)
+    return new Response(JSON.stringify(result), {
+      headers: {'Content-Type': 'application/json'},
+      status: 200,
+    })
+  } catch (error) {
+    logger.error('Request failed', {error: error.message})
+    
+    return new Response(JSON.stringify({
+      error: error.message,
+      status: 'error',
+    }), {
+      headers: {'Content-Type': 'application/json'},
+      status: error.statusCode || 500,
+    })
+  }
+}
+
+// ✅ Validate input early
+function validateWorkspace(data: unknown): Workspace {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid workspace data')
+  }
+  
+  const workspace = data as Workspace
+  if (!workspace.name || typeof workspace.name !== 'string') {
+    throw new Error('Workspace name is required')
+  }
+  
+  return workspace
+}
+```
+
+## File Operations
+
+### Async File I/O
+
+```typescript
+// ✅ Use Bun's async file operations
+import {readFile, writeFile, mkdir} from 'fs/promises'
+
+// Read file
+const content = await readFile('path/to/file.json', 'utf-8')
+
+// Write file
+await writeFile('path/to/file.json', JSON.stringify(data, null, 2))
+
+// Create directory
+await mkdir('path/to/dir', {recursive: true})
+
+// ❌ Don't use synchronous file operations
+const content = require('fs').readFileSync('path/to/file.json') // Wrong!
+```
+
+### Path Validation
+
+```typescript
+// ✅ Validate and sanitize file paths
+import path from 'node:path'
+
+function validatePath(userPath: string, baseDir: string): string {
+  // Resolve to absolute path
+  const resolved = path.resolve(baseDir, userPath)
+  
+  // Ensure path is within base directory
+  if (!resolved.startsWith(path.resolve(baseDir))) {
+    throw new Error('Path outside base directory')
+  }
+  
+  return resolved
+}
+
+// ❌ Don't trust user-provided paths
+const filePath = path.join(baseDir, userInput) // Wrong! Validate first
 ```
 
 ## Common Anti-patterns
@@ -44,11 +577,20 @@ packages/
 - Store sensitive API keys in workspace files
 - Skip input validation on user-provided paths
 - Ignore WebSocket connection cleanup
+- Use console.log instead of structured logger
+- Hardcode configuration values
+- Use string concatenation for SQL queries
+- Trust user-provided file paths without validation
+- Mix HTTP and WebSocket handling incorrectly
 
 ✅ **Do:**
 - Use Bun.serve() and native Web APIs (Request/Response)
 - Leverage Bun's fast file I/O with async operations
 - Use environment variables or rc config file for sensitive configuration
 - Validate and sanitize all file paths and user inputs
-- Use the websocket protocol
+- Use the websocket protocol with proper middleware
 - Use structured logging with relevant context
+- Use RC files or environment variables for configuration
+- Use prepared statements for database queries
+- Validate file paths and ensure they're within allowed directories
+- Separate HTTP and WebSocket handling clearly

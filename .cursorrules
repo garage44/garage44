@@ -8,9 +8,10 @@ Cursor rules are organized in the `.cursor/rules/` directory for better modulari
 
 ```
 .cursor/rules/
-├── adr.mdc          # Architecture Decision Records consultation workflow
-├── backend.mdc      # Backend development (Bun.serve, WebSocket server, CLI)
-└── frontend.mdc     # Frontend development (Preact, DeepSignal, WebSocket client)
+├── adr.mdc            # Architecture Decision Records consultation workflow
+├── backend.mdc        # Backend development (Bun.serve, WebSocket server, CLI)
+├── frontend.mdc       # Frontend development (Preact, DeepSignal, WebSocket client)
+└── pr-deployment.mdc  # PR workflow, deployment process, and CI/CD guidelines
 ```
 
 ## Quick Reference
@@ -18,6 +19,7 @@ Cursor rules are organized in the `.cursor/rules/` directory for better modulari
 - **Architecture & Decisions**: See `.cursor/rules/adr.mdc` and `adr/README.md`
 - **Backend Development**: See `.cursor/rules/backend.mdc`
 - **Frontend Development**: See `.cursor/rules/frontend.mdc`
+- **PR & Deployment**: See `.cursor/rules/pr-deployment.mdc` and `docs/deployment.md`
 
 All rules use YAML frontmatter with glob patterns and are applied automatically based on context.
 
