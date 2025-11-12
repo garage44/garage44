@@ -27,6 +27,7 @@ Each PR deployment:
 - Runs on dedicated ports: `40000 + (PR# * 3)` range
 - Has its own nginx subdomain: `pr-{number}.garage44.org`
 - Runs as separate systemd services: `pr-{number}-malkovich.service`, etc.
+- **Auto-discovers packages**: Scans workspace to determine which packages to deploy (same logic as main deployment)
 
 ## CLI Commands
 

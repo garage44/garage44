@@ -28,27 +28,22 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
 		// Update status
 		await updatePRDeployment(prNumber, {status: 'cleaning'})
 
-		// Stop systemd services
-		const services = ['expressio', 'pyrite', 'malkovich']
-		for (const service of services) {
-			try {
-				await $`sudo systemctl stop pr-${prNumber}-${service}.service`.quiet()
-				console.log(`[pr-cleanup] Stopped ${service} service`)
-			} catch (error) {
-				console.warn(`[pr-cleanup] Failed to stop ${service} service:`, error)
-			}
+		// Find all PR services (use wildcard pattern)
+		console.log(`[pr-cleanup] Stopping all services for PR #${prNumber}...`)
+		try {
+			// Stop all services matching pattern
+			await $`sudo systemctl stop pr-${prNumber}-*.service 2>/dev/null || true`.quiet()
+			console.log(`[pr-cleanup] Stopped all services`)
+		} catch (error) {
+			console.warn(`[pr-cleanup] Failed to stop services:`, error)
 		}
 
-		// Remove systemd units
-		for (const service of services) {
-			try {
-				const serviceFile = `/etc/systemd/system/pr-${prNumber}-${service}.service`
-				if (existsSync(serviceFile)) {
-					await $`sudo rm -f ${serviceFile}`.quiet()
-				}
-			} catch (error) {
-				console.warn(`[pr-cleanup] Failed to remove ${service} unit:`, error)
-			}
+		// Remove all systemd units matching pattern
+		try {
+			await $`sudo rm -f /etc/systemd/system/pr-${prNumber}-*.service`.quiet()
+			console.log(`[pr-cleanup] Removed all systemd units`)
+		} catch (error) {
+			console.warn(`[pr-cleanup] Failed to remove systemd units:`, error)
 		}
 
 		await $`sudo systemctl daemon-reload`.quiet()

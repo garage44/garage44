@@ -8,6 +8,7 @@ import {
 	updatePRDeployment,
 	type PRDeployment,
 } from './pr-registry'
+import {extractWorkspacePackages, isApplicationPackage} from './workspace'
 
 const PR_DEPLOYMENTS_DIR = path.join(homedir(), 'garage44')
 const PR_PORT_BASE = 40000
@@ -182,19 +183,28 @@ export async function deployPR(pr: PRMetadata): Promise<{
 			throw new Error('Build failed')
 		}
 
+		// Discover which packages to deploy
+		const repoDir = path.join(prDir, 'repo')
+		const allPackages = extractWorkspacePackages(repoDir)
+		const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+		const packagesToDeploy = [...appPackages, 'malkovich'] // Always include malkovich
+
+		console.log(`[pr-deploy] Discovered packages to deploy: ${packagesToDeploy.join(', ')}`)
+
 		// Generate systemd service files
-		await generateSystemdServices(deployment)
+		await generateSystemdServices(deployment, packagesToDeploy)
 
 		// Generate nginx configuration
 		await generateNginxConfig(deployment)
 
 		// Start services
 		console.log(`[pr-deploy] Starting services...`)
-		const services = ['expressio', 'pyrite', 'malkovich']
-		for (const service of services) {
-			const startResult = await $`sudo systemctl start pr-${pr.number}-${service}.service`.quiet()
+		for (const packageName of packagesToDeploy) {
+			const startResult = await $`sudo systemctl start pr-${pr.number}-${packageName}.service`.quiet()
 			if (startResult.exitCode !== 0) {
-				console.warn(`[pr-deploy] Failed to start ${service} service`)
+				console.warn(`[pr-deploy] Failed to start ${packageName} service`)
+			} else {
+				console.log(`[pr-deploy] Started ${packageName} service`)
 			}
 		}
 
@@ -256,10 +266,17 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
 		await $`bun install`.quiet()
 		await $`bun run build`.quiet()
 
+		// Discover which packages to deploy
+		const allPackages = extractWorkspacePackages(repoDir)
+		const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+		const packagesToDeploy = [...appPackages, 'malkovich'] // Always include malkovich
+
+		console.log(`[pr-deploy] Discovered packages to restart: ${packagesToDeploy.join(', ')}`)
+
 		// Restart services
-		const services = ['expressio', 'pyrite', 'malkovich']
-		for (const service of services) {
-			await $`sudo systemctl restart pr-${pr.number}-${service}.service`.quiet()
+		for (const packageName of packagesToDeploy) {
+			await $`sudo systemctl restart pr-${pr.number}-${packageName}.service`.quiet()
+			console.log(`[pr-deploy] Restarted ${packageName} service`)
 		}
 
 		// Update deployment record
@@ -289,40 +306,38 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
 /**
  * Generate systemd service files for PR deployment
  */
-async function generateSystemdServices(deployment: PRDeployment): Promise<void> {
-	const services = [
-		{
-			name: 'expressio',
-			port: deployment.ports.expressio,
-			workdir: path.join(deployment.directory, 'repo/packages/expressio'),
-		},
-		{
-			name: 'pyrite',
-			port: deployment.ports.pyrite,
-			workdir: path.join(deployment.directory, 'repo/packages/pyrite'),
-		},
-		{
-			name: 'malkovich',
-			port: deployment.ports.malkovich,
-			workdir: path.join(deployment.directory, 'repo/packages/malkovich'),
-		},
-	]
+async function generateSystemdServices(deployment: PRDeployment, packagesToDeploy: string[]): Promise<void> {
+	// Map package names to port allocations
+	const portMap: Record<string, number> = {
+		expressio: deployment.ports.expressio,
+		malkovich: deployment.ports.malkovich,
+		pyrite: deployment.ports.pyrite,
+	}
 
-	for (const service of services) {
-		const serviceFile = `/etc/systemd/system/pr-${deployment.number}-${service.name}.service`
+	for (const packageName of packagesToDeploy) {
+		const port = portMap[packageName] || deployment.ports.malkovich
+		const workdir = path.join(deployment.directory, `repo/packages/${packageName}`)
+
+		// Check if package directory exists
+		if (!existsSync(workdir)) {
+			console.warn(`[pr-deploy] Package directory not found: ${workdir}, skipping ${packageName}`)
+			continue
+		}
+
+		const serviceFile = `/etc/systemd/system/pr-${deployment.number}-${packageName}.service`
 		const content = `[Unit]
-Description=PR #${deployment.number} ${service.name} service
+Description=PR #${deployment.number} ${packageName} service
 After=network.target
 
 [Service]
 Type=simple
 User=garage44
 Group=garage44
-WorkingDirectory=${service.workdir}
+WorkingDirectory=${workdir}
 Environment="NODE_ENV=production"
 Environment="BUN_ENV=production"
 Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/garage44/.bun/bin/bun run server -- --port ${service.port}
+ExecStart=/home/garage44/.bun/bin/bun run server -- --port ${port}
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -339,6 +354,7 @@ WantedBy=multi-user.target
 `
 
 		writeFileSync(serviceFile, content, 'utf-8')
+		console.log(`[pr-deploy] Generated systemd service for ${packageName}`)
 	}
 
 	// Reload systemd
