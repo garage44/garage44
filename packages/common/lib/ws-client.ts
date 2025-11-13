@@ -134,11 +134,20 @@ class WebSocketClient extends EventEmitter {
                     return
                 }
 
+                // Debug logging for HMR messages
+                if (message.url === '/tasks/hmr') {
+                    logger.debug('[WS] HMR message received, emitting and routing:', message)
+                    logger.debug('[WS] Registered handlers for /tasks/hmr:', this.eventHandlers['/tasks/hmr'])
+                }
+
                 this.emit('message', message)
 
                 // Handle route-specific handlers
                 if (message.url && this.eventHandlers[message.url]) {
+                    logger.debug(`[WS] Calling handlers for ${message.url}:`, this.eventHandlers[message.url].length)
                     this.eventHandlers[message.url].forEach((handler) => handler(message.data))
+                } else if (message.url) {
+                    logger.debug(`[WS] No handlers registered for ${message.url}`)
                 }
 
                 // Emit on the URL as an event
@@ -248,9 +257,6 @@ class WebSocketClient extends EventEmitter {
     private handleResponse(message: WebSocketMessage) {
         if (!message.id) {
             // Only log this for messages that look like responses (have method field)
-            if (message.method) {
-                logger.debug('[WS] message has no id, not a response')
-            }
             return false
         }
 

@@ -22,8 +22,20 @@ export class Store<StateType extends object = object> {
             restoredState = {}
         }
 
+        // Check for HMR state (from hot module replacement)
+        let hmrState = {}
+        if (typeof globalThis !== 'undefined' && globalThis.__HMR_STATE__) {
+            try {
+                hmrState = globalThis.__HMR_STATE__ as Record<string, unknown>
+                // Clear HMR state after reading
+                globalThis.__HMR_STATE__ = null
+            } catch {
+                hmrState = {}
+            }
+        }
 
-        Object.assign(this.state, mergeDeep(mergeDeep(persistantState, restoredState), volatileState))
+        // Merge order: persistantState + localStorage + HMR state + volatileState
+        Object.assign(this.state, mergeDeep(mergeDeep(mergeDeep(persistantState, restoredState), hmrState), volatileState))
         if (this.state.beta) {
             globalThis.$s = this.state as unknown as DeepSignal<CommonState>
         }

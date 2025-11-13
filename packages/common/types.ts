@@ -21,6 +21,7 @@ interface CommonState {
         shiftKey: boolean
         url: string
     }
+    hmr_updating: boolean
     language_ui: LanguageUI
     notifications: []
     panels: {

@@ -229,8 +229,103 @@ function hideExceptionPage() {
     }
 }
 
+async function handleHMRUpdate(_filePath: string, timestamp: number) {
+    const g = globalThis as any
+    try {
+        hideExceptionPage()
+
+        // Initialize HMR state storage if not exists
+        if (!g.__HMR_STATE__) g.__HMR_STATE__ = null
+        if (!g.__HMR_COMPONENT_STATES__) g.__HMR_COMPONENT_STATES__ = {}
+        if (!g.__HMR_REGISTRY__) g.__HMR_REGISTRY__ = {}
+
+        // Save global store state
+        try {
+            const {store} = await import('@garage44/common/app')
+            if (store?.state) {
+                g.__HMR_STATE__ = JSON.parse(JSON.stringify(store.state))
+            }
+        } catch (error) {
+            console.warn('[Bunchy HMR] Could not access store state:', error)
+        }
+
+        // Save component-level states from registry
+        const registry = g.__HMR_REGISTRY__ || {}
+        const componentStates: Record<string, unknown> = {}
+        for (const [key, state] of Object.entries(registry)) {
+            try {
+                componentStates[key] = JSON.parse(JSON.stringify(state))
+            } catch {
+                console.warn(`[Bunchy HMR] Could not serialize state for ${key}`)
+            }
+        }
+        g.__HMR_COMPONENT_STATES__ = componentStates
+
+        // Find and reload the app script
+        const scriptTags = [...document.querySelectorAll('script[type="module"]')] as HTMLScriptElement[]
+        const appScript = scriptTags.find((script) => {
+            const src = script.src.split('?')[0]
+            return src.includes('/public/app.') && /\/public\/app\.[^/]+\.js$/.test(src)
+        })
+
+        if (!appScript) {
+            console.error('[Bunchy HMR] Could not find app script tag')
+            globalThis.location.reload()
+            return
+        }
+
+        const originalSrc = appScript.src.split('?')[0]
+        appScript.remove()
+
+        // Set HMR update flag BEFORE creating/loading the script
+        // This is critical - ES modules execute immediately when appended
+        g.__HMR_UPDATING__ = true
+
+        // Set data attribute on html and body BEFORE script loads to disable CSS animations
+        document.documentElement.setAttribute('data-hmr-updating', 'true')
+        document.body.setAttribute('data-hmr-updating', 'true')
+        void document.body.offsetHeight // Force reflow
+
+        // Create new script with cache busting
+        const newScript = document.createElement('script')
+        newScript.type = 'module'
+        newScript.src = `${originalSrc}?t=${timestamp}`
+
+        // Wait for script to load
+        newScript.onload = async () => {
+            // The new script will execute and call app.init() with HMR flag set
+            // app.init() will detect HMR and re-initialize services, then re-render
+            // Wait a brief moment for the module to execute
+            await new Promise((resolve) => setTimeout(resolve, 10))
+
+            // Verify the Main component was updated
+            if (!g.__HMR_MAIN_COMPONENT__) {
+                console.error('[Bunchy HMR] Main component not found after script load')
+                globalThis.location.reload()
+                return
+            }
+        }
+
+        newScript.onerror = () => {
+            console.error('[Bunchy HMR] Failed to load new script')
+            globalThis.location.reload()
+        }
+
+        // Insert new script - this will cause it to execute immediately
+        document.head.append(newScript)
+    } catch (error) {
+        console.error('[Bunchy HMR] Failed:', error)
+        globalThis.location.reload()
+    }
+}
+
 // Helper function to initialize Bunchy
+// Only initialize once to prevent multiple connections
 function initializeBunchy() {
+    if ((globalThis as any).__BUNCHY_INITIALIZED__) {
+        return
+    }
+    ;(globalThis as any).__BUNCHY_INITIALIZED__ = true
     return new BunchyClient()
 }
 
@@ -306,6 +401,11 @@ class BunchyClient extends WebSocketClient {
         // Use generic helper to attach forwarding
         setupLoggerForwarding(this)
 
+        // Hook into the open event to override message handling
+        this.on('open', () => {
+            // WebSocket opened, handlers registered
+        })
+
         // Small delay to ensure handlers are fully registered before connecting
         setTimeout(() => {
             this.connect()
@@ -340,6 +440,11 @@ class BunchyClient extends WebSocketClient {
             const {details, error, task, timestamp} = data as {details: string; error: string; task: string; timestamp: string}
             showExceptionPage(task, error, details, timestamp)
         })
+
+        this.onRoute('/tasks/hmr', (data) => {
+            const {filePath, timestamp} = data as {filePath: string; timestamp: number}
+            handleHMRUpdate(filePath, timestamp)
+        })
     }
 
     // Backwards compatible method (delegates to generic function)
@@ -347,5 +452,10 @@ class BunchyClient extends WebSocketClient {
         setupLoggerForwarding(this)
     }
 }
+
+// Auto-initialize when script loads (after BunchyClient is defined)
+// Since this script is only included in development mode (see index.html template),
+// we can always initialize it
+initializeBunchy()
 
 export {initializeBunchy, setupLoggerForwarding, BunchyClient}
