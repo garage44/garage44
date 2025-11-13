@@ -384,6 +384,10 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
 
         console.log(`[pr-deploy] Discovered packages to restart: ${packagesToDeploy.join(', ')}`)
 
+        // Regenerate nginx configs to ensure correct port mapping
+        console.log(`[pr-deploy] Regenerating nginx configurations...`)
+        await generateNginxConfig(existing, packagesToDeploy)
+
         // Restart services
         for (const packageName of packagesToDeploy) {
             await $`sudo systemctl restart pr-${pr.number}-${packageName}.service`.quiet()
@@ -517,6 +521,10 @@ async function generateNginxConfig(deployment: PRDeployment, packagesToDeploy: s
     // Generate nginx config for each package
     for (const packageName of packagesToDeploy) {
         const port = portMap[packageName] || deployment.ports.malkovich
+        
+        // Log port mapping for debugging
+        console.log(`[pr-deploy] Generating nginx config for ${packageName}: port ${port} (subdomain: pr-${prNumber}-${packageName}.${baseDomain})`)
+        
         // Use single-level subdomain (pr-999-malkovich.garage44.org) to work with *.garage44.org wildcard cert
         const subdomain = `pr-${prNumber}-${packageName}.${baseDomain}`
         const configFile = `/etc/nginx/sites-available/${subdomain}`
@@ -658,4 +666,58 @@ server {
         throw new Error(`Failed to reload nginx: ${stderr || stdout || 'Unknown error'}\nNginx config test: ${testOutput}`)
     }
     console.log('[pr-deploy] Nginx reloaded successfully')
+}
+
+/**
+ * Regenerate nginx configs for an existing PR deployment
+ * Useful for fixing incorrect port mappings without redeploying
+ */
+export async function regeneratePRNginx(prNumber: number): Promise<{
+    message: string
+    success: boolean
+}> {
+    try {
+        const deployment = await getPRDeployment(prNumber)
+        if (!deployment) {
+            return {
+                message: `PR #${prNumber} deployment not found`,
+                success: false,
+            }
+        }
+
+        if (deployment.status !== 'running') {
+            return {
+                message: `PR #${prNumber} deployment is not running (status: ${deployment.status})`,
+                success: false,
+            }
+        }
+
+        console.log(`[pr-deploy] Regenerating nginx configs for PR #${prNumber}...`)
+
+        const repoDir = path.join(deployment.directory, 'repo')
+        
+        // Discover which packages are deployed
+        const allPackages = extractWorkspacePackages(repoDir)
+        const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+        const packagesToDeploy = [...appPackages, 'malkovich'] // Always include malkovich
+
+        console.log(`[pr-deploy] Discovered packages: ${packagesToDeploy.join(', ')}`)
+
+        // Regenerate nginx configs
+        await generateNginxConfig(deployment, packagesToDeploy)
+
+        console.log(`[pr-deploy] Nginx configs regenerated successfully for PR #${prNumber}`)
+
+        return {
+            message: `Nginx configs regenerated successfully for PR #${prNumber}`,
+            success: true,
+        }
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.error(`[pr-deploy] Failed to regenerate nginx configs: ${message}`)
+        return {
+            message: `Failed to regenerate nginx configs: ${message}`,
+            success: false,
+        }
+    }
 }
