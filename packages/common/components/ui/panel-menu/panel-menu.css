@@ -8,23 +8,13 @@
     min-width: var(--spacer-5);
     position: relative;
     width: 240px;
-
+/*
     &.fade-in {
         animation: fade-in 0.2s ease-in forwards;
         opacity: 0;
-    }
+    } */
 
     /* Disable animations and transitions during HMR to prevent blink */
-
-    body[data-hmr-updating="true"] & {
-        animation: none !important;
-        transition: none !important;
-    }
-
-    body[data-hmr-updating="true"] &.fade-in {
-        animation: none !important;
-        opacity: 1 !important;
-    }
 
     header {
         align-items: center;

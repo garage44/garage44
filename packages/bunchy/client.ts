@@ -293,22 +293,19 @@ async function handleHMRUpdate(filePath: string, timestamp: number) {
         // This is critical - ES modules execute immediately when appended
         ;(globalThis as any).__HMR_UPDATING__ = true
 
-        // Set data attribute on body BEFORE script loads to disable CSS animations
+        // Set data attribute on html and body BEFORE script loads to disable CSS animations
         // This ensures CSS rules are active when components render
-        if (document.body) {
-            // oxlint-disable-next-line @typescript-eslint/no-dynamic-delete
-            document.body.dataset.hmrUpdating = 'true'
-            console.log('[Bunchy HMR] Set data-hmr-updating attribute on body')
-            console.log('[Bunchy HMR] Body dataset.hmrUpdating:', document.body.dataset.hmrUpdating)
-            // Verify it's actually in the DOM by checking outerHTML
-            const bodyHTML = document.body.outerHTML
-            const hasAttribute = bodyHTML.includes('data-hmr-updating')
-            console.log('[Bunchy HMR] Body HTML contains data-hmr-updating:', hasAttribute)
-            if (!hasAttribute) {
-                console.error('[Bunchy HMR] WARNING: Attribute was not found in body HTML!')
-            }
+        if (document.documentElement && document.body) {
+            // Set on both html and body for maximum compatibility
+            document.documentElement.setAttribute('data-hmr-updating', 'true')
+            document.body.setAttribute('data-hmr-updating', 'true')
+            console.log('[Bunchy HMR] Set data-hmr-updating attribute on html and body')
+            console.log('[Bunchy HMR] HTML getAttribute:', document.documentElement.getAttribute('data-hmr-updating'))
+            console.log('[Bunchy HMR] Body getAttribute:', document.body.getAttribute('data-hmr-updating'))
+            // Force a reflow to ensure CSS sees the change
+            void document.body.offsetHeight
         } else {
-            console.warn('[Bunchy HMR] Body element not found when trying to set data attribute')
+            console.warn('[Bunchy HMR] HTML or body element not found when trying to set data attribute')
         }
 
         console.log('[Bunchy HMR] Set __HMR_UPDATING__ flag to true, current value:', (globalThis as any).__HMR_UPDATING__)

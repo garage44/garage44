@@ -60,8 +60,13 @@ class App {
             ;(globalThis as any).__HMR_UPDATING__ = false
 
             // Ensure data attribute is set (should already be set, but be safe)
-            if (!document.body.dataset.hmrUpdating) {
-                document.body.dataset.hmrUpdating = 'true'
+            if (document.documentElement && !document.documentElement.getAttribute('data-hmr-updating')) {
+                document.documentElement.setAttribute('data-hmr-updating', 'true')
+            }
+            if (!document.body.getAttribute('data-hmr-updating')) {
+                document.body.setAttribute('data-hmr-updating', 'true')
+                // Force a reflow to ensure CSS sees the change
+                void document.body.offsetHeight
             }
 
             // Update Main component reference
@@ -170,8 +175,15 @@ class App {
             // Reset HMR flag after render completes
             setTimeout(() => {
                 store.state.hmr_updating = false
-                // oxlint-disable-next-line @typescript-eslint/no-dynamic-delete
-                delete document.body.dataset.hmrUpdating
+
+                // Mark that HMR has completed - this prevents animations from restarting
+                // Add a persistent class to body/html that indicates HMR happened
+                if (document.documentElement) {
+                    document.documentElement.classList.add('hmr-complete')
+                    document.documentElement.removeAttribute('data-hmr-updating')
+                }
+                document.body.classList.add('hmr-complete')
+                document.body.removeAttribute('data-hmr-updating')
                 // oxlint-disable-next-line no-console
                 console.log('[HMR] HMR update complete')
             }, 0)

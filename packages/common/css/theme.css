@@ -36,12 +36,43 @@ html, body {
 
 /* Disable all animations and transitions during HMR to prevent blink */
 
+html[data-hmr-updating="true"] *,
+html[data-hmr-updating="true"] *::before,
+html[data-hmr-updating="true"] *::after,
 body[data-hmr-updating="true"] *,
 body[data-hmr-updating="true"] *::before,
 body[data-hmr-updating="true"] *::after {
     animation: none !important;
     transition: none !important;
 }
+
+/* After HMR completes, prevent animations from restarting */
+/* The hmr-complete class persists and prevents any animation from playing */
+
+html.hmr-complete *,
+html.hmr-complete *::before,
+html.hmr-complete *::after,
+body.hmr-complete *,
+body.hmr-complete *::before,
+body.hmr-complete *::after {
+    animation: none !important;
+    animation-play-state: paused !important;
+}
+
+/* During HMR, ensure fade-in elements are visible */
+
+html[data-hmr-updating="true"] .fade-in,
+body[data-hmr-updating="true"] .fade-in {
+    opacity: 1;
+}
+
+/* After HMR completes, ensure fade-in elements stay visible */
+
+html.hmr-complete .fade-in,
+body.hmr-complete .fade-in {
+    opacity: 1;
+}
+
 
 * {
     box-sizing: border-box;
@@ -61,4 +92,5 @@ body[data-hmr-updating="true"] *::after {
 
 .fade-in {
     animation: fade-in 0.2s ease-in forwards;
+    opacity: 0;
 }
