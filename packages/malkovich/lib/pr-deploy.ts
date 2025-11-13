@@ -1,5 +1,5 @@
 import {$} from 'bun'
-import {existsSync, mkdirSync, writeFileSync} from 'fs'
+import {existsSync, mkdirSync} from 'fs'
 import {homedir} from 'os'
 import path from 'path'
 import {
@@ -202,14 +202,9 @@ export async function deployPR(pr: PRMetadata): Promise<{
         // Install dependencies (must be run from workspace root)
         console.log('[pr-deploy] Installing dependencies...')
         console.log(`[pr-deploy] Installing from: ${process.cwd()}`)
-        
-        // Check if bun.lock exists, if not we might need to copy it or regenerate
-        const lockFile = path.join(repoDir, 'bun.lock')
-        if (!existsSync(lockFile)) {
-            console.log('[pr-deploy] No bun.lock found, will install fresh dependencies')
-        }
-        
-        const installResult = await $`bun install --frozen-lockfile=false`.nothrow()
+
+        // First, install workspace dependencies
+        const installResult = await $`bun install`.nothrow()
         if (installResult.exitCode !== 0) {
             const stderr = installResult.stderr?.toString() || ''
             const stdout = installResult.stdout?.toString() || ''
@@ -217,26 +212,39 @@ export async function deployPR(pr: PRMetadata): Promise<{
             console.error(`[pr-deploy] Install failed with exit code ${installResult.exitCode}`)
             console.error(`[pr-deploy] Install stderr: ${stderr}`)
             console.error(`[pr-deploy] Install stdout: ${stdout}`)
-            
-            // Try installing without frozen lockfile as fallback
-            console.log('[pr-deploy] Retrying install without frozen lockfile...')
-            const retryResult = await $`bun install`.nothrow()
-            if (retryResult.exitCode !== 0) {
-                await updatePRDeployment(pr.number, {status: 'failed'})
-                throw new Error(`Failed to install dependencies: ${errorDetails.slice(0, 500)}`)
-            }
+            await updatePRDeployment(pr.number, {status: 'failed'})
+            throw new Error(`Failed to install dependencies: ${errorDetails.slice(0, 500)}`)
         }
         console.log('[pr-deploy] Dependencies installed successfully')
-        
-        // Verify catalog dependencies are resolved
-        console.log('[pr-deploy] Verifying catalog dependencies...')
+
+        // Bun's catalog dependencies should be auto-resolved, but verify they're available
+        // If not, we may need to install them explicitly (Bun should handle this automatically)
+        console.log('[pr-deploy] Verifying catalog dependencies are resolved...')
         const testImport = await $`bun -e "import('@preact/signals').then(() => console.log('OK')).catch(e => {console.error('FAIL:', e.message); process.exit(1)})"`.nothrow()
         if (testImport.exitCode === 0) {
             console.log('[pr-deploy] Catalog dependencies verified')
         } else {
             const testError = testImport.stderr?.toString() || testImport.stdout?.toString() || ''
             console.warn(`[pr-deploy] Catalog dependency check failed: ${testError}`)
-            console.warn('[pr-deploy] This may cause build issues, but continuing...')
+            console.log('[pr-deploy] Installing catalog dependencies explicitly...')
+
+            // Read catalog from package.json and install dependencies
+            const packageJsonPath = path.join(repoDir, 'package.json')
+            if (existsSync(packageJsonPath)) {
+                const packageJson = JSON.parse(await Bun.file(packageJsonPath).text())
+                const catalog = packageJson.workspaces?.catalog || {}
+                const catalogDeps = Object.keys(catalog)
+
+                if (catalogDeps.length > 0) {
+                    console.log(`[pr-deploy] Installing ${catalogDeps.length} catalog dependencies...`)
+                    const catalogInstall = await $`bun install ${catalogDeps.join(' ')}`.nothrow()
+                    if (catalogInstall.exitCode === 0) {
+                        console.log('[pr-deploy] Catalog dependencies installed')
+                    } else {
+                        console.warn('[pr-deploy] Failed to install catalog dependencies explicitly')
+                    }
+                }
+            }
         }
 
         // Build packages
@@ -432,7 +440,13 @@ TasksMax=100
 WantedBy=multi-user.target
 `
 
-        writeFileSync(serviceFile, content, 'utf-8')
+        // Write service file using sudo (required for /etc/systemd/system/)
+        const writeResult = await $`echo ${content} | sudo tee ${serviceFile}`.nothrow()
+        if (writeResult.exitCode !== 0) {
+            const stderr = writeResult.stderr?.toString() || ''
+            const stdout = writeResult.stdout?.toString() || ''
+            throw new Error(`Failed to write systemd service file: ${stderr || stdout}`)
+        }
         console.log(`[pr-deploy] Generated systemd service for ${packageName}`)
     }
 
@@ -566,7 +580,13 @@ server {
 }
 `
 
-        writeFileSync(configFile, content, 'utf-8')
+        // Write nginx config file using sudo (required for /etc/nginx/)
+        const nginxWriteResult = await $`echo ${content} | sudo tee ${configFile}`.nothrow()
+        if (nginxWriteResult.exitCode !== 0) {
+            const stderr = nginxWriteResult.stderr?.toString() || ''
+            const stdout = nginxWriteResult.stdout?.toString() || ''
+            throw new Error(`Failed to write nginx config file: ${stderr || stdout}`)
+        }
 
         // Create symlink if it doesn't exist
         if (!existsSync(enabledLink)) {
