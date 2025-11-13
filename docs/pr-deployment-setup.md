@@ -179,7 +179,7 @@ sudo visudo
 Add this line (allows specific commands without password):
 
 ```
-garage44 ALL=(ALL) NOPASSWD: /bin/systemctl start pr-*, /bin/systemctl stop pr-*, /bin/systemctl restart pr-*, /bin/systemctl daemon-reload, /usr/sbin/nginx -s reload, /bin/rm -f /etc/systemd/system/pr-*.service, /bin/rm -f /etc/nginx/sites-*/pr-*.garage44.org, /bin/ln -s /etc/nginx/sites-available/pr-*.garage44.org /etc/nginx/sites-enabled/pr-*.garage44.org
+garage44 ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart expressio.service, /usr/bin/systemctl restart pyrite.service, /usr/bin/systemctl restart styleguide.service, /usr/bin/systemctl restart webhook.service, /usr/bin/systemctl start pr-*, /usr/bin/systemctl stop pr-*, /usr/bin/systemctl restart pr-*, /usr/bin/systemctl status pr-*, /usr/bin/systemctl daemon-reload, /usr/bin/nginx -s reload, /usr/bin/nginx -t, /usr/bin/rm -f /etc/systemd/system/pr-*.service, /usr/bin/rm -f /etc/nginx/sites-*/pr-*.garage44.org, /usr/bin/ln -s /etc/nginx/sites-available/pr-*.garage44.org /etc/nginx/sites-enabled/pr-*.garage44.org, /usr/bin/mv /tmp/pr-*.service /etc/systemd/system/pr-*.service, /usr/bin/mv /tmp/pr-*.nginx.conf /etc/nginx/sites-available/pr-*.garage44.org
 ```
 
 **Security Note**: These permissions are restricted to PR deployment operations only. The wildcards (`pr-*`) ensure only PR-related services can be managed.

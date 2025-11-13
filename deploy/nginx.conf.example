@@ -16,9 +16,9 @@ server {
     http2 on;
     server_name expressio.garage44.org;
 
-    # SSL certificates (Let's Encrypt)
-    ssl_certificate /etc/letsencrypt/live/expressio.garage44.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/expressio.garage44.org/privkey.pem;
+    # SSL certificates (Let's Encrypt wildcard certificate)
+    ssl_certificate /etc/letsencrypt/live/garage44.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/garage44.org/privkey.pem;
 
     # SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -69,9 +69,9 @@ server {
     http2 on;
     server_name pyrite.garage44.org;
 
-    # SSL certificates (Let's Encrypt)
-    ssl_certificate /etc/letsencrypt/live/pyrite.garage44.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/pyrite.garage44.org/privkey.pem;
+    # SSL certificates (Let's Encrypt wildcard certificate)
+    ssl_certificate /etc/letsencrypt/live/garage44.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/garage44.org/privkey.pem;
 
     # SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -138,9 +138,9 @@ server {
     http2 on;
     server_name styleguide.garage44.org;
 
-    # SSL certificates (Let's Encrypt)
-    ssl_certificate /etc/letsencrypt/live/styleguide.garage44.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/styleguide.garage44.org/privkey.pem;
+    # SSL certificates (Let's Encrypt wildcard certificate)
+    ssl_certificate /etc/letsencrypt/live/garage44.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/garage44.org/privkey.pem;
 
     # SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;

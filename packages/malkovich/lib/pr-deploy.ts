@@ -520,7 +520,7 @@ async function generateNginxConfig(deployment: PRDeployment, packagesToDeploy: s
         const enabledLink = `/etc/nginx/sites-enabled/${subdomain}`
 
         let content = `# PR #${prNumber} - ${packageName} service (subdomain: ${subdomain})
-# Rate limit zone (defined in main nginx.conf if not already present)
+# Note: Rate limiting can be added by defining limit_req_zone in main nginx.conf
 # limit_req_zone $binary_remote_addr zone=pr_public:10m rate=10r/s;
 
 # HTTP to HTTPS redirect
@@ -553,9 +553,9 @@ server {
     # PR deployment indicator
     add_header X-PR-Deployment "${prNumber}" always;
 
-    # Rate limiting for public access
-    limit_req zone=pr_public burst=20 nodelay;
-    limit_req_status 429;
+    # Rate limiting for public access (uncomment if zone is defined in main nginx.conf)
+    # limit_req zone=pr_public burst=20 nodelay;
+    # limit_req_status 429;
 `
 
         // Add WebSocket support for packages that need it
