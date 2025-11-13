@@ -1,10 +1,10 @@
 import {$} from 'bun'
 import {existsSync} from 'fs'
 import {
-	getPRDeployment,
-	loadPRRegistry,
-	removePRDeployment,
-	updatePRDeployment,
+    getPRDeployment,
+    loadPRRegistry,
+    removePRDeployment,
+    updatePRDeployment,
 } from './pr-registry'
 import {extractWorkspacePackages, isApplicationPackage} from './workspace'
 
@@ -12,67 +12,67 @@ import {extractWorkspacePackages, isApplicationPackage} from './workspace'
  * Cleanup a specific PR deployment
  */
 export async function cleanupPRDeployment(prNumber: number): Promise<{
-	message: string
-	success: boolean
+    message: string
+    success: boolean
 }> {
-	try {
-		console.log(`[pr-cleanup] Cleaning up PR #${prNumber}...`)
+    try {
+        console.log(`[pr-cleanup] Cleaning up PR #${prNumber}...`)
 
-		const deployment = await getPRDeployment(prNumber)
-		if (!deployment) {
-			return {
-				message: `PR #${prNumber} not found`,
-				success: false,
-			}
-		}
+        const deployment = await getPRDeployment(prNumber)
+        if (!deployment) {
+            return {
+                message: `PR #${prNumber} not found`,
+                success: false,
+            }
+        }
 
-		// Update status
-		await updatePRDeployment(prNumber, {status: 'cleaning'})
+        // Update status
+        await updatePRDeployment(prNumber, {status: 'cleaning'})
 
-		// Find all PR services (use wildcard pattern)
-		console.log(`[pr-cleanup] Stopping all services for PR #${prNumber}...`)
-		try {
-			// Stop all services matching pattern
-			await $`sudo systemctl stop pr-${prNumber}-*.service 2>/dev/null || true`.quiet()
-			console.log(`[pr-cleanup] Stopped all services`)
-		} catch (error) {
-			console.warn(`[pr-cleanup] Failed to stop services:`, error)
-		}
+        // Find all PR services (use wildcard pattern)
+        console.log(`[pr-cleanup] Stopping all services for PR #${prNumber}...`)
+        try {
+            // Stop all services matching pattern
+            await $`sudo systemctl stop pr-${prNumber}-*.service 2>/dev/null || true`.quiet()
+            console.log('[pr-cleanup] Stopped all services')
+        } catch (error) {
+            console.warn('[pr-cleanup] Failed to stop services:', error)
+        }
 
-		// Remove all systemd units matching pattern
-		try {
-			await $`sudo rm -f /etc/systemd/system/pr-${prNumber}-*.service`.quiet()
-			console.log(`[pr-cleanup] Removed all systemd units`)
-		} catch (error) {
-			console.warn(`[pr-cleanup] Failed to remove systemd units:`, error)
-		}
+        // Remove all systemd units matching pattern
+        try {
+            await $`sudo rm -f /etc/systemd/system/pr-${prNumber}-*.service`.quiet()
+            console.log('[pr-cleanup] Removed all systemd units')
+        } catch (error) {
+            console.warn('[pr-cleanup] Failed to remove systemd units:', error)
+        }
 
-		await $`sudo systemctl daemon-reload`.quiet()
+        await $`sudo systemctl daemon-reload`.quiet()
 
-		// Remove nginx configurations for all package subdomains
-		try {
-			// Discover which packages were deployed to determine subdomains
-			const repoDir = `${deployment.directory}/repo`
-			let packagesToClean: string[] = []
+        // Remove nginx configurations for all package subdomains
+        try {
+            // Discover which packages were deployed to determine subdomains
+            const repoDir = `${deployment.directory}/repo`
+            let packagesToClean: string[] = []
 
-			if (existsSync(repoDir)) {
-				const allPackages = extractWorkspacePackages(repoDir)
-				const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
-				packagesToClean = [...appPackages, 'malkovich'] // Always include malkovich
-			} else {
-				// Fallback: use known packages if repo directory doesn't exist
-				packagesToClean = ['expressio', 'pyrite', 'malkovich']
-			}
+            if (existsSync(repoDir)) {
+                const allPackages = extractWorkspacePackages(repoDir)
+                const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+                packagesToClean = [...appPackages, 'malkovich'] // Always include malkovich
+            } else {
+                // Fallback: use known packages if repo directory doesn't exist
+                packagesToClean = ['expressio', 'pyrite', 'malkovich']
+            }
 
-			// Remove nginx configs for each package subdomain
-			// Replace with a "deployment removed" page instead of deleting
-			for (const packageName of packagesToClean) {
-				const subdomain = `pr-${prNumber}-${packageName}.garage44.org`
-				const configFile = `/etc/nginx/sites-available/${subdomain}`
-				const enabledLink = `/etc/nginx/sites-enabled/${subdomain}`
+            // Remove nginx configs for each package subdomain
+            // Replace with a "deployment removed" page instead of deleting
+            for (const packageName of packagesToClean) {
+                const subdomain = `pr-${prNumber}-${packageName}.garage44.org`
+                const configFile = `/etc/nginx/sites-available/${subdomain}`
+                const enabledLink = `/etc/nginx/sites-enabled/${subdomain}`
 
-				// Create a "deployment removed" config instead of deleting
-				const removedContent = `# PR #${prNumber} - ${packageName} deployment removed
+                // Create a "deployment removed" config instead of deleting
+                const removedContent = `# PR #${prNumber} - ${packageName} deployment removed
 # HTTP to HTTPS redirect
 server {
     listen 80;
@@ -106,132 +106,132 @@ server {
 }
 `
 
-				// Write the "removed" config
-				const tempFile = `/tmp/pr-${prNumber}-${packageName}-removed.nginx.conf`
-				await Bun.write(tempFile, removedContent)
-				await $`sudo mv ${tempFile} ${configFile}`.quiet()
+                // Write the "removed" config
+                const tempFile = `/tmp/pr-${prNumber}-${packageName}-removed.nginx.conf`
+                await Bun.write(tempFile, removedContent)
+                await $`sudo mv ${tempFile} ${configFile}`.quiet()
 
-				// Ensure symlink exists
-				if (!existsSync(enabledLink)) {
-					await $`sudo ln -s ${configFile} ${enabledLink}`.quiet()
-				}
-			}
+                // Ensure symlink exists
+                if (!existsSync(enabledLink)) {
+                    await $`sudo ln -s ${configFile} ${enabledLink}`.quiet()
+                }
+            }
 
-			await $`sudo nginx -s reload`.quiet()
-			console.log(`[pr-cleanup] Updated nginx configurations to show "deployment removed" for ${packagesToClean.length} package(s)`)
-		} catch (error) {
-			console.warn(`[pr-cleanup] Failed to remove nginx configs:`, error)
-		}
+            await $`sudo nginx -s reload`.quiet()
+            console.log(`[pr-cleanup] Updated nginx configurations to show "deployment removed" for ${packagesToClean.length} package(s)`)
+        } catch (error) {
+            console.warn('[pr-cleanup] Failed to remove nginx configs:', error)
+        }
 
-		// Remove deployment directory
-		try {
-			await $`rm -rf ${deployment.directory}`.quiet()
-			console.log(`[pr-cleanup] Removed deployment directory`)
-		} catch (error) {
-			console.warn(`[pr-cleanup] Failed to remove directory:`, error)
-		}
+        // Remove deployment directory
+        try {
+            await $`rm -rf ${deployment.directory}`.quiet()
+            console.log('[pr-cleanup] Removed deployment directory')
+        } catch (error) {
+            console.warn('[pr-cleanup] Failed to remove directory:', error)
+        }
 
-		// Remove from registry
-		await removePRDeployment(prNumber)
+        // Remove from registry
+        await removePRDeployment(prNumber)
 
-		console.log(`[pr-cleanup] PR #${prNumber} cleaned up successfully`)
+        console.log(`[pr-cleanup] PR #${prNumber} cleaned up successfully`)
 
-		return {
-			message: `PR #${prNumber} cleaned up successfully`,
-			success: true,
-		}
-	} catch (error) {
-		const message = error instanceof Error ? error.message : String(error)
-		console.error(`[pr-cleanup] Cleanup failed: ${message}`)
-		return {
-			message: `Cleanup failed: ${message}`,
-			success: false,
-		}
-	}
+        return {
+            message: `PR #${prNumber} cleaned up successfully`,
+            success: true,
+        }
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.error(`[pr-cleanup] Cleanup failed: ${message}`)
+        return {
+            message: `Cleanup failed: ${message}`,
+            success: false,
+        }
+    }
 }
 
 /**
  * Cleanup stale PR deployments (older than maxAge)
  */
 export async function cleanupStaleDeployments(
-	maxAgeDays: number = 7,
+    maxAgeDays: number = 7,
 ): Promise<{cleaned: number; message: string}> {
-	try {
-		console.log(`[pr-cleanup] Checking for stale deployments (max age: ${maxAgeDays} days)...`)
+    try {
+        console.log(`[pr-cleanup] Checking for stale deployments (max age: ${maxAgeDays} days)...`)
 
-		const registry = await loadPRRegistry()
-		const maxAge = maxAgeDays * 24 * 60 * 60 * 1000
-		const now = Date.now()
+        const registry = await loadPRRegistry()
+        const maxAge = maxAgeDays * 24 * 60 * 60 * 1000
+        const now = Date.now()
 
-		let cleaned = 0
-		for (const [prNumber, deployment] of Object.entries(registry)) {
-			const age = now - deployment.created
-			if (age > maxAge) {
-				console.log(`[pr-cleanup] PR #${prNumber} is stale (${Math.round(age / (24 * 60 * 60 * 1000))} days old)`)
-				const result = await cleanupPRDeployment(Number(prNumber))
-				if (result.success) {
-					cleaned++
-				}
-			}
-		}
+        let cleaned = 0
+        for (const [prNumber, deployment] of Object.entries(registry)) {
+            const age = now - deployment.created
+            if (age > maxAge) {
+                console.log(`[pr-cleanup] PR #${prNumber} is stale (${Math.round(age / (24 * 60 * 60 * 1000))} days old)`)
+                const result = await cleanupPRDeployment(Number(prNumber))
+                if (result.success) {
+                    cleaned++
+                }
+            }
+        }
 
-		const message = cleaned > 0
-			? `Cleaned up ${cleaned} stale deployment(s)`
-			: 'No stale deployments found'
+        const message = cleaned > 0
+            ? `Cleaned up ${cleaned} stale deployment(s)`
+            : 'No stale deployments found'
 
-		console.log(`[pr-cleanup] ${message}`)
+        console.log(`[pr-cleanup] ${message}`)
 
-		return {cleaned, message}
-	} catch (error) {
-		const message = error instanceof Error ? error.message : String(error)
-		console.error(`[pr-cleanup] Stale cleanup failed: ${message}`)
-		return {cleaned: 0, message: `Cleanup failed: ${message}`}
-	}
+        return {cleaned, message}
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.error(`[pr-cleanup] Stale cleanup failed: ${message}`)
+        return {cleaned: 0, message: `Cleanup failed: ${message}`}
+    }
 }
 
 /**
  * List all PR deployments
  */
 export async function listPRDeployments(): Promise<void> {
-	const registry = await loadPRRegistry()
-	const deployments = Object.values(registry)
+    const registry = await loadPRRegistry()
+    const deployments = Object.values(registry)
 
-	if (deployments.length === 0) {
-		console.log('No active PR deployments')
-		return
-	}
+    if (deployments.length === 0) {
+        console.log('No active PR deployments')
+        return
+    }
 
-	console.log(`\nActive PR Deployments (${deployments.length}):\n`)
+    console.log(`\nActive PR Deployments (${deployments.length}):\n`)
 
-	for (const deployment of deployments) {
-		const ageHours = Math.round((Date.now() - deployment.created) / (60 * 60 * 1000))
+    for (const deployment of deployments) {
+        const ageHours = Math.round((Date.now() - deployment.created) / (60 * 60 * 1000))
 
-		// Discover which packages were deployed
-		const repoDir = `${deployment.directory}/repo`
-		let packagesToShow: string[] = []
+        // Discover which packages were deployed
+        const repoDir = `${deployment.directory}/repo`
+        let packagesToShow: string[] = []
 
-		if (existsSync(repoDir)) {
-			const allPackages = extractWorkspacePackages(repoDir)
-			const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
-			packagesToShow = [...appPackages, 'malkovich'] // Always include malkovich
-		} else {
-			// Fallback: use known packages if repo directory doesn't exist
-			packagesToShow = ['expressio', 'pyrite', 'malkovich']
-		}
+        if (existsSync(repoDir)) {
+            const allPackages = extractWorkspacePackages(repoDir)
+            const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+            packagesToShow = [...appPackages, 'malkovich'] // Always include malkovich
+        } else {
+            // Fallback: use known packages if repo directory doesn't exist
+            packagesToShow = ['expressio', 'pyrite', 'malkovich']
+        }
 
-		console.log(`PR #${deployment.number}:`)
-		console.log(`  Branch: ${deployment.head_ref}`)
-		console.log(`  Author: ${deployment.author}`)
-		console.log(`  Age: ${ageHours} hours`)
+        console.log(`PR #${deployment.number}:`)
+        console.log(`  Branch: ${deployment.head_ref}`)
+        console.log(`  Author: ${deployment.author}`)
+        console.log(`  Age: ${ageHours} hours`)
 
-		// Show URLs for each package
-		console.log(`  URLs:`)
-		for (const packageName of packagesToShow) {
-			const port = deployment.ports[packageName as keyof typeof deployment.ports] || deployment.ports.malkovich
-			console.log(`    ${packageName}: https://pr-${deployment.number}-${packageName}.garage44.org (port ${port})`)
-		}
+        // Show URLs for each package
+        console.log('  URLs:')
+        for (const packageName of packagesToShow) {
+            const port = deployment.ports[packageName as keyof typeof deployment.ports] || deployment.ports.malkovich
+            console.log(`    ${packageName}: https://pr-${deployment.number}-${packageName}.garage44.org (port ${port})`)
+        }
 
-		console.log(`  Status: ${deployment.status}`)
-		console.log('')
-	}
+        console.log(`  Status: ${deployment.status}`)
+        console.log('')
+    }
 }
