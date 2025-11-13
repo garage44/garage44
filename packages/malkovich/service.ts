@@ -273,7 +273,7 @@ const _ = cli.usage('Usage: $0 [task]')
             console.log(`URLs:`)
             for (const packageName of packagesToShow) {
                 const port = result.deployment.ports[packageName as keyof typeof result.deployment.ports] || result.deployment.ports.malkovich
-                console.log(`  ${packageName}: https://pr-${argv.number}.${packageName}.garage44.org (port ${port})`)
+                console.log(`  ${packageName}: https://pr-${argv.number}-${packageName}.garage44.org (port ${port})`)
             }
 
             console.log(`\nNote: Deployment is publicly accessible (no token required)`)

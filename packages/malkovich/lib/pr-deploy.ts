@@ -321,7 +321,7 @@ export async function deployPR(pr: PRMetadata): Promise<{
         console.log('[pr-deploy] URLs (public access, no token required):')
         for (const packageName of packagesToDeploy) {
             const port = portMap[packageName] || deployment.ports.malkovich
-            const subdomain = `pr-${pr.number}.${packageName}.garage44.org`
+            const subdomain = `pr-${pr.number}-${packageName}.garage44.org`
             console.log(`[pr-deploy]   ${packageName}: https://${subdomain} (port ${port})`)
         }
 
@@ -515,7 +515,8 @@ async function generateNginxConfig(deployment: PRDeployment, packagesToDeploy: s
     // Generate nginx config for each package
     for (const packageName of packagesToDeploy) {
         const port = portMap[packageName] || deployment.ports.malkovich
-        const subdomain = `pr-${prNumber}.${packageName}.${baseDomain}`
+        // Use single-level subdomain (pr-999-malkovich.garage44.org) to work with *.garage44.org wildcard cert
+        const subdomain = `pr-${prNumber}-${packageName}.${baseDomain}`
         const configFile = `/etc/nginx/sites-available/${subdomain}`
         const enabledLink = `/etc/nginx/sites-enabled/${subdomain}`
 

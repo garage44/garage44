@@ -66,7 +66,7 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
 
 			// Remove nginx configs for each package subdomain
 			for (const packageName of packagesToClean) {
-				const subdomain = `pr-${prNumber}.${packageName}.garage44.org`
+				const subdomain = `pr-${prNumber}-${packageName}.garage44.org`
 				await $`sudo rm -f /etc/nginx/sites-enabled/${subdomain}`.quiet()
 				await $`sudo rm -f /etc/nginx/sites-available/${subdomain}`.quiet()
 			}
@@ -182,7 +182,7 @@ export async function listPRDeployments(): Promise<void> {
 		console.log(`  URLs:`)
 		for (const packageName of packagesToShow) {
 			const port = deployment.ports[packageName as keyof typeof deployment.ports] || deployment.ports.malkovich
-			console.log(`    ${packageName}: https://pr-${deployment.number}.${packageName}.garage44.org (port ${port})`)
+			console.log(`    ${packageName}: https://pr-${deployment.number}-${packageName}.garage44.org (port ${port})`)
 		}
 
 		console.log(`  Status: ${deployment.status}`)
