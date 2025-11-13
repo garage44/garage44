@@ -6,6 +6,7 @@ import {
 	removePRDeployment,
 	updatePRDeployment,
 } from './pr-registry'
+import {extractWorkspacePackages, isApplicationPackage} from './workspace'
 
 /**
  * Cleanup a specific PR deployment
@@ -48,15 +49,32 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
 
 		await $`sudo systemctl daemon-reload`.quiet()
 
-		// Remove nginx configuration
+		// Remove nginx configurations for all package subdomains
 		try {
-			const domain = `pr-${prNumber}.garage44.org`
-			await $`sudo rm -f /etc/nginx/sites-enabled/${domain}`.quiet()
-			await $`sudo rm -f /etc/nginx/sites-available/${domain}`.quiet()
+			// Discover which packages were deployed to determine subdomains
+			const repoDir = `${deployment.directory}/repo`
+			let packagesToClean: string[] = []
+
+			if (existsSync(repoDir)) {
+				const allPackages = extractWorkspacePackages(repoDir)
+				const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+				packagesToClean = [...appPackages, 'malkovich'] // Always include malkovich
+			} else {
+				// Fallback: use known packages if repo directory doesn't exist
+				packagesToClean = ['expressio', 'pyrite', 'malkovich']
+			}
+
+			// Remove nginx configs for each package subdomain
+			for (const packageName of packagesToClean) {
+				const subdomain = `pr-${prNumber}.${packageName}.garage44.org`
+				await $`sudo rm -f /etc/nginx/sites-enabled/${subdomain}`.quiet()
+				await $`sudo rm -f /etc/nginx/sites-available/${subdomain}`.quiet()
+			}
+
 			await $`sudo nginx -s reload`.quiet()
-			console.log(`[pr-cleanup] Removed nginx configuration`)
+			console.log(`[pr-cleanup] Removed nginx configurations for ${packagesToClean.length} package(s)`)
 		} catch (error) {
-			console.warn(`[pr-cleanup] Failed to remove nginx config:`, error)
+			console.warn(`[pr-cleanup] Failed to remove nginx configs:`, error)
 		}
 
 		// Remove deployment directory

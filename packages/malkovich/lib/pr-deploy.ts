@@ -195,7 +195,7 @@ export async function deployPR(pr: PRMetadata): Promise<{
 		await generateSystemdServices(deployment, packagesToDeploy)
 
 		// Generate nginx configuration
-		await generateNginxConfig(deployment)
+		await generateNginxConfig(deployment, packagesToDeploy)
 
 		// Start services
 		console.log(`[pr-deploy] Starting services...`)
@@ -364,61 +364,76 @@ WantedBy=multi-user.target
 /**
  * Generate nginx configuration for PR deployment
  * Public access for contributor PRs (no token required)
+ * Creates separate subdomains for each package: pr-{number}.{package}.garage44.org
  */
-async function generateNginxConfig(deployment: PRDeployment): Promise<void> {
-	const domain = `pr-${deployment.number}.garage44.org`
-	const configFile = `/etc/nginx/sites-available/${domain}`
-	const enabledLink = `/etc/nginx/sites-enabled/${domain}`
+async function generateNginxConfig(deployment: PRDeployment, packagesToDeploy: string[]): Promise<void> {
+	const prNumber = deployment.number
+	const baseDomain = `garage44.org`
 
-	const content = `# PR #${deployment.number} deployment (public access)
+	// Port mapping for packages
+	const portMap: Record<string, number> = {
+		expressio: deployment.ports.expressio,
+		malkovich: deployment.ports.malkovich,
+		pyrite: deployment.ports.pyrite,
+	}
+
+	// Packages that need WebSocket support
+	const websocketPackages = ['expressio', 'pyrite', 'malkovich']
+
+	// Generate nginx config for each package
+	for (const packageName of packagesToDeploy) {
+		const port = portMap[packageName] || deployment.ports.malkovich
+		const subdomain = `pr-${prNumber}.${packageName}.${baseDomain}`
+		const configFile = `/etc/nginx/sites-available/${subdomain}`
+		const enabledLink = `/etc/nginx/sites-enabled/${subdomain}`
+
+		let content = `# PR #${prNumber} - ${packageName} service (subdomain: ${subdomain})
 # Rate limit zone (defined in main nginx.conf if not already present)
 # limit_req_zone $binary_remote_addr zone=pr_public:10m rate=10r/s;
 
+# HTTP to HTTPS redirect
 server {
     listen 80;
-    server_name ${domain};
+    server_name ${subdomain};
     return 301 https://$server_name$request_uri;
 }
 
+# HTTPS server
 server {
     listen 443 ssl;
     http2 on;
-    server_name ${domain};
-    
+    server_name ${subdomain};
+
     # Wildcard SSL certificate
     ssl_certificate /etc/letsencrypt/live/garage44.org/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/garage44.org/privkey.pem;
-    
+
     # SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
     ssl_prefer_server_ciphers on;
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 10m;
-    
+
     # Prevent search engine indexing
     add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
-    
+
     # PR deployment indicator
-    add_header X-PR-Deployment "${deployment.number}" always;
-    
+    add_header X-PR-Deployment "${prNumber}" always;
+
     # Rate limiting for public access
     limit_req zone=pr_public burst=20 nodelay;
     limit_req_status 429;
-    
-    # Malkovich (main)
-    location / {
-        proxy_pass http://localhost:${deployment.ports.malkovich};
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-    
-    # WebSocket
-    location /ws {
-        proxy_pass http://localhost:${deployment.ports.malkovich};
+`
+
+		// Add WebSocket support for packages that need it
+		if (websocketPackages.includes(packageName)) {
+			if (packageName === 'pyrite') {
+				// Pyrite has both /ws and /sfu endpoints
+				content += `
+    # SFU WebSocket endpoint (Galène)
+    location /sfu {
+        proxy_pass http://localhost:${port};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -429,14 +444,55 @@ server {
         proxy_read_timeout 86400;
         proxy_send_timeout 86400;
     }
+`
+			}
+
+			content += `
+    # WebSocket endpoint
+    location /ws {
+        proxy_pass http://localhost:${port};
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+    }
+`
+		}
+
+		// Main location block
+		content += `
+    # Main location
+    location / {
+        proxy_pass http://localhost:${port};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+`
+
+		// Add WebSocket headers to main location for WebSocket packages
+		if (websocketPackages.includes(packageName)) {
+			content += `        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+`
+		}
+
+		content += `    }
 }
 `
 
-	writeFileSync(configFile, content, 'utf-8')
+		writeFileSync(configFile, content, 'utf-8')
 
-	// Create symlink if it doesn't exist
-	if (!existsSync(enabledLink)) {
-		await $`sudo ln -s ${configFile} ${enabledLink}`.quiet()
+		// Create symlink if it doesn't exist
+		if (!existsSync(enabledLink)) {
+			await $`sudo ln -s ${configFile} ${enabledLink}`.quiet()
+		}
 	}
 
 	// Reload nginx

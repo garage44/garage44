@@ -1,0 +1,428 @@
+# PR Deployment Setup Guide
+
+This guide covers deploying the PR deployment system with separate subdomains for each package (e.g., `pr-123.expressio.garage44.org`, `pr-123.pyrite.garage44.org`).
+
+## Prerequisites
+
+- VPS running Linux (Arch Linux recommended)
+- Bun installed on the VPS
+- Nginx installed and configured
+- Git repository cloned to `/home/garage44/garage44`
+- Dedicated user `garage44` created on the VPS
+- Sudo access for the `garage44` user
+- Domain `garage44.org` pointing to your VPS
+
+## Step 1: DNS Configuration
+
+**Critical**: You need wildcard DNS records for PR deployments to work.
+
+Add these DNS records (A records) pointing to your VPS IP:
+
+```
+*.garage44.org          A    <your-vps-ip>
+*.expressio.garage44.org A    <your-vps-ip>
+*.pyrite.garage44.org    A    <your-vps-ip>
+*.malkovich.garage44.org A    <your-vps-ip>
+```
+
+Or use a single wildcard:
+```
+*.garage44.org          A    <your-vps-ip>
+```
+
+This allows subdomains like:
+- `pr-123.expressio.garage44.org`
+- `pr-123.pyrite.garage44.org`
+- `pr-123.malkovich.garage44.org`
+
+## Step 2: Wildcard SSL Certificate
+
+PR deployments use a wildcard SSL certificate to cover all PR subdomains.
+
+**Yes, Let's Encrypt supports wildcard certificates!** However, wildcard certificates require **DNS-01 challenge** authentication (not HTTP-01). The `--standalone` authenticator only supports HTTP-01, which is why it fails for wildcards.
+
+**Why DNS-01?** Let's Encrypt requires DNS-01 challenges for wildcard certificates because they need to verify you control the DNS for the domain, not just the web server.
+
+### Option A: Using DNS Plugin (Recommended - Automated)
+
+If your DNS provider has a certbot plugin, this is the easiest method. Certbot will automatically add and remove the DNS TXT records needed for verification:
+
+```bash
+# Example for Cloudflare
+sudo certbot certonly --dns-cloudflare \
+  --dns-cloudflare-credentials ~/.secrets/cloudflare.ini \
+  -d "*.garage44.org" \
+  -d "garage44.org"
+
+# Example for Route53 (AWS)
+sudo certbot certonly --dns-route53 \
+  -d "*.garage44.org" \
+  -d "garage44.org"
+
+# Example for DigitalOcean
+sudo certbot certonly --dns-digitalocean \
+  --dns-digitalocean-credentials ~/.secrets/digitalocean.ini \
+  -d "*.garage44.org" \
+  -d "garage44.org"
+```
+
+**Note**: You'll need to install the appropriate DNS plugin first:
+```bash
+# For Cloudflare
+sudo pip install certbot-dns-cloudflare
+
+# For Route53
+sudo pip install certbot-dns-route53
+
+# For DigitalOcean
+sudo pip install certbot-dns-digitalocean
+```
+
+### Option B: Manual DNS Challenge (Let's Encrypt with Manual Steps)
+
+If you don't have a DNS plugin, you can use Let's Encrypt with manual DNS challenge. This still uses Let's Encrypt, but requires you to manually add the TXT record:
+
+```bash
+# Request certificate with manual DNS challenge
+sudo certbot certonly --manual --preferred-challenges dns \
+  -d "*.garage44.org" \
+  -d "garage44.org"
+```
+
+Certbot will prompt you to add a TXT record to your DNS. Follow the instructions:
+
+1. Add the TXT record: `_acme-challenge.garage44.org` → `<value-provided-by-certbot>`
+2. Wait for DNS propagation (can take a few minutes)
+3. Press Enter in certbot to continue verification
+
+**Important**: You need to add the TXT record for the wildcard domain (`*.garage44.org`), which means adding it to `_acme-challenge.garage44.org`.
+
+### Option C: Use Existing Certificate (If Already Have Wildcard)
+
+If you already have a wildcard certificate for `*.garage44.org`, you can reuse it:
+
+```bash
+# Check existing certificates
+sudo certbot certificates
+
+# If you have a wildcard cert, it will be listed
+# The PR deployment code uses: /etc/letsencrypt/live/garage44.org/fullchain.pem
+```
+
+Verify the certificate:
+```bash
+sudo certbot certificates
+```
+
+You should see a certificate for `*.garage44.org` that covers all subdomains.
+
+### Certificate Location
+
+The PR deployment code expects the certificate at:
+- Certificate: `/etc/letsencrypt/live/garage44.org/fullchain.pem`
+- Private Key: `/etc/letsencrypt/live/garage44.org/privkey.pem`
+
+If your certificate is stored elsewhere, you may need to create a symlink or update the nginx config generation code.
+
+## Step 3: Configure Nginx Rate Limiting
+
+Add rate limiting for PR deployments to prevent abuse. Edit `/etc/nginx/nginx.conf`:
+
+```bash
+sudo nano /etc/nginx/nginx.conf
+```
+
+Add this inside the `http` block (before any `server` blocks):
+
+```nginx
+# Rate limiting for PR deployments
+limit_req_zone $binary_remote_addr zone=pr_public:10m rate=10r/s;
+```
+
+Test and reload nginx:
+```bash
+sudo nginx -t
+sudo nginx -s reload
+```
+
+## Step 4: Install Cleanup Timer
+
+The cleanup timer automatically removes PR deployments older than 7 days.
+
+```bash
+cd /home/garage44/garage44
+
+# Copy timer and service files
+sudo cp deploy/pr-cleanup.timer /etc/systemd/system/
+sudo cp deploy/pr-cleanup.service /etc/systemd/system/
+
+# Enable and start the timer
+sudo systemctl daemon-reload
+sudo systemctl enable pr-cleanup.timer
+sudo systemctl start pr-cleanup.timer
+
+# Verify timer is active
+systemctl status pr-cleanup.timer
+systemctl list-timers | grep pr-cleanup
+```
+
+## Step 5: Configure Sudo Permissions
+
+The `garage44` user needs sudo permissions to manage PR deployment services and nginx configs.
+
+```bash
+sudo visudo
+```
+
+Add this line (allows specific commands without password):
+
+```
+garage44 ALL=(ALL) NOPASSWD: /bin/systemctl start pr-*, /bin/systemctl stop pr-*, /bin/systemctl restart pr-*, /bin/systemctl daemon-reload, /usr/sbin/nginx -s reload, /bin/rm -f /etc/systemd/system/pr-*.service, /bin/rm -f /etc/nginx/sites-*/pr-*.garage44.org, /bin/ln -s /etc/nginx/sites-available/pr-*.garage44.org /etc/nginx/sites-enabled/pr-*.garage44.org
+```
+
+**Security Note**: These permissions are restricted to PR deployment operations only. The wildcards (`pr-*`) ensure only PR-related services can be managed.
+
+## Step 6: Deploy Latest Code
+
+Pull the latest code with the PR deployment changes:
+
+```bash
+cd /home/garage44/garage44
+git pull origin main
+bun install
+bun run build
+```
+
+Restart the main malkovich service to ensure webhook handler is updated:
+
+```bash
+sudo systemctl restart malkovich.service
+```
+
+## Step 7: Test PR Deployment
+
+Test the deployment system manually before relying on GitHub Actions:
+
+```bash
+cd /home/garage44/garage44
+
+# Deploy a test PR (use a high PR number like 999 to avoid conflicts)
+bun run malkovich deploy-pr \
+  --number 999 \
+  --branch $(git branch --show-current) \
+  --author "test"
+
+# Check deployment status
+bun run malkovich list-pr-deployments
+
+# Test accessing the deployment
+curl -I https://pr-999.expressio.garage44.org
+curl -I https://pr-999.pyrite.garage44.org
+curl -I https://pr-999.malkovich.garage44.org
+```
+
+Expected subdomains:
+- `https://pr-999.expressio.garage44.org`
+- `https://pr-999.pyrite.garage44.org`
+- `https://pr-999.malkovich.garage44.org`
+
+**Note**: Each package gets its own subdomain with the format `pr-{number}.{package}.garage44.org`.
+
+## Step 8: Verify GitHub Actions Secrets
+
+Ensure GitHub Actions has the required secrets configured:
+
+1. Go to your GitHub repository
+2. Settings → Secrets and variables → Actions
+3. Verify these secrets exist:
+   - `WEBHOOK_URL` - Your VPS webhook endpoint (e.g., `https://garage44.org/webhook`)
+   - `WEBHOOK_SECRET` - The same secret used in your VPS webhook handler
+
+## Step 9: Test Automatic Deployment
+
+Create a test PR to verify automatic deployment:
+
+1. Create a new branch: `git checkout -b test-pr-deployment`
+2. Make a small change and commit
+3. Push and create a PR on GitHub
+4. Watch GitHub Actions workflow run
+5. Check for PR comment with deployment URLs
+
+The PR comment should show URLs like:
+- `https://pr-{number}.malkovich.garage44.org`
+- `https://pr-{number}.expressio.garage44.org`
+- `https://pr-{number}.pyrite.garage44.org`
+
+## Step 10: Monitor Deployments
+
+Monitor active PR deployments:
+
+```bash
+# List all active deployments
+bun run malkovich list-pr-deployments
+
+# View service logs
+sudo journalctl -u pr-123-malkovich.service -f
+sudo journalctl -u pr-123-expressio.service -f
+sudo journalctl -u pr-123-pyrite.service -f
+
+# Check service status
+systemctl status pr-123-malkovich.service
+
+# View nginx logs
+sudo tail -f /var/log/nginx/access.log | grep pr-123
+sudo tail -f /var/log/nginx/error.log | grep pr-123
+```
+
+## Troubleshooting
+
+### DNS Issues
+
+If subdomains don't resolve:
+```bash
+# Test DNS resolution
+dig pr-123.expressio.garage44.org
+nslookup pr-123.expressio.garage44.org
+
+# Verify DNS records are correct
+```
+
+### SSL Certificate Issues
+
+If SSL errors occur:
+```bash
+# Check certificate
+sudo certbot certificates
+
+# Test certificate renewal
+sudo certbot renew --dry-run
+
+# Verify certificate covers wildcard
+sudo openssl x509 -in /etc/letsencrypt/live/garage44.org/fullchain.pem -text -noout | grep DNS
+```
+
+### Nginx Configuration Errors
+
+```bash
+# Test nginx configuration
+sudo nginx -t
+
+# Check nginx error logs
+sudo tail -f /var/log/nginx/error.log
+
+# Verify PR subdomain configs exist
+ls -la /etc/nginx/sites-available/pr-*
+ls -la /etc/nginx/sites-enabled/pr-*
+```
+
+### Service Start Failures
+
+```bash
+# Check service logs
+sudo journalctl -u pr-123-malkovich.service -n 100
+
+# Verify ports are available
+netstat -tulpn | grep 40
+
+# Check directory permissions
+ls -la /home/garage44/pr-123/
+
+# Verify systemd units exist
+systemctl list-units pr-123-*
+```
+
+### Cleanup Issues
+
+```bash
+# Manually cleanup a PR deployment
+bun run malkovich cleanup-pr --number 123
+
+# Check cleanup timer status
+systemctl status pr-cleanup.timer
+systemctl status pr-cleanup.service
+
+# Manually run cleanup
+sudo systemctl start pr-cleanup.service
+```
+
+## Important Notes
+
+### Subdomain Format
+
+PR deployments now use the format:
+- `pr-{number}.{package}.garage44.org`
+
+Examples:
+- `pr-123.expressio.garage44.org`
+- `pr-123.pyrite.garage44.org`
+- `pr-123.malkovich.garage44.org`
+
+**Not** the old format:
+- ~~`expressio.pr-123.garage44.org`~~ (incorrect)
+
+### Port Allocation
+
+Ports are automatically allocated:
+- Base: `40000 + (PR# * 3)`
+- Expressio: `base + 0`
+- Malkovich: `base + 1`
+- Pyrite: `base + 2`
+
+Example for PR #123:
+- Expressio: `40369` (40000 + 123*3 + 0)
+- Malkovich: `40370` (40000 + 123*3 + 1)
+- Pyrite: `40371` (40000 + 123*3 + 2)
+
+### Package Discovery
+
+The system automatically discovers which packages to deploy by scanning the workspace. Only application packages (not utilities like `common`, `bunchy`, `enola`) get subdomains.
+
+### Security
+
+- ✅ Only contributor PRs (forks blocked)
+- ✅ Public access (no authentication required)
+- ✅ Rate limited (10 req/s per IP)
+- ✅ Not indexed by search engines
+- ✅ Resource limits (512MB RAM, 50% CPU per service)
+- ✅ Automatic cleanup after 7 days or when PR closes
+
+## Next Steps
+
+After setup is complete:
+
+1. **Monitor first few deployments** to ensure everything works
+2. **Set up monitoring/alerts** for failed deployments
+3. **Document team workflow** for using PR deployments
+4. **Consider adding deployment dashboard** in Malkovich UI
+
+## Quick Reference
+
+```bash
+# Deploy PR manually
+bun run malkovich deploy-pr --number 123 --branch feature-branch
+
+# List deployments
+bun run malkovich list-pr-deployments
+
+# Cleanup specific PR
+bun run malkovich cleanup-pr --number 123
+
+# Cleanup stale deployments
+bun run malkovich cleanup-stale-prs
+
+# View logs
+sudo journalctl -u pr-123-malkovich.service -f
+
+# Check nginx configs
+ls -la /etc/nginx/sites-available/pr-*
+```
+
+## Support
+
+If you encounter issues:
+
+1. Check logs: `sudo journalctl -u pr-123-* -f`
+2. Verify DNS: `dig pr-123.expressio.garage44.org`
+3. Test nginx: `sudo nginx -t`
+4. Check certificates: `sudo certbot certificates`
+5. Review this guide for common issues

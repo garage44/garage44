@@ -8,11 +8,11 @@ jobs:
   deploy:
     name: Deploy or Cleanup PR
     runs-on: ubuntu-latest
-    
+
     # SECURITY: Only deploy PRs from main repo (no forks)
     # This ensures only contributors can trigger deployments
     if: github.event.pull_request.head.repo.full_name == github.repository
-    
+
     steps:
       - name: Deploy PR
         if: github.event.action != 'closed'
@@ -42,26 +42,26 @@ jobs:
               "action": $action,
               "pull_request": $pr
             }')
-          
+
           # Calculate HMAC signature
           SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" -binary | xxd -p -c 256)
-          
+
           # Send webhook
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -H "X-GitHub-Event: pull_request" \
             -H "X-Hub-Signature-256: sha256=$SIGNATURE" \
             -d "$PAYLOAD")
-          
+
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | head -n-1)
-          
+
           echo "Response body: $BODY"
           echo "HTTP code: $HTTP_CODE"
-          
+
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             echo "✅ PR deployment triggered (HTTP $HTTP_CODE)"
-            
+
             # Store PR number for comment step
             echo "deployment_triggered=true" >> $GITHUB_OUTPUT
             echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
@@ -69,36 +69,36 @@ jobs:
             echo "❌ PR deployment failed (HTTP $HTTP_CODE)"
             exit 1
           fi
-      
+
       - name: Wait for deployment
         if: steps.deploy.outputs.deployment_triggered == 'true'
         run: |
           echo "Waiting 30 seconds for deployment to complete..."
           sleep 30
-      
+
       - name: Comment PR with deployment URL
         if: steps.deploy.outputs.deployment_triggered == 'true'
         uses: actions/github-script@v7
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
-            const domain = `pr-${prNumber}.garage44.org`;
-            
+            const baseDomain = `garage44.org`;
+
             const body = `🚀 **PR Deployment Available**\n\n` +
               `Your changes have been deployed and are publicly accessible:\n\n` +
-              `- **Malkovich**: https://${domain}\n` +
-              `- **Expressio**: https://expressio.${domain}\n` +
-              `- **Pyrite**: https://pyrite.${domain}\n\n` +
+              `- **Malkovich**: https://pr-${prNumber}.malkovich.${baseDomain}\n` +
+              `- **Expressio**: https://pr-${prNumber}.expressio.${baseDomain}\n` +
+              `- **Pyrite**: https://pr-${prNumber}.pyrite.${baseDomain}\n\n` +
               `✅ No authentication required - public access for contributors.\n\n` +
               `_This deployment will be automatically cleaned up when the PR is closed or after 7 days._`;
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
               body: body
             });
-      
+
       - name: Cleanup PR Deployment
         if: github.event.action == 'closed'
         env:
@@ -114,19 +114,19 @@ jobs:
               "action": "closed",
               "pull_request": $pr
             }')
-          
+
           # Calculate signature
           SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" -binary | xxd -p -c 256)
-          
+
           # Send webhook
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -H "X-GitHub-Event: pull_request" \
             -H "X-Hub-Signature-256: sha256=$SIGNATURE" \
             -d "$PAYLOAD")
-          
+
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          
+
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             echo "✅ PR deployment cleaned up (HTTP $HTTP_CODE)"
           else
