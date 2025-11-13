@@ -171,16 +171,35 @@ export async function deployPR(pr: PRMetadata): Promise<{
         console.log('[pr-deploy] Installing dependencies...')
         const installResult = await $`bun install`.quiet()
         if (installResult.exitCode !== 0) {
+            const stderr = installResult.stderr?.toString() || ''
+            const stdout = installResult.stdout?.toString() || ''
+            const errorDetails = stderr || stdout || 'Unknown install error'
+            console.error(`[pr-deploy] Install failed with exit code ${installResult.exitCode}`)
+            console.error(`[pr-deploy] Install output: ${errorDetails}`)
             await updatePRDeployment(pr.number, {status: 'failed'})
-            throw new Error('Failed to install dependencies')
+            throw new Error(`Failed to install dependencies: ${errorDetails.slice(0, 200)}`)
         }
 
         // Build packages
         console.log('[pr-deploy] Building packages...')
-        const buildResult = await $`bun run build`.quiet()
-        if (buildResult.exitCode !== 0) {
+        try {
+            const buildResult = await $`bun run build`.quiet()
+            if (buildResult.exitCode !== 0) {
+                // Try to get error output - with quiet() we may need to run again without quiet
+                console.error(`[pr-deploy] Build failed with exit code ${buildResult.exitCode}`)
+                console.error('[pr-deploy] Re-running build to capture error output...')
+                const errorResult = await $`bun run build`.nothrow()
+                const errorOutput = errorResult.stderr?.toString() || errorResult.stdout?.toString() || 'Unknown build error'
+                console.error(`[pr-deploy] Build error: ${errorOutput}`)
+                await updatePRDeployment(pr.number, {status: 'failed'})
+                throw new Error(`Build failed: ${errorOutput.slice(0, 500)}`)
+            }
+        } catch (error) {
+            if (error instanceof Error && error.message.includes('Build failed')) {
+                throw error
+            }
             await updatePRDeployment(pr.number, {status: 'failed'})
-            throw new Error('Build failed')
+            throw new Error(`Build failed: ${error instanceof Error ? error.message : String(error)}`, {cause: error})
         }
 
         // Discover which packages to deploy
@@ -200,10 +219,10 @@ export async function deployPR(pr: PRMetadata): Promise<{
         console.log('[pr-deploy] Starting services...')
         for (const packageName of packagesToDeploy) {
             const startResult = await $`sudo systemctl start pr-${pr.number}-${packageName}.service`.quiet()
-            if (startResult.exitCode !== 0) {
-                console.warn(`[pr-deploy] Failed to start ${packageName} service`)
-            } else {
+            if (startResult.exitCode === 0) {
                 console.log(`[pr-deploy] Started ${packageName} service`)
+            } else {
+                console.warn(`[pr-deploy] Failed to start ${packageName} service`)
             }
         }
 

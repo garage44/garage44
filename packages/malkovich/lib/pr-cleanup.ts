@@ -159,12 +159,32 @@ export async function listPRDeployments(): Promise<void> {
 
 	for (const deployment of deployments) {
 		const ageHours = Math.round((Date.now() - deployment.created) / (60 * 60 * 1000))
+
+		// Discover which packages were deployed
+		const repoDir = `${deployment.directory}/repo`
+		let packagesToShow: string[] = []
+
+		if (existsSync(repoDir)) {
+			const allPackages = extractWorkspacePackages(repoDir)
+			const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+			packagesToShow = [...appPackages, 'malkovich'] // Always include malkovich
+		} else {
+			// Fallback: use known packages if repo directory doesn't exist
+			packagesToShow = ['expressio', 'pyrite', 'malkovich']
+		}
+
 		console.log(`PR #${deployment.number}:`)
 		console.log(`  Branch: ${deployment.head_ref}`)
 		console.log(`  Author: ${deployment.author}`)
 		console.log(`  Age: ${ageHours} hours`)
-		console.log(`  URL: https://pr-${deployment.number}.garage44.org`)
-		console.log(`  Ports: ${deployment.ports.malkovich} (malkovich), ${deployment.ports.expressio} (expressio), ${deployment.ports.pyrite} (pyrite)`)
+
+		// Show URLs for each package
+		console.log(`  URLs:`)
+		for (const packageName of packagesToShow) {
+			const port = deployment.ports[packageName as keyof typeof deployment.ports] || deployment.ports.malkovich
+			console.log(`    ${packageName}: https://pr-${deployment.number}.${packageName}.garage44.org (port ${port})`)
+		}
+
 		console.log(`  Status: ${deployment.status}`)
 		console.log('')
 	}
