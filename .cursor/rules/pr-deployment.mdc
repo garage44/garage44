@@ -1,5 +1,5 @@
 ---
-description: "PR deployment testing workflow - guides AI to use public PR addresses for testing newly built features"
+description: "PR deployment testing workflow - guides AI to test newly built features on automatically created PR deployments"
 globs:
   - "**/*"
 alwaysApply: true
@@ -7,21 +7,23 @@ alwaysApply: true
 
 # Garage44 PR Deployment Testing Rules
 
-This file contains rules for AI assistants to use PR deployments for testing newly built features.
+This file contains rules for AI assistants to test newly built features on PR deployments that are automatically created for each PR.
 
 ## Overview
 
-PR deployments provide isolated, publicly accessible testing environments for each PR branch. Agents should use these deployments to verify features work correctly before marking tasks as complete.
+PR deployments are **automatically created** when a PR is opened or updated. Each PR gets an isolated, publicly accessible testing environment. Agents should use these deployments to verify features work correctly before marking tasks as complete.
 
 **Key Points:**
+- PR deployments are automatically created by GitHub Actions when PRs are opened/updated
+- Deployment URL is posted as a comment on the PR by the GitHub Actions bot
 - PR deployments are publicly accessible at `https://pr-{number}.garage44.org` (no authentication required)
 - Each PR gets an isolated environment with its own ports, database, and directory
 - Deployments are automatically cleaned up after 7 days or when PR is closed
 - Only contributor PRs are deployed (forks are blocked)
 
-## When to Deploy for Testing
+## When to Test on PR Deployment
 
-**Always deploy and test when:**
+**Always test on PR deployment when:**
 - ✅ Implementing a new feature that requires end-to-end verification
 - ✅ Fixing bugs that need live environment testing
 - ✅ Making UI changes that need visual verification
@@ -35,51 +37,81 @@ PR deployments provide isolated, publicly accessible testing environments for ea
 - 🔄 Performance optimizations that need real-world testing
 - 🔄 Database migrations or schema changes
 
-**Skip deployment for:**
+**Skip testing for:**
 - ❌ Pure documentation changes
 - ❌ Type-only changes (TypeScript types, no runtime impact)
 - ❌ Linter/formatting fixes only
 - ❌ Test-only changes
 
-## Deployment Workflow
+## Finding the PR Deployment URL
 
-### 1. Deploy Current Branch
+### Method 1: Check PR Comments (Recommended)
 
-After implementing a feature, deploy it for testing:
+GitHub Actions automatically posts the deployment URL as a comment on the PR:
+
+```
+🚀 **PR Deployment Available**
+
+Malkovich: https://pr-123.garage44.org
+Expressio: https://pr-123.garage44.org
+Pyrite: https://pr-123.garage44.org
+
+_This deployment will be automatically cleaned up when the PR is closed._
+```
+
+**Look for:**
+- Comments from GitHub Actions bot
+- Comments containing "PR Deployment Available"
+- URLs matching pattern `https://pr-{number}.garage44.org`
+
+### Method 2: Construct from PR Number
+
+If you know the PR number, construct the URL:
+
+```
+https://pr-{PR_NUMBER}.garage44.org
+```
+
+**Example:**
+- PR #123 → `https://pr-123.garage44.org`
+- PR #456 → `https://pr-456.garage44.org`
+
+### Method 3: Check GitHub Actions
+
+If the deployment comment isn't visible:
+1. Go to PR → "Checks" tab
+2. Find "PR Deployment" workflow run
+3. Check workflow output for deployment URL
+
+## Testing Workflow
+
+### 1. Find Deployment URL
+
+After implementing a feature and creating/updating a PR:
 
 ```bash
-# Deploy current branch as PR #999 (use high numbers for agent testing)
-bun run malkovich deploy-pr \
-  --number 999 \
-  --branch $(git branch --show-current)
+# Check PR comments for deployment URL
+# Or construct: https://pr-{PR_NUMBER}.garage44.org
 ```
 
-**Output:**
-```
-✅ PR Deployment Successful!
+**Example:**
+- PR #123 → Deployment URL: `https://pr-123.garage44.org`
 
-URL: https://pr-999.garage44.org
-Malkovich: https://pr-999.garage44.org
+### 2. Verify Deployment is Ready
 
-Ports:
-  Malkovich: 40000
-  Expressio: 40001
-  Pyrite: 40002
-
-Note: Deployment is publicly accessible (no token required)
-```
-
-### 2. Verify Deployment
-
-Always verify the deployment is working before testing:
+Before testing, verify the deployment is accessible:
 
 ```bash
 # Check HTTP response
-curl -I https://pr-999.garage44.org
+curl -I https://pr-123.garage44.org
 
-# Check service status (if on VPS)
-sudo systemctl status pr-999-malkovich.service
+# Expected: HTTP 200 or 302 (redirect)
 ```
+
+**If deployment isn't ready:**
+- Wait a few minutes for GitHub Actions to complete
+- Check GitHub Actions workflow status
+- Verify PR is from a contributor (not a fork)
 
 ### 3. Test the Feature
 
@@ -94,213 +126,204 @@ Access the deployment URL and test the newly built feature:
 **Example testing commands:**
 ```bash
 # Test API endpoint
-curl https://pr-999.garage44.org/api/workspaces
+curl https://pr-123.garage44.org/api/workspaces
 
-# Test WebSocket (use browser dev tools or wscat)
+# Test WebSocket (use browser dev tools)
+# Open https://pr-123.garage44.org in browser
 # Open browser console and check WebSocket connections
 
-# Visual testing: Open https://pr-999.garage44.org in browser
+# Visual testing: Open https://pr-123.garage44.org in browser
 ```
 
-### 4. Report Results
+### 4. Report Test Results
 
 After testing, report the results:
 
 ```
-✅ Feature deployed and tested at https://pr-999.garage44.org
+✅ Feature tested on PR deployment at https://pr-123.garage44.org
 - UI changes verified: [describe what was tested]
 - API endpoints working: [list endpoints tested]
+- WebSocket functionality: [describe real-time features tested]
 - No issues found / Issues found: [describe any problems]
 ```
 
-### 5. Clean Up (Optional)
-
-For agent testing deployments (PR #900+), clean up after verification:
-
-```bash
-# Clean up test deployment
-bun run malkovich cleanup-pr --number 999
-```
-
-**Note**: For real PRs, deployments are automatically cleaned up when PR is closed.
-
-## Agent Testing Best Practices
-
-### Use High PR Numbers
-
-Use PR numbers 900+ for agent testing to avoid conflicts with real PRs:
-
-```bash
-bun run malkovich deploy-pr --number 999 --branch feature/my-feature
-bun run malkovich deploy-pr --number 998 --branch fix/my-bug
-```
-
-### Check Active Deployments
-
-Before deploying, check if a PR number is already in use:
-
-```bash
-bun run malkovich list-pr-deployments
-```
-
-### Deploy After Significant Changes
-
-Deploy after completing a feature, not after every small commit:
-
-```bash
-# After implementing feature
-git add .
-git commit -m "Implement batch translation feature"
-bun run malkovich deploy-pr --number 999 --branch feature/batch-translations
-```
-
-### Test Multiple Scenarios
-
-When testing, verify multiple scenarios:
-
-- ✅ Happy path (normal usage)
-- ✅ Edge cases (empty data, large datasets)
-- ✅ Error handling (invalid inputs, network errors)
-- ✅ Cross-browser (if UI changes)
-
-### Share Deployment URL
-
-When reporting completion, include the deployment URL:
-
-```
-✅ Feature complete and tested!
-
-Deployment: https://pr-999.garage44.org
-- Batch translation UI working correctly
-- API endpoints responding as expected
-- WebSocket updates functioning properly
-```
-
-## Common Testing Scenarios
+## Testing Scenarios
 
 ### Testing UI Changes
 
 ```bash
-# 1. Deploy
-bun run malkovich deploy-pr --number 999 --branch feature/new-ui
+# 1. Find deployment URL (from PR comment or construct)
+# Example: https://pr-123.garage44.org
 
 # 2. Open in browser
-# Navigate to https://pr-999.garage44.org
+# Navigate to https://pr-123.garage44.org
 
 # 3. Test interactions
 # - Click buttons, fill forms, navigate pages
 # - Check responsive design
 # - Verify accessibility (keyboard navigation, screen readers)
+# - Test on different screen sizes
 
 # 4. Report
-✅ UI changes deployed and tested at https://pr-999.garage44.org
+✅ UI changes tested on PR deployment at https://pr-123.garage44.org
+- All interactions working correctly
+- Responsive design verified
+- Accessibility checks passed
 ```
 
 ### Testing API Changes
 
 ```bash
-# 1. Deploy
-bun run malkovich deploy-pr --number 999 --branch feature/new-api
+# 1. Find deployment URL
+# Example: https://pr-123.garage44.org
 
 # 2. Test endpoints
-curl https://pr-999.garage44.org/api/workspaces
-curl -X POST https://pr-999.garage44.org/api/translations \
+curl https://pr-123.garage44.org/api/workspaces
+curl -X POST https://pr-123.garage44.org/api/translations \
   -H "Content-Type: application/json" \
   -d '{"key": "test", "value": "value"}'
 
 # 3. Verify responses
 # Check status codes, response bodies, error handling
+# Test edge cases (empty data, invalid inputs)
 
 # 4. Report
-✅ API changes deployed and tested at https://pr-999.garage44.org
+✅ API changes tested on PR deployment at https://pr-123.garage44.org
+- GET /api/workspaces: Working correctly
+- POST /api/translations: Working correctly
+- Error handling: Verified
 ```
 
 ### Testing WebSocket Features
 
 ```bash
-# 1. Deploy
-bun run malkovich deploy-pr --number 999 --branch feature/realtime-updates
+# 1. Find deployment URL
+# Example: https://pr-123.garage44.org
 
 # 2. Open browser console
-# Navigate to https://pr-999.garage44.org
-# Open browser dev tools → Console
+# Navigate to https://pr-123.garage44.org
+# Open browser dev tools → Console → Network → WS
 
 # 3. Test WebSocket
 # - Verify connection established
 # - Trigger events that should send WebSocket messages
 # - Verify messages received correctly
-# - Test reconnection behavior
+# - Test reconnection behavior (disconnect network briefly)
 
 # 4. Report
-✅ WebSocket features deployed and tested at https://pr-999.garage44.org
+✅ WebSocket features tested on PR deployment at https://pr-123.garage44.org
+- Connection established successfully
+- Real-time updates working correctly
+- Reconnection handling verified
 ```
 
 ### Testing Multi-Package Changes
 
 ```bash
-# 1. Deploy (all packages deployed together)
-bun run malkovich deploy-pr --number 999 --branch feature/cross-package
+# 1. Find deployment URL
+# Example: https://pr-123.garage44.org
 
 # 2. Test each package
-# - Malkovich: https://pr-999.garage44.org
-# - Expressio: https://pr-999.garage44.org (port 40001)
-# - Pyrite: https://pr-999.garage44.org (port 40002)
+# - Malkovich: https://pr-123.garage44.org
+# - Expressio: https://pr-123.garage44.org (via nginx routing)
+# - Pyrite: https://pr-123.garage44.org (via nginx routing)
 
 # 3. Test integration
 # - Verify packages communicate correctly
 # - Test shared state/WebSocket connections
 # - Check cross-package API calls
+# - Verify data flows between packages
 
 # 4. Report
-✅ Multi-package changes deployed and tested at https://pr-999.garage44.org
+✅ Multi-package changes tested on PR deployment at https://pr-123.garage44.org
+- All packages accessible and working
+- Cross-package communication verified
+- Shared state synchronized correctly
+```
+
+## Testing Best Practices
+
+### Test Multiple Scenarios
+
+When testing, verify multiple scenarios:
+
+- ✅ **Happy path**: Normal usage flows work correctly
+- ✅ **Edge cases**: Empty data, large datasets, boundary conditions
+- ✅ **Error handling**: Invalid inputs, network errors, server errors
+- ✅ **Cross-browser**: Test on different browsers (if UI changes)
+- ✅ **Responsive design**: Test on different screen sizes (if UI changes)
+
+### Test After Each Significant Change
+
+Test on PR deployment after:
+- Completing a feature implementation
+- Fixing a bug
+- Making significant refactoring changes
+- Updating dependencies that might affect runtime
+
+### Document Test Results
+
+Always include:
+- Deployment URL used for testing
+- What was tested (features, endpoints, scenarios)
+- Test results (working / issues found)
+- Any issues discovered and their status
+
+**Example:**
+```
+✅ Feature tested on PR deployment
+
+**Deployment**: https://pr-123.garage44.org
+
+**Tested:**
+- Batch translation UI: Working correctly
+- API endpoint POST /api/translations/batch: Responding as expected
+- WebSocket updates: Real-time updates functioning properly
+- Error handling: Invalid inputs handled gracefully
+
+**Status**: All tests passed, feature ready for review
 ```
 
 ## Troubleshooting
 
-### Deployment Fails
+### Deployment Not Available
 
-**Check build logs:**
-```bash
-sudo journalctl -u pr-999-malkovich.service -n 100
-```
+**If deployment URL isn't in PR comments:**
+1. Check GitHub Actions workflow status (PR → Checks tab)
+2. Wait a few minutes for deployment to complete
+3. Construct URL manually: `https://pr-{PR_NUMBER}.garage44.org`
+4. Verify PR is from a contributor (not a fork)
 
-**Common issues:**
-- Build failure: Check package.json scripts, dependencies
-- Port conflict: Use different PR number
-- Permission error: Check sudo permissions
+**If deployment URL returns 404 or error:**
+1. Check if PR is still open (deployments cleaned up when PR closes)
+2. Verify deployment completed successfully in GitHub Actions
+3. Check if deployment is older than 7 days (auto-cleanup)
+
+### Feature Not Working on Deployment
+
+**If feature works locally but not on deployment:**
+1. Verify latest code is deployed (check GitHub Actions commit SHA)
+2. Check browser console for errors
+3. Verify environment variables are set correctly (if applicable)
+4. Check deployment logs (if accessible)
+
+**If feature behavior differs from local:**
+1. Check if database state differs (PR deployments use separate databases)
+2. Verify environment configuration matches expectations
+3. Check for caching issues (hard refresh browser)
 
 ### Can't Access Deployment
 
-**Check nginx:**
-```bash
-sudo nginx -t
-sudo systemctl status nginx
-```
-
-**Check service status:**
-```bash
-sudo systemctl status pr-999-malkovich.service
-sudo systemctl status pr-999-expressio.service
-sudo systemctl status pr-999-pyrite.service
-```
-
-### Feature Not Working
-
-**Check logs:**
-```bash
-# Real-time logs
-sudo journalctl -u pr-999-malkovich.service -f
-```
-
-**Verify deployment:**
-- Check if latest code is deployed (git log in deployment directory)
-- Verify environment variables are set correctly
-- Check database state if applicable
+**If URL doesn't load:**
+1. Verify URL format: `https://pr-{NUMBER}.garage44.org` (not `http://`)
+2. Check if deployment is still active (PR not closed, not older than 7 days)
+3. Try different browser or incognito mode
+4. Check network connectivity
 
 ## Security Notes
 
 **What's Protected:**
-- ✅ Fork PRs blocked (only contributors)
+- ✅ Fork PRs blocked (only contributors get deployments)
 - ✅ Rate limited (10 req/s per IP)
 - ✅ Not indexed by search engines
 - ✅ Resource limited (512MB RAM, 50% CPU per service)
@@ -312,46 +335,31 @@ sudo journalctl -u pr-999-malkovich.service -f
 - ⚠️ Test data visible (use dummy data only)
 
 **Agent Considerations:**
-- Don't deploy sensitive data or secrets
-- Don't deploy untested/unstable code to long-lived PRs
-- Use test PR numbers (900+) for experiments
-- Clean up test deployments promptly
-- Verify deployment before sharing URL
-
-## Integration with GitHub PRs
-
-When a real PR is opened on GitHub:
-1. GitHub Actions automatically triggers deployment
-2. Deployment URL is posted as PR comment
-3. Agent can reference: "Changes are live at the PR deployment URL posted by the bot"
-
-**For agent-created PRs:**
-- Deploy manually using `bun run malkovich deploy-pr`
-- Include deployment URL in PR description or comments
-- Test before requesting review
+- Don't include sensitive data or secrets in PRs
+- Use test/dummy data for PR deployments
+- Verify deployment before sharing URL with users
+- Report any security concerns found during testing
 
 ## Summary
 
 **For Cursor Agents:**
 
-✅ **Deploy**: `bun run malkovich deploy-pr --number 999 --branch $(git branch --show-current)`
+✅ **Find Deployment**: Check PR comments for deployment URL posted by GitHub Actions bot, or construct `https://pr-{PR_NUMBER}.garage44.org`
 
-✅ **Test**: Access `https://pr-999.garage44.org` and verify feature works
+✅ **Test**: Access the deployment URL and verify the feature works correctly
 
 ✅ **Report**: Include deployment URL and test results in completion message
 
-✅ **Cleanup**: `bun run malkovich cleanup-pr --number 999` (for test deployments)
-
 **Key Workflow:**
-1. Implement feature
-2. Deploy to PR environment
-3. Test feature on live deployment
-4. Report results with deployment URL
-5. Clean up test deployments (optional)
+1. Implement feature and create/update PR
+2. Wait for GitHub Actions to create deployment (automatic)
+3. Find deployment URL from PR comments or construct it
+4. Test feature on live deployment
+5. Report results with deployment URL
 
 **Remember:**
+- PR deployments are **automatically created** - no manual deployment needed
 - Always test newly built features on PR deployment before marking complete
-- Use PR numbers 900+ for agent testing
-- Share deployment URL when reporting completion
-- Verify deployment works before testing
+- Find deployment URL from PR comments (GitHub Actions bot) or construct from PR number
 - Test multiple scenarios (happy path, edge cases, errors)
+- Report test results with deployment URL and what was tested
