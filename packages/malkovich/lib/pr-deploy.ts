@@ -8,12 +8,31 @@ import {
     updatePRDeployment,
     type PRDeployment,
 } from './pr-registry'
-import {extractWorkspacePackages, isApplicationPackage} from './workspace'
+import {extractWorkspacePackages, isApplicationPackage, findWorkspaceRoot} from './workspace'
 
 const PR_DEPLOYMENTS_DIR = path.join(homedir(), 'garage44')
 const PR_PORT_BASE = 40000
 const PR_PORT_RANGE = 10000
-const MAIN_REPO_PATH = process.env.REPO_PATH || path.join(homedir(), 'garage44/garage44')
+
+// Determine the main repository path
+// On VPS: use REPO_PATH env var or default to /home/garage44/garage44
+// Locally: use the current workspace root
+function getMainRepoPath(): string {
+    if (process.env.REPO_PATH) {
+        return process.env.REPO_PATH
+    }
+
+    // Try to find the workspace root (for local development)
+    const workspaceRoot = findWorkspaceRoot()
+    if (workspaceRoot) {
+        return workspaceRoot
+    }
+
+    // Fallback to VPS default
+    return path.join(homedir(), 'garage44/garage44')
+}
+
+const MAIN_REPO_PATH = getMainRepoPath()
 
 export interface PRMetadata {
     author: string
@@ -142,18 +161,30 @@ export async function deployPR(pr: PRMetadata): Promise<{
         await addPRDeployment(deployment)
 
         // Clone or pull repository
-        if (!existsSync(repoDir)) {
+        if (existsSync(repoDir)) {
+            console.log('[pr-deploy] Repository directory already exists, skipping clone')
+        } else {
             console.log('[pr-deploy] Cloning repository...')
-            const cloneResult = await $`git clone ${MAIN_REPO_PATH} ${repoDir}`.quiet()
+            console.log(`[pr-deploy] Source: ${MAIN_REPO_PATH}`)
+            console.log(`[pr-deploy] Target: ${repoDir}`)
+            const cloneResult = await $`git clone ${MAIN_REPO_PATH} ${repoDir}`.nothrow()
             if (cloneResult.exitCode !== 0) {
+                const stderr = cloneResult.stderr?.toString() || ''
+                const stdout = cloneResult.stdout?.toString() || ''
+                const errorDetails = stderr || stdout || 'Unknown clone error'
+                console.error(`[pr-deploy] Clone failed with exit code ${cloneResult.exitCode}`)
+                console.error(`[pr-deploy] Clone stderr: ${stderr}`)
+                console.error(`[pr-deploy] Clone stdout: ${stdout}`)
                 await updatePRDeployment(pr.number, {status: 'failed'})
-                throw new Error('Failed to clone repository')
+                throw new Error(`Failed to clone repository: ${errorDetails.slice(0, 500)}`)
             }
+            console.log('[pr-deploy] Repository cloned successfully')
         }
 
         // Fetch and checkout PR branch
         console.log(`[pr-deploy] Checking out PR branch ${pr.head_ref}...`)
         process.chdir(repoDir)
+        console.log(`[pr-deploy] Working directory: ${process.cwd()}`)
 
         const fetchResult = await $`git fetch origin ${pr.head_ref}`.quiet()
         if (fetchResult.exitCode !== 0) {
@@ -166,34 +197,64 @@ export async function deployPR(pr: PRMetadata): Promise<{
             await updatePRDeployment(pr.number, {status: 'failed'})
             throw new Error('Failed to checkout PR commit')
         }
+        console.log(`[pr-deploy] Checked out commit: ${pr.head_sha}`)
 
-        // Install dependencies
+        // Install dependencies (must be run from workspace root)
         console.log('[pr-deploy] Installing dependencies...')
-        const installResult = await $`bun install`.quiet()
+        console.log(`[pr-deploy] Installing from: ${process.cwd()}`)
+        
+        // Check if bun.lock exists, if not we might need to copy it or regenerate
+        const lockFile = path.join(repoDir, 'bun.lock')
+        if (!existsSync(lockFile)) {
+            console.log('[pr-deploy] No bun.lock found, will install fresh dependencies')
+        }
+        
+        const installResult = await $`bun install --frozen-lockfile=false`.nothrow()
         if (installResult.exitCode !== 0) {
             const stderr = installResult.stderr?.toString() || ''
             const stdout = installResult.stdout?.toString() || ''
             const errorDetails = stderr || stdout || 'Unknown install error'
             console.error(`[pr-deploy] Install failed with exit code ${installResult.exitCode}`)
-            console.error(`[pr-deploy] Install output: ${errorDetails}`)
-            await updatePRDeployment(pr.number, {status: 'failed'})
-            throw new Error(`Failed to install dependencies: ${errorDetails.slice(0, 200)}`)
+            console.error(`[pr-deploy] Install stderr: ${stderr}`)
+            console.error(`[pr-deploy] Install stdout: ${stdout}`)
+            
+            // Try installing without frozen lockfile as fallback
+            console.log('[pr-deploy] Retrying install without frozen lockfile...')
+            const retryResult = await $`bun install`.nothrow()
+            if (retryResult.exitCode !== 0) {
+                await updatePRDeployment(pr.number, {status: 'failed'})
+                throw new Error(`Failed to install dependencies: ${errorDetails.slice(0, 500)}`)
+            }
+        }
+        console.log('[pr-deploy] Dependencies installed successfully')
+        
+        // Verify catalog dependencies are resolved
+        console.log('[pr-deploy] Verifying catalog dependencies...')
+        const testImport = await $`bun -e "import('@preact/signals').then(() => console.log('OK')).catch(e => {console.error('FAIL:', e.message); process.exit(1)})"`.nothrow()
+        if (testImport.exitCode === 0) {
+            console.log('[pr-deploy] Catalog dependencies verified')
+        } else {
+            const testError = testImport.stderr?.toString() || testImport.stdout?.toString() || ''
+            console.warn(`[pr-deploy] Catalog dependency check failed: ${testError}`)
+            console.warn('[pr-deploy] This may cause build issues, but continuing...')
         }
 
         // Build packages
         console.log('[pr-deploy] Building packages...')
         try {
-            const buildResult = await $`bun run build`.quiet()
+            // Run build without quiet() first to capture any errors
+            const buildResult = await $`bun run build`.nothrow()
             if (buildResult.exitCode !== 0) {
-                // Try to get error output - with quiet() we may need to run again without quiet
+                const stderr = buildResult.stderr?.toString() || ''
+                const stdout = buildResult.stdout?.toString() || ''
+                const errorOutput = stderr || stdout || 'Unknown build error'
                 console.error(`[pr-deploy] Build failed with exit code ${buildResult.exitCode}`)
-                console.error('[pr-deploy] Re-running build to capture error output...')
-                const errorResult = await $`bun run build`.nothrow()
-                const errorOutput = errorResult.stderr?.toString() || errorResult.stdout?.toString() || 'Unknown build error'
-                console.error(`[pr-deploy] Build error: ${errorOutput}`)
+                console.error(`[pr-deploy] Build stderr: ${stderr}`)
+                console.error(`[pr-deploy] Build stdout: ${stdout}`)
                 await updatePRDeployment(pr.number, {status: 'failed'})
-                throw new Error(`Build failed: ${errorOutput.slice(0, 500)}`)
+                throw new Error(`Build failed: ${errorOutput.slice(0, 1000)}`)
             }
+            console.log('[pr-deploy] Build completed successfully')
         } catch (error) {
             if (error instanceof Error && error.message.includes('Build failed')) {
                 throw error
