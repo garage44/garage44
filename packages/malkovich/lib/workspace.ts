@@ -1,4 +1,4 @@
-import {readFileSync, existsSync} from 'fs'
+import {readFileSync, existsSync, readdirSync} from 'fs'
 import {join, dirname} from 'path'
 import {fileURLToPath} from 'url'
 
@@ -46,7 +46,13 @@ export function extractWorkspacePackages(workspaceRoot: string): string[] {
 
     try {
         const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
-        const workspaces = packageJson.workspaces || []
+        // Handle both array format and object format (Bun workspaces can be either)
+        let workspaces: string[] = []
+        if (Array.isArray(packageJson.workspaces)) {
+            workspaces = packageJson.workspaces
+        } else if (packageJson.workspaces && Array.isArray(packageJson.workspaces.packages)) {
+            workspaces = packageJson.workspaces.packages
+        }
 
         const packages: string[] = []
 
@@ -58,15 +64,22 @@ export function extractWorkspacePackages(workspaceRoot: string): string[] {
 
                 // Read directory and find package.json files
                 try {
-                    const dirs = Bun.readdirSync(packagesDir)
-                    for (const dir of dirs) {
-                        const pkgPath = join(packagesDir, dir, 'package.json')
-                        if (existsSync(pkgPath)) {
-                            packages.push(dir)
+                    const entries = readdirSync(packagesDir)
+                    for (const entry of entries) {
+                        // Skip hidden files/directories and ensure it's a directory
+                        if (entry.startsWith('.')) {
+                            continue
+                        }
+                        const entryPath = join(packagesDir, entry)
+                        const pkgPath = join(entryPath, 'package.json')
+                        // Check if it's a directory and has package.json
+                        if (existsSync(entryPath) && existsSync(pkgPath)) {
+                            packages.push(entry)
                         }
                     }
-                } catch {
+                } catch (error) {
                     // Directory doesn't exist or can't be read
+                    console.warn(`[workspace] Failed to read packages directory ${packagesDir}:`, error)
                 }
             } else {
                 // Direct package path

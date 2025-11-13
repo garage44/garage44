@@ -273,7 +273,9 @@ export async function deployPR(pr: PRMetadata): Promise<{
 
         // Discover which packages to deploy
         const allPackages = extractWorkspacePackages(repoDir)
+        console.log(`[pr-deploy] All discovered packages: ${allPackages.join(', ')}`)
         const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+        console.log(`[pr-deploy] Application packages (after filter): ${appPackages.join(', ')}`)
         const packagesToDeploy = [...appPackages, 'malkovich'] // Always include malkovich
 
         console.log(`[pr-deploy] Discovered packages to deploy: ${packagesToDeploy.join(', ')}`)
