@@ -24,7 +24,7 @@ export class Store<StateType extends object = object> {
 
         // Check for HMR state (from hot module replacement)
         let hmrState = {}
-        if (globalThis !== undefined && globalThis.__HMR_STATE__) {
+        if (typeof globalThis !== 'undefined' && globalThis.__HMR_STATE__) {
             try {
                 hmrState = globalThis.__HMR_STATE__ as Record<string, unknown>
                 // Clear HMR state after reading

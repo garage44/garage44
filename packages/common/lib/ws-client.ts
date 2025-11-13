@@ -257,9 +257,6 @@ class WebSocketClient extends EventEmitter {
     private handleResponse(message: WebSocketMessage) {
         if (!message.id) {
             // Only log this for messages that look like responses (have method field)
-            if (message.method) {
-                logger.debug('[WS] message has no id, not a response')
-            }
             return false
         }
 

@@ -44,46 +44,27 @@ interface InitOptions {
 class App {
 
     async init(Main, renderFn, hFn, translations, options: InitOptions = {}) {
-        // Check if this is an HMR update
-        const flagValue = (globalThis as any).__HMR_UPDATING__
-        const isHMRUpdate = flagValue === true
-        // oxlint-disable-next-line no-console
-        console.log('[App.init] HMR flag check:', {flagType: typeof flagValue, flagValue, globalThisKeys: Object.keys(globalThis).filter((k) => k.includes('HMR')), isHMRUpdate})
+        const g = globalThis as any
+        const isHMRUpdate = g.__HMR_UPDATING__ === true
 
         if (isHMRUpdate) {
-            // oxlint-disable-next-line no-console
-            console.log('[HMR] Using HMR code path - skipping initialization, just re-rendering')
-
-            // During HMR, skip all initialization and just update the Main component reference
+            // During HMR, re-initialize the application but preserve state and avoid flicker
             // Note: data-hmr-updating attribute is already set by bunchy/client.ts before script loads
             store.state.hmr_updating = true
-            ;(globalThis as any).__HMR_UPDATING__ = false
+            g.__HMR_UPDATING__ = false
 
-            // Ensure data attribute is set (should already be set, but be safe)
-            if (document.documentElement && !document.documentElement.getAttribute('data-hmr-updating')) {
-                document.documentElement.setAttribute('data-hmr-updating', 'true')
-            }
-            if (!document.body.getAttribute('data-hmr-updating')) {
-                document.body.setAttribute('data-hmr-updating', 'true')
-                // Force a reflow to ensure CSS sees the change
-                void document.body.offsetHeight
-            }
+            // Re-initialize application services (env, i18n, notifier)
+            // This ensures any changes in non-component files are picked up
+            env(store.state.env, store)
+            await i18n.init(translations, api, store)
+            notifier.init(store.state.notifications)
 
             // Update Main component reference
-            if (globalThis !== undefined) {
-                ;(globalThis as any).__HMR_MAIN_COMPONENT__ = Main
-            }
-
-            // Use the NEW render functions from this script (not the old ones)
-            // This ensures Preact hooks work correctly with the new Preact instance
-            // oxlint-disable-next-line no-console
-            console.log('[HMR] Using new render functions from current script')
+            g.__HMR_MAIN_COMPONENT__ = Main
 
             // Preserve scroll position before re-render
             const viewElement = document.querySelector('.view')
             const scrollPosition = viewElement ? viewElement.scrollTop : 0
-            // oxlint-disable-next-line no-console
-            console.log('[HMR] Preserving scroll position:', scrollPosition)
 
             // Sync route state to prevent menu flash
             // Use store.state.env.url which is maintained by the env system
@@ -92,41 +73,21 @@ class App {
                 const currentUrl = store.state.env?.url || globalThis.location?.pathname || '/'
                 if ('currentRoute' in store.state && (store.state as any).currentRoute !== currentUrl) {
                     ;(store.state as any).currentRoute = currentUrl
-                    // oxlint-disable-next-line no-console
-                    console.log('[HMR] Synced route state to:', currentUrl)
                 }
-            } catch (error) {
+            } catch {
                 // If env.url access fails (shouldn't happen, but be safe), use window.location
-                // oxlint-disable-next-line no-console
-                console.warn('[HMR] Could not sync route state:', error)
             }
 
             try {
                 // Re-render with the new Main component using the NEW render/h functions
                 // This ensures Preact hooks are from the same instance as the component
-                // oxlint-disable-next-line no-console
-                console.log('[HMR] Re-rendering Main component')
-
-                // Preact's render() should update the existing tree when called on the same container
-                // To ensure changes are visible, we render null first to unmount the old tree,
-                // then render the new component. This is safer than clearing innerHTML.
                 const rootElement = document.body.firstElementChild
 
                 if (rootElement) {
-                    // Ensure HMR flags are set BEFORE unmounting to prevent animations
-                    // Data attribute should already be set by bunchy/client.ts, but ensure state is set
-                    store.state.hmr_updating = true
-                    document.body.dataset.hmrUpdating = 'true'
-
-                    // oxlint-disable-next-line no-console
-                    console.log('[HMR] Data attribute check:', document.body.dataset.hmrUpdating)
-
                     // Wait a microtask to ensure state propagates
                     await new Promise((resolve) => setTimeout(resolve, 0))
 
                     // Unmount the old tree by rendering null
-                    // oxlint-disable-next-line no-console
-                    console.log('[HMR] Unmounting old tree')
                     renderFn(null, document.body)
 
                     // Wait a tick for Preact to complete unmounting
@@ -135,11 +96,7 @@ class App {
 
                 // Render the new component - Preact will create a fresh tree
                 const vnode = hFn(Main, {})
-                // oxlint-disable-next-line no-console
-                console.log('[HMR] Rendering new vnode:', vnode)
-                const result = renderFn(vnode, document.body)
-                // oxlint-disable-next-line no-console
-                console.log('[HMR] Render result:', result)
+                renderFn(vnode, document.body)
 
                 // Verify the component was actually rendered
                 if (!document.body.firstElementChild) {
@@ -149,19 +106,11 @@ class App {
                     return
                 }
 
-                // Update global references for next HMR update
-                if (globalThis !== undefined) {
-                    ;(globalThis as any).__HMR_RENDER_FN__ = renderFn
-                    ;(globalThis as any).__HMR_H_FN__ = hFn
-                }
-
                 // Restore scroll position after render
                 requestAnimationFrame(() => {
                     const newViewElement = document.querySelector('.view')
                     if (newViewElement) {
                         newViewElement.scrollTop = scrollPosition
-                        // oxlint-disable-next-line no-console
-                        console.log('[HMR] Restored scroll position:', scrollPosition)
                     }
                 })
             } catch (error) {
@@ -180,15 +129,15 @@ class App {
                 // Add a persistent class to body/html that indicates HMR happened
                 if (document.documentElement) {
                     document.documentElement.classList.add('hmr-complete')
-                    document.documentElement.removeAttribute('data-hmr-updating')
+                    // oxlint-disable-next-line @typescript-eslint/no-dynamic-delete
+                    delete document.documentElement.dataset.hmrUpdating
                 }
                 document.body.classList.add('hmr-complete')
-                document.body.removeAttribute('data-hmr-updating')
-                // oxlint-disable-next-line no-console
-                console.log('[HMR] HMR update complete')
+                // oxlint-disable-next-line @typescript-eslint/no-dynamic-delete
+                delete document.body.dataset.hmrUpdating
             }, 0)
 
-            return // Don't emit app:init or do any initialization
+            return // Don't emit app:init event (already initialized above)
         }
 
         // oxlint-disable-next-line no-console
@@ -199,12 +148,8 @@ class App {
         await i18n.init(translations, api, store)
         notifier.init(store.state.notifications)
 
-        // Store references for HMR re-rendering
-        if (globalThis !== undefined) {
-            ;(globalThis as any).__HMR_MAIN_COMPONENT__ = Main
-            ;(globalThis as any).__HMR_RENDER_FN__ = renderFn
-            ;(globalThis as any).__HMR_H_FN__ = hFn
-        }
+        // Store Main component reference for HMR re-rendering
+        g.__HMR_MAIN_COMPONENT__ = Main
 
         try {
             renderFn(hFn(Main, {}), document.body)

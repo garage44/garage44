@@ -101,7 +101,7 @@ function deepSignal<T extends object>(initialValue: T): DeepSignal<T> {
     const state = originalDeepSignal(initialValue)
 
     // Only register for HMR in browser environment
-    if (globalThis !== undefined && globalThis.window !== undefined) {
+    if (typeof window !== 'undefined') {
         // Initialize registry if not exists
         if (!globalThis.__HMR_REGISTRY__) {
             globalThis.__HMR_REGISTRY__ = {}

@@ -63,17 +63,6 @@ const runner = {
             }, 'POST')
         }
     }, debounce.wait, debounce.options),
-    code_frontend: throttle(async() => {
-        const {filename, size} = await tasks.code_frontend.start({minify: false, sourcemap: true})
-        if (settings.reload_ignore.includes('/tasks/code_frontend')) {
-            return
-        }
-        broadcast('/tasks/code_frontend', {
-            filename,
-            publicPath: path.relative(settings.dir.workspace, settings.dir.public),
-            size,
-        }, 'POST')
-    }, debounce.wait, debounce.options),
     hmr: throttle(async(filePath: string) => {
         // Rebuild the frontend code
         await tasks.code_frontend.start({minify: false, sourcemap: true})
@@ -365,7 +354,10 @@ tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = 
     watch(settings.dir.common, {recursive: true}, (event, filename) => {
         const extension = path.extname(filename)
         if (extension === '.ts' || extension === '.tsx') {
-            runner.code_frontend()
+            // Use HMR for common package TypeScript/TSX files
+            // Note: filename is relative to common dir, but HMR expects src/ prefix
+            // We'll need to adjust the path or use a different approach
+            runner.hmr(filename)
         } else if (extension === '.css') {
             runner.styles.components()
         }
@@ -377,12 +369,8 @@ tasks.dev = new Task('dev', async function taskDev({minify = false, sourcemap = 
         if (filename.startsWith('assets/')) {
             runner.assets()
         } else if (extension === '.ts' || extension === '.tsx') {
-            // Check if it's a component file - if so, use HMR instead of full reload
-            if (filename.startsWith('components/')) {
-                runner.hmr(filename)
-            } else {
-                runner.code_frontend()
-            }
+            // Use HMR for all TypeScript/TSX files
+            runner.hmr(filename)
         } else if (filename === 'index.html') {
             runner.html()
         } else if (extension === '.css') {

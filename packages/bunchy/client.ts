@@ -229,52 +229,43 @@ function hideExceptionPage() {
     }
 }
 
-async function handleHMRUpdate(filePath: string, timestamp: number) {
-    console.log('[Bunchy HMR] handleHMRUpdate called', {filePath, timestamp})
+async function handleHMRUpdate(_filePath: string, timestamp: number) {
+    const g = globalThis as any
     try {
         hideExceptionPage()
 
         // Initialize HMR state storage if not exists
-        if (!(globalThis as any).__HMR_STATE__) {
-            ;(globalThis as any).__HMR_STATE__ = null
-        }
-        if (!(globalThis as any).__HMR_COMPONENT_STATES__) {
-            ;(globalThis as any).__HMR_COMPONENT_STATES__ = {}
-        }
-        if (!(globalThis as any).__HMR_REGISTRY__) {
-            ;(globalThis as any).__HMR_REGISTRY__ = {}
-        }
+        if (!g.__HMR_STATE__) g.__HMR_STATE__ = null
+        if (!g.__HMR_COMPONENT_STATES__) g.__HMR_COMPONENT_STATES__ = {}
+        if (!g.__HMR_REGISTRY__) g.__HMR_REGISTRY__ = {}
 
         // Save global store state
         try {
-            // Try to access store via dynamic import to avoid circular dependency
             const {store} = await import('@garage44/common/app')
-            if (store && store.state) {
-                ;(globalThis as any).__HMR_STATE__ = JSON.parse(JSON.stringify(store.state))
+            if (store?.state) {
+                g.__HMR_STATE__ = JSON.parse(JSON.stringify(store.state))
             }
         } catch (error) {
             console.warn('[Bunchy HMR] Could not access store state:', error)
         }
 
         // Save component-level states from registry
-        const registry = (globalThis as any).__HMR_REGISTRY__ || {}
-        const componentStates: Record<string, any> = {}
+        const registry = g.__HMR_REGISTRY__ || {}
+        const componentStates: Record<string, unknown> = {}
         for (const [key, state] of Object.entries(registry)) {
             try {
                 componentStates[key] = JSON.parse(JSON.stringify(state))
-            } catch (error) {
-                console.warn(`[Bunchy HMR] Could not serialize state for ${key}:`, error)
+            } catch {
+                console.warn(`[Bunchy HMR] Could not serialize state for ${key}`)
             }
         }
-        ;(globalThis as any).__HMR_COMPONENT_STATES__ = componentStates
+        g.__HMR_COMPONENT_STATES__ = componentStates
 
         // Find and reload the app script
-        // Look for script tags that match the app pattern (may have query params from previous HMR)
         const scriptTags = [...document.querySelectorAll('script[type="module"]')] as HTMLScriptElement[]
         const appScript = scriptTags.find((script) => {
-            const src = script.src
-            // Match /public/app.{buildId}.js with optional query params
-            return src.includes('/public/app.') && /\/public\/app\.[^/]+\.js/.test(src.split('?')[0])
+            const src = script.src.split('?')[0]
+            return src.includes('/public/app.') && /\/public\/app\.[^/]+\.js$/.test(src)
         })
 
         if (!appScript) {
@@ -283,57 +274,36 @@ async function handleHMRUpdate(filePath: string, timestamp: number) {
             return
         }
 
-        // Get the base URL without query params before removing the script
         const originalSrc = appScript.src.split('?')[0]
-
-        // Remove old script
         appScript.remove()
 
         // Set HMR update flag BEFORE creating/loading the script
         // This is critical - ES modules execute immediately when appended
-        ;(globalThis as any).__HMR_UPDATING__ = true
+        g.__HMR_UPDATING__ = true
 
         // Set data attribute on html and body BEFORE script loads to disable CSS animations
-        // This ensures CSS rules are active when components render
-        if (document.documentElement && document.body) {
-            // Set on both html and body for maximum compatibility
-            document.documentElement.setAttribute('data-hmr-updating', 'true')
-            document.body.setAttribute('data-hmr-updating', 'true')
-            console.log('[Bunchy HMR] Set data-hmr-updating attribute on html and body')
-            console.log('[Bunchy HMR] HTML getAttribute:', document.documentElement.getAttribute('data-hmr-updating'))
-            console.log('[Bunchy HMR] Body getAttribute:', document.body.getAttribute('data-hmr-updating'))
-            // Force a reflow to ensure CSS sees the change
-            void document.body.offsetHeight
-        } else {
-            console.warn('[Bunchy HMR] HTML or body element not found when trying to set data attribute')
-        }
-
-        console.log('[Bunchy HMR] Set __HMR_UPDATING__ flag to true, current value:', (globalThis as any).__HMR_UPDATING__)
+        document.documentElement.setAttribute('data-hmr-updating', 'true')
+        document.body.setAttribute('data-hmr-updating', 'true')
+        void document.body.offsetHeight // Force reflow
 
         // Create new script with cache busting
         const newScript = document.createElement('script')
         newScript.type = 'module'
         newScript.src = `${originalSrc}?t=${timestamp}`
 
-        // Verify flag is still set before appending
-        console.log('[Bunchy HMR] Flag before append:', (globalThis as any).__HMR_UPDATING__)
-
         // Wait for script to load
         newScript.onload = async () => {
-            console.log('[Bunchy HMR] Script loaded, flag state:', (globalThis as any).__HMR_UPDATING__)
             // The new script will execute and call app.init() with HMR flag set
-            // app.init() will detect HMR and skip initialization, just updating Main and re-rendering
+            // app.init() will detect HMR and re-initialize services, then re-render
             // Wait a brief moment for the module to execute
             await new Promise((resolve) => setTimeout(resolve, 10))
 
             // Verify the Main component was updated
-            const Main = (globalThis as any).__HMR_MAIN_COMPONENT__
-            if (!Main) {
+            if (!g.__HMR_MAIN_COMPONENT__) {
                 console.error('[Bunchy HMR] Main component not found after script load')
                 globalThis.location.reload()
                 return
             }
-            console.log('[Bunchy HMR] Main component updated successfully')
         }
 
         newScript.onerror = () => {
@@ -342,7 +312,6 @@ async function handleHMRUpdate(filePath: string, timestamp: number) {
         }
 
         // Insert new script - this will cause it to execute immediately
-        console.log('[Bunchy HMR] Appending script, flag should be:', (globalThis as any).__HMR_UPDATING__)
         document.head.append(newScript)
     } catch (error) {
         console.error('[Bunchy HMR] Failed:', error)
@@ -434,8 +403,7 @@ class BunchyClient extends WebSocketClient {
 
         // Hook into the open event to override message handling
         this.on('open', () => {
-            // Access the private ws through a workaround - listen to all messages
-            console.log('[Bunchy HMR] WebSocket opened, handlers registered')
+            // WebSocket opened, handlers registered
         })
 
         // Small delay to ensure handlers are fully registered before connecting
@@ -473,23 +441,9 @@ class BunchyClient extends WebSocketClient {
             showExceptionPage(task, error, details, timestamp)
         })
 
-        // Listen for ALL messages to debug routing - this should catch everything
-        this.on('message', (message) => {
-            console.log('[Bunchy HMR] Message event received:', JSON.stringify(message, null, 2))
-            if (message && message.url === '/tasks/hmr') {
-                console.log('[Bunchy HMR] HMR message detected!', message)
-            }
-        })
-
         this.onRoute('/tasks/hmr', (data) => {
-            console.log('[Bunchy HMR] Route handler called with data:', data)
             const {filePath, timestamp} = data as {filePath: string; timestamp: number}
             handleHMRUpdate(filePath, timestamp)
-        })
-
-        // Also listen for the event directly
-        this.on('/tasks/hmr', (data) => {
-            console.log('[Bunchy HMR] Event listener called with data:', data)
         })
     }
 
