@@ -232,14 +232,14 @@ const _ = cli.usage('Usage: $0 [task]')
             })
     , async (argv) => {
         const {deployPR} = await import('./lib/pr-deploy')
-        
+
         // Get latest SHA if not provided
         let sha = argv.sha
         if (!sha) {
             const result = await $`git rev-parse origin/${argv.branch}`.quiet()
             sha = result.stdout.toString().trim()
         }
-        
+
         const pr = {
             author: argv.author,
             head_ref: argv.branch,
@@ -248,17 +248,34 @@ const _ = cli.usage('Usage: $0 [task]')
             number: argv.number,
             repo_full_name: 'garage44/garage44',
         }
-        
+
         const result = await deployPR(pr)
-        
+
         if (result.success && result.deployment) {
             console.log('\n✅ PR Deployment Successful!\n')
-            console.log(`URL: https://pr-${argv.number}.garage44.org`)
-            console.log(`Malkovich: https://pr-${argv.number}.garage44.org`)
-            console.log(`\nPorts:`)
-            console.log(`  Malkovich: ${result.deployment.ports.malkovich}`)
-            console.log(`  Expressio: ${result.deployment.ports.expressio}`)
-            console.log(`  Pyrite: ${result.deployment.ports.pyrite}`)
+
+            // Discover which packages were deployed
+            const {extractWorkspacePackages, isApplicationPackage} = await import('./lib/workspace')
+            const repoDir = `${result.deployment.directory}/repo`
+            const {existsSync} = await import('fs')
+            let packagesToShow: string[] = []
+
+            if (existsSync(repoDir)) {
+                const allPackages = extractWorkspacePackages(repoDir)
+                const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+                packagesToShow = [...appPackages, 'malkovich'] // Always include malkovich
+            } else {
+                // Fallback: use known packages if repo directory doesn't exist
+                packagesToShow = ['expressio', 'pyrite', 'malkovich']
+            }
+
+            // Show URLs for each package
+            console.log(`URLs:`)
+            for (const packageName of packagesToShow) {
+                const port = result.deployment.ports[packageName as keyof typeof result.deployment.ports] || result.deployment.ports.malkovich
+                console.log(`  ${packageName}: https://pr-${argv.number}.${packageName}.garage44.org (port ${port})`)
+            }
+
             console.log(`\nNote: Deployment is publicly accessible (no token required)`)
         } else {
             console.error(`\n❌ Deployment failed: ${result.message}`)

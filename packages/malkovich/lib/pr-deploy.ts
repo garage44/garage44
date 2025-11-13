@@ -287,21 +287,43 @@ export async function deployPR(pr: PRMetadata): Promise<{
         // Start services
         console.log('[pr-deploy] Starting services...')
         for (const packageName of packagesToDeploy) {
-            const startResult = await $`sudo systemctl start pr-${pr.number}-${packageName}.service`.quiet()
+            const startResult = await $`sudo systemctl start pr-${pr.number}-${packageName}.service`.nothrow()
             if (startResult.exitCode === 0) {
                 console.log(`[pr-deploy] Started ${packageName} service`)
             } else {
-                console.warn(`[pr-deploy] Failed to start ${packageName} service`)
+                const stderr = startResult.stderr?.toString() || ''
+                const stdout = startResult.stdout?.toString() || ''
+                const errorDetails = stderr || stdout || 'Unknown error'
+                console.error(`[pr-deploy] Failed to start ${packageName} service`)
+                console.error(`[pr-deploy] systemctl stderr: ${stderr}`)
+                console.error(`[pr-deploy] systemctl stdout: ${stdout}`)
+                // Check service status for more details
+                const statusResult = await $`sudo systemctl status pr-${pr.number}-${packageName}.service --no-pager -l`.nothrow()
+                if (statusResult.exitCode === 0) {
+                    const statusOutput = statusResult.stdout?.toString() || ''
+                    console.error(`[pr-deploy] Service status:\n${statusOutput}`)
+                }
+                throw new Error(`Failed to start ${packageName} service: ${errorDetails}`)
             }
         }
 
         // Update deployment status
         await updatePRDeployment(pr.number, {status: 'running'})
 
-        const deploymentUrl = `https://pr-${pr.number}.garage44.org`
+        // Port mapping for display
+        const portMap: Record<string, number> = {
+            expressio: deployment.ports.expressio,
+            malkovich: deployment.ports.malkovich,
+            pyrite: deployment.ports.pyrite,
+        }
 
         console.log(`[pr-deploy] PR #${pr.number} deployed successfully`)
-        console.log(`[pr-deploy] URL: ${deploymentUrl} (public access, no token required)`)
+        console.log('[pr-deploy] URLs (public access, no token required):')
+        for (const packageName of packagesToDeploy) {
+            const port = portMap[packageName] || deployment.ports.malkovich
+            const subdomain = `pr-${pr.number}.${packageName}.garage44.org`
+            console.log(`[pr-deploy]   ${packageName}: https://${subdomain} (port ${port})`)
+        }
 
         return {
             deployment: {
@@ -441,17 +463,34 @@ WantedBy=multi-user.target
 `
 
         // Write service file using sudo (required for /etc/systemd/system/)
-        const writeResult = await $`echo ${content} | sudo tee ${serviceFile}`.nothrow()
+        // Use a temporary file and then move it with sudo to avoid shell escaping issues
+        const tempFile = `/tmp/pr-${deployment.number}-${packageName}.service`
+        await Bun.write(tempFile, content)
+        const writeResult = await $`sudo mv ${tempFile} ${serviceFile}`.nothrow()
         if (writeResult.exitCode !== 0) {
             const stderr = writeResult.stderr?.toString() || ''
             const stdout = writeResult.stdout?.toString() || ''
+            // Clean up temp file if move failed
+            try {
+                if (await Bun.file(tempFile).exists()) {
+                    await Bun.file(tempFile).unlink()
+                }
+            } catch {
+                // Ignore cleanup errors
+            }
             throw new Error(`Failed to write systemd service file: ${stderr || stdout}`)
         }
         console.log(`[pr-deploy] Generated systemd service for ${packageName}`)
     }
 
     // Reload systemd
-    await $`sudo systemctl daemon-reload`.quiet()
+    const reloadResult = await $`sudo systemctl daemon-reload`.nothrow()
+    if (reloadResult.exitCode !== 0) {
+        const stderr = reloadResult.stderr?.toString() || ''
+        const stdout = reloadResult.stdout?.toString() || ''
+        throw new Error(`Failed to reload systemd daemon: ${stderr || stdout || 'Unknown error'}`)
+    }
+    console.log('[pr-deploy] Systemd daemon reloaded')
 }
 
 /**
@@ -581,10 +620,21 @@ server {
 `
 
         // Write nginx config file using sudo (required for /etc/nginx/)
-        const nginxWriteResult = await $`echo ${content} | sudo tee ${configFile}`.nothrow()
+        // Use a temporary file and then move it with sudo to avoid shell escaping issues
+        const tempNginxFile = `/tmp/pr-${prNumber}-${packageName}.nginx.conf`
+        await Bun.write(tempNginxFile, content)
+        const nginxWriteResult = await $`sudo mv ${tempNginxFile} ${configFile}`.nothrow()
         if (nginxWriteResult.exitCode !== 0) {
             const stderr = nginxWriteResult.stderr?.toString() || ''
             const stdout = nginxWriteResult.stdout?.toString() || ''
+            // Clean up temp file if move failed
+            try {
+                if (await Bun.file(tempNginxFile).exists()) {
+                    await Bun.file(tempNginxFile).unlink()
+                }
+            } catch {
+                // Ignore cleanup errors
+            }
             throw new Error(`Failed to write nginx config file: ${stderr || stdout}`)
         }
 
@@ -595,5 +645,14 @@ server {
     }
 
     // Reload nginx
-    await $`sudo nginx -s reload`.quiet()
+    const nginxReloadResult = await $`sudo nginx -s reload`.nothrow()
+    if (nginxReloadResult.exitCode !== 0) {
+        const stderr = nginxReloadResult.stderr?.toString() || ''
+        const stdout = nginxReloadResult.stdout?.toString() || ''
+        // Check nginx config for syntax errors
+        const testResult = await $`sudo nginx -t`.nothrow()
+        const testOutput = testResult.stdout?.toString() || testResult.stderr?.toString() || ''
+        throw new Error(`Failed to reload nginx: ${stderr || stdout || 'Unknown error'}\nNginx config test: ${testOutput}`)
+    }
+    console.log('[pr-deploy] Nginx reloaded successfully')
 }
