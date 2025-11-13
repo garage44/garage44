@@ -5,6 +5,24 @@ import {findWorkspaceRoot, extractWorkspacePackages, isApplicationPackage} from 
 import {cleanupPRDeployment} from './pr-cleanup'
 import {deployPR, type PRMetadata} from './pr-deploy'
 
+interface PullRequestWebhookEvent {
+    action?: string
+    pull_request?: {
+        head?: {
+            ref?: string
+            repo?: {
+                fork: boolean
+                full_name: string
+            }
+            sha?: string
+        }
+        number?: number
+        user?: {
+            login: string
+        }
+    }
+}
+
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || ''
 const REPO_PATH = process.env.REPO_PATH || findWorkspaceRoot() || process.cwd()
 
@@ -156,66 +174,74 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
 /**
  * Handle pull request events
  */
-async function handlePullRequestEvent(event: any): Promise<Response> {
-	const action = event.action
-	const prNumber = event.pull_request?.number
+async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<Response> {
+    const action = event.action
+    const pullRequest = event.pull_request
+    const prNumber = pullRequest?.number
 
-	if (!prNumber) {
-		return new Response(JSON.stringify({error: 'Missing PR number'}), {
-			headers: {'Content-Type': 'application/json'},
-			status: 400,
-		})
-	}
+    if (!prNumber) {
+        return new Response(JSON.stringify({error: 'Missing PR number'}), {
+            headers: {'Content-Type': 'application/json'},
+            status: 400,
+        })
+    }
 
-	console.log(`[webhook] PR #${prNumber} event: ${action}`)
+    console.log(`[webhook] PR #${prNumber} event: ${action}`)
 
-	// Handle PR close/merge - cleanup
-	if (action === 'closed') {
-		const result = await cleanupPRDeployment(prNumber)
-		return new Response(JSON.stringify(result), {
-			headers: {'Content-Type': 'application/json'},
-			status: result.success ? 200 : 500,
-		})
-	}
+    // Handle PR close/merge - cleanup
+    if (action === 'closed') {
+        const result = await cleanupPRDeployment(prNumber)
+        return new Response(JSON.stringify(result), {
+            headers: {'Content-Type': 'application/json'},
+            status: result.success ? 200 : 500,
+        })
+    }
 
-	// Handle PR open/sync - deploy
-	if (action === 'opened' || action === 'synchronize' || action === 'reopened') {
-		const pr: PRMetadata = {
-			author: event.pull_request.user.login,
-			head_ref: event.pull_request.head.ref,
-			head_sha: event.pull_request.head.sha,
-			is_fork: event.pull_request.head.repo.fork,
-			number: prNumber,
-			repo_full_name: event.pull_request.head.repo.full_name,
-		}
+    // Handle PR open/sync - deploy
+    if (action === 'opened' || action === 'synchronize' || action === 'reopened') {
+        if (!pullRequest?.head?.ref || !pullRequest.head.sha || !pullRequest.head.repo?.full_name || typeof pullRequest.head.repo.fork !== 'boolean' || !pullRequest.user?.login) {
+            return new Response(JSON.stringify({error: 'Incomplete pull request payload'}), {
+                headers: {'Content-Type': 'application/json'},
+                status: 422,
+            })
+        }
 
-		// Deploy asynchronously
-		deployPR(pr).then((result) => {
-			if (result.success) {
-				console.log(`[webhook] PR #${prNumber} deployment successful`)
-			} else {
-				console.error(`[webhook] PR #${prNumber} deployment failed: ${result.message}`)
-			}
-		}).catch((error) => {
-			console.error(`[webhook] PR #${prNumber} deployment error:`, error)
-		})
+        const pr: PRMetadata = {
+            author: pullRequest.user.login,
+            head_ref: pullRequest.head.ref,
+            head_sha: pullRequest.head.sha,
+            is_fork: pullRequest.head.repo.fork,
+            number: prNumber,
+            repo_full_name: pullRequest.head.repo.full_name,
+        }
 
-		return new Response(JSON.stringify({
-			message: `PR #${prNumber} deployment triggered`,
-			timestamp: new Date().toISOString(),
-		}), {
-			headers: {'Content-Type': 'application/json'},
-			status: 202,
-		})
-	}
+        // Deploy asynchronously
+        deployPR(pr).then((result) => {
+            if (result.success) {
+                console.log(`[webhook] PR #${prNumber} deployment successful`)
+            } else {
+                console.error(`[webhook] PR #${prNumber} deployment failed: ${result.message}`)
+            }
+        }).catch((error) => {
+            console.error(`[webhook] PR #${prNumber} deployment error:`, error)
+        })
 
-	// Ignore other actions
-	return new Response(JSON.stringify({
-		message: `Ignored PR action: ${action}`,
-	}), {
-		headers: {'Content-Type': 'application/json'},
-		status: 200,
-	})
+        return new Response(JSON.stringify({
+            message: `PR #${prNumber} deployment triggered`,
+            timestamp: new Date().toISOString(),
+        }), {
+            headers: {'Content-Type': 'application/json'},
+            status: 202,
+        })
+    }
+
+    // Ignore other actions
+    return new Response(JSON.stringify({
+        message: `Ignored PR action: ${action}`,
+    }), {
+        headers: {'Content-Type': 'application/json'},
+        status: 200,
+    })
 }
 
 /**
