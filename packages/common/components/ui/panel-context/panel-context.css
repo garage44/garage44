@@ -19,6 +19,18 @@
         user-select: none;
     }
 
+    /* Disable animations and transitions during HMR to prevent blink */
+
+    body[data-hmr-updating="true"] & {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    body[data-hmr-updating="true"] &.fade-in {
+        animation: none !important;
+        opacity: 1 !important;
+    }
+
     .collapse-toggle {
         align-items: center;
         background: transparent;

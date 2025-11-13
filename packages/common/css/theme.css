@@ -34,6 +34,15 @@ html, body {
     padding: 0;
 }
 
+/* Disable all animations and transitions during HMR to prevent blink */
+
+body[data-hmr-updating="true"] *,
+body[data-hmr-updating="true"] *::before,
+body[data-hmr-updating="true"] *::after {
+    animation: none !important;
+    transition: none !important;
+}
+
 * {
     box-sizing: border-box;
 }

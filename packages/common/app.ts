@@ -55,8 +55,14 @@ class App {
             console.log('[HMR] Using HMR code path - skipping initialization, just re-rendering')
 
             // During HMR, skip all initialization and just update the Main component reference
+            // Note: data-hmr-updating attribute is already set by bunchy/client.ts before script loads
             store.state.hmr_updating = true
             ;(globalThis as any).__HMR_UPDATING__ = false
+
+            // Ensure data attribute is set (should already be set, but be safe)
+            if (!document.body.dataset.hmrUpdating) {
+                document.body.dataset.hmrUpdating = 'true'
+            }
 
             // Update Main component reference
             if (globalThis !== undefined) {
@@ -74,6 +80,22 @@ class App {
             // oxlint-disable-next-line no-console
             console.log('[HMR] Preserving scroll position:', scrollPosition)
 
+            // Sync route state to prevent menu flash
+            // Use store.state.env.url which is maintained by the env system
+            // This ensures currentRoute matches the actual URL before Router initializes
+            try {
+                const currentUrl = store.state.env?.url || globalThis.location?.pathname || '/'
+                if ('currentRoute' in store.state && (store.state as any).currentRoute !== currentUrl) {
+                    ;(store.state as any).currentRoute = currentUrl
+                    // oxlint-disable-next-line no-console
+                    console.log('[HMR] Synced route state to:', currentUrl)
+                }
+            } catch (error) {
+                // If env.url access fails (shouldn't happen, but be safe), use window.location
+                // oxlint-disable-next-line no-console
+                console.warn('[HMR] Could not sync route state:', error)
+            }
+
             try {
                 // Re-render with the new Main component using the NEW render/h functions
                 // This ensures Preact hooks are from the same instance as the component
@@ -86,6 +108,17 @@ class App {
                 const rootElement = document.body.firstElementChild
 
                 if (rootElement) {
+                    // Ensure HMR flags are set BEFORE unmounting to prevent animations
+                    // Data attribute should already be set by bunchy/client.ts, but ensure state is set
+                    store.state.hmr_updating = true
+                    document.body.dataset.hmrUpdating = 'true'
+
+                    // oxlint-disable-next-line no-console
+                    console.log('[HMR] Data attribute check:', document.body.dataset.hmrUpdating)
+
+                    // Wait a microtask to ensure state propagates
+                    await new Promise((resolve) => setTimeout(resolve, 0))
+
                     // Unmount the old tree by rendering null
                     // oxlint-disable-next-line no-console
                     console.log('[HMR] Unmounting old tree')
@@ -137,6 +170,8 @@ class App {
             // Reset HMR flag after render completes
             setTimeout(() => {
                 store.state.hmr_updating = false
+                // oxlint-disable-next-line @typescript-eslint/no-dynamic-delete
+                delete document.body.dataset.hmrUpdating
                 // oxlint-disable-next-line no-console
                 console.log('[HMR] HMR update complete')
             }, 0)
