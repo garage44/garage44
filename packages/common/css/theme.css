@@ -25,6 +25,7 @@
 @import "./patterns/_buttons.css";
 
 html, body {
+    background: var(--surface-1);
     font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     font-size: var(--font-d);
     height: 100vh;

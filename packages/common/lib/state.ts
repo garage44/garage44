@@ -24,6 +24,7 @@ const volatileState = {
         ua: '',
         url: '',
     },
+    hmr_updating: false,
     language_ui: {
         /** Stores the calls to i18next.t, allowing to reactively update $t */
         i18n: {} as Record<string, Record<string, string>>,

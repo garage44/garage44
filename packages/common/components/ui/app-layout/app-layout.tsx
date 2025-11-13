@@ -1,5 +1,7 @@
 import {ComponentChildren} from 'preact'
 import {$t} from '@/app'
+import {store} from '@garage44/common/app'
+import classnames from 'classnames'
 
 interface AppLayoutProps {
     children: ComponentChildren

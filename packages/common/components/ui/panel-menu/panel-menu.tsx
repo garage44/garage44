@@ -1,5 +1,6 @@
 import classnames from 'classnames'
 import {ComponentChildren} from 'preact'
+import {store} from '@garage44/common/app'
 
 interface PanelMenuProps {
     actions?: ComponentChildren
@@ -74,7 +75,7 @@ export const PanelMenu = ({
     }
 
     return (
-        <aside class={classnames('c-panel-menu', 'fade-in', {collapsed})} style={{gridColumn: 'menu'}}>
+        <aside class={classnames('c-panel-menu', !store.state.hmr_updating && 'fade-in', {collapsed})} style={{gridColumn: 'menu'}}>
             <header>
                 {renderLogo()}
                 {onCollapseChange && (

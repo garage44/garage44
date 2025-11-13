@@ -1,6 +1,7 @@
 import classnames from 'classnames'
 import {ComponentChildren} from 'preact'
 import {useEffect, useRef, useState} from 'preact/hooks'
+import {store} from '@garage44/common/app'
 
 interface PanelContextProps {
     children: ComponentChildren
@@ -95,7 +96,7 @@ export const PanelContext = ({
     return (
         <aside
             ref={panelRef}
-            class={classnames(className, 'c-panel-context', 'fade-in', {collapsed, resizing: isResizing})}
+            class={classnames(className, 'c-panel-context', !store.state.hmr_updating && 'fade-in', {collapsed, resizing: isResizing})}
             style={{
                 gridColumn: 'context',
                 width: collapsed ? `${minWidth}px` : `${currentWidth}px`,

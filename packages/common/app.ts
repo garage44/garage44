@@ -44,6 +44,110 @@ interface InitOptions {
 class App {
 
     async init(Main, renderFn, hFn, translations, options: InitOptions = {}) {
+        // Check if this is an HMR update
+        const flagValue = (globalThis as any).__HMR_UPDATING__
+        const isHMRUpdate = flagValue === true
+        // oxlint-disable-next-line no-console
+        console.log('[App.init] HMR flag check:', {flagType: typeof flagValue, flagValue, globalThisKeys: Object.keys(globalThis).filter((k) => k.includes('HMR')), isHMRUpdate})
+
+        if (isHMRUpdate) {
+            // oxlint-disable-next-line no-console
+            console.log('[HMR] Using HMR code path - skipping initialization, just re-rendering')
+
+            // During HMR, skip all initialization and just update the Main component reference
+            store.state.hmr_updating = true
+            ;(globalThis as any).__HMR_UPDATING__ = false
+
+            // Update Main component reference
+            if (globalThis !== undefined) {
+                ;(globalThis as any).__HMR_MAIN_COMPONENT__ = Main
+            }
+
+            // Use the NEW render functions from this script (not the old ones)
+            // This ensures Preact hooks work correctly with the new Preact instance
+            // oxlint-disable-next-line no-console
+            console.log('[HMR] Using new render functions from current script')
+
+            // Preserve scroll position before re-render
+            const viewElement = document.querySelector('.view')
+            const scrollPosition = viewElement ? viewElement.scrollTop : 0
+            // oxlint-disable-next-line no-console
+            console.log('[HMR] Preserving scroll position:', scrollPosition)
+
+            try {
+                // Re-render with the new Main component using the NEW render/h functions
+                // This ensures Preact hooks are from the same instance as the component
+                // oxlint-disable-next-line no-console
+                console.log('[HMR] Re-rendering Main component')
+
+                // Preact's render() should update the existing tree when called on the same container
+                // To ensure changes are visible, we render null first to unmount the old tree,
+                // then render the new component. This is safer than clearing innerHTML.
+                const rootElement = document.body.firstElementChild
+
+                if (rootElement) {
+                    // Unmount the old tree by rendering null
+                    // oxlint-disable-next-line no-console
+                    console.log('[HMR] Unmounting old tree')
+                    renderFn(null, document.body)
+
+                    // Wait a tick for Preact to complete unmounting
+                    await new Promise((resolve) => setTimeout(resolve, 0))
+                }
+
+                // Render the new component - Preact will create a fresh tree
+                const vnode = hFn(Main, {})
+                // oxlint-disable-next-line no-console
+                console.log('[HMR] Rendering new vnode:', vnode)
+                const result = renderFn(vnode, document.body)
+                // oxlint-disable-next-line no-console
+                console.log('[HMR] Render result:', result)
+
+                // Verify the component was actually rendered
+                if (!document.body.firstElementChild) {
+                    // oxlint-disable-next-line no-console
+                    console.error('[HMR] Component was not rendered to DOM, falling back to reload')
+                    globalThis.location.reload()
+                    return
+                }
+
+                // Update global references for next HMR update
+                if (globalThis !== undefined) {
+                    ;(globalThis as any).__HMR_RENDER_FN__ = renderFn
+                    ;(globalThis as any).__HMR_H_FN__ = hFn
+                }
+
+                // Restore scroll position after render
+                requestAnimationFrame(() => {
+                    const newViewElement = document.querySelector('.view')
+                    if (newViewElement) {
+                        newViewElement.scrollTop = scrollPosition
+                        // oxlint-disable-next-line no-console
+                        console.log('[HMR] Restored scroll position:', scrollPosition)
+                    }
+                })
+            } catch (error) {
+                // oxlint-disable-next-line no-console
+                console.error('[HMR] Error re-rendering Main component:', error)
+                // Fall back to full reload on error
+                globalThis.location.reload()
+                return
+            }
+
+            // Reset HMR flag after render completes
+            setTimeout(() => {
+                store.state.hmr_updating = false
+                // oxlint-disable-next-line no-console
+                console.log('[HMR] HMR update complete')
+            }, 0)
+
+            return // Don't emit app:init or do any initialization
+        }
+
+        // oxlint-disable-next-line no-console
+        console.log('[App] Normal initialization path')
+
+        // Normal initialization (not HMR)
         env(store.state.env, store)
         await i18n.init(translations, api, store)
         notifier.init(store.state.notifications)
@@ -61,6 +165,7 @@ class App {
             // oxlint-disable-next-line no-console
             console.error('Error rendering Main component:', error)
         }
+
         events.emit('app:init')
     }
 }

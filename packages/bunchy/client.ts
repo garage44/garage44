@@ -230,6 +230,7 @@ function hideExceptionPage() {
 }
 
 async function handleHMRUpdate(filePath: string, timestamp: number) {
+    console.log('[Bunchy HMR] handleHMRUpdate called', {filePath, timestamp})
     try {
         hideExceptionPage()
 
@@ -288,58 +289,35 @@ async function handleHMRUpdate(filePath: string, timestamp: number) {
         // Remove old script
         appScript.remove()
 
+        // Set HMR update flag BEFORE creating/loading the script
+        // This is critical - ES modules execute immediately when appended
+        ;(globalThis as any).__HMR_UPDATING__ = true
+        console.log('[Bunchy HMR] Set __HMR_UPDATING__ flag to true, current value:', (globalThis as any).__HMR_UPDATING__)
+
         // Create new script with cache busting
         const newScript = document.createElement('script')
         newScript.type = 'module'
         newScript.src = `${originalSrc}?t=${timestamp}`
 
+        // Verify flag is still set before appending
+        console.log('[Bunchy HMR] Flag before append:', (globalThis as any).__HMR_UPDATING__)
+
         // Wait for script to load
         newScript.onload = async () => {
-            // Wait for app.init() to complete by listening for the app:init event
-            try {
-                const {events} = await import('@garage44/common/app')
-                if (events) {
-                    await new Promise<void>((resolve) => {
-                        const handler = () => {
-                            events.removeListener('app:init', handler)
-                            resolve()
-                        }
-                        events.once('app:init', handler)
-                        // Fallback timeout
-                        setTimeout(() => {
-                            events.removeListener('app:init', handler)
-                            resolve()
-                        }, 200)
-                    })
-                }
-            } catch {
-                // Fallback: brief delay if events unavailable
-                await new Promise(resolve => setTimeout(resolve, 50))
-            }
+            console.log('[Bunchy HMR] Script loaded, flag state:', (globalThis as any).__HMR_UPDATING__)
+            // The new script will execute and call app.init() with HMR flag set
+            // app.init() will detect HMR and skip initialization, just updating Main and re-rendering
+            // Wait a brief moment for the module to execute
+            await new Promise((resolve) => setTimeout(resolve, 10))
 
-            // Re-render the Main component using stored references
+            // Verify the Main component was updated
             const Main = (globalThis as any).__HMR_MAIN_COMPONENT__
-            const renderFn = (globalThis as any).__HMR_RENDER_FN__
-            const hFn = (globalThis as any).__HMR_H_FN__
-
-            if (Main && renderFn && hFn) {
-                renderFn(hFn(Main, {}), document.body)
-            } else {
-                // Fallback: trigger re-render via store update
-                try {
-                    const {store} = await import('@garage44/common/app')
-                    if (store?.state?.currentRoute) {
-                        const currentRoute = store.state.currentRoute
-                        store.state.currentRoute = currentRoute === '/' ? '/temp' : '/'
-                        await new Promise(resolve => setTimeout(resolve, 0))
-                        store.state.currentRoute = currentRoute
-                    } else {
-                        globalThis.location.reload()
-                    }
-                } catch {
-                    globalThis.location.reload()
-                }
+            if (!Main) {
+                console.error('[Bunchy HMR] Main component not found after script load')
+                globalThis.location.reload()
+                return
             }
+            console.log('[Bunchy HMR] Main component updated successfully')
         }
 
         newScript.onerror = () => {
@@ -347,8 +325,9 @@ async function handleHMRUpdate(filePath: string, timestamp: number) {
             globalThis.location.reload()
         }
 
-        // Insert new script
-        document.head.appendChild(newScript)
+        // Insert new script - this will cause it to execute immediately
+        console.log('[Bunchy HMR] Appending script, flag should be:', (globalThis as any).__HMR_UPDATING__)
+        document.head.append(newScript)
     } catch (error) {
         console.error('[Bunchy HMR] Failed:', error)
         globalThis.location.reload()
@@ -437,6 +416,12 @@ class BunchyClient extends WebSocketClient {
         // Use generic helper to attach forwarding
         setupLoggerForwarding(this)
 
+        // Hook into the open event to override message handling
+        this.on('open', () => {
+            // Access the private ws through a workaround - listen to all messages
+            console.log('[Bunchy HMR] WebSocket opened, handlers registered')
+        })
+
         // Small delay to ensure handlers are fully registered before connecting
         setTimeout(() => {
             this.connect()
@@ -472,9 +457,23 @@ class BunchyClient extends WebSocketClient {
             showExceptionPage(task, error, details, timestamp)
         })
 
+        // Listen for ALL messages to debug routing - this should catch everything
+        this.on('message', (message) => {
+            console.log('[Bunchy HMR] Message event received:', JSON.stringify(message, null, 2))
+            if (message && message.url === '/tasks/hmr') {
+                console.log('[Bunchy HMR] HMR message detected!', message)
+            }
+        })
+
         this.onRoute('/tasks/hmr', (data) => {
+            console.log('[Bunchy HMR] Route handler called with data:', data)
             const {filePath, timestamp} = data as {filePath: string; timestamp: number}
             handleHMRUpdate(filePath, timestamp)
+        })
+
+        // Also listen for the event directly
+        this.on('/tasks/hmr', (data) => {
+            console.log('[Bunchy HMR] Event listener called with data:', data)
         })
     }
 
