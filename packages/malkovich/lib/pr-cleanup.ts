@@ -65,14 +65,60 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
 			}
 
 			// Remove nginx configs for each package subdomain
+			// Replace with a "deployment removed" page instead of deleting
 			for (const packageName of packagesToClean) {
 				const subdomain = `pr-${prNumber}-${packageName}.garage44.org`
-				await $`sudo rm -f /etc/nginx/sites-enabled/${subdomain}`.quiet()
-				await $`sudo rm -f /etc/nginx/sites-available/${subdomain}`.quiet()
+				const configFile = `/etc/nginx/sites-available/${subdomain}`
+				const enabledLink = `/etc/nginx/sites-enabled/${subdomain}`
+
+				// Create a "deployment removed" config instead of deleting
+				const removedContent = `# PR #${prNumber} - ${packageName} deployment removed
+# HTTP to HTTPS redirect
+server {
+    listen 80;
+    server_name ${subdomain};
+    return 301 https://$server_name$request_uri;
+}
+
+# HTTPS server - Deployment removed
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${subdomain};
+
+    # Wildcard SSL certificate
+    ssl_certificate /etc/letsencrypt/live/garage44.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/garage44.org/privkey.pem;
+
+    # SSL configuration
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
+    # Prevent search engine indexing
+    add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
+
+    # Return 410 Gone (resource permanently removed) with HTML response
+    return 410 '<!DOCTYPE html><html><head><title>PR Deployment Removed</title><style>body{font-family:system-ui,sans-serif;text-align:center;padding:50px;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:white;padding:40px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}h1{color:#333;margin-bottom:20px}p{color:#666;line-height:1.6}</style></head><body><div class="container"><h1>PR Deployment Removed</h1><p>This PR deployment (PR #${prNumber}) has been removed.</p><p>PR deployments are automatically cleaned up when the PR is closed or after 7 days.</p></div></body></html>';
+    add_header Content-Type "text/html" always;
+}
+`
+
+				// Write the "removed" config
+				const tempFile = `/tmp/pr-${prNumber}-${packageName}-removed.nginx.conf`
+				await Bun.write(tempFile, removedContent)
+				await $`sudo mv ${tempFile} ${configFile}`.quiet()
+
+				// Ensure symlink exists
+				if (!existsSync(enabledLink)) {
+					await $`sudo ln -s ${configFile} ${enabledLink}`.quiet()
+				}
 			}
 
 			await $`sudo nginx -s reload`.quiet()
-			console.log(`[pr-cleanup] Removed nginx configurations for ${packagesToClean.length} package(s)`)
+			console.log(`[pr-cleanup] Updated nginx configurations to show "deployment removed" for ${packagesToClean.length} package(s)`)
 		} catch (error) {
 			console.warn(`[pr-cleanup] Failed to remove nginx configs:`, error)
 		}
