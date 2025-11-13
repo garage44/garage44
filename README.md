@@ -5,24 +5,24 @@ Modern web applications built with Bun, Preact, and DeepSignal.
 [![License](https://img.shields.io/badge/License-Mixed-blue.svg)](#licenses)
 [![Bun](https://img.shields.io/badge/Powered%20by-Bun-black.svg)](https://bun.sh/)
 
-## Projects
+## Main Projects
 
-### Expressio - Translation automation through AI
+### Expressio – Translation automation through AI
 
-Streamline internationalization workflows with intelligent translation. Connects to DeepL, Claude, and other providers through Enola.
+Streamline internationalization workflows with intelligent translation. Connects to DeepL, Claude, and other providers through Enola, and publishes the translation runtime that other apps consume.
 
 ```bash
 bunx @garage44/expressio start
 # Login: admin/admin
 ```
 
-**Core features:** AI translation, source-text workflow, smart caching, hot-reload, WebSocket sync
-
+**Core features:** AI translation, source-text workflow, smart caching, hot-reload, WebSocket sync  
+**Feeds:** Exports localized bundles and i18n helpers consumed by Pyrite and other Garage44 apps  
 **License:** AGPLv3
 
-### Pyrite - Video Conferencing
+### Pyrite – Video conferencing for distributed teams
 
-Self-hosted video conferencing with a Preact interface. Frontend for the [Galène](https://galene.org/) SFU.
+Self-hosted video conferencing with a Preact interface. Frontend for the [Galène](https://galene.org/) SFU and localized through Expressio’s translation pipeline.
 
 ```bash
 cd packages/pyrite
@@ -30,13 +30,29 @@ bun run dev
 # Configure in ~/.pyriterc
 ```
 
-**Core features:** Multi-party video, screen sharing, chat, recording, admin interface, responsive design
-
+**Core features:** Multi-party video, screen sharing, chat, recording, admin interface, responsive design  
+**Depends on Expressio:** Imports `@garage44/expressio` for runtime translations and shares design system components via `@garage44/common`  
 **License:** AGPLv3
+
+### Malkovich – Operations, documentation, and PR deployments
+
+Operations console that powers the documentation site, live component styleguide, and automated PR deployment system for Expressio and Pyrite.
+
+```bash
+cd packages/malkovich
+bun run dev        # Local docs + styleguide
+
+bun run malkovich deploy-pr --number 999 --branch $(git branch --show-current)
+# One-command PR deployments for Expressio + Pyrite + Malkovich
+```
+
+**Core features:** Component styleguide, docs portal, CLI for PR deploys/cleanup, Systemd + nginx templates  
+**Role:** Keeps Expressio/Pyrite aligned, documents architecture, and coordinates preview environments  
+**License:** MIT
 
 ## Shared Architecture
 
-Both projects use the same modern stack:
+All three applications use the same modern stack:
 
 - **Runtime:** Bun
 - **Backend:** Bun.serve() with WebSocket support
@@ -52,12 +68,12 @@ Benefits: consistent development experience, reusable components, unified build 
 
 | Package | Purpose | License |
 |---------|---------|---------|
-| [expressio](./packages/expressio/) | i18n automation tool | AGPLv3 |
-| [pyrite](./packages/pyrite/) | Video conferencing frontend | AGPLv3 |
+| [expressio](./packages/expressio/) | i18n automation platform (exports translation runtime) | AGPLv3 |
+| [pyrite](./packages/pyrite/) | Video conferencing frontend (consumes Expressio translations) | AGPLv3 |
 | [enola](./packages/enola/) | Translation engine wrapper | MIT |
 | [bunchy](./packages/bunchy/) | Development tooling | MIT |
 | [common](./packages/common/) | Shared components & utilities | MIT |
-| [malkovich](./packages/malkovich/) | Platform documentation & deployment | MIT |
+| [malkovich](./packages/malkovich/) | Operations console: docs, styleguide, PR deployments | MIT |
 
 ## Getting Started
 
@@ -84,7 +100,7 @@ bun run dev
 cd packages/pyrite
 bun run dev
 
-# Or start Malkovich
+# Or start Malkovich (docs, styleguide, PR tooling)
 cd packages/malkovich
 bun run dev
 ```
@@ -130,6 +146,7 @@ Each package has a specific focus:
 
 - **expressio:** i18n workflows, translation UI, workspace management
 - **pyrite:** Video UI, WebRTC integration, chat
+- **malkovich:** Documentation site, component styleguide, PR deployment automation
 - **enola:** Translation providers, language support
 - **bunchy:** Build tools, hot-reload, DX
 - **common:** Reusable components, utilities
