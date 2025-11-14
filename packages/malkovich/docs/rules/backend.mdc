@@ -36,6 +36,29 @@ packages/
 └── enola/             # Translation service wrapper
 ```
 
+## Code Style and ESLint Compliance
+
+**CRITICAL: All code must pass ESLint checks before committing.**
+
+### Before Committing
+
+Always run lint checks and fix any errors before committing:
+
+```bash
+# Check TypeScript files
+bun run lint:ts
+```
+
+**Auto-fixing:**
+- Many formatting issues can be auto-fixed: `bun run lint:ts --fix`
+- Always verify auto-fixes don't break functionality
+- Fix any remaining errors manually according to ESLint output
+
+**ESLint configuration:**
+- Rules are defined in `eslint.config.js` at the workspace root
+- Follow ESLint error messages to fix code style issues
+- Do not commit code with linting errors
+
 ## Common Anti-patterns
 
 ❌ **Don't do:**
@@ -44,6 +67,7 @@ packages/
 - Store sensitive API keys in workspace files
 - Skip input validation on user-provided paths
 - Ignore WebSocket connection cleanup
+- Commit code without running lint checks
 
 ✅ **Do:**
 - Use Bun.serve() and native Web APIs (Request/Response)
@@ -52,3 +76,4 @@ packages/
 - Validate and sanitize all file paths and user inputs
 - Use the websocket protocol
 - Use structured logging with relevant context
+- Always run `bun run lint:ts` before committing

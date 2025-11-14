@@ -309,6 +309,18 @@ const _ = cli.usage('Usage: $0 [task]')
         const result = await cleanupStaleDeployments(argv.maxAgeDays)
         console.log(result.message)
     })
+    .command('regenerate-pr-nginx', 'Regenerate nginx configs for an existing PR deployment', (yargs) =>
+        yargs.option('number', {
+            demandOption: true,
+            describe: 'PR number to regenerate nginx configs for',
+            type: 'number',
+        })
+    , async (argv) => {
+        const {regeneratePRNginx} = await import('./lib/pr-deploy')
+        const result = await regeneratePRNginx(argv.number)
+        console.log(result.message)
+        process.exit(result.success ? 0 : 1)
+    })
     .demandCommand()
     .help('help')
     .showHelpOnFail(true)

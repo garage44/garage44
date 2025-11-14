@@ -13,6 +13,11 @@ jobs:
     # This ensures only contributors can trigger deployments
     if: github.event.pull_request.head.repo.full_name == github.repository
 
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
     steps:
       - name: Deploy PR
         if: github.event.action != 'closed'
@@ -89,7 +94,6 @@ jobs:
               `- **Malkovich**: https://pr-${prNumber}-malkovich.${baseDomain}\n` +
               `- **Expressio**: https://pr-${prNumber}-expressio.${baseDomain}\n` +
               `- **Pyrite**: https://pr-${prNumber}-pyrite.${baseDomain}\n\n` +
-              `✅ No authentication required - public access for contributors.\n\n` +
               `_This deployment will be automatically cleaned up when the PR is closed or after 7 days._`;
 
             await github.rest.issues.createComment({

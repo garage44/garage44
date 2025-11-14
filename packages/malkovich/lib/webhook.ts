@@ -4,6 +4,7 @@ import {existsSync, unlinkSync} from 'fs'
 import {findWorkspaceRoot, extractWorkspacePackages, isApplicationPackage} from './workspace'
 import {cleanupPRDeployment} from './pr-cleanup'
 import {deployPR, type PRMetadata} from './pr-deploy'
+import {updatePRDeployment} from './pr-registry'
 
 interface PullRequestWebhookEvent {
     action?: string
@@ -215,15 +216,26 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
             repo_full_name: pullRequest.head.repo.full_name,
         }
 
-        // Deploy asynchronously
+        // Deploy asynchronously (but log errors properly)
         deployPR(pr).then((result) => {
             if (result.success) {
-                console.log(`[webhook] PR #${prNumber} deployment successful`)
+                console.log(`[webhook] PR #${prNumber} deployment successful: ${result.message}`)
             } else {
                 console.error(`[webhook] PR #${prNumber} deployment failed: ${result.message}`)
+                // Update deployment status to failed if it exists
+                if (result.deployment) {
+                    updatePRDeployment(prNumber, {status: 'failed'}).catch((err) => {
+                        console.error('[webhook] Failed to update deployment status:', err)
+                    })
+                }
             }
         }).catch((error) => {
-            console.error(`[webhook] PR #${prNumber} deployment error:`, error)
+            const errorMessage = error instanceof Error ? error.message : String(error)
+            console.error(`[webhook] PR #${prNumber} deployment error:`, errorMessage)
+            // Update deployment status to failed
+            updatePRDeployment(prNumber, {status: 'failed'}).catch((err) => {
+                console.error('[webhook] Failed to update deployment status:', err)
+            })
         })
 
         return new Response(JSON.stringify({

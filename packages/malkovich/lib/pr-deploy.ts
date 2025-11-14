@@ -272,12 +272,7 @@ export async function deployPR(pr: PRMetadata): Promise<{
         }
 
         // Discover which packages to deploy
-        const allPackages = extractWorkspacePackages(repoDir)
-        console.log(`[pr-deploy] All discovered packages: ${allPackages.join(', ')}`)
-        const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
-        console.log(`[pr-deploy] Application packages (after filter): ${appPackages.join(', ')}`)
-        const packagesToDeploy = [...appPackages, 'malkovich'] // Always include malkovich
-
+        const packagesToDeploy = discoverPackagesToDeploy(repoDir)
         console.log(`[pr-deploy] Discovered packages to deploy: ${packagesToDeploy.join(', ')}`)
 
         // Generate systemd service files
@@ -367,27 +362,75 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         console.log(`[pr-deploy] Updating PR #${pr.number}...`)
 
         const repoDir = path.join(existing.directory, 'repo')
+        
+        // Verify repo directory exists
+        if (!existsSync(repoDir)) {
+            throw new Error(`Repository directory not found: ${repoDir}`)
+        }
+        
         process.chdir(repoDir)
 
         // Fetch and checkout new commit
-        await $`git fetch origin ${pr.head_ref}`.quiet()
-        await $`git checkout ${pr.head_sha}`.quiet()
+        console.log(`[pr-deploy] Fetching branch ${pr.head_ref}...`)
+        const fetchResult = await $`git fetch origin ${pr.head_ref}`.nothrow()
+        if (fetchResult.exitCode !== 0) {
+            const stderr = fetchResult.stderr?.toString() || ''
+            const stdout = fetchResult.stdout?.toString() || ''
+            throw new Error(`Failed to fetch branch ${pr.head_ref}: ${stderr || stdout || 'Unknown error'}`)
+        }
+        
+        console.log(`[pr-deploy] Checking out commit ${pr.head_sha}...`)
+        const checkoutResult = await $`git checkout ${pr.head_sha}`.nothrow()
+        if (checkoutResult.exitCode !== 0) {
+            const stderr = checkoutResult.stderr?.toString() || ''
+            const stdout = checkoutResult.stdout?.toString() || ''
+            throw new Error(`Failed to checkout commit ${pr.head_sha}: ${stderr || stdout || 'Unknown error'}`)
+        }
+        console.log(`[pr-deploy] Checked out commit: ${pr.head_sha}`)
 
         // Rebuild
-        await $`bun install`.quiet()
-        await $`bun run build`.quiet()
+        console.log('[pr-deploy] Installing dependencies...')
+        const installResult = await $`bun install`.nothrow()
+        if (installResult.exitCode !== 0) {
+            const stderr = installResult.stderr?.toString() || ''
+            const stdout = installResult.stdout?.toString() || ''
+            throw new Error(`Failed to install dependencies: ${stderr || stdout || 'Unknown error'}`)
+        }
+        
+        console.log('[pr-deploy] Building packages...')
+        const buildResult = await $`bun run build`.nothrow()
+        if (buildResult.exitCode !== 0) {
+            const stderr = buildResult.stderr?.toString() || ''
+            const stdout = buildResult.stdout?.toString() || ''
+            throw new Error(`Build failed: ${stderr || stdout || 'Unknown error'}`)
+        }
+        console.log('[pr-deploy] Build completed successfully')
 
         // Discover which packages to deploy
-        const allPackages = extractWorkspacePackages(repoDir)
-        const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
-        const packagesToDeploy = [...appPackages, 'malkovich'] // Always include malkovich
-
+        const packagesToDeploy = discoverPackagesToDeploy(repoDir)
         console.log(`[pr-deploy] Discovered packages to restart: ${packagesToDeploy.join(', ')}`)
+
+        // Regenerate systemd service files (in case packages changed or files are missing)
+        console.log('[pr-deploy] Regenerating systemd service files...')
+        await generateSystemdServices(existing, packagesToDeploy)
+
+        // Regenerate nginx configs to ensure correct port mapping
+        console.log('[pr-deploy] Regenerating nginx configurations...')
+        await generateNginxConfig(existing, packagesToDeploy)
 
         // Restart services
         for (const packageName of packagesToDeploy) {
-            await $`sudo systemctl restart pr-${pr.number}-${packageName}.service`.quiet()
-            console.log(`[pr-deploy] Restarted ${packageName} service`)
+            const restartResult = await $`sudo systemctl restart pr-${pr.number}-${packageName}.service`.nothrow()
+            if (restartResult.exitCode === 0) {
+                console.log(`[pr-deploy] Restarted ${packageName} service`)
+            } else {
+                const stderr = restartResult.stderr?.toString() || ''
+                const stdout = restartResult.stdout?.toString() || ''
+                // Check if service exists
+                const statusResult = await $`sudo systemctl status pr-${pr.number}-${packageName}.service --no-pager -l`.nothrow()
+                const statusOutput = statusResult.stdout?.toString() || ''
+                throw new Error(`Failed to restart ${packageName} service: ${stderr || stdout || 'Unknown error'}\nService status: ${statusOutput}`)
+            }
         }
 
         // Update deployment record
@@ -406,12 +449,29 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-deploy] Update failed: ${message}`)
+        
+        // Update deployment status to failed
+        try {
+            await updatePRDeployment(pr.number, {status: 'failed'})
+        } catch (statusError) {
+            console.error('[pr-deploy] Failed to update deployment status:', statusError)
+        }
+        
         return {
             deployment: null,
             message: `Update failed: ${message}`,
             success: false,
         }
     }
+}
+
+/**
+ * Discover which packages should be deployed for a PR
+ */
+function discoverPackagesToDeploy(repoDir: string): string[] {
+    const allPackages = extractWorkspacePackages(repoDir)
+    const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+    return [...appPackages, 'malkovich'] // Always include malkovich
 }
 
 /**
@@ -511,12 +571,27 @@ async function generateNginxConfig(deployment: PRDeployment, packagesToDeploy: s
         pyrite: deployment.ports.pyrite,
     }
 
+    // Validate that ports are different (sanity check)
+    const uniquePorts = new Set(Object.values(portMap))
+    if (uniquePorts.size !== Object.keys(portMap).length) {
+        console.warn(`[pr-deploy] WARNING: Some packages have duplicate ports! Ports: ${JSON.stringify(portMap)}`)
+    }
+
     // Packages that need WebSocket support
     const websocketPackages = ['expressio', 'pyrite', 'malkovich']
 
     // Generate nginx config for each package
     for (const packageName of packagesToDeploy) {
         const port = portMap[packageName] || deployment.ports.malkovich
+        
+        // Validate port is in the expected range
+        if (port < PR_PORT_BASE || port >= PR_PORT_BASE + PR_PORT_RANGE) {
+            console.warn(`[pr-deploy] WARNING: Port ${port} for ${packageName} is outside expected range [${PR_PORT_BASE}, ${PR_PORT_BASE + PR_PORT_RANGE})`)
+        }
+        
+        // Log port mapping for debugging
+        console.log(`[pr-deploy] Generating nginx config for ${packageName}: port ${port} (subdomain: pr-${prNumber}-${packageName}.${baseDomain})`)
+        
         // Use single-level subdomain (pr-999-malkovich.garage44.org) to work with *.garage44.org wildcard cert
         const subdomain = `pr-${prNumber}-${packageName}.${baseDomain}`
         const configFile = `/etc/nginx/sites-available/${subdomain}`
@@ -658,4 +733,55 @@ server {
         throw new Error(`Failed to reload nginx: ${stderr || stdout || 'Unknown error'}\nNginx config test: ${testOutput}`)
     }
     console.log('[pr-deploy] Nginx reloaded successfully')
+}
+
+/**
+ * Regenerate nginx configs for an existing PR deployment
+ * Useful for fixing incorrect port mappings without redeploying
+ */
+export async function regeneratePRNginx(prNumber: number): Promise<{
+    message: string
+    success: boolean
+}> {
+    try {
+        const deployment = await getPRDeployment(prNumber)
+        if (!deployment) {
+            return {
+                message: `PR #${prNumber} deployment not found`,
+                success: false,
+            }
+        }
+
+        if (deployment.status !== 'running') {
+            return {
+                message: `PR #${prNumber} deployment is not running (status: ${deployment.status})`,
+                success: false,
+            }
+        }
+
+        console.log(`[pr-deploy] Regenerating nginx configs for PR #${prNumber}...`)
+
+        const repoDir = path.join(deployment.directory, 'repo')
+        
+        // Discover which packages are deployed
+        const packagesToDeploy = discoverPackagesToDeploy(repoDir)
+        console.log(`[pr-deploy] Discovered packages: ${packagesToDeploy.join(', ')}`)
+
+        // Regenerate nginx configs
+        await generateNginxConfig(deployment, packagesToDeploy)
+
+        console.log(`[pr-deploy] Nginx configs regenerated successfully for PR #${prNumber}`)
+
+        return {
+            message: `Nginx configs regenerated successfully for PR #${prNumber}`,
+            success: true,
+        }
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.error(`[pr-deploy] Failed to regenerate nginx configs: ${message}`)
+        return {
+            message: `Failed to regenerate nginx configs: ${message}`,
+            success: false,
+        }
+    }
 }

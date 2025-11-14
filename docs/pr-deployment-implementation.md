@@ -56,7 +56,7 @@ export async function loadPRRegistry(): Promise<PRRegistry> {
     if (!existsSync(REGISTRY_PATH)) {
         return {}
     }
-    
+
     try {
         const content = readFileSync(REGISTRY_PATH, 'utf-8')
         return JSON.parse(content)
@@ -150,7 +150,7 @@ export function validatePRSource(pr: PRMetadata): 'trusted' | 'untrusted' {
         console.log(`[pr-deploy] PR #${pr.number} is from a fork, deployment blocked`)
         return 'untrusted'
     }
-    
+
     // Main repo PRs are trusted and get public access
     return 'trusted'
 }
@@ -177,12 +177,12 @@ export function allocatePRPorts(prNumber: number): {
 export function generatePRToken(prNumber: number): string {
     const secret = process.env.PR_DEPLOYMENT_SECRET || process.env.WEBHOOK_SECRET || ''
     const data = `pr-${prNumber}-${Date.now()}`
-    
+
     // Use Bun's built-in crypto
     const encoder = new TextEncoder()
     const key = encoder.encode(secret)
     const message = encoder.encode(data)
-    
+
     return crypto.subtle
         .importKey('raw', key, {hash: 'SHA-256', name: 'HMAC'}, false, ['sign'])
         .then((cryptoKey) => crypto.subtle.sign('HMAC', cryptoKey, message))
@@ -209,7 +209,7 @@ export async function deployPR(pr: PRMetadata): Promise<{
 }> {
     try {
         console.log(`[pr-deploy] Starting deployment for PR #${pr.number}`)
-        
+
         // Validate PR source - block forks completely
         const trustLevel = validatePRSource(pr)
         if (trustLevel !== 'trusted') {
@@ -219,32 +219,32 @@ export async function deployPR(pr: PRMetadata): Promise<{
                 success: false,
             }
         }
-        
+
         // Check if already deployed
         const existing = await getPRDeployment(pr.number)
         if (existing && existing.status === 'running') {
             console.log(`[pr-deploy] PR #${pr.number} already deployed, updating...`)
             return await updatePRDeployment(pr)
         }
-        
+
         // Create deployment directory
         const prDir = path.join(PR_DEPLOYMENTS_DIR, `pr-${pr.number}`)
         const repoDir = path.join(prDir, 'repo')
         const logsDir = path.join(prDir, 'logs')
-        
+
         if (!existsSync(prDir)) {
             mkdirSync(prDir, {recursive: true})
         }
         if (!existsSync(logsDir)) {
             mkdirSync(logsDir, {recursive: true})
         }
-        
+
         // Allocate ports
         const ports = allocatePRPorts(pr.number)
-        
+
         // Generate access token
         const token = await generatePRToken(pr.number)
-        
+
         // Create deployment record
         const deployment: PRDeployment = {
             author: pr.author,
@@ -258,9 +258,9 @@ export async function deployPR(pr: PRMetadata): Promise<{
             token,
             updated: Date.now(),
         }
-        
+
         await addPRDeployment(deployment)
-        
+
         // Clone or pull repository
         if (!existsSync(repoDir)) {
             console.log(`[pr-deploy] Cloning repository...`)
@@ -270,23 +270,23 @@ export async function deployPR(pr: PRMetadata): Promise<{
                 throw new Error('Failed to clone repository')
             }
         }
-        
+
         // Fetch and checkout PR branch
         console.log(`[pr-deploy] Checking out PR branch ${pr.head_ref}...`)
         process.chdir(repoDir)
-        
+
         const fetchResult = await $`git fetch origin ${pr.head_ref}`.quiet()
         if (fetchResult.exitCode !== 0) {
             await updatePRDeployment(pr.number, {status: 'failed'})
             throw new Error('Failed to fetch PR branch')
         }
-        
+
         const checkoutResult = await $`git checkout ${pr.head_sha}`.quiet()
         if (checkoutResult.exitCode !== 0) {
             await updatePRDeployment(pr.number, {status: 'failed'})
             throw new Error('Failed to checkout PR commit')
         }
-        
+
         // Install dependencies
         console.log(`[pr-deploy] Installing dependencies...`)
         const installResult = await $`bun install`.quiet()
@@ -294,7 +294,7 @@ export async function deployPR(pr: PRMetadata): Promise<{
             await updatePRDeployment(pr.number, {status: 'failed'})
             throw new Error('Failed to install dependencies')
         }
-        
+
         // Build packages
         console.log(`[pr-deploy] Building packages...`)
         const buildResult = await $`bun run build`.quiet()
@@ -302,13 +302,13 @@ export async function deployPR(pr: PRMetadata): Promise<{
             await updatePRDeployment(pr.number, {status: 'failed'})
             throw new Error('Build failed')
         }
-        
+
         // Generate systemd service files
         await generateSystemdServices(deployment)
-        
+
         // Generate nginx configuration
         await generateNginxConfig(deployment)
-        
+
         // Start services
         console.log(`[pr-deploy] Starting services...`)
         const services = ['expressio', 'pyrite', 'malkovich']
@@ -318,15 +318,15 @@ export async function deployPR(pr: PRMetadata): Promise<{
                 console.warn(`[pr-deploy] Failed to start ${service} service`)
             }
         }
-        
+
         // Update deployment status
         await updatePRDeployment(pr.number, {status: 'running'})
-        
+
         const deploymentUrl = `https://pr-${pr.number}.garage44.org`
-        
+
         console.log(`[pr-deploy] PR #${pr.number} deployed successfully`)
         console.log(`[pr-deploy] URL: ${deploymentUrl} (public access, no token required)`)
-        
+
         return {
             deployment: {
                 ...deployment,
@@ -362,35 +362,35 @@ async function updatePRDeployment(pr: PRMetadata): Promise<{
             success: false,
         }
     }
-    
+
     try {
         console.log(`[pr-deploy] Updating PR #${pr.number}...`)
-        
+
         const repoDir = path.join(existing.directory, 'repo')
         process.chdir(repoDir)
-        
+
         // Fetch and checkout new commit
         await $`git fetch origin ${pr.head_ref}`.quiet()
         await $`git checkout ${pr.head_sha}`.quiet()
-        
+
         // Rebuild
         await $`bun install`.quiet()
         await $`bun run build`.quiet()
-        
+
         // Restart services
         const services = ['expressio', 'pyrite', 'malkovich']
         for (const service of services) {
             await $`sudo systemctl restart pr-${pr.number}-${service}.service`.quiet()
         }
-        
+
         // Update deployment record
         await updatePRDeployment(pr.number, {
             head_sha: pr.head_sha,
             status: 'running',
         })
-        
+
         console.log(`[pr-deploy] PR #${pr.number} updated successfully`)
-        
+
         return {
             deployment: existing,
             message: `PR #${pr.number} updated successfully`,
@@ -428,7 +428,7 @@ async function generateSystemdServices(deployment: PRDeployment): Promise<void> 
             workdir: path.join(deployment.directory, 'repo/packages/malkovich'),
         },
     ]
-    
+
     for (const service of services) {
         const serviceFile = `/etc/systemd/system/pr-${deployment.number}-${service.name}.service`
         const content = `[Unit]
@@ -458,10 +458,10 @@ TasksMax=100
 [Install]
 WantedBy=multi-user.target
 `
-        
+
         writeFileSync(serviceFile, content, 'utf-8')
     }
-    
+
     // Reload systemd
     await $`sudo systemctl daemon-reload`.quiet()
 }
@@ -474,7 +474,7 @@ async function generateNginxConfig(deployment: PRDeployment): Promise<void> {
     const domain = `pr-${deployment.number}.garage44.org`
     const configFile = `/etc/nginx/sites-available/${domain}`
     const enabledLink = `/etc/nginx/sites-enabled/${domain}`
-    
+
     const content = `# PR #${deployment.number} deployment (public access)
 # Rate limit zone (defined in main nginx.conf if not already present)
 # limit_req_zone $binary_remote_addr zone=pr_public:10m rate=10r/s;
@@ -489,28 +489,28 @@ server {
     listen 443 ssl;
     http2 on;
     server_name ${domain};
-    
+
     # Wildcard SSL certificate
     ssl_certificate /etc/letsencrypt/live/garage44.org/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/garage44.org/privkey.pem;
-    
+
     # SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
     ssl_prefer_server_ciphers on;
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 10m;
-    
+
     # Prevent search engine indexing
     add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
-    
+
     # PR deployment indicator
     add_header X-PR-Deployment "${deployment.number}" always;
-    
+
     # Rate limiting for public access
     limit_req zone=pr_public burst=20 nodelay;
     limit_req_status 429;
-    
+
     # Malkovich (main)
     location / {
         proxy_pass http://localhost:${deployment.ports.malkovich};
@@ -520,7 +520,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-    
+
     # WebSocket
     location /ws {
         proxy_pass http://localhost:${deployment.ports.malkovich};
@@ -536,14 +536,14 @@ server {
     }
 }
 `
-    
+
     writeFileSync(configFile, content, 'utf-8')
-    
+
     // Create symlink if it doesn't exist
     if (!existsSync(enabledLink)) {
         await $`sudo ln -s ${configFile} ${enabledLink}`.quiet()
     }
-    
+
     // Reload nginx
     await $`sudo nginx -s reload`.quiet()
 }
@@ -571,7 +571,7 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
 }> {
     try {
         console.log(`[pr-cleanup] Cleaning up PR #${prNumber}...`)
-        
+
         const deployment = await getPRDeployment(prNumber)
         if (!deployment) {
             return {
@@ -579,10 +579,10 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
                 success: false,
             }
         }
-        
+
         // Update status
         await updatePRDeployment(prNumber, {status: 'cleaning'})
-        
+
         // Stop systemd services
         const services = ['expressio', 'pyrite', 'malkovich']
         for (const service of services) {
@@ -593,7 +593,7 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
                 console.warn(`[pr-cleanup] Failed to stop ${service} service:`, error)
             }
         }
-        
+
         // Remove systemd units
         for (const service of services) {
             try {
@@ -605,9 +605,9 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
                 console.warn(`[pr-cleanup] Failed to remove ${service} unit:`, error)
             }
         }
-        
+
         await $`sudo systemctl daemon-reload`.quiet()
-        
+
         // Remove nginx configuration
         try {
             const domain = `pr-${prNumber}.garage44.org`
@@ -618,7 +618,7 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
         } catch (error) {
             console.warn(`[pr-cleanup] Failed to remove nginx config:`, error)
         }
-        
+
         // Remove deployment directory
         try {
             await $`rm -rf ${deployment.directory}`.quiet()
@@ -626,12 +626,12 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
         } catch (error) {
             console.warn(`[pr-cleanup] Failed to remove directory:`, error)
         }
-        
+
         // Remove from registry
         await removePRDeployment(prNumber)
-        
+
         console.log(`[pr-cleanup] PR #${prNumber} cleaned up successfully`)
-        
+
         return {
             message: `PR #${prNumber} cleaned up successfully`,
             success: true,
@@ -654,11 +654,11 @@ export async function cleanupStaleDeployments(
 ): Promise<{cleaned: number; message: string}> {
     try {
         console.log(`[pr-cleanup] Checking for stale deployments (max age: ${maxAgeDays} days)...`)
-        
+
         const registry = await loadPRRegistry()
         const maxAge = maxAgeDays * 24 * 60 * 60 * 1000
         const now = Date.now()
-        
+
         let cleaned = 0
         for (const [prNumber, deployment] of Object.entries(registry)) {
             const age = now - deployment.created
@@ -670,13 +670,13 @@ export async function cleanupStaleDeployments(
                 }
             }
         }
-        
+
         const message = cleaned > 0
             ? `Cleaned up ${cleaned} stale deployment(s)`
             : 'No stale deployments found'
-        
+
         console.log(`[pr-cleanup] ${message}`)
-        
+
         return {cleaned, message}
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
@@ -690,14 +690,14 @@ export async function cleanupStaleDeployments(
  */
 export async function listPRDeployments(): Promise<void> {
     const deployments = await listActivePRDeployments()
-    
+
     if (deployments.length === 0) {
         console.log('No active PR deployments')
         return
     }
-    
+
     console.log(`\nActive PR Deployments (${deployments.length}):\n`)
-    
+
     for (const deployment of deployments) {
         const ageHours = Math.round((Date.now() - deployment.created) / (60 * 60 * 1000))
         console.log(`PR #${deployment.number}:`)
@@ -724,16 +724,16 @@ import {cleanupPRDeployment, deployPR, type PRMetadata} from './pr-deploy'
 async function handlePullRequestEvent(event: any): Promise<Response> {
     const action = event.action
     const prNumber = event.pull_request?.number
-    
+
     if (!prNumber) {
         return new Response(JSON.stringify({error: 'Missing PR number'}), {
             headers: {'Content-Type': 'application/json'},
             status: 400,
         })
     }
-    
+
     console.log(`[webhook] PR #${prNumber} event: ${action}`)
-    
+
     // Handle PR close/merge - cleanup
     if (action === 'closed') {
         const result = await cleanupPRDeployment(prNumber)
@@ -742,7 +742,7 @@ async function handlePullRequestEvent(event: any): Promise<Response> {
             status: result.success ? 200 : 500,
         })
     }
-    
+
     // Handle PR open/sync - deploy
     if (action === 'opened' || action === 'synchronize' || action === 'reopened') {
         const pr: PRMetadata = {
@@ -753,7 +753,7 @@ async function handlePullRequestEvent(event: any): Promise<Response> {
             number: prNumber,
             repo_full_name: event.pull_request.head.repo.full_name,
         }
-        
+
         // Deploy asynchronously
         deployPR(pr).then((result) => {
             if (result.success) {
@@ -764,7 +764,7 @@ async function handlePullRequestEvent(event: any): Promise<Response> {
         }).catch((error) => {
             console.error(`[webhook] PR #${prNumber} deployment error:`, error)
         })
-        
+
         return new Response(JSON.stringify({
             message: `PR #${prNumber} deployment triggered`,
             timestamp: new Date().toISOString(),
@@ -773,7 +773,7 @@ async function handlePullRequestEvent(event: any): Promise<Response> {
             status: 202,
         })
     }
-    
+
     // Ignore other actions
     return new Response(JSON.stringify({
         message: `Ignored PR action: ${action}`,
@@ -786,15 +786,15 @@ async function handlePullRequestEvent(event: any): Promise<Response> {
 // Modify handleWebhook function - add this after eventType check:
 export async function handleWebhook(req: Request): Promise<Response> {
     // ... existing validation code ...
-    
+
     // Check event type
     const eventType = req.headers.get('x-github-event')
-    
+
     // Handle pull request events
     if (eventType === 'pull_request') {
         return await handlePullRequestEvent(event)
     }
-    
+
     // Handle push events (existing main branch deployment)
     if (eventType !== 'push') {
         return new Response(JSON.stringify({message: `Ignored: event type ${eventType}`}), {
@@ -802,7 +802,7 @@ export async function handleWebhook(req: Request): Promise<Response> {
             status: 200,
         })
     }
-    
+
     // ... rest of existing code for main branch deployment ...
 }
 ```
@@ -820,11 +820,11 @@ jobs:
   deploy:
     name: Deploy or Cleanup PR
     runs-on: ubuntu-latest
-    
+
     # SECURITY: Only deploy PRs from main repo (no forks)
     # This ensures only contributors can trigger deployments
     if: github.event.pull_request.head.repo.full_name == github.repository
-    
+
     steps:
       - name: Deploy PR
         if: github.event.action != 'closed'
@@ -854,26 +854,26 @@ jobs:
               "action": $action,
               "pull_request": $pr
             }')
-          
+
           # Calculate HMAC signature
           SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" -binary | xxd -p -c 256)
-          
+
           # Send webhook
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -H "X-GitHub-Event: pull_request" \
             -H "X-Hub-Signature-256: sha256=$SIGNATURE" \
             -d "$PAYLOAD")
-          
+
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | head -n-1)
-          
+
           echo "Response body: $BODY"
           echo "HTTP code: $HTTP_CODE"
-          
+
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             echo "✅ PR deployment triggered (HTTP $HTTP_CODE)"
-            
+
             # Store PR number for comment step
             echo "deployment_triggered=true" >> $GITHUB_OUTPUT
             echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
@@ -881,13 +881,13 @@ jobs:
             echo "❌ PR deployment failed (HTTP $HTTP_CODE)"
             exit 1
           fi
-      
+
       - name: Wait for deployment
         if: steps.deploy.outputs.deployment_triggered == 'true'
         run: |
           echo "Waiting 30 seconds for deployment to complete..."
           sleep 30
-      
+
       - name: Comment PR with deployment URL
         if: steps.deploy.outputs.deployment_triggered == 'true'
         uses: actions/github-script@v7
@@ -895,22 +895,21 @@ jobs:
           script: |
             const prNumber = context.payload.pull_request.number;
             const domain = `pr-${prNumber}.garage44.org`;
-            
+
             const body = `🚀 **PR Deployment Available**\n\n` +
               `Your changes have been deployed and are publicly accessible:\n\n` +
               `- **Malkovich**: https://${domain}\n` +
               `- **Expressio**: https://expressio.${domain}\n` +
               `- **Pyrite**: https://pyrite.${domain}\n\n` +
-              `✅ No authentication required - public access for contributors.\n\n` +
               `_This deployment will be automatically cleaned up when the PR is closed or after 7 days._`;
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
               body: body
             });
-      
+
       - name: Cleanup PR Deployment
         if: github.event.action == 'closed'
         env:
@@ -926,19 +925,19 @@ jobs:
               "action": "closed",
               "pull_request": $pr
             }')
-          
+
           # Calculate signature
           SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" -binary | xxd -p -c 256)
-          
+
           # Send webhook
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -H "X-GitHub-Event: pull_request" \
             -H "X-Hub-Signature-256: sha256=$SIGNATURE" \
             -d "$PAYLOAD")
-          
+
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          
+
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             echo "✅ PR deployment cleaned up (HTTP $HTTP_CODE)"
           else
@@ -1008,7 +1007,7 @@ cli.command('deploy-pr', 'Deploy a PR branch manually (for Cursor agent)', (yarg
         })
 , async (argv) => {
     const {deployPR} = await import('./lib/pr-deploy')
-    
+
     // Get latest SHA if not provided
     let sha = argv.sha
     if (!sha) {
@@ -1016,7 +1015,7 @@ cli.command('deploy-pr', 'Deploy a PR branch manually (for Cursor agent)', (yarg
         const result = await $`git rev-parse origin/${argv.branch}`.quiet()
         sha = result.stdout.toString().trim()
     }
-    
+
     const pr = {
         author: argv.author,
         head_ref: argv.branch,
@@ -1025,9 +1024,9 @@ cli.command('deploy-pr', 'Deploy a PR branch manually (for Cursor agent)', (yarg
         number: argv.number,
         repo_full_name: 'garage44/garage44',
     }
-    
+
     const result = await deployPR(pr)
-    
+
     if (result.success && result.deployment) {
         console.log('\n✅ PR Deployment Successful!\n')
         console.log(`URL: https://pr-${argv.number}.garage44.org`)
