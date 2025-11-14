@@ -32,8 +32,6 @@ function getMainRepoPath(): string {
     return path.join(homedir(), 'garage44/garage44')
 }
 
-const MAIN_REPO_PATH = getMainRepoPath()
-
 export interface PRMetadata {
     author: string
     head_ref: string
@@ -193,7 +191,7 @@ export async function deployPR(pr: PRMetadata): Promise<{
         const githubUrl = `https://github.com/${pr.repo_full_name}.git`
         const remoteSetResult = await $`git remote set-url origin ${githubUrl}`.nothrow()
         if (remoteSetResult.exitCode !== 0) {
-            console.warn(`[pr-deploy] Failed to update remote URL, continuing with existing remote`)
+            console.warn('[pr-deploy] Failed to update remote URL, continuing with existing remote')
         }
 
         const fetchResult = await $`git fetch origin ${pr.head_ref}`.quiet()
@@ -386,7 +384,7 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         const githubUrl = `https://github.com/${pr.repo_full_name}.git`
         const remoteSetResult = await $`git remote set-url origin ${githubUrl}`.nothrow()
         if (remoteSetResult.exitCode !== 0) {
-            console.warn(`[pr-deploy] Failed to update remote URL, continuing with existing remote`)
+            console.warn('[pr-deploy] Failed to update remote URL, continuing with existing remote')
         }
         const fetchResult = await $`git fetch origin ${pr.head_ref}`.nothrow()
         if (fetchResult.exitCode !== 0) {
