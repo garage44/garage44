@@ -515,12 +515,23 @@ async function generateNginxConfig(deployment: PRDeployment, packagesToDeploy: s
         pyrite: deployment.ports.pyrite,
     }
 
+    // Validate that ports are different (sanity check)
+    const uniquePorts = new Set(Object.values(portMap))
+    if (uniquePorts.size !== Object.keys(portMap).length) {
+        console.warn(`[pr-deploy] WARNING: Some packages have duplicate ports! Ports: ${JSON.stringify(portMap)}`)
+    }
+
     // Packages that need WebSocket support
     const websocketPackages = ['expressio', 'pyrite', 'malkovich']
 
     // Generate nginx config for each package
     for (const packageName of packagesToDeploy) {
         const port = portMap[packageName] || deployment.ports.malkovich
+        
+        // Validate port is in the expected range
+        if (port < PR_PORT_BASE || port >= PR_PORT_BASE + PR_PORT_RANGE) {
+            console.warn(`[pr-deploy] WARNING: Port ${port} for ${packageName} is outside expected range [${PR_PORT_BASE}, ${PR_PORT_BASE + PR_PORT_RANGE})`)
+        }
         
         // Log port mapping for debugging
         console.log(`[pr-deploy] Generating nginx config for ${packageName}: port ${port} (subdomain: pr-${prNumber}-${packageName}.${baseDomain})`)
