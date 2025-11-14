@@ -1,6 +1,7 @@
 import {$} from 'bun'
 import {homedir} from 'node:os'
 import {existsSync, unlinkSync} from 'fs'
+import {join as pathJoin} from 'path'
 import {findWorkspaceRoot, extractWorkspacePackages, isApplicationPackage} from './workspace'
 import {cleanupPRDeployment} from './pr-cleanup'
 import {deployPR, type PRMetadata} from './pr-deploy'
@@ -115,9 +116,28 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
     try {
         console.log('[deploy] Starting deployment...')
         console.log(`[deploy] Repository path: ${REPO_PATH}`)
+        console.log(`[deploy] Current working directory: ${process.cwd()}`)
+
+        // Verify repository path exists
+        if (!existsSync(REPO_PATH)) {
+            throw new Error(`Repository path does not exist: ${REPO_PATH}`)
+        }
+        console.log(`[deploy] Repository path verified: ${REPO_PATH}`)
 
         // Change to repository directory
-        process.chdir(REPO_PATH)
+        try {
+            process.chdir(REPO_PATH)
+            console.log(`[deploy] Changed to repository directory: ${process.cwd()}`)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error)
+            throw new Error(`Failed to change to repository directory: ${message}`)
+        }
+
+        // Verify git repository
+        if (!existsSync(pathJoin(REPO_PATH, '.git'))) {
+            throw new Error(`Not a git repository: ${REPO_PATH}`)
+        }
+        console.log('[deploy] Git repository verified')
 
         // Pull latest code from main branch
         console.log('[deploy] Pulling latest code from main branch...')
@@ -132,41 +152,80 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
         }
         console.log('[deploy] Code pulled successfully')
 
+        // Verify bun is available
+        try {
+            const bunVersionResult = await $`bun --version`.nothrow()
+            if (bunVersionResult.exitCode !== 0) {
+                throw new Error('Bun is not available or not in PATH')
+            }
+            const bunVersion = bunVersionResult.stdout?.toString().trim() || 'unknown'
+            console.log(`[deploy] Bun version: ${bunVersion}`)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error)
+            throw new Error(`Failed to verify bun installation: ${message}`)
+        }
+
         // Remove database files
+        console.log('[deploy] Removing database files...')
         removeDatabases()
+        console.log('[deploy] Database files removed')
+
+        // Verify package.json exists
+        const packageJsonPath = pathJoin(REPO_PATH, 'package.json')
+        if (!existsSync(packageJsonPath)) {
+            throw new Error(`package.json not found at ${packageJsonPath}`)
+        }
+        console.log('[deploy] package.json verified')
 
         // Build all packages
         console.log('[deploy] Building all packages...')
+        console.log('[deploy] Build command: bun run build')
+        console.log(`[deploy] Working directory: ${process.cwd()}`)
         const buildResult = await $`bun run build`.nothrow()
         if (buildResult.exitCode !== 0) {
             const stderr = buildResult.stderr?.toString() || ''
             const stdout = buildResult.stdout?.toString() || ''
             const errorOutput = stderr || stdout || 'Unknown build error'
             console.error(`[deploy] Build failed with exit code ${buildResult.exitCode}`)
-            console.error(`[deploy] Build stderr: ${stderr}`)
-            console.error(`[deploy] Build stdout: ${stdout}`)
+            console.error(`[deploy] Build stderr (first 2000 chars): ${stderr.slice(0, 2000)}`)
+            console.error(`[deploy] Build stdout (first 2000 chars): ${stdout.slice(0, 2000)}`)
+            if (stderr.length > 2000) {
+                console.error(`[deploy] Build stderr (truncated, total length: ${stderr.length})`)
+            }
+            if (stdout.length > 2000) {
+                console.error(`[deploy] Build stdout (truncated, total length: ${stdout.length})`)
+            }
             throw new Error(`Build failed: ${errorOutput.slice(0, 1000)}`)
         }
         console.log('[deploy] Build completed successfully')
 
         // Auto-discover packages from workspace
+        console.log('[deploy] Discovering packages to deploy...')
         const workspaceRoot = findWorkspaceRoot() || REPO_PATH
+        console.log(`[deploy] Workspace root: ${workspaceRoot}`)
         const allPackages = extractWorkspacePackages(workspaceRoot)
+        console.log(`[deploy] All packages found: ${allPackages.join(', ')}`)
         const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+        console.log(`[deploy] Application packages: ${appPackages.join(', ')}`)
 
         // Always include malkovich in deployment
         const packagesToDeploy = [...appPackages, 'malkovich']
+        console.log(`[deploy] Packages to deploy: ${packagesToDeploy.join(', ')}`)
 
         // Restart systemd services for all packages
         console.log('[deploy] Restarting systemd services...')
         for (const packageName of packagesToDeploy) {
             try {
                 console.log(`[deploy] Restarting ${packageName} service...`)
-                const restartResult = await $`sudo systemctl restart ${packageName}.service`.quiet()
+                const restartResult = await $`sudo systemctl restart ${packageName}.service`.nothrow()
                 if (restartResult.exitCode === 0) {
                     console.log(`[deploy] ${packageName} service restarted successfully`)
                 } else {
-                    console.warn(`[deploy] Failed to restart ${packageName} service`)
+                    const stderr = restartResult.stderr?.toString() || ''
+                    const stdout = restartResult.stdout?.toString() || ''
+                    console.warn(`[deploy] Failed to restart ${packageName} service (exit code ${restartResult.exitCode})`)
+                    console.warn(`[deploy] ${packageName} restart stderr: ${stderr}`)
+                    console.warn(`[deploy] ${packageName} restart stdout: ${stdout}`)
                 }
             } catch (error: unknown) {
                 const message = error instanceof Error ? error.message : String(error)
@@ -178,7 +237,11 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
         return {message: 'Deployment completed successfully', success: true}
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error)
+        const stack = error instanceof Error ? error.stack : undefined
         console.error(`[deploy] Deployment failed: ${message}`)
+        if (stack) {
+            console.error(`[deploy] Stack trace: ${stack}`)
+        }
         return {message: `Deployment failed: ${message}`, success: false}
     }
 }
