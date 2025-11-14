@@ -410,6 +410,10 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         const packagesToDeploy = discoverPackagesToDeploy(repoDir)
         console.log(`[pr-deploy] Discovered packages to restart: ${packagesToDeploy.join(', ')}`)
 
+        // Regenerate systemd service files (in case packages changed or files are missing)
+        console.log('[pr-deploy] Regenerating systemd service files...')
+        await generateSystemdServices(existing, packagesToDeploy)
+
         // Regenerate nginx configs to ensure correct port mapping
         console.log('[pr-deploy] Regenerating nginx configurations...')
         await generateNginxConfig(existing, packagesToDeploy)
