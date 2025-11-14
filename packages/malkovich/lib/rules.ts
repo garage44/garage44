@@ -1,5 +1,5 @@
-import {symlink, mkdir, unlink, stat} from 'fs/promises'
-import {join} from 'path'
+import {symlink, mkdir, rm, stat, lstat, readlink} from 'fs/promises'
+import {join, relative} from 'path'
 import {findWorkspaceRoot} from './workspace'
 
 /**
@@ -31,38 +31,48 @@ export async function rules(): Promise<void> {
         process.exit(1)
     }
 
-    // Check if .cursor/rules already exists
-    let exists = false
-    let isSymlink = false
+    // Check if .cursor/rules already exists and remove it (file, directory, or symlink)
+    // Use lstat to detect symlinks (stat follows symlinks)
     try {
-        const stats = await stat(cursorRulesPath)
-        exists = true
-        isSymlink = stats.isSymbolicLink()
+        const stats = await lstat(cursorRulesPath)
+        // Remove existing file, directory, or symlink
+        try {
+            await rm(cursorRulesPath, {recursive: true, force: true})
+            if (stats.isSymbolicLink()) {
+                console.log('ℹ️  Removed existing symlink')
+            } else if (stats.isDirectory()) {
+                console.log('ℹ️  Removed existing directory')
+            } else {
+                console.log('ℹ️  Removed existing file')
+            }
+        } catch (error) {
+            console.error('❌ Failed to remove existing file/directory/symlink:', error)
+            process.exit(1)
+        }
     } catch {
         // Doesn't exist, we'll create it
     }
 
-    // Remove existing symlink or directory if needed
-    if (exists) {
-        if (isSymlink) {
-            try {
-                await unlink(cursorRulesPath)
-                console.log('ℹ️  Removed existing symlink')
-            } catch (error) {
-                console.error('❌ Failed to remove existing symlink:', error)
-                process.exit(1)
-            }
-        } else {
-            console.error(`❌ ${cursorRulesPath} already exists and is not a symlink. Please remove it manually.`)
-            process.exit(1)
-        }
-    }
-
     // Create symlink using relative path for portability
-    const relativePath = join('..', '..', 'packages', 'malkovich', 'docs', 'rules')
+    // Calculate relative path from .cursor/ directory to the target directory
+    const relativePath = relative(cursorDir, malkovichRulesPath)
     try {
         await symlink(relativePath, cursorRulesPath, 'dir')
-        console.log(`✅ Created symlink: ${cursorRulesPath} → ${malkovichRulesPath}`)
+
+        // Verify the symlink was created correctly
+        try {
+            const linkStats = await lstat(cursorRulesPath)
+            if (!linkStats.isSymbolicLink()) {
+                console.error('❌ Created symlink but verification failed: not a symlink')
+                process.exit(1)
+            }
+            const target = await readlink(cursorRulesPath)
+            console.log(`✅ Created symlink: ${cursorRulesPath} → ${target}`)
+            console.log(`   (points to: ${malkovichRulesPath})`)
+        } catch (error) {
+            console.error('❌ Failed to verify symlink:', error)
+            process.exit(1)
+        }
     } catch (error) {
         console.error('❌ Failed to create symlink:', error)
         process.exit(1)
