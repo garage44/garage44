@@ -3,16 +3,16 @@ import {join} from 'path'
 import {extractWorkspacePackages} from './workspace'
 
 export interface DocNode {
+    children?: DocNode[]
     name: string
     path: string
     type: 'file' | 'directory'
-    children?: DocNode[]
 }
 
 export interface PackageDocs {
-    name: string
-    index: string | null
     docs: DocNode[]
+    index: string | null
+    name: string
 }
 
 export interface DocsStructure {
@@ -24,18 +24,18 @@ export interface DocsStructure {
  */
 export async function discoverPackageDocs(
     workspaceRoot: string,
-    packageName: string
-): Promise<{index: string | null; docs: DocNode[]}> {
+    packageName: string,
+): Promise<{docs: DocNode[]; index: string | null}> {
     const docsDir = join(workspaceRoot, 'packages', packageName, 'docs')
 
     // Check if docs directory exists
     try {
         const stats = await stat(docsDir)
         if (!stats.isDirectory()) {
-            return {index: null, docs: []}
+            return {docs: [], index: null}
         }
     } catch {
-        return {index: null, docs: []}
+        return {docs: [], index: null}
     }
 
     // Check for index.md or index.mdc
@@ -58,7 +58,7 @@ export async function discoverPackageDocs(
     // Recursively scan docs directory
     const docs = await scanDirectory(docsDir, `packages/${packageName}/docs`)
 
-    return {index, docs}
+    return {docs, index}
 }
 
 /**
@@ -82,15 +82,12 @@ async function scanDirectory(dirPath: string, relativePath: string): Promise<Doc
 
             if (entry.isDirectory()) {
                 dirs.push(entry)
-            } else if (entry.isFile()) {
-                // Only include markdown files
-                if (entry.name.endsWith('.md') || entry.name.endsWith('.mdc')) {
-                    // Skip index files (they're served as directory index)
-                    if (entry.name === 'index.md' || entry.name === 'index.mdc') {
-                        continue
-                    }
-                    files.push(entry)
+            } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.mdc'))) {
+                // Skip index files (they're served as directory index)
+                if (entry.name === 'index.md' || entry.name === 'index.mdc') {
+                    continue
                 }
+                files.push(entry)
             }
         }
 
@@ -105,10 +102,10 @@ async function scanDirectory(dirPath: string, relativePath: string): Promise<Doc
             const children = await scanDirectory(dirFullPath, dirRelativePath)
 
             nodes.push({
+                children,
                 name: dir.name,
                 path: dirRelativePath,
                 type: 'directory',
-                children,
             })
         }
 
@@ -136,11 +133,11 @@ export async function discoverAllPackages(workspaceRoot: string): Promise<DocsSt
     const packageDocs: PackageDocs[] = []
 
     for (const pkg of packages) {
-        const {index, docs} = await discoverPackageDocs(workspaceRoot, pkg)
+        const {docs, index} = await discoverPackageDocs(workspaceRoot, pkg)
         packageDocs.push({
-            name: pkg,
-            index,
             docs,
+            index,
+            name: pkg,
         })
     }
 

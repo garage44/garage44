@@ -17,7 +17,7 @@ export async function rules(): Promise<void> {
             console.error(`❌ ${malkovichRulesPath} is not a directory`)
             process.exit(1)
         }
-    } catch (error) {
+    } catch (_error) {
         console.error(`❌ Malkovich rules directory not found: ${malkovichRulesPath}`)
         process.exit(1)
     }
@@ -27,7 +27,7 @@ export async function rules(): Promise<void> {
     try {
         await mkdir(cursorDir, {recursive: true})
     } catch (error) {
-        console.error(`❌ Failed to create .cursor directory:`, error)
+        console.error('❌ Failed to create .cursor directory:', error)
         process.exit(1)
     }
 
@@ -47,9 +47,9 @@ export async function rules(): Promise<void> {
         if (isSymlink) {
             try {
                 await unlink(cursorRulesPath)
-                console.log(`ℹ️  Removed existing symlink`)
+                console.log('ℹ️  Removed existing symlink')
             } catch (error) {
-                console.error(`❌ Failed to remove existing symlink:`, error)
+                console.error('❌ Failed to remove existing symlink:', error)
                 process.exit(1)
             }
         } else {
@@ -64,7 +64,7 @@ export async function rules(): Promise<void> {
         await symlink(relativePath, cursorRulesPath, 'dir')
         console.log(`✅ Created symlink: ${cursorRulesPath} → ${malkovichRulesPath}`)
     } catch (error) {
-        console.error(`❌ Failed to create symlink:`, error)
+        console.error('❌ Failed to create symlink:', error)
         process.exit(1)
     }
 }

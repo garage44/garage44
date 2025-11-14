@@ -8,29 +8,11 @@ import {
     updatePRDeployment,
     type PRDeployment,
 } from './pr-registry'
-import {extractWorkspacePackages, isApplicationPackage, findWorkspaceRoot} from './workspace'
+import {extractWorkspacePackages, isApplicationPackage} from './workspace'
 
 const PR_DEPLOYMENTS_DIR = path.join(homedir(), 'garage44')
 const PR_PORT_BASE = 40000
 const PR_PORT_RANGE = 10000
-
-// Determine the main repository path
-// On VPS: use REPO_PATH env var or default to /home/garage44/garage44
-// Locally: use the current workspace root
-function getMainRepoPath(): string {
-    if (process.env.REPO_PATH) {
-        return process.env.REPO_PATH
-    }
-
-    // Try to find the workspace root (for local development)
-    const workspaceRoot = findWorkspaceRoot()
-    if (workspaceRoot) {
-        return workspaceRoot
-    }
-
-    // Fallback to VPS default
-    return path.join(homedir(), 'garage44/garage44')
-}
 
 export interface PRMetadata {
     author: string
