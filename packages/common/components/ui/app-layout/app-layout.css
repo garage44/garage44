@@ -2,7 +2,7 @@
     background: var(--surface-1);
     display: grid;
     grid-template-columns:
-        [menu] minmax(min-content, 320px)
+        [menu] auto
         [content] 1fr
         [context] minmax(64px, auto);
     height: 100vh;
@@ -14,7 +14,7 @@
 
     &:not(:has(.c-panel-context)) {
         grid-template-columns:
-            [menu] minmax(min-content, 320px)
+            [menu] auto
             [content] 1fr;
     }
 
