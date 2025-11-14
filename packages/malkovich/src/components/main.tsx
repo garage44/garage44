@@ -305,6 +305,7 @@ export const Main = () => {
                                                         active: isActive,
                                                         id: pkg.name,
                                                         label: pkg.name,
+                                                        nested: true,
                                                         onClick: () => {
                                                             route(`/projects/${pkg.name}`)
                                                         },
@@ -373,6 +374,7 @@ export const Main = () => {
                                                 active: activeComponent === id,
                                                 id,
                                                 label: componentName,
+                                                nested: true,
                                                 onClick: () => scrollToComponent(componentName),
                                             }
                                         })}

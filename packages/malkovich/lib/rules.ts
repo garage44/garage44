@@ -37,7 +37,7 @@ export async function rules(): Promise<void> {
         const stats = await lstat(cursorRulesPath)
         // Remove existing file, directory, or symlink
         try {
-            await rm(cursorRulesPath, {recursive: true, force: true})
+            await rm(cursorRulesPath, {force: true, recursive: true})
             if (stats.isSymbolicLink()) {
                 console.log('ℹ️  Removed existing symlink')
             } else if (stats.isDirectory()) {

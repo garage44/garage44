@@ -1,15 +1,56 @@
 .c-submenu {
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
     gap: var(--spacer-05);
     margin: 0 0 0 var(--spacer-1);
+    max-height: 400px;
+    opacity: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
     padding: 0;
+    transform: translateY(0);
+    transition: opacity 0.2s ease, transform 0.2s ease;
     width: 100%;
+
+    /* Animation for expansion */
+    animation: submenu-expand 0.2s ease-out;
+
+    /* Custom scrollbar styling */
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--surface-4);
+        border-radius: 3px;
+
+        &:hover {
+            background: var(--surface-5);
+        }
+    }
+}
+
+@keyframes submenu-expand {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .c-submenu-item-wrapper {
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
     width: 100%;
 }
 
@@ -20,6 +61,7 @@
     margin-bottom: 0;
     margin-left: var(--spacer-4);
     margin-top: 0;
+    max-height: 250px;
     opacity: 0.95;
     padding-left: var(--spacer-1);
     padding-top: 0;
@@ -29,6 +71,7 @@
     border-left: 1px solid var(--surface-2);
     margin-left: var(--spacer-5);
     margin-top: 0;
+    max-height: 200px;
     opacity: 0.9;
     padding-left: var(--spacer-1);
     padding-top: 0;
@@ -38,6 +81,7 @@
     border-left: 1px solid var(--surface-1);
     margin-left: var(--spacer-6);
     margin-top: 0;
+    max-height: 150px;
     opacity: 0.85;
     padding-left: var(--spacer-1);
     padding-top: 0;
