@@ -10,14 +10,16 @@ const cycleTheme = () => {
 }
 
 export const ThemeToggle = () => (
-    <Icon
-        name={(() => {
-            if (store.state.theme === 'light') return 'sun'
-            if (store.state.theme === 'dark') return 'moon'
-            return 'system' // system preference icon
-        })()}
-        onClick={cycleTheme}
-        size="s"
-        tip={`Theme: ${store.state.theme}`}
-    />
+    <div class="c-theme-toggle">
+        <Icon
+            name={(() => {
+                if (store.state.theme === 'light') return 'sun'
+                if (store.state.theme === 'dark') return 'moon'
+                return 'system' // system preference icon
+            })()}
+            onClick={cycleTheme}
+            size="d"
+            tip={`Theme: ${store.state.theme}`}
+        />
+    </div>
 )

@@ -1,0 +1,21 @@
+.c-theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .c-icon {
+        background: var(--surface-3);
+        border: 1px solid var(--surface-4);
+        border-radius: 50%;
+        cursor: pointer;
+        padding: var(--spacer-2) !important;
+        transition: all 0.3s ease;
+        min-width: calc(var(--spacer-3) + var(--spacer-2) * 2);
+        min-height: calc(var(--spacer-3) + var(--spacer-2) * 2);
+
+        &:hover {
+            background: var(--surface-4);
+            transform: scale(1.05);
+        }
+    }
+}
