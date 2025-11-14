@@ -215,15 +215,30 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
             repo_full_name: pullRequest.head.repo.full_name,
         }
 
-        // Deploy asynchronously
+        // Deploy asynchronously (but log errors properly)
         deployPR(pr).then((result) => {
             if (result.success) {
-                console.log(`[webhook] PR #${prNumber} deployment successful`)
+                console.log(`[webhook] PR #${prNumber} deployment successful: ${result.message}`)
             } else {
                 console.error(`[webhook] PR #${prNumber} deployment failed: ${result.message}`)
+                // Update deployment status to failed if it exists
+                if (result.deployment) {
+                    import('./pr-registry').then(({updatePRDeployment}) => {
+                        updatePRDeployment(prNumber, {status: 'failed'}).catch((err) => {
+                            console.error(`[webhook] Failed to update deployment status:`, err)
+                        })
+                    })
+                }
             }
         }).catch((error) => {
-            console.error(`[webhook] PR #${prNumber} deployment error:`, error)
+            const errorMessage = error instanceof Error ? error.message : String(error)
+            console.error(`[webhook] PR #${prNumber} deployment error:`, errorMessage)
+            // Update deployment status to failed
+            import('./pr-registry').then(({updatePRDeployment}) => {
+                updatePRDeployment(prNumber, {status: 'failed'}).catch((err) => {
+                    console.error(`[webhook] Failed to update deployment status:`, err)
+                })
+            })
         })
 
         return new Response(JSON.stringify({

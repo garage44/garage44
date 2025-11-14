@@ -362,15 +362,49 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         console.log(`[pr-deploy] Updating PR #${pr.number}...`)
 
         const repoDir = path.join(existing.directory, 'repo')
+        
+        // Verify repo directory exists
+        if (!existsSync(repoDir)) {
+            throw new Error(`Repository directory not found: ${repoDir}`)
+        }
+        
         process.chdir(repoDir)
 
         // Fetch and checkout new commit
-        await $`git fetch origin ${pr.head_ref}`.quiet()
-        await $`git checkout ${pr.head_sha}`.quiet()
+        console.log(`[pr-deploy] Fetching branch ${pr.head_ref}...`)
+        const fetchResult = await $`git fetch origin ${pr.head_ref}`.nothrow()
+        if (fetchResult.exitCode !== 0) {
+            const stderr = fetchResult.stderr?.toString() || ''
+            const stdout = fetchResult.stdout?.toString() || ''
+            throw new Error(`Failed to fetch branch ${pr.head_ref}: ${stderr || stdout || 'Unknown error'}`)
+        }
+        
+        console.log(`[pr-deploy] Checking out commit ${pr.head_sha}...`)
+        const checkoutResult = await $`git checkout ${pr.head_sha}`.nothrow()
+        if (checkoutResult.exitCode !== 0) {
+            const stderr = checkoutResult.stderr?.toString() || ''
+            const stdout = checkoutResult.stdout?.toString() || ''
+            throw new Error(`Failed to checkout commit ${pr.head_sha}: ${stderr || stdout || 'Unknown error'}`)
+        }
+        console.log(`[pr-deploy] Checked out commit: ${pr.head_sha}`)
 
         // Rebuild
-        await $`bun install`.quiet()
-        await $`bun run build`.quiet()
+        console.log(`[pr-deploy] Installing dependencies...`)
+        const installResult = await $`bun install`.nothrow()
+        if (installResult.exitCode !== 0) {
+            const stderr = installResult.stderr?.toString() || ''
+            const stdout = installResult.stdout?.toString() || ''
+            throw new Error(`Failed to install dependencies: ${stderr || stdout || 'Unknown error'}`)
+        }
+        
+        console.log(`[pr-deploy] Building packages...`)
+        const buildResult = await $`bun run build`.nothrow()
+        if (buildResult.exitCode !== 0) {
+            const stderr = buildResult.stderr?.toString() || ''
+            const stdout = buildResult.stdout?.toString() || ''
+            throw new Error(`Build failed: ${stderr || stdout || 'Unknown error'}`)
+        }
+        console.log(`[pr-deploy] Build completed successfully`)
 
         // Discover which packages to deploy
         const packagesToDeploy = discoverPackagesToDeploy(repoDir)
@@ -382,8 +416,17 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
 
         // Restart services
         for (const packageName of packagesToDeploy) {
-            await $`sudo systemctl restart pr-${pr.number}-${packageName}.service`.quiet()
-            console.log(`[pr-deploy] Restarted ${packageName} service`)
+            const restartResult = await $`sudo systemctl restart pr-${pr.number}-${packageName}.service`.nothrow()
+            if (restartResult.exitCode === 0) {
+                console.log(`[pr-deploy] Restarted ${packageName} service`)
+            } else {
+                const stderr = restartResult.stderr?.toString() || ''
+                const stdout = restartResult.stdout?.toString() || ''
+                // Check if service exists
+                const statusResult = await $`sudo systemctl status pr-${pr.number}-${packageName}.service --no-pager -l`.nothrow()
+                const statusOutput = statusResult.stdout?.toString() || ''
+                throw new Error(`Failed to restart ${packageName} service: ${stderr || stdout || 'Unknown error'}\nService status: ${statusOutput}`)
+            }
         }
 
         // Update deployment record
@@ -402,6 +445,14 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-deploy] Update failed: ${message}`)
+        
+        // Update deployment status to failed
+        try {
+            await updatePRDeployment(pr.number, {status: 'failed'})
+        } catch (statusError) {
+            console.error(`[pr-deploy] Failed to update deployment status:`, statusError)
+        }
+        
         return {
             deployment: null,
             message: `Update failed: ${message}`,
