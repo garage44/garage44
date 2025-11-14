@@ -389,7 +389,7 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         console.log(`[pr-deploy] Checked out commit: ${pr.head_sha}`)
 
         // Rebuild
-        console.log(`[pr-deploy] Installing dependencies...`)
+        console.log('[pr-deploy] Installing dependencies...')
         const installResult = await $`bun install`.nothrow()
         if (installResult.exitCode !== 0) {
             const stderr = installResult.stderr?.toString() || ''
@@ -397,14 +397,14 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
             throw new Error(`Failed to install dependencies: ${stderr || stdout || 'Unknown error'}`)
         }
         
-        console.log(`[pr-deploy] Building packages...`)
+        console.log('[pr-deploy] Building packages...')
         const buildResult = await $`bun run build`.nothrow()
         if (buildResult.exitCode !== 0) {
             const stderr = buildResult.stderr?.toString() || ''
             const stdout = buildResult.stdout?.toString() || ''
             throw new Error(`Build failed: ${stderr || stdout || 'Unknown error'}`)
         }
-        console.log(`[pr-deploy] Build completed successfully`)
+        console.log('[pr-deploy] Build completed successfully')
 
         // Discover which packages to deploy
         const packagesToDeploy = discoverPackagesToDeploy(repoDir)
@@ -450,7 +450,7 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         try {
             await updatePRDeployment(pr.number, {status: 'failed'})
         } catch (statusError) {
-            console.error(`[pr-deploy] Failed to update deployment status:`, statusError)
+            console.error('[pr-deploy] Failed to update deployment status:', statusError)
         }
         
         return {

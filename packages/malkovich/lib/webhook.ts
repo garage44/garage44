@@ -225,7 +225,7 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
                 // Update deployment status to failed if it exists
                 if (result.deployment) {
                     updatePRDeployment(prNumber, {status: 'failed'}).catch((err) => {
-                        console.error(`[webhook] Failed to update deployment status:`, err)
+                        console.error('[webhook] Failed to update deployment status:', err)
                     })
                 }
             }
@@ -234,7 +234,7 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
             console.error(`[webhook] PR #${prNumber} deployment error:`, errorMessage)
             // Update deployment status to failed
             updatePRDeployment(prNumber, {status: 'failed'}).catch((err) => {
-                console.error(`[webhook] Failed to update deployment status:`, err)
+                console.error('[webhook] Failed to update deployment status:', err)
             })
         })
 
