@@ -377,7 +377,7 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         console.log(`[pr-deploy] Discovered packages to restart: ${packagesToDeploy.join(', ')}`)
 
         // Regenerate nginx configs to ensure correct port mapping
-        console.log(`[pr-deploy] Regenerating nginx configurations...`)
+        console.log('[pr-deploy] Regenerating nginx configurations...')
         await generateNginxConfig(existing, packagesToDeploy)
 
         // Restart services
