@@ -165,9 +165,12 @@ export async function deployPR(pr: PRMetadata): Promise<{
             console.log('[pr-deploy] Repository directory already exists, skipping clone')
         } else {
             console.log('[pr-deploy] Cloning repository...')
-            console.log(`[pr-deploy] Source: ${MAIN_REPO_PATH}`)
+            // Use GitHub URL instead of local path for cloning
+            // Construct URL from repo_full_name (e.g., "owner/repo" -> "https://github.com/owner/repo.git")
+            const githubUrl = `https://github.com/${pr.repo_full_name}.git`
+            console.log(`[pr-deploy] Source: ${githubUrl}`)
             console.log(`[pr-deploy] Target: ${repoDir}`)
-            const cloneResult = await $`git clone ${MAIN_REPO_PATH} ${repoDir}`.nothrow()
+            const cloneResult = await $`git clone ${githubUrl} ${repoDir}`.nothrow()
             if (cloneResult.exitCode !== 0) {
                 const stderr = cloneResult.stderr?.toString() || ''
                 const stdout = cloneResult.stdout?.toString() || ''
@@ -185,6 +188,13 @@ export async function deployPR(pr: PRMetadata): Promise<{
         console.log(`[pr-deploy] Checking out PR branch ${pr.head_ref}...`)
         process.chdir(repoDir)
         console.log(`[pr-deploy] Working directory: ${process.cwd()}`)
+
+        // Ensure remote is set correctly (in case repo was cloned from local path previously)
+        const githubUrl = `https://github.com/${pr.repo_full_name}.git`
+        const remoteSetResult = await $`git remote set-url origin ${githubUrl}`.nothrow()
+        if (remoteSetResult.exitCode !== 0) {
+            console.warn(`[pr-deploy] Failed to update remote URL, continuing with existing remote`)
+        }
 
         const fetchResult = await $`git fetch origin ${pr.head_ref}`.quiet()
         if (fetchResult.exitCode !== 0) {
@@ -362,23 +372,29 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         console.log(`[pr-deploy] Updating PR #${pr.number}...`)
 
         const repoDir = path.join(existing.directory, 'repo')
-        
+
         // Verify repo directory exists
         if (!existsSync(repoDir)) {
             throw new Error(`Repository directory not found: ${repoDir}`)
         }
-        
+
         process.chdir(repoDir)
 
         // Fetch and checkout new commit
         console.log(`[pr-deploy] Fetching branch ${pr.head_ref}...`)
+        // Ensure remote is set correctly (in case it was cloned from local path previously)
+        const githubUrl = `https://github.com/${pr.repo_full_name}.git`
+        const remoteSetResult = await $`git remote set-url origin ${githubUrl}`.nothrow()
+        if (remoteSetResult.exitCode !== 0) {
+            console.warn(`[pr-deploy] Failed to update remote URL, continuing with existing remote`)
+        }
         const fetchResult = await $`git fetch origin ${pr.head_ref}`.nothrow()
         if (fetchResult.exitCode !== 0) {
             const stderr = fetchResult.stderr?.toString() || ''
             const stdout = fetchResult.stdout?.toString() || ''
             throw new Error(`Failed to fetch branch ${pr.head_ref}: ${stderr || stdout || 'Unknown error'}`)
         }
-        
+
         console.log(`[pr-deploy] Checking out commit ${pr.head_sha}...`)
         const checkoutResult = await $`git checkout ${pr.head_sha}`.nothrow()
         if (checkoutResult.exitCode !== 0) {
@@ -396,7 +412,7 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
             const stdout = installResult.stdout?.toString() || ''
             throw new Error(`Failed to install dependencies: ${stderr || stdout || 'Unknown error'}`)
         }
-        
+
         console.log('[pr-deploy] Building packages...')
         const buildResult = await $`bun run build`.nothrow()
         if (buildResult.exitCode !== 0) {
@@ -449,14 +465,14 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-deploy] Update failed: ${message}`)
-        
+
         // Update deployment status to failed
         try {
             await updatePRDeployment(pr.number, {status: 'failed'})
         } catch (statusError) {
             console.error('[pr-deploy] Failed to update deployment status:', statusError)
         }
-        
+
         return {
             deployment: null,
             message: `Update failed: ${message}`,
@@ -583,15 +599,15 @@ async function generateNginxConfig(deployment: PRDeployment, packagesToDeploy: s
     // Generate nginx config for each package
     for (const packageName of packagesToDeploy) {
         const port = portMap[packageName] || deployment.ports.malkovich
-        
+
         // Validate port is in the expected range
         if (port < PR_PORT_BASE || port >= PR_PORT_BASE + PR_PORT_RANGE) {
             console.warn(`[pr-deploy] WARNING: Port ${port} for ${packageName} is outside expected range [${PR_PORT_BASE}, ${PR_PORT_BASE + PR_PORT_RANGE})`)
         }
-        
+
         // Log port mapping for debugging
         console.log(`[pr-deploy] Generating nginx config for ${packageName}: port ${port} (subdomain: pr-${prNumber}-${packageName}.${baseDomain})`)
-        
+
         // Use single-level subdomain (pr-999-malkovich.garage44.org) to work with *.garage44.org wildcard cert
         const subdomain = `pr-${prNumber}-${packageName}.${baseDomain}`
         const configFile = `/etc/nginx/sites-available/${subdomain}`
@@ -762,7 +778,7 @@ export async function regeneratePRNginx(prNumber: number): Promise<{
         console.log(`[pr-deploy] Regenerating nginx configs for PR #${prNumber}...`)
 
         const repoDir = path.join(deployment.directory, 'repo')
-        
+
         // Discover which packages are deployed
         const packagesToDeploy = discoverPackagesToDeploy(repoDir)
         console.log(`[pr-deploy] Discovered packages: ${packagesToDeploy.join(', ')}`)
