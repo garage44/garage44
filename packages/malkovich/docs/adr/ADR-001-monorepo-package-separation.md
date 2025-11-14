@@ -230,7 +230,7 @@ import { WSClient } from '@garage44/common/lib/ws-client';
 
 // ✅ Do keep domain logic in domain packages
 // packages/expressio/lib/translation-workflow.ts ✅
-// packages/expressio/lib/enola/engines/deepl.ts ✅
+// packages/expressio/lib/translate.ts ✅
 
 // ✅ Do keep shared infrastructure in common
 // packages/common/lib/ws-client.ts ✅
@@ -310,14 +310,9 @@ import { WSClient } from '@garage44/common/lib/ws-client';
 ## Evolution Log
 
 **Initial Decision** (2025-04-17):
-- Created four packages: expressio, bunchy, common, enola
+- Created three packages: expressio, bunchy, common
 - Established domain-based separation pattern
 - Implemented Bun workspaces
-
-**Enola Merger** (2025-01-XX):
-- Merged enola package into expressio as `lib/enola/`
-- Enola was only used by expressio, so separation was unnecessary
-- Simplified dependency management by removing inter-package dependency
 
 **Validation** (Ongoing):
 - Added pyrite package (date not documented, but validated pattern scalability)

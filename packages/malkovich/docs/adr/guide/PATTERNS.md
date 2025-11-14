@@ -232,7 +232,7 @@ This document captures reusable decision-making patterns extracted from existing
 ## Structuring New AI Translation Feature
 
 **Boundaries**:
-- Domain logic: packages/expressio/lib/enola/engines/
+- Domain logic: packages/expressio/lib/translate.ts
 - API layer: packages/expressio/api/translate.ts
 - State management: packages/common/lib/store.ts
 - UI: packages/expressio/src/components/translate/

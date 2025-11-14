@@ -395,7 +395,7 @@ Example for PR #123:
 
 ### Package Discovery
 
-The system automatically discovers which packages to deploy by scanning the workspace. Only application packages (not utilities like `common`, `bunchy`, `enola`) get subdomains.
+The system automatically discovers which packages to deploy by scanning the workspace. Only application packages (not utilities like `common`, `bunchy`) get subdomains.
 
 ### Security
 

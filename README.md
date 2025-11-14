@@ -9,15 +9,15 @@ Modern web applications built with Bun, Preact, and DeepSignal.
 
 ### Expressio – Translation automation through AI
 
-Streamline internationalization workflows with intelligent translation. Connects to DeepL, Claude, and other providers through Enola, and publishes the translation runtime that other apps consume.
+Streamline internationalization workflows with intelligent translation. Connects to DeepL, Claude, and other providers, and publishes the translation runtime that other apps consume.
 
 ```bash
 bunx @garage44/expressio start
 # Login: admin/admin
 ```
 
-**Core features:** AI translation, source-text workflow, smart caching, hot-reload, WebSocket sync  
-**Feeds:** Exports localized bundles and i18n helpers consumed by Pyrite and other Garage44 apps  
+**Core features:** AI translation, source-text workflow, smart caching, hot-reload, WebSocket sync
+**Feeds:** Exports localized bundles and i18n helpers consumed by Pyrite and other Garage44 apps
 **License:** AGPLv3
 
 ### Pyrite – Video conferencing for distributed teams
@@ -30,8 +30,8 @@ bun run dev
 # Configure in ~/.pyriterc
 ```
 
-**Core features:** Multi-party video, screen sharing, chat, recording, admin interface, responsive design  
-**Depends on Expressio:** Imports `@garage44/expressio` for runtime translations and shares design system components via `@garage44/common`  
+**Core features:** Multi-party video, screen sharing, chat, recording, admin interface, responsive design
+**Depends on Expressio:** Imports `@garage44/expressio` for runtime translations and shares design system components via `@garage44/common`
 **License:** AGPLv3
 
 ### Malkovich – Operations, documentation, and PR deployments
@@ -46,8 +46,8 @@ bun run malkovich deploy-pr --number 999 --branch $(git branch --show-current)
 # One-command PR deployments for Expressio + Pyrite + Malkovich
 ```
 
-**Core features:** Component styleguide, docs portal, CLI for PR deploys/cleanup, Systemd + nginx templates  
-**Role:** Keeps Expressio/Pyrite aligned, documents architecture, and coordinates preview environments  
+**Core features:** Component styleguide, docs portal, CLI for PR deploys/cleanup, Systemd + nginx templates
+**Role:** Keeps Expressio/Pyrite aligned, documents architecture, and coordinates preview environments
 **License:** MIT
 
 ## Shared Architecture
@@ -70,7 +70,6 @@ Benefits: consistent development experience, reusable components, unified build 
 |---------|---------|---------|
 | [expressio](./packages/expressio/) | i18n automation platform (exports translation runtime) | AGPLv3 |
 | [pyrite](./packages/pyrite/) | Video conferencing frontend (consumes Expressio translations) | AGPLv3 |
-| [enola](./packages/enola/) | Translation engine wrapper | MIT |
 | [bunchy](./packages/bunchy/) | Development tooling | MIT |
 | [common](./packages/common/) | Shared components & utilities | MIT |
 | [malkovich](./packages/malkovich/) | Operations console: docs, styleguide, PR deployments | MIT |
@@ -123,7 +122,6 @@ garage44/
 ├── packages/
 │   ├── expressio/      # i18n automation
 │   ├── pyrite/         # Video conferencing
-│   ├── enola/          # Translation services
 │   ├── bunchy/         # Dev server
 │   ├── common/         # Shared library
 │   └── malkovich/      # Platform documentation & deployment
@@ -138,16 +136,14 @@ garage44/
 - [Pyrite README](./packages/pyrite/README.md) - Video conferencing setup
 - [ADRs](./docs/adr/) - Architecture decisions
 - [Bunchy](./packages/bunchy/README.md) - Development tooling
-- [Enola](./packages/enola/README.md) - Translation API
 
 ## Contributing
 
 Each package has a specific focus:
 
-- **expressio:** i18n workflows, translation UI, workspace management
+- **expressio:** i18n workflows, translation UI, workspace management, translation providers
 - **pyrite:** Video UI, WebRTC integration, chat
 - **malkovich:** Documentation site, component styleguide, PR deployment automation
-- **enola:** Translation providers, language support
 - **bunchy:** Build tools, hot-reload, DX
 - **common:** Reusable components, utilities
 
