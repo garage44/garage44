@@ -272,12 +272,7 @@ export async function deployPR(pr: PRMetadata): Promise<{
         }
 
         // Discover which packages to deploy
-        const allPackages = extractWorkspacePackages(repoDir)
-        console.log(`[pr-deploy] All discovered packages: ${allPackages.join(', ')}`)
-        const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
-        console.log(`[pr-deploy] Application packages (after filter): ${appPackages.join(', ')}`)
-        const packagesToDeploy = [...appPackages, 'malkovich'] // Always include malkovich
-
+        const packagesToDeploy = discoverPackagesToDeploy(repoDir)
         console.log(`[pr-deploy] Discovered packages to deploy: ${packagesToDeploy.join(', ')}`)
 
         // Generate systemd service files
@@ -378,10 +373,7 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         await $`bun run build`.quiet()
 
         // Discover which packages to deploy
-        const allPackages = extractWorkspacePackages(repoDir)
-        const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
-        const packagesToDeploy = [...appPackages, 'malkovich'] // Always include malkovich
-
+        const packagesToDeploy = discoverPackagesToDeploy(repoDir)
         console.log(`[pr-deploy] Discovered packages to restart: ${packagesToDeploy.join(', ')}`)
 
         // Regenerate nginx configs to ensure correct port mapping
@@ -416,6 +408,15 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
             success: false,
         }
     }
+}
+
+/**
+ * Discover which packages should be deployed for a PR
+ */
+function discoverPackagesToDeploy(repoDir: string): string[] {
+    const allPackages = extractWorkspacePackages(repoDir)
+    const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+    return [...appPackages, 'malkovich'] // Always include malkovich
 }
 
 /**
@@ -708,10 +709,7 @@ export async function regeneratePRNginx(prNumber: number): Promise<{
         const repoDir = path.join(deployment.directory, 'repo')
         
         // Discover which packages are deployed
-        const allPackages = extractWorkspacePackages(repoDir)
-        const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
-        const packagesToDeploy = [...appPackages, 'malkovich'] // Always include malkovich
-
+        const packagesToDeploy = discoverPackagesToDeploy(repoDir)
         console.log(`[pr-deploy] Discovered packages: ${packagesToDeploy.join(', ')}`)
 
         // Regenerate nginx configs
