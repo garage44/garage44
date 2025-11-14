@@ -1,6 +1,10 @@
-import {MarkdownPage} from '../markdown'
+import {useEffect} from 'preact/hooks'
+import {route} from 'preact-router'
 
 export const Backend = () => {
-    // Path relative to workspace root
-    return <MarkdownPage filePath="packages/malkovich/docs/rules/backend.mdc" />
+    // Redirect to new route structure
+    useEffect(() => {
+        route('/projects/malkovich/docs/rules/backend', true)
+    }, [])
+    return null
 }

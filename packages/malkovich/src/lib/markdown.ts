@@ -20,7 +20,7 @@ export async function fetchMarkdown(path: string): Promise<string | null> {
       console.error('fetchMarkdown: path is empty')
       return null
     }
-    
+
     const response = await fetch(`/api/markdown?path=${encodeURIComponent(path)}`)
     if (!response.ok) {
       return null
@@ -38,7 +38,9 @@ export async function fetchMarkdown(path: string): Promise<string | null> {
 
 /**
  * Convert relative links to local routes
- * Example: ./packages/expressio/README.md → /packages/expressio/README.md
+ * Handles both old structure (packages/{package}/README.md) and new structure (packages/{package}/docs/{section})
+ * Example: ./packages/expressio/README.md → /projects/expressio
+ * Example: ./packages/malkovich/docs/adr/ADR-001.md → /projects/malkovich/docs/adr/ADR-001.md
  */
 export function convertLinksToLocalRoutes(markdown: string, basePath?: string): string {
   // Convert relative links to absolute routes
@@ -46,11 +48,34 @@ export function convertLinksToLocalRoutes(markdown: string, basePath?: string): 
   let converted = markdown.replaceAll(
     /\[([^\]]+)\]\(\.\/([^)]+)\)/g,
     (match, text, link) => {
+      // Handle package README links (old structure)
+      // packages/{package}/README.md → /projects/{package}
+      if (link.match(/^packages\/([^/]+)\/README\.(md|mdc)$/)) {
+        const packageName = link.match(/^packages\/([^/]+)\//)[1]
+        return `[${text}](/projects/${packageName})`
+      }
+
+      // Handle package docs links (new structure)
+      // packages/{package}/docs/{section}/{file} → /projects/{package}/docs/{section}/{file}
+      if (link.match(/^packages\/([^/]+)\/docs\//)) {
+        const pathAfterPackages = link.replace(/^packages\/([^/]+)\//, '')
+        const packageName = link.match(/^packages\/([^/]+)\//)[1]
+        const docsPath = pathAfterPackages.replace(/^docs\//, '')
+
+        // If it's a directory or index file, link to section without filename
+        if (docsPath.endsWith('/') || docsPath.endsWith('/index.md') || docsPath.endsWith('/index.mdc')) {
+          const section = docsPath.replace(/\/$/, '').replace(/\/index\.(md|mdc)$/, '')
+          return `[${text}](/projects/${packageName}/docs/${section})`
+        }
+
+        return `[${text}](/projects/${packageName}/docs/${docsPath})`
+      }
+
       // Handle directory links (e.g., ./packages/expressio/)
       let route = link
       if (!link.endsWith('.md') && !link.endsWith('.mdc')) {
-        // If it's a directory, append README.md
-        route = link.endsWith('/') ? `${link}README.md` : `${link}/README.md`
+        // If it's a directory, try index.md or index.mdc
+        route = link.endsWith('/') ? `${link}index.md` : `${link}/index.md`
       }
 
       // Convert to absolute route
@@ -60,12 +85,27 @@ export function convertLinksToLocalRoutes(markdown: string, basePath?: string): 
 
   // Also handle links without ./ prefix
   converted = converted.replaceAll(
-    /\[([^\]]+)\]\(([^)]+\.md)\)/g,
+    /\[([^\]]+)\]\(([^)]+\.(md|mdc))\)/g,
     (match, text, link) => {
       // If it's already absolute, keep it
       if (link.startsWith('/') || link.startsWith('http')) {
         return match
       }
+
+      // Handle package README links
+      if (link.match(/^packages\/([^/]+)\/README\.(md|mdc)$/)) {
+        const packageName = link.match(/^packages\/([^/]+)\//)[1]
+        return `[${text}](/projects/${packageName})`
+      }
+
+      // Handle package docs links
+      if (link.match(/^packages\/([^/]+)\/docs\//)) {
+        const pathAfterPackages = link.replace(/^packages\/([^/]+)\//, '')
+        const packageName = link.match(/^packages\/([^/]+)\//)[1]
+        const docsPath = pathAfterPackages.replace(/^docs\//, '')
+        return `[${text}](/projects/${packageName}/docs/${docsPath})`
+      }
+
       // Otherwise, make it absolute
       return `[${text}](/${link})`
     }

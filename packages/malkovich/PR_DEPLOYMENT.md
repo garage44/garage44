@@ -149,7 +149,7 @@ await $`bun run malkovich cleanup-pr --number 999`
 
 ## Installation
 
-See `/workspace/docs/pr-deployment-implementation.md` for full installation guide.
+See `packages/malkovich/docs/rules/pr-deployment.mdc` for complete setup and usage guide.
 
 **Quick setup:**
 
@@ -245,9 +245,8 @@ rm -rf /home/garage44/pr-123
 
 ## Documentation
 
-- **Architecture Design**: `/workspace/docs/pr-deployment.md`
-- **Implementation Guide**: `/workspace/docs/pr-deployment-implementation.md`
-- **Agent Guide**: `/workspace/docs/cursor-agent-pr-deploy.md`
+- **PR Deployment Guide**: `packages/malkovich/docs/rules/pr-deployment.mdc`
+- **Main Branch Deployment**: `packages/malkovich/docs/deployment.md`
 - **GitHub Workflow**: `/workspace/.github/workflows/pr-deploy.yml`
 
 ## Summary

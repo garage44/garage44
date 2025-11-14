@@ -1,7 +1,14 @@
+import {useEffect} from 'preact/hooks'
 import {MarkdownPage} from '../markdown'
 
 export const Home = () => {
-    // Always load README.md from workspace root for home route
-    const readmePath = 'README.md'
-    return <MarkdownPage filePath={readmePath} />
+    // Load malkovich docs index for home route
+    const indexPath = 'packages/malkovich/docs/index.md'
+
+    useEffect(() => {
+        // Ensure we're loading the correct file
+        console.log('[Home] Loading:', indexPath)
+    }, [])
+
+    return <MarkdownPage filePath={indexPath} />
 }

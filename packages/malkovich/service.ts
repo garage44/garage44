@@ -77,6 +77,41 @@ const _ = cli.usage('Usage: $0 [task]')
                 return await handleWebhook(req)
             }
 
+            // API endpoint: /api/docs - Documentation structure discovery
+            if (pathname === '/api/docs') {
+                try {
+                    const {discoverAllPackages} = await import('./lib/docs')
+                    const structure = await discoverAllPackages(workspaceRoot)
+                    return new Response(JSON.stringify(structure), {
+                        headers: {'Content-Type': 'application/json'},
+                    })
+                } catch (error) {
+                    console.error('[api/docs] Error:', error)
+                    return new Response(JSON.stringify({error: 'Failed to discover documentation'}), {
+                        headers: {'Content-Type': 'application/json'},
+                        status: 500,
+                    })
+                }
+            }
+
+            // API endpoint: /api/docs/package/:packageName - Package-specific docs
+            if (pathname.startsWith('/api/docs/package/')) {
+                try {
+                    const packageName = pathname.replace('/api/docs/package/', '')
+                    const {discoverPackageDocs} = await import('./lib/docs')
+                    const {index, docs} = await discoverPackageDocs(workspaceRoot, packageName)
+                    return new Response(JSON.stringify({name: packageName, index, docs}), {
+                        headers: {'Content-Type': 'application/json'},
+                    })
+                } catch (error) {
+                    console.error('[api/docs/package] Error:', error)
+                    return new Response(JSON.stringify({error: 'Failed to discover package documentation'}), {
+                        headers: {'Content-Type': 'application/json'},
+                        status: 500,
+                    })
+                }
+            }
+
             // API endpoint: /api/markdown?path=README.md
             if (pathname === '/api/markdown') {
                 const params = new URLSearchParams(url.search)
@@ -205,9 +240,9 @@ const _ = cli.usage('Usage: $0 [task]')
         const output = generateNginx(argv.domain)
         console.log(output)
     })
-    .command('init', 'Initialize AGENTS.md file', async () => {
-        const {init} = await import('./lib/init')
-        await init()
+    .command('rules', 'Create symlink from .cursor/rules to malkovich/docs/rules', async () => {
+        const {rules} = await import('./lib/rules')
+        await rules()
     })
     .command('deploy-pr', 'Deploy a PR branch manually (for Cursor agent)', (yargs) =>
         yargs

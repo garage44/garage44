@@ -1,6 +1,13 @@
-# Cursor Agent PR Deployment Guide
+---
+description: "PR deployment testing workflow - guides AI to test features on PR deployments"
+globs:
+  - "**/*"
+alwaysApply: false
+---
 
-This guide shows how Cursor agents can trigger and use PR deployments for testing changes.
+# PR Deployment Testing Rules
+
+This rule guides Cursor agents on how to use PR deployments for testing changes.
 
 ## Overview
 
@@ -380,6 +387,103 @@ sudo tail -f /var/log/nginx/access.log | grep pr-123
 # Error logs
 sudo tail -f /var/log/nginx/error.log | grep pr-123
 ```
+
+## Setup
+
+### Prerequisites
+
+- VPS running Linux (Arch Linux recommended)
+- Bun installed on the VPS
+- Nginx installed and configured
+- Git repository cloned to `/home/garage44/garage44`
+- Dedicated user `garage44` created on the VPS
+- Sudo access for the `garage44` user
+- Domain `garage44.org` pointing to your VPS
+
+### DNS Configuration
+
+**Critical**: You need wildcard DNS records for PR deployments to work.
+
+Add these DNS records (A records) pointing to your VPS IP:
+
+```
+*.garage44.org          A    <your-vps-ip>
+```
+
+This allows subdomains like:
+- `pr-123.garage44.org`
+- `pr-456.garage44.org`
+
+### Wildcard SSL Certificate
+
+PR deployments use a wildcard SSL certificate to cover all PR subdomains.
+
+**Let's Encrypt supports wildcard certificates** but requires **DNS-01 challenge** authentication (not HTTP-01).
+
+#### Using DNS Plugin (Recommended - Automated)
+
+If your DNS provider has a certbot plugin:
+
+```bash
+# Example for Cloudflare
+sudo certbot certonly --dns-cloudflare \
+  --dns-cloudflare-credentials ~/.secrets/cloudflare.ini \
+  -d "*.garage44.org" \
+  -d "garage44.org"
+
+# Example for Route53 (AWS)
+sudo certbot certonly --dns-route53 \
+  -d "*.garage44.org" \
+  -d "garage44.org"
+
+# Example for DigitalOcean
+sudo certbot certonly --dns-digitalocean \
+  --dns-digitalocean-credentials ~/.secrets/digitalocean.ini \
+  -d "*.garage44.org" \
+  -d "garage44.org"
+```
+
+**Note**: Install the appropriate DNS plugin first:
+```bash
+# For Cloudflare
+sudo pip install certbot-dns-cloudflare
+
+# For Route53
+sudo pip install certbot-dns-route53
+
+# For DigitalOcean
+sudo pip install certbot-dns-digitalocean
+```
+
+#### Manual DNS Challenge
+
+If you don't have a DNS plugin:
+
+```bash
+# Request certificate with manual DNS challenge
+sudo certbot certonly --manual --preferred-challenges dns \
+  -d "*.garage44.org" \
+  -d "garage44.org"
+```
+
+Certbot will prompt you to add a TXT record to your DNS. Follow the instructions and wait for DNS propagation.
+
+### Nginx Configuration
+
+The PR deployment system automatically generates nginx configurations. Ensure nginx is configured to include configurations from:
+
+```nginx
+include /etc/nginx/sites-enabled/*;
+```
+
+### GitHub Actions Setup
+
+The PR deployment system integrates with GitHub Actions. The workflow automatically:
+1. Validates PR source (contributors only, no forks)
+2. Triggers deployment webhook
+3. Posts deployment URL as PR comment
+
+See `.github/workflows/pr-deploy.yml` for the workflow configuration.
 
 ## Summary
 
