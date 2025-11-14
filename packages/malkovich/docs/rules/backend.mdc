@@ -40,35 +40,24 @@ packages/
 
 **CRITICAL: All code must pass ESLint checks before committing.**
 
-### ESLint Rules (enforced via `bun run lint:ts`)
+### Before Committing
 
-**Formatting:**
-- ✅ Use single quotes for strings: `'string'` not `"string"`
-- ✅ No semicolons: `const x = 1` not `const x = 1;`
-- ✅ 4 spaces indentation (not tabs)
-- ✅ No trailing commas in single-line objects/arrays
-- ✅ Always trailing commas in multiline objects/arrays
-- ✅ No spaces inside array brackets: `[1, 2]` not `[ 1, 2 ]`
-- ✅ No spaces inside object braces: `{a: 1}` not `{ a: 1 }`
-- ✅ Always use arrow function parentheses: `(x) => x` not `x => x`
-- ✅ Use 1TBS brace style: `if (x) {` on same line
+Always run lint checks and fix any errors before committing:
 
-**TypeScript:**
-- ✅ Sort object keys alphabetically (perfectionist plugin)
-- ✅ Sort interface properties alphabetically
-- ✅ Avoid `any` type (use proper types)
-- ✅ Prefix unused variables with `_`: `_unusedParam`
-
-**Before Committing:**
 ```bash
-# Always run lint checks before committing
-bun run lint:ts    # Check TypeScript files
+# Check TypeScript files
+bun run lint:ts
 ```
 
-**Auto-fixable issues:**
-- Most formatting issues can be auto-fixed by ESLint
-- Run `bun run lint:ts --fix` to auto-fix formatting issues
-- Always verify fixes don't break functionality
+**Auto-fixing:**
+- Many formatting issues can be auto-fixed: `bun run lint:ts --fix`
+- Always verify auto-fixes don't break functionality
+- Fix any remaining errors manually according to ESLint output
+
+**ESLint configuration:**
+- Rules are defined in `eslint.config.js` at the workspace root
+- Follow ESLint error messages to fix code style issues
+- Do not commit code with linting errors
 
 ## Common Anti-patterns
 
