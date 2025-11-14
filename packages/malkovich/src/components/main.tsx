@@ -105,7 +105,8 @@ export const Main = () => {
     useEffect(() => {
         const fetchDocs = async () => {
             try {
-                const response = await fetch('/api/docs')
+                // Add cache-busting query parameter to ensure fresh data
+                const response = await fetch(`/api/docs?t=${Date.now()}`)
                 if (response.ok) {
                     const data = await response.json()
                     setDocsStructure(data)

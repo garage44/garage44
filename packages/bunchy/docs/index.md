@@ -1,25 +1,32 @@
 # Bunchy
 
-Bunchy is a blazingly fast frontend development tool designed specifically for the Bun runtime and server. It provides live reloading, build tasks, and development tooling with minimal setup and maximum performance.
+Blazingly fast frontend development tool for Bun. Provides hot module replacement (HMR), live reloading, build tasks, and development tooling with minimal setup.
 
-## Features
+Bunchy is part of the **garage44/common** infrastructure, providing development tooling for [Expressio](../expressio/) and [Pyrite](../pyrite/).
 
-- **Bun-Native**: Built from the ground up for Bun.serve and the Bun bundler
+## What It Does
+
+Bunchy provides a complete development toolchain for Bun-based applications:
+
+- **Hot Module Replacement (HMR)**: Preserves application state while updating code
 - **Live Reloading**: Real-time browser updates via WebSocket for TypeScript, CSS, and HTML changes
 - **Smart CSS Updates**: Hot-swaps stylesheets without full page reloads
 - **Error Overlays**: Beautiful in-browser error displays with detailed stack traces
 - **File Watching**: Intelligent file system monitoring with debounced rebuilds
 - **Build Tasks**: Complete build pipeline for modern web applications
-- **CLI Integration**: Seamless integration with yargs for command-line workflows
 - **Zero Configuration**: Works out of the box with sensible defaults
 
-## Installation
+## Quick Start
 
 ```bash
+# Install
 bun add @garage44/bunchy
+
+# Use in your service
+import {bunchyService, bunchyArgs} from '@garage44/bunchy'
 ```
 
-## Usage
+## Getting Started
 
 ### Basic Setup
 
@@ -160,11 +167,11 @@ your-project/
 - Maintains directory structure
 - Optimized for static file serving
 
-## Live Reloading
+## Live Reloading and HMR
 
-Bunchy provides intelligent live reloading:
+Bunchy provides intelligent live reloading and HMR:
 
-- **TypeScript/JSX Changes**: Full page reload
+- **TypeScript/JSX Changes**: HMR update (preserves state) or full page reload
 - **CSS Changes**: Hot stylesheet replacement (no reload)
 - **HTML Changes**: Full page reload
 - **Asset Changes**: Asset reload
@@ -184,7 +191,7 @@ When builds fail, Bunchy displays:
 1. Make changes to your code
 2. Bunchy detects changes and rebuilds
 3. Updates are pushed to browser via WebSocket
-4. Browser updates without losing application state (for CSS)
+4. Browser updates without losing application state (HMR for code, hot-swap for CSS)
 
 ## Integration with Bun
 
@@ -200,6 +207,22 @@ Bunchy leverages Bun's features:
 - Debounced file watching (1000ms) to prevent rebuild spam
 - Smart dependency tracking
 - Efficient WebSocket broadcasting
+- HMR state preservation for faster iteration
+
+## Architecture
+
+Bunchy is built on the garage44/common infrastructure:
+
+- **Backend**: Bun.serve() with native WebSocket support
+- **Build**: Bun's native bundler for fast compilation
+- **HMR**: State preservation during code updates
+- **Integration**: Works seamlessly with Expressio and Pyrite
+
+## Related Projects
+
+- [Expressio](../expressio/) - i18n automation platform (uses Bunchy for development)
+- [Pyrite](../pyrite/) - Video conferencing platform (uses Bunchy for development)
+- [Common](../common/) - Shared UI components and utilities
 
 ## License
 
