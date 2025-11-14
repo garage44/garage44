@@ -569,8 +569,8 @@ The migration was completed faster than initially estimated, validating the "sin
 - [Bun WebSocket API](https://bun.sh/docs/api/websockets)
 - [Express.js Performance](https://expressjs.com/en/advanced/best-practices-performance.html)
 - [ws Library Documentation](https://github.com/websockets/ws)
-- [ADR-003: Bun Runtime Adoption](./ADR-003-bun-runtime-adoption.md)
-- [ADR-006: REST to WebSocket Migration](./ADR-006-rest-to-websocket-migration.md)
+- [ADR-003: Bun Runtime Adoption](./003-bun.md)
+- [ADR-006: REST to WebSocket Migration](./006-ws-migration.md)
 
 ---
 

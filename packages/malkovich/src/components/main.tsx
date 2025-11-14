@@ -174,6 +174,9 @@ export const Main = () => {
             }
         }
 
+        // Sort items alphabetically by label (A-Z)
+        items.sort((a, b) => a.label.localeCompare(b.label, undefined, {sensitivity: 'base'}))
+
         return items
     }
 
@@ -277,7 +280,9 @@ export const Main = () => {
                             )}
                             {docsStructure && (() => {
                                 // Filter out malkovich from projects listing
-                                const packagesWithDocs = docsStructure.packages.filter((pkg) => pkg.index && pkg.name !== 'malkovich')
+                                const packagesWithDocs = docsStructure.packages
+                                    .filter((pkg) => pkg.index && pkg.name !== 'malkovich')
+                                    .sort((a, b) => a.name.localeCompare(b.name, undefined, {sensitivity: 'base'}))
                                 if (packagesWithDocs.length === 0) return null
 
                                 return (
@@ -360,15 +365,17 @@ export const Main = () => {
                             {isComponentsRoute && (
                                 <Submenu
                                     collapsed={$s.panels.menu.collapsed}
-                                    items={components.map((componentName) => {
-                                        const id = componentName.toLowerCase().replaceAll(/\s+/g, '-')
-                                        return {
-                                            active: activeComponent === id,
-                                            id,
-                                            label: componentName,
-                                            onClick: () => scrollToComponent(componentName),
-                                        }
-                                    })}
+                                    items={[...components]
+                                        .sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}))
+                                        .map((componentName) => {
+                                            const id = componentName.toLowerCase().replaceAll(/\s+/g, '-')
+                                            return {
+                                                active: activeComponent === id,
+                                                id,
+                                                label: componentName,
+                                                onClick: () => scrollToComponent(componentName),
+                                            }
+                                        })}
                                 />
                             )}
                             <MenuItem

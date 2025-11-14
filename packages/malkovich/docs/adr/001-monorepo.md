@@ -348,11 +348,11 @@ import { WSClient } from '@garage44/common/lib/ws-client';
 
 ## Related Decisions
 
-- [ADR-002](./ADR-002-mixed-license-strategy.md): Package separation enables mixed licensing
-- [ADR-003](./ADR-003-bun-runtime-adoption.md): Bun workspaces provide excellent monorepo support
-- [ADR-004](./ADR-004-preact-websocket-architecture.md): WebSocket infrastructure lives in common package
-- [ADR-008](./ADR-008-isomorphic-logger.md): Logger in common package, used by all applications
-- [ADR-012](./ADR-012-design-system-consolidation.md): Design system consolidation in common package
+- [ADR-002](./002-license.md): Package separation enables mixed licensing
+- [ADR-003](./003-bun.md): Bun workspaces provide excellent monorepo support
+- [ADR-004](./004-preact-ws.md): WebSocket infrastructure lives in common package
+- [ADR-008](./008-logger.md): Logger in common package, used by all applications
+- [ADR-012](./012-design-system.md): Design system consolidation in common package
 
 ---
 

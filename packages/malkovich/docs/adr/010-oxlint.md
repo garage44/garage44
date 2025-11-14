@@ -336,8 +336,8 @@ Replace ESLint with **OxLint** across all packages with a comprehensive rule con
 
 ## References
 - [OxLint Official Documentation](https://oxc.rs/docs/guide/usage/linter/rules.html)
-- [ADR-003: Bun Runtime Adoption](./ADR-003-bun-runtime-adoption.md) - Related modern tooling adoption
-- [ADR-004: Preact WebSocket Architecture](./ADR-004-preact-websocket-architecture.md) - React/Preact patterns this linting supports
+- [ADR-003: Bun Runtime Adoption](./003-bun.md) - Related modern tooling adoption
+- [ADR-004: Preact WebSocket Architecture](./004-preact-ws.md) - React/Preact patterns this linting supports
 
 ---
 

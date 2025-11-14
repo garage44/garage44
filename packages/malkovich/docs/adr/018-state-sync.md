@@ -513,9 +513,9 @@ const toggleCam = () => {
 
 ## Related Decisions
 
-- [ADR-004](./ADR-004-preact-websocket-architecture.md): DeepSignal reactive state management
-- [ADR-016](./ADR-016-three-column-conference-layout.md): Video rendering layout (Group, VideoStrip)
-- [ADR-017](./ADR-017-galene-direct-connection-revival.md): Galene SFU connection and RTP protocol
+- [ADR-004](./004-preact-ws.md): DeepSignal reactive state management
+- [ADR-016](./016-layout.md): Video rendering layout (Group, VideoStrip)
+- [ADR-017](./017-galene.md): Galene SFU connection and RTP protocol
 
 ## References
 

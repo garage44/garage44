@@ -457,9 +457,9 @@ connection.onfiletransfer = onFileTransfer  // File transfer in Galene
 
 ## Related Decisions
 
-- [ADR-004](./ADR-004-preact-websocket-architecture.md): WebSocket-first architecture enables real-time media connections
-- [ADR-006](./ADR-006-rest-to-websocket-migration.md): REST-to-WebSocket migration pattern for real-time features
-- [ADR-016](./ADR-016-three-column-conference-layout.md): Chat-first paradigm with optional video presence aligns with feature distribution
+- [ADR-004](./004-preact-ws.md): WebSocket-first architecture enables real-time media connections
+- [ADR-006](./006-ws-migration.md): REST-to-WebSocket migration pattern for real-time features
+- [ADR-016](./016-layout.md): Chat-first paradigm with optional video presence aligns with feature distribution
 
 ## References
 

@@ -419,15 +419,15 @@ return <Login onLogin={handleLogin} />
 
 ## Related Decisions
 
-- [ADR-004](./ADR-004-preact-websocket-architecture.md): WebSocket architecture enables real-time authentication state updates
-- [ADR-006](./ADR-006-rest-to-websocket-migration.md): WebSocket migration provides foundation for real-time authentication
-- [ADR-012](./ADR-012-design-system-consolidation.md): Shared component patterns guide Login component design
+- [ADR-004](./004-preact-ws.md): WebSocket architecture enables real-time authentication state updates
+- [ADR-006](./006-ws-migration.md): WebSocket migration provides foundation for real-time authentication
+- [ADR-012](./012-design-system.md): Shared component patterns guide Login component design
 
 ## References
 
 - Original plan: `unified-authentication-flow.plan.md`
-- WebSocket architecture: [ADR-004](./ADR-004-preact-websocket-architecture.md)
-- Shared component patterns: [ADR-012](./ADR-012-design-system-consolidation.md)
+- WebSocket architecture: [ADR-004](./004-preact-ws.md)
+- Shared component patterns: [ADR-012](./012-design-system.md)
 - DeepSignal documentation: [DeepSignal GitHub](https://github.com/luisherranz/deepsignal)
 
 ---

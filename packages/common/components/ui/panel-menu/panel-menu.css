@@ -7,7 +7,7 @@
     /* height: 100%; */
     min-width: var(--spacer-5);
     position: relative;
-    width: 280px;
+    width: 320px;
 /*
     &.fade-in {
         animation: fade-in 0.2s ease-in forwards;

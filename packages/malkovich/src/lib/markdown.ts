@@ -40,7 +40,7 @@ export async function fetchMarkdown(path: string): Promise<string | null> {
  * Convert relative links to local routes
  * Handles both old structure (packages/{package}/README.md) and new structure (packages/{package}/docs/{section})
  * Example: ./packages/expressio/README.md → /projects/expressio
- * Example: ./packages/malkovich/docs/adr/ADR-001.md → /projects/malkovich/docs/adr/ADR-001.md
+ * Example: ./packages/malkovich/docs/adr/001-monorepo.md → /projects/malkovich/docs/adr/001-monorepo.md
  */
 export function convertLinksToLocalRoutes(markdown: string, basePath?: string): string {
   // Convert relative links to absolute routes

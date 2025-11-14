@@ -2,6 +2,8 @@
 
 AI-powered i18n automation tool. Automates translation workflows using AI providers (DeepL, Claude) while maintaining source-text control and code synchronization.
 
+Expressio is part of the **garage44/common** infrastructure, sharing the same tech stack as [Pyrite](../pyrite/) - Bun runtime, Preact frontend, DeepSignal state management, and Bunchy for development with HMR.
+
 ## What It Does
 
 Expressio manages translation workflows for applications using i18next format. It provides:
@@ -31,19 +33,19 @@ bun run dev
 
 Access the web UI at `http://localhost:3030` (default login: `admin/admin`).
 
-## Frontend Setup
+## Getting Started
+
+### Frontend Setup
 
 To use Expressio in your frontend project, install the package and set up type-safe translations.
 
-### Installation
+1. **Install the package**:
 
 ```bash
 bun add @garage44/expressio
 ```
 
-### Setup
-
-1. **Initialize a workspace file** using the CLI:
+2. **Initialize a workspace file** using the CLI:
 
 ```bash
 bunx @garage44/expressio init
@@ -60,7 +62,7 @@ bunx @garage44/expressio init --output ./src/.expressio.json --workspace-id my-a
 - `--workspace-id, -w`: Workspace identifier (default: `my-app`)
 - `--source-language, -s`: Source language code (default: `eng-gbr`)
 
-2. **Set up Expressio in your app**:
+3. **Set up Expressio in your app**:
 
 ```typescript
 import {createTypedI18n, i18nFormat} from '@garage44/expressio'
@@ -75,7 +77,7 @@ const translations = i18nFormat(workspace.i18n, workspace.config.languages.targe
 export {i18n}
 ```
 
-3. **Enable JSON module resolution** in `tsconfig.json`:
+4. **Enable JSON module resolution** in `tsconfig.json`:
 
 ```json
 {
@@ -137,17 +139,10 @@ $t(i18n.greeting, {name: 'John'})  // "Hello, John!"
 
 ### Initialize workspace
 
-Create a new `.expressio.json` workspace file template:
-
 ```bash
 bunx @garage44/expressio init
 bunx @garage44/expressio init --output ./src/.expressio.json --workspace-id my-app
 ```
-
-**Options:**
-- `--output, -o`: Output path for the workspace file (default: `./src/.expressio.json`)
-- `--workspace-id, -w`: Workspace identifier (default: `my-app`)
-- `--source-language, -s`: Source language code (default: `eng-gbr`)
 
 ### Import translations
 
@@ -193,6 +188,21 @@ Expressio fits into an i18n workflow as follows:
 5. **Iterate**: Update source text, retranslate, and keep translations in sync
 
 The web UI provides real-time collaboration and visual management of translations. CLI tools enable automation and integration into build processes.
+
+## Architecture
+
+Expressio is built on the garage44/common infrastructure:
+
+- **Backend**: Bun.serve() with native WebSocket support
+- **Frontend**: Preact with DeepSignal for reactive state management
+- **Build**: Bunchy for hot-reload development with HMR
+- **Shared Components**: UI components and utilities from `@garage44/common`
+
+## Related Projects
+
+- [Pyrite](../pyrite/) - Video conferencing platform (shares the same tech stack)
+- [Bunchy](../bunchy/) - Hot-reload development tool with HMR
+- [Common](../common/) - Shared UI components and utilities
 
 ## License
 

@@ -316,9 +316,9 @@ const content = readFileSync(fullPath, 'utf-8') // Correct - self-contained
 
 ## Related Decisions
 
-- [ADR-009](./ADR-009-llm-optimized-project-structure.md): LLM-optimized project structure - Malkovich implements this pattern
-- [ADR-001](./ADR-001-monorepo-package-separation.md): Monorepo structure - Malkovich leverages workspace structure
-- [ADR-005](./ADR-005-centralized-ci-cd.md): Centralized CI/CD - Malkovich integrates webhook handling
+- [ADR-009](./009-llm-structure.md): LLM-optimized project structure - Malkovich implements this pattern
+- [ADR-001](./001-monorepo.md): Monorepo structure - Malkovich leverages workspace structure
+- [ADR-005](./005-ci-cd.md): Centralized CI/CD - Malkovich integrates webhook handling
 
 ## References
 

@@ -480,9 +480,9 @@ Button, Field Text, Field Checkbox, Icon, Progress, Field Select, Field Checkbox
 
 ## Related Decisions
 
-- [ADR-001](./ADR-001-monorepo-package-separation.md): Monorepo structure enables sharing in common package
-- [ADR-004](./ADR-004-preact-websocket-architecture.md): Generic components follow Preact patterns
-- [ADR-011](./ADR-011-modern-css-migration.md): Foundation - unified CSS with design tokens
+- [ADR-001](./001-monorepo.md): Monorepo structure enables sharing in common package
+- [ADR-004](./004-preact-ws.md): Generic components follow Preact patterns
+- [ADR-011](./011-css.md): Foundation - unified CSS with design tokens
 
 ## Conclusion
 

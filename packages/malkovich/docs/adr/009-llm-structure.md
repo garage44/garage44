@@ -195,9 +195,9 @@ Based on the strategic context and user personas, evaluate this feature proposal
 
 ## Related Decisions
 
-- [ADR-001](./ADR-001-monorepo-package-separation.md): Package structure supports strategic separation
-- [ADR-002](./ADR-002-mixed-license-strategy.md): Licensing strategy reflects community and commercial goals
-- [ADR-008](./ADR-008-isomorphic-logger.md): Logging infrastructure supports strategic metric collection
+- [ADR-001](./001-monorepo.md): Package structure supports strategic separation
+- [ADR-002](./002-license.md): Licensing strategy reflects community and commercial goals
+- [ADR-008](./008-logger.md): Logging infrastructure supports strategic metric collection
 
 ## Future Considerations
 
@@ -475,9 +475,9 @@ Future LLM Learns from New ADR
 
 ## Related Decisions
 
-- [ADR-001](./ADR-001-monorepo-package-separation.md): Package structure example of clear architectural boundaries
-- [ADR-002](./ADR-002-mixed-license-strategy.md): Licensing strategy shows decision traceability
-- [ADR-008](./ADR-008-isomorphic-logger.md): Logging example of systematic problem-solving
+- [ADR-001](./001-monorepo.md): Package structure example of clear architectural boundaries
+- [ADR-002](./002-license.md): Licensing strategy shows decision traceability
+- [ADR-008](./008-logger.md): Logging example of systematic problem-solving
 - All other ADRs: Now enhanced to support LLM reasoning about architecture
 
 ---

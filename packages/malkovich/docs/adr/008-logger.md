@@ -95,5 +95,5 @@ logger.info('Hello from browser!')
 - A single, adaptive logger reduces bugs and maintenance overhead
 
 ## References
-- [ADR-003: Bun Runtime Adoption](./ADR-003-bun-runtime-adoption.md)
-- [ADR-007: Bun.serve Migration](./ADR-007-bun-serve-migration.md)
+- [ADR-003: Bun Runtime Adoption](./003-bun.md)
+- [ADR-007: Bun.serve Migration](./007-bun-serve.md)

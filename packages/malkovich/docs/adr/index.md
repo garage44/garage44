@@ -29,56 +29,56 @@ AI Decision Records (ADRs) are structured documents that capture important archi
 
 | ID | Title | Type | Status | Date |
 |----|-------|------|--------|------|
-| [001](./ADR-001-monorepo-package-separation.md) | Monorepo Structure with Package Separation | Architecture | Accepted | 2025-04-17 |
-| [002](./ADR-002-mixed-license-strategy.md) | Mixed License Strategy | Process | Accepted | 2025-04-17 |
-| [003](./ADR-003-bun-runtime-adoption.md) | Bun as Primary Runtime | Technology | Accepted | 2025-04-17 |
-| [004](./ADR-004-preact-websocket-architecture.md) | Preact + WebSocket Real-time Architecture | Architecture | Accepted | 2025-04-17 |
-| [005](./ADR-005-centralized-ci-cd.md) | Centralized CI/CD at Monorepo Root | Infrastructure | Accepted | 2025-04-17 |
-| [006](./ADR-006-rest-to-websocket-migration.md) | REST to WebSocket Migration | Architecture | Accepted | 2025-06-02 |
-| [007](./ADR-007-bun-serve-migration.md) | Migration to Bun.serve | Tool | Accepted | 2025-06-02 |
-| [008](./ADR-008-isomorphic-logger.md) | Isomorphic Logger Implementation | Architecture | Accepted | 2025-06-02 |
-| [009](./ADR-009-llm-optimized-project-structure.md) | LLM-Optimized Project Structure | Process | Accepted | 2025-01-27 |
-| [010](./ADR-010-oxlint-eslint-replacement.md) | OxLint as ESLint Replacement | Tool | Accepted | 2025-01-03 |
-| [011](./ADR-011-modern-css-migration.md) | Modern CSS Migration | Tool | Accepted | 2025-10-11 |
-| [012](./ADR-012-design-system-consolidation.md) | Design System Consolidation | Architecture | Accepted | 2025-10-15 |
-| [013](./ADR-013-theme-switching-system.md) | Theme Switching System | Architecture | Accepted | 2025-10-15 |
-| [014](./ADR-014-unified-theme-system.md) | Unified Theme System | Architecture | Accepted | 2025-10-16 |
-| [015](./ADR-015-unified-authentication-flow.md) | Unified Authentication Flow | Architecture | Proposed | 2025-01-27 |
-| [016](./ADR-016-three-column-conference-layout.md) | Three-Column Conference Layout with Right-Side Video Panel | Architecture | Proposed | 2025-01-27 |
-| [017](./ADR-017-galene-direct-connection-revival.md) | Direct Galene Connection Revival for Video Conferencing | Architecture | Proposed | 2025-01-27 |
-| [019](./ADR-019-type-safe-i18n-system.md) | Type-Safe i18n System with Object References | Architecture | Accepted | 2025-01-27 |
-| [020](./ADR-020-malkovich-platform-documentation-system.md) | Malkovich Platform Documentation System | Architecture | Accepted | 2025-01-27 |
+| [001](./001-monorepo.md) | Monorepo Structure with Package Separation | Architecture | Accepted | 2025-04-17 |
+| [002](./002-license.md) | Mixed License Strategy | Process | Accepted | 2025-04-17 |
+| [003](./003-bun.md) | Bun as Primary Runtime | Technology | Accepted | 2025-04-17 |
+| [004](./004-preact-ws.md) | Preact + WebSocket Real-time Architecture | Architecture | Accepted | 2025-04-17 |
+| [005](./005-ci-cd.md) | Centralized CI/CD at Monorepo Root | Infrastructure | Accepted | 2025-04-17 |
+| [006](./006-ws-migration.md) | REST to WebSocket Migration | Architecture | Accepted | 2025-06-02 |
+| [007](./007-bun-serve.md) | Migration to Bun.serve | Tool | Accepted | 2025-06-02 |
+| [008](./008-logger.md) | Isomorphic Logger Implementation | Architecture | Accepted | 2025-06-02 |
+| [009](./009-llm-structure.md) | LLM-Optimized Project Structure | Process | Accepted | 2025-01-27 |
+| [010](./010-oxlint.md) | OxLint as ESLint Replacement | Tool | Accepted | 2025-01-03 |
+| [011](./011-css.md) | Modern CSS Migration | Tool | Accepted | 2025-10-11 |
+| [012](./012-design-system.md) | Design System Consolidation | Architecture | Accepted | 2025-10-15 |
+| [013](./013-theme.md) | Theme Switching System | Architecture | Accepted | 2025-10-15 |
+| [014](./014-unified-theme.md) | Unified Theme System | Architecture | Accepted | 2025-10-16 |
+| [015](./015-auth.md) | Unified Authentication Flow | Architecture | Proposed | 2025-01-27 |
+| [016](./016-layout.md) | Three-Column Conference Layout with Right-Side Video Panel | Architecture | Proposed | 2025-01-27 |
+| [017](./017-galene.md) | Direct Galene Connection Revival for Video Conferencing | Architecture | Proposed | 2025-01-27 |
+| [019](./019-i18n.md) | Type-Safe i18n System with Object References | Architecture | Accepted | 2025-01-27 |
+| [020](./020-docs.md) | Malkovich Platform Documentation System | Architecture | Accepted | 2025-01-27 |
 
 ### ADRs by Decision Type
 
 **Technology Choices** (Runtime, Framework, Library):
-- [ADR-003](./ADR-003-bun-runtime-adoption.md): Bun as Primary Runtime
+- [ADR-003](./003-bun.md): Bun as Primary Runtime
 - Pattern: [Technology Adoption Pattern](./guide/PATTERNS.md#technology-adoption-pattern)
 
 **Architecture Patterns** (Structure, Communication):
-- [ADR-001](./ADR-001-monorepo-package-separation.md): Monorepo Structure
-- [ADR-004](./ADR-004-preact-websocket-architecture.md): Preact + WebSocket
-- [ADR-006](./ADR-006-rest-to-websocket-migration.md): REST to WebSocket Migration
-- [ADR-008](./ADR-008-isomorphic-logger.md): Isomorphic Logger
-- [ADR-012](./ADR-012-design-system-consolidation.md): Design System Consolidation
-- [ADR-013](./ADR-013-theme-switching-system.md): Theme Switching
-- [ADR-014](./ADR-014-unified-theme-system.md): Unified Theme System
-- [ADR-015](./ADR-015-unified-authentication-flow.md): Unified Authentication Flow
-- [ADR-016](./ADR-016-three-column-conference-layout.md): Three-Column Conference Layout
-- [ADR-017](./ADR-017-galene-direct-connection-revival.md): Direct Galene Connection Revival
-- [ADR-019](./ADR-019-type-safe-i18n-system.md): Type-Safe i18n System
+- [ADR-001](./001-monorepo.md): Monorepo Structure
+- [ADR-004](./004-preact-ws.md): Preact + WebSocket
+- [ADR-006](./006-ws-migration.md): REST to WebSocket Migration
+- [ADR-008](./008-logger.md): Isomorphic Logger
+- [ADR-012](./012-design-system.md): Design System Consolidation
+- [ADR-013](./013-theme.md): Theme Switching
+- [ADR-014](./014-unified-theme.md): Unified Theme System
+- [ADR-015](./015-auth.md): Unified Authentication Flow
+- [ADR-016](./016-layout.md): Three-Column Conference Layout
+- [ADR-017](./017-galene.md): Direct Galene Connection Revival
+- [ADR-019](./019-i18n.md): Type-Safe i18n System
 - Pattern: [Architecture Pattern](./guide/PATTERNS.md#architecture-pattern)
 
 **Tool Adoption/Replacement** (Developer Tooling):
-- [ADR-007](./ADR-007-bun-serve-migration.md): Migration to Bun.serve
-- [ADR-010](./ADR-010-oxlint-eslint-replacement.md): OxLint replacing ESLint
-- [ADR-011](./ADR-011-modern-css-migration.md): Modern CSS Migration
+- [ADR-007](./007-bun-serve.md): Migration to Bun.serve
+- [ADR-010](./010-oxlint.md): OxLint replacing ESLint
+- [ADR-011](./011-css.md): Modern CSS Migration
 - Pattern: [Tool Replacement Pattern](./guide/PATTERNS.md#tool-replacement-pattern)
 
 **Process Changes** (Workflow, Practices):
-- [ADR-002](./ADR-002-mixed-license-strategy.md): Mixed License Strategy
-- [ADR-005](./ADR-005-centralized-ci-cd.md): Centralized CI/CD
-- [ADR-009](./ADR-009-llm-optimized-project-structure.md): LLM-Optimized Structure
+- [ADR-002](./002-license.md): Mixed License Strategy
+- [ADR-005](./005-ci-cd.md): Centralized CI/CD
+- [ADR-009](./009-llm-structure.md): LLM-Optimized Structure
 - Pattern: Various (Process-specific)
 
 ### ADRs by Impact Area
@@ -183,19 +183,19 @@ grep -i "technology adoption\|migration pattern" adr/guide/PATTERNS.md
 ## Common Decision Scenarios
 
 **Scenario: "Should I use REST or WebSocket for this API?"**
-- 📖 Read: ADR-004 (WebSocket Architecture), ADR-006 (REST to WebSocket Migration)
+- 📖 Read: ADR-004 (WebSocket Architecture), ADR-006 (WebSocket Migration)
 - 🎯 Pattern: Architecture Pattern
 - ✅ Default: WebSocket for user-facing real-time features
 - 💡 Exception: REST acceptable for one-time operations
 
 **Scenario: "Where should this code/component live?"**
-- 📖 Read: ADR-001 (Monorepo Structure)
+- 📖 Read: ADR-001 (Monorepo)
 - 🎯 Pattern: Architecture Pattern
 - ✅ Common: Shared utilities, MIT licensed, domain-agnostic
 - ✅ Expressio/Pyrite: Business logic, app-specific, AGPL
 
 **Scenario: "Should I adopt this new tool/library?"**
-- 📖 Read: ADR-003 (Bun), ADR-010 (OxLint)
+- 📖 Read: ADR-003 (Bun Runtime), ADR-010 (OxLint)
 - 🎯 Pattern: Technology Adoption Pattern
 - ✅ Evaluate: DX (9/10), Performance (8/10), Ecosystem (7/10)
 - ✅ Validate: Proof-of-concept before committing
@@ -213,13 +213,13 @@ grep -i "technology adoption\|migration pattern" adr/guide/PATTERNS.md
 - ✅ Avoid: Inline styles, hardcoded values
 
 **Scenario: "How do I use translations in components?"**
-- 📖 Read: ADR-019 (Type-Safe i18n System)
+- 📖 Read: ADR-019 (Type-Safe i18n)
 - 🎯 Pattern: Architecture Pattern
 - ✅ Use: `$t(i18n.path.to.tag)` with object references
 - ✅ Avoid: Magic strings like `$t('path.to.tag')`
 
 **Scenario: "Should I replace this development tool?"**
-- 📖 Read: ADR-010 (OxLint replacing ESLint)
+- 📖 Read: ADR-010 (OxLint)
 - 🎯 Pattern: Tool Replacement Pattern
 - ✅ Benchmark: 10x improvement target
 - ✅ Validate: Feature parity, real codebase testing

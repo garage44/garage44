@@ -518,13 +518,13 @@ const PanelContext = ({children, collapsed}: PanelContextProps) => {
 
 ## Related Decisions
 
-- [ADR-004](./ADR-004-preact-websocket-architecture.md): WebSocket architecture enables real-time video and chat updates
-- [ADR-011](./ADR-011-modern-css-migration.md): Modern CSS migration provides CSS Grid foundation for layout
-- [ADR-012](./ADR-012-design-system-consolidation.md): Design system consolidation guides component positioning
+- [ADR-004](./004-preact-ws.md): WebSocket architecture enables real-time video and chat updates
+- [ADR-011](./011-css.md): Modern CSS migration provides CSS Grid foundation for layout
+- [ADR-012](./012-design-system.md): Design system consolidation guides component positioning
 
 ## References
 
 - Original plan: Conference app layout restructure plan
-- WebSocket architecture: [ADR-004](./ADR-004-preact-websocket-architecture.md)
-- Modern CSS: [ADR-011](./ADR-011-modern-css-migration.md) - CSS Grid support
-- Design system: [ADR-012](./ADR-012-design-system-consolidation.md)
+- WebSocket architecture: [ADR-004](./004-preact-ws.md)
+- Modern CSS: [ADR-011](./011-css.md) - CSS Grid support
+- Design system: [ADR-012](./012-design-system.md)

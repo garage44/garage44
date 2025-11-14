@@ -409,8 +409,8 @@ const broadcastWorkspace = debounce((workspace) => {
 
 ## Related Decisions
 
-- [ADR-004](./ADR-004-preact-websocket-architecture.md): Established WebSocket infrastructure this builds on
-- [ADR-007](./ADR-007-bun-serve-migration.md): Concurrent migration improving overall architecture
+- [ADR-004](./004-preact-ws.md): Established WebSocket infrastructure this builds on
+- [ADR-007](./007-bun-serve.md): Concurrent migration improving overall architecture
 - Future ADRs: This establishes pattern for additional endpoint migrations
 
 ---

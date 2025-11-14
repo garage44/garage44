@@ -382,10 +382,10 @@ ws.on('/i18n/sync', (data) => {
 
 ## Related Decisions
 
-- [ADR-001](./ADR-001-monorepo-package-separation.md): WebSocket infrastructure in common package
-- [ADR-003](./ADR-003-bun-runtime-adoption.md): Bun enables fast Preact development workflow
-- [ADR-006](./ADR-006-rest-to-websocket-migration.md): Validates and extends WebSocket-first approach
-- [ADR-012](./ADR-012-design-system-consolidation.md): Preact components use shared design tokens
+- [ADR-001](./001-monorepo.md): WebSocket infrastructure in common package
+- [ADR-003](./003-bun.md): Bun enables fast Preact development workflow
+- [ADR-006](./006-ws-migration.md): Validates and extends WebSocket-first approach
+- [ADR-012](./012-design-system.md): Preact components use shared design tokens
 
 ---
 

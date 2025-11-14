@@ -1,8 +1,12 @@
-# Pyrite - Video Conferencing Platform
+# Pyrite
 
-Pyrite is a web-based video conferencing platform built with Preact, DeepSignal, and Bun. It provides a modern interface for the [Galène](https://galene.org/) SFU (Selective Forwarding Unit).
+Video conferencing platform built with Preact, DeepSignal, and Bun. Provides a modern web interface for the [Galène](https://galene.org/) SFU (Selective Forwarding Unit).
 
-## Features
+Pyrite is part of the **garage44/common** infrastructure, sharing the same tech stack as [Expressio](../expressio/) - Bun runtime, Preact frontend, DeepSignal state management, and Bunchy for development.
+
+## What It Does
+
+Pyrite provides a self-hosted video conferencing solution with:
 
 - **Multi-party video conferencing** - Support for multiple participants with adaptive video layouts
 - **Screen sharing** - Share your screen or individual application windows
@@ -12,16 +16,21 @@ Pyrite is a web-based video conferencing platform built with Preact, DeepSignal,
 - **i18n support** - Multi-language interface (English, German, French, Dutch)
 - **Responsive design** - Works on desktop and mobile devices
 
-## Architecture
+## Quick Start
 
-Pyrite is built on modern web technologies:
+```bash
+# Install globally
+bunx @garage44/pyrite start
 
-- **Backend**: Bun.serve() with native WebSocket support
-- **Frontend**: Preact with DeepSignal for reactive state management
-- **SFU**: Galène (external, proxied through Pyrite backend)
-- **Build**: Bunchy for hot-reload development
+# Or from source
+cd packages/pyrite
+bun install
+bun run dev
+```
 
-## Installation
+Access Pyrite at `http://localhost:3030` (default login: `admin/admin`).
+
+## Getting Started
 
 ### Prerequisites
 
@@ -44,7 +53,11 @@ Create a `.pyriterc` file in your home directory:
 cp packages/pyrite/.pyriterc.example ~/.pyriterc
 ```
 
-Edit `~/.pyriterc` with your configuration (see Configuration section below).
+Edit `~/.pyriterc` with your configuration. At minimum, configure:
+
+- `sfu.path` - Path to Galène data directory
+- `sfu.url` - Galène HTTP endpoint (default: `http://localhost:8443`)
+- `sfu.admin.username` and `sfu.admin.password` - Galène admin credentials
 
 3. **Start Galène SFU**:
 
@@ -57,8 +70,6 @@ cd packages/pyrite
 bun run dev
 ```
 
-Access Pyrite at `http://localhost:3030`
-
 ## Configuration
 
 Pyrite uses the [rc](https://www.npmjs.com/package/rc) configuration pattern. Configuration is loaded from:
@@ -68,66 +79,14 @@ Pyrite uses the [rc](https://www.npmjs.com/package/rc) configuration pattern. Co
 3. `.pyriterc` file in your home directory
 4. Default values
 
-### Configuration Options
-
-#### `listen`
-
-Server binding configuration:
+### Essential Configuration
 
 ```json
 {
   "listen": {
     "host": "0.0.0.0",
     "port": 3030
-  }
-}
-```
-
-- `host` (string): IP address to bind to (default: `"0.0.0.0"`)
-- `port` (number): Port to listen on (default: `3030`)
-
-#### `logger`
-
-Logging configuration:
-
-```json
-{
-  "logger": {
-    "level": "info",
-    "transports": ["console"]
-  }
-}
-```
-
-- `level` (string): Log level - `"debug"`, `"info"`, `"warn"`, `"error"` (default: `"info"`)
-- `transports` (array): Logging outputs - `"console"`, `"file"` (default: `["console"]`)
-
-#### `session`
-
-Session management configuration:
-
-```json
-{
-  "session": {
-    "cookie": {
-      "maxAge": 86400000
-    },
-    "resave": false,
-    "saveUninitialized": true
-  }
-}
-```
-
-- `cookie.maxAge` (number): Session cookie lifetime in milliseconds (default: 86400000 = 1 day)
-- `resave` (boolean): Force session to be saved even if unmodified (default: `false`)
-- `saveUninitialized` (boolean): Force uninitialized session to be saved (default: `true`)
-
-#### `sfu`
-
-Galène SFU connection configuration:
-
-```json
-{
+  },
   "sfu": {
     "path": "/path/to/galene/data",
     "url": "http://localhost:8443",
@@ -135,21 +94,7 @@ Galène SFU connection configuration:
       "username": "admin",
       "password": "changeme"
     }
-  }
-}
-```
-
-- `path` (string): Path to Galène data directory (groups, recordings)
-- `url` (string): Galène HTTP endpoint URL (default: `"http://localhost:8443"`)
-- `admin.username` (string): Galène admin username for API access
-- `admin.password` (string): Galène admin password for API access
-
-#### `users`
-
-Initial user accounts for Pyrite admin interface:
-
-```json
-{
+  },
   "users": [
     {
       "username": "admin",
@@ -164,13 +109,17 @@ Initial user accounts for Pyrite admin interface:
 }
 ```
 
-- `username` (string): User login name
-- `password` (string): User password (plain text, stored in config)
-- `permissions.op` (boolean): Operator permissions (manage groups/users)
-- `permissions.present` (boolean): Can present audio/video
-- `permissions.record` (boolean): Can record sessions
-
 **Security Note**: Store `.pyriterc` with restricted permissions (`chmod 600 ~/.pyriterc`) as it contains passwords.
+
+## Architecture
+
+Pyrite is built on the garage44/common infrastructure:
+
+- **Backend**: Bun.serve() with native WebSocket support
+- **Frontend**: Preact with DeepSignal for reactive state management
+- **SFU**: Galène (external, proxied through Pyrite backend)
+- **Build**: Bunchy for hot-reload development
+- **Shared Components**: UI components and utilities from `@garage44/common`
 
 ## Development
 
@@ -179,28 +128,8 @@ Initial user accounts for Pyrite admin interface:
 ```
 packages/pyrite/
 ├── api/              # REST/WebSocket API endpoints
-│   ├── chat.ts       # Chat and emoji APIs
-│   ├── dashboard.ts  # Dashboard statistics
-│   ├── groups.ts     # Group management
-│   ├── i18n.ts       # Translation loading
-│   ├── profile.ts    # Authentication
-│   ├── recordings.ts # Recording management
-│   └── users.ts      # User administration
 ├── lib/              # Backend business logic
-│   ├── config.ts     # Configuration management
-│   ├── dashboard.ts  # Dashboard data processing
-│   ├── group.ts      # Group operations
-│   ├── middleware.ts # HTTP middleware
-│   ├── profile.ts    # User profile operations
-│   ├── recording.ts  # Recording operations
-│   ├── sanity.ts     # Configuration validation
-│   ├── user.ts       # User management
-│   └── utils.ts      # Utility functions
-├── src/              # Frontend source
-│   ├── components/   # Preact components
-│   ├── models/       # Business logic models
-│   ├── lib/          # Frontend utilities
-│   └── app.ts        # Frontend entry point
+├── src/              # Frontend source (Preact components)
 ├── public/           # Static assets
 ├── i18n/             # Translation files
 ├── service.ts        # Backend entry point
@@ -229,140 +158,25 @@ bun run build
 **Run production server**:
 
 ```bash
-bun run start
-```
-
-### Adding Features
-
-#### Create a new API endpoint
-
-1. Add a file in `api/` directory
-2. Export a function that takes `router` and registers routes:
-
-```typescript
-import type { Router } from '@garage44/common/lib/middleware'
-
-export const registerMyRoutes = (router: Router) => {
-  router.get('/api/my-endpoint', async (req, params, session) => {
-    return new Response(JSON.stringify({ data: 'hello' }), {
-      headers: { 'Content-Type': 'application/json' }
-    })
-  })
-}
-```
-
-3. Import and call in `lib/middleware.ts`
-
-#### Create a new component
-
-1. Add component file in `src/components/`
-2. Use Preact functional components with DeepSignal:
-
-```typescript
-import { $s } from '@/app'
-
-export const MyComponent = () => {
-  return (
-    <div class="my-component">
-      <p>Current user: {$s.user.username}</p>
-    </div>
-  )
-}
+bun run server
 ```
 
 ## WebSocket Architecture
 
 Pyrite uses **two separate WebSocket connections**:
 
-### 1. Pyrite WebSocket (`/ws`)
-
-Backend-to-frontend communication for:
-- Chat message broadcasting
-- User presence updates
-- Group state synchronization
-- Recording status notifications
-
-### 2. SFU WebSocket (`/sfu`)
-
-Frontend-to-Galène communication for:
-- WebRTC signaling
-- Media stream management
-- Video/audio track negotiation
+1. **Pyrite WebSocket (`/ws`)** - Backend-to-frontend communication for chat, presence, and group state
+2. **SFU WebSocket (`/sfu`)** - Frontend-to-Galène communication for WebRTC signaling and media streams
 
 The SFU WebSocket is proxied through Pyrite backend but the protocol is between frontend and Galène directly.
-
-## i18n (Internationalization)
-
-Translation files are in `i18n/` directory:
-
-- `en.json` - English (default)
-- `de.json` - German
-- `fr.json` - French
-- `nl.json` - Dutch
-
-Add new translations by adding keys to these JSON files. Use in components:
-
-```typescript
-import { $t } from '@/app'
-
-<button>{$t('group.action.leave')}</button>
-```
-
-## Deployment
-
-### Production Considerations
-
-1. **Use a reverse proxy** (nginx, Caddy) for SSL/TLS termination
-2. **Set secure session cookies** in production
-3. **Configure firewall** to restrict SFU access
-4. **Use strong passwords** in `.pyriterc`
-5. **Enable HTTPS** for WebRTC to work properly
-
-### Docker Deployment
-
-Docker support is planned. See `misc/docker/` in the old Pyrite repository for reference.
-
-## Troubleshooting
-
-### Can't connect to conference
-
-- Check that Galène is running and accessible at the configured URL
-- Verify `sfu.url` in `.pyriterc` is correct
-- Check browser console for WebSocket connection errors
-
-### No video/audio
-
-- Ensure HTTPS is enabled (required for WebRTC)
-- Check browser permissions for camera/microphone
-- Verify Galène group permissions allow presenting
-
-### Authentication fails
-
-- Check `users` array in `.pyriterc`
-- Verify passwords are correct
-- Check session configuration
-
-## License
-
-MIT License - see LICENSE.md
-
-## Contributing
-
-Contributions are welcome! Please follow the project's code style and testing guidelines.
 
 ## Related Projects
 
 - [Galène](https://galene.org/) - The SFU backend
-- [Expressio](../expressio/) - i18n tooling that shares the same tech stack
+- [Expressio](../expressio/) - i18n tooling (shares the same tech stack)
 - [Bunchy](../bunchy/) - Hot-reload development tool
+- [Common](../common/) - Shared UI components and utilities
 
-## Upgrading from Old Pyrite
+## License
 
-This version of Pyrite has been completely rewritten:
-
-- **Vue 3 → Preact** for the frontend
-- **Express.js → Bun.serve()** for the backend
-- **Vite → Bunchy** for development
-- **SCSS → Modern CSS** for styling
-
-Configuration is largely compatible, but some options have changed. Review your `.pyriterc` against the example file.
+AGPLv3
