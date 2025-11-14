@@ -73,6 +73,7 @@ export const Main = () => {
     const routeParts = $s.currentRoute.split('/').filter(Boolean)
     const currentPackage = routeParts[0] === 'projects' ? routeParts[1] : null
     const isProjectsRoute = $s.currentRoute === '/projects'
+    const isProjectPage = routeParts[0] === 'projects' && routeParts.length >= 2 && currentPackage !== null
     const isDocsRoute = routeParts[0] === 'projects' && routeParts.length >= 3 && routeParts[2] === 'docs'
     const isHomeRoute = $s.currentRoute === '/'
 
@@ -80,11 +81,11 @@ export const Main = () => {
     // Active items should be uncollapsed (false), inactive items should be collapsed (true)
     useEffect(() => {
         const isHomeActive = isHomeRoute || (isDocsRoute && currentPackage === 'malkovich')
-        const isProjectsActive = isProjectsRoute || (isDocsRoute && currentPackage !== 'malkovich')
+        const isProjectsActive = isProjectsRoute || isProjectPage || (isDocsRoute && currentPackage !== 'malkovich')
 
         menuState.home = !isHomeActive
         menuState.projects = !isProjectsActive
-    }, [isHomeRoute, isProjectsRoute, isDocsRoute, currentPackage])
+    }, [isHomeRoute, isProjectsRoute, isProjectPage, isDocsRoute, currentPackage])
 
     // Extract current docs section path (e.g., "adr" or "adr/guide")
     // If we're on a file route, extract just the directory path
@@ -251,11 +252,12 @@ export const Main = () => {
                                 <Submenu
                                     collapsed={$s.panels.menu.collapsed}
                                     items={buildDocsSubmenu(malkovichDocs.docs, 'malkovich').map((item) => {
-                                        const isDocsSectionActive = isDocsRoute && currentDocsSection === item.id
+                                        // Check if this section is active (exact match) or if any nested child is active (starts with)
+                                        const isDocsSectionActive = isDocsRoute && (currentDocsSection === item.id || (currentDocsSection && currentDocsSection.startsWith(item.id + '/')))
                                         const sectionNode = malkovichDocs.docs.find((d) => d.name === item.id && d.type === 'directory')
                                         const nestedItems: Array<{active: boolean; id: string; label: string; nested?: boolean; onClick: () => void}> = []
 
-                                        // If this is the active docs section and has children, add them as nested items
+                                        // If this is the active docs section (or any child is active) and has children, add them as nested items
                                         if (isDocsSectionActive && sectionNode && sectionNode.children && sectionNode.children.length > 0) {
                                             const childrenItems = buildDocsSubmenu(sectionNode.children, 'malkovich', item.id).map((childItem) => ({
                                                 ...childItem,
@@ -267,7 +269,7 @@ export const Main = () => {
                                         return {
                                             ...item,
                                             nested: true,
-                                            // Add nested children if this section is active
+                                            // Add nested children if this section is active (or any child is active)
                                             ...(nestedItems.length > 0 && {children: nestedItems}),
                                         }
                                     })}
@@ -281,7 +283,7 @@ export const Main = () => {
                                 return (
                                     <>
                                         <MenuItem
-                                            active={isProjectsRoute}
+                                            active={isProjectsRoute || isProjectPage}
                                             collapsed={$s.panels.menu.collapsed}
                                             href="/projects"
                                             icon={menuState.projects ? 'folder_plus_outline' : 'folder_minus_outline'}
@@ -306,11 +308,12 @@ export const Main = () => {
                                                     // If this package is active and has docs, add its docs submenu items
                                                     if (isActive && currentPackageDocs && currentPackageDocs.docs.length > 0) {
                                                         const docsItems = buildDocsSubmenu(currentPackageDocs.docs, pkg.name).map((item) => {
-                                                            const isDocsSectionActive = isDocsRoute && currentDocsSection === item.id
+                                                            // Check if this section is active (exact match) or if any nested child is active (starts with)
+                                                            const isDocsSectionActive = isDocsRoute && (currentDocsSection === item.id || (currentDocsSection && currentDocsSection.startsWith(item.id + '/')))
                                                             const sectionNode = currentPackageDocs.docs.find((d) => d.name === item.id && d.type === 'directory')
                                                             const nestedItems: Array<{active: boolean; id: string; label: string; nested?: boolean; onClick: () => void}> = []
 
-                                                            // If this is the active docs section and has children, add them as nested items
+                                                            // If this is the active docs section (or any child is active) and has children, add them as nested items
                                                             if (isDocsSectionActive && sectionNode && sectionNode.children && sectionNode.children.length > 0) {
                                                                 const childrenItems = buildDocsSubmenu(sectionNode.children, pkg.name, item.id).map((childItem) => ({
                                                                     ...childItem,
@@ -322,7 +325,7 @@ export const Main = () => {
                                                             return {
                                                                 ...item,
                                                                 nested: true,
-                                                                // Add nested children if this section is active
+                                                                // Add nested children if this section is active (or any child is active)
                                                                 ...(nestedItems.length > 0 && {children: nestedItems}),
                                                             }
                                                         })

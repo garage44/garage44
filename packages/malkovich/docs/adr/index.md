@@ -1,6 +1,6 @@
-# Garage44 AI Decision Records (ADRs)
+# Architecture Decision Records (ADRs)
 
-This directory contains **AI-optimized Decision Records** that document architectural decisions and enable LLMs to understand patterns, extrapolate principles, and maintain architectural consistency.
+This directory contains **AI-optimized Architecture Decision Records** that document architectural decisions and enable LLMs to understand patterns, extrapolate principles, and maintain architectural consistency.
 
 ## What are AI Decision Records?
 
