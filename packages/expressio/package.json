@@ -10,12 +10,12 @@
   "dependencies": {
     "@garage44/bunchy": "workspace:*",
     "@garage44/common": "workspace:*",
-    "@garage44/enola": "workspace:*",
     "@preact/signals": "catalog:",
     "classnames": "catalog:",
     "deepsignal": "catalog:",
     "figlet": "catalog:",
     "fs-extra": "catalog:",
+    "html-entities": "^2.5.3",
     "i18next": "catalog:",
     "picocolors": "catalog:",
     "preact": "catalog:",

@@ -6,7 +6,7 @@
 - **Status**: Proposed | Accepted | Deprecated | Superseded
 - **Date**: YYYY-MM-DD
 - **Tags**: [frontend, backend, infrastructure, tooling, ux, performance, security]
-- **Impact Areas**: [expressio, pyrite, common, bunchy, enola]
+- **Impact Areas**: [expressio, pyrite, common, bunchy]
 - **Decision Type**: technology_choice | architecture_pattern | tool_adoption | process_change
 - **Related Decisions**: [ADR-XXX, ADR-YYY]
 - **Supersedes**: [ADR-XXX] (if applicable)

@@ -11,7 +11,7 @@ This file contains rules for AI assistants working on the Garage44 monorepo. The
 
 ## Project Overview
 
-Garage44 is a monorepo containing multiple applications (Expressio, Pyrite, Styleguide) with shared packages (common, bunchy, enola). The projects follow specific architectural patterns and technology choices documented in Architecture Decision Records (ADRs).
+Garage44 is a monorepo containing multiple applications (Expressio, Pyrite, Styleguide) with shared packages (common, bunchy). The projects follow specific architectural patterns and technology choices documented in Architecture Decision Records (ADRs).
 
 ## Architecture Decision Records (ADRs)
 

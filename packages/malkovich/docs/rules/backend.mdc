@@ -5,7 +5,6 @@ globs:
   - "packages/expressio/lib/**"
   - "packages/expressio/service.ts"
   - "packages/bunchy/**"
-  - "packages/enola/**"
   - "packages/common/lib/**"
 alwaysApply: true
 ---
@@ -32,8 +31,7 @@ packages/
 │   ├── lib/           # Core business logic
 │   └── service.ts     # CLI entry point
 ├── bunchy/            # Development tooling
-├── common/            # Shared backend utilities
-└── enola/             # Translation service wrapper
+└── common/            # Shared backend utilities
 ```
 
 ## Code Style and ESLint Compliance

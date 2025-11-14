@@ -30,10 +30,9 @@ Implement a mixed licensing strategy across packages:
   - AI integration features
   - CLI tools
 
-- **Utility Packages (`bunchy/`, `common/`, `enola/`)**: MIT
+- **Utility Packages (`bunchy/`, `common/`)**: MIT
   - Development tooling
   - Shared UI components
-  - Translation service abstractions
   - General-purpose utilities
 
 ## Consequences

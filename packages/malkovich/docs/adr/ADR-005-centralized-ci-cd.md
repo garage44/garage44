@@ -10,7 +10,6 @@ Accepted
 
 Initially, the monorepo was set up with individual CI/CD workflows for each package:
 - `packages/common/.github/workflows/publish.yml`
-- `packages/enola/.github/workflows/publish.yml`
 - `packages/expressio/.github/workflows/trigger-workspace.yml`
 
 This approach created several issues:
@@ -32,7 +31,6 @@ Remove individual package CI/CD workflows and centralize all automation at the m
 
 **Changes Made:**
 - Deleted `packages/common/.github/workflows/publish.yml`
-- Deleted `packages/enola/.github/workflows/publish.yml`
 - Deleted `packages/expressio/.github/workflows/trigger-workspace.yml`
 - Moved `packages/expressio/.stylelintrc.js` to root level
 

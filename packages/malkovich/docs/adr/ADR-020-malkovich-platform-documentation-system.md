@@ -51,7 +51,7 @@ Create **Malkovich** (named after "Being John Malkovich") as a unified platform 
 - **Main domain** (`garage44.org`) → Malkovich (port 3032)
 - **Subdomains** (`expressio.garage44.org`, `pyrite.garage44.org`) → Application packages
 - **Auto-discovery**: Packages discovered from workspace `package.json`
-- **Exclusion logic**: Malkovich and utility packages (common, bunchy, enola) excluded from subdomain generation
+- **Exclusion logic**: Malkovich and utility packages (common, bunchy) excluded from subdomain generation
 - **All READMEs used**: Utility package READMEs included in documentation, but no subdomains
 
 ### 3. **AGENTS.md Discovery**

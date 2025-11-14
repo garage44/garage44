@@ -6,7 +6,7 @@
 - **Status**: Accepted
 - **Date**: 2025-04-17
 - **Tags**: [backend, infrastructure, tooling, performance]
-- **Impact Areas**: [expressio, pyrite, common, bunchy, enola]
+- **Impact Areas**: [expressio, pyrite, common, bunchy]
 - **Decision Type**: technology_choice
 - **Related Decisions**: [ADR-001, ADR-007, ADR-010]
 - **Supersedes**: []

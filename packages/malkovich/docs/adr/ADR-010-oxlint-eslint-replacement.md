@@ -6,7 +6,7 @@
 - **Status**: Accepted
 - **Date**: 2025-01-03
 - **Tags**: [tooling, performance, infrastructure, frontend, backend]
-- **Impact Areas**: [expressio, pyrite, common, bunchy, enola]
+- **Impact Areas**: [expressio, pyrite, common, bunchy]
 - **Decision Type**: tool_adoption
 - **Related Decisions**: [ADR-003]
 - **Supersedes**: []
@@ -21,7 +21,7 @@ Accepted – Implemented across all packages in Expressio monorepo
 
 ## Context
 
-Expressio's monorepo consists of TypeScript/React applications with complex linting requirements across four packages (expressio, bunchy, common, enola). The project previously used basic ESLint configurations, but several challenges emerged:
+Expressio's monorepo consists of TypeScript/React applications with complex linting requirements across multiple packages (expressio, bunchy, common). The project previously used basic ESLint configurations, but several challenges emerged:
 
 - **Performance bottlenecks:** ESLint execution was slow (2-5 seconds) during development and CI
 - **Dependency overhead:** Large ESLint plugin ecosystem created heavy node_modules
