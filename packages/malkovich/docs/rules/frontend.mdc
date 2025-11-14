@@ -658,6 +658,41 @@ const BadList = () => {
 - Check signal updates in browser console
 - Validate translation data flow in real-time
 
+## Code Style and ESLint Compliance
+
+**CRITICAL: All code must pass ESLint checks before committing.**
+
+### ESLint Rules (enforced via `bun run lint:ts`)
+
+**Formatting:**
+- ✅ Use single quotes for strings: `'string'` not `"string"`
+- ✅ No semicolons: `const x = 1` not `const x = 1;`
+- ✅ 4 spaces indentation (not tabs)
+- ✅ No trailing commas in single-line objects/arrays
+- ✅ Always trailing commas in multiline objects/arrays
+- ✅ No spaces inside array brackets: `[1, 2]` not `[ 1, 2 ]`
+- ✅ No spaces inside object braces: `{a: 1}` not `{ a: 1 }`
+- ✅ Always use arrow function parentheses: `(x) => x` not `x => x`
+- ✅ Use 1TBS brace style: `if (x) {` on same line
+
+**TypeScript:**
+- ✅ Sort object keys alphabetically (perfectionist plugin)
+- ✅ Sort interface properties alphabetically
+- ✅ Avoid `any` type (use proper types)
+- ✅ Prefix unused variables with `_`: `_unusedParam`
+
+**Before Committing:**
+```bash
+# Always run lint checks before committing
+bun run lint:ts    # Check TypeScript/TSX files
+bun run lint:css   # Check CSS files (if CSS was modified)
+```
+
+**Auto-fixable issues:**
+- Most formatting issues can be auto-fixed by ESLint
+- Run `bun run lint:ts --fix` to auto-fix formatting issues
+- Always verify fixes don't break functionality
+
 ## Common Anti-patterns
 
 ❌ **Don't do:**
@@ -676,6 +711,7 @@ const BadList = () => {
 - Create utility CSS classes - create components instead
 - Pass non-signal values to Field model props
 - Forget to pass validation prop to Field components
+- Commit code without running lint checks
 
 ✅ **Do:**
 - Define deepSignal state OUTSIDE components for stability
@@ -692,3 +728,4 @@ const BadList = () => {
 - Use modern CSS nesting in component CSS files
 - Extract reusable patterns as components, not utility classes
 - Keep useEffect dependencies minimal and stable
+- Always run `bun run lint:ts` and `bun run lint:css` before committing

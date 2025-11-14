@@ -36,6 +36,40 @@ packages/
 └── enola/             # Translation service wrapper
 ```
 
+## Code Style and ESLint Compliance
+
+**CRITICAL: All code must pass ESLint checks before committing.**
+
+### ESLint Rules (enforced via `bun run lint:ts`)
+
+**Formatting:**
+- ✅ Use single quotes for strings: `'string'` not `"string"`
+- ✅ No semicolons: `const x = 1` not `const x = 1;`
+- ✅ 4 spaces indentation (not tabs)
+- ✅ No trailing commas in single-line objects/arrays
+- ✅ Always trailing commas in multiline objects/arrays
+- ✅ No spaces inside array brackets: `[1, 2]` not `[ 1, 2 ]`
+- ✅ No spaces inside object braces: `{a: 1}` not `{ a: 1 }`
+- ✅ Always use arrow function parentheses: `(x) => x` not `x => x`
+- ✅ Use 1TBS brace style: `if (x) {` on same line
+
+**TypeScript:**
+- ✅ Sort object keys alphabetically (perfectionist plugin)
+- ✅ Sort interface properties alphabetically
+- ✅ Avoid `any` type (use proper types)
+- ✅ Prefix unused variables with `_`: `_unusedParam`
+
+**Before Committing:**
+```bash
+# Always run lint checks before committing
+bun run lint:ts    # Check TypeScript files
+```
+
+**Auto-fixable issues:**
+- Most formatting issues can be auto-fixed by ESLint
+- Run `bun run lint:ts --fix` to auto-fix formatting issues
+- Always verify fixes don't break functionality
+
 ## Common Anti-patterns
 
 ❌ **Don't do:**
@@ -44,6 +78,7 @@ packages/
 - Store sensitive API keys in workspace files
 - Skip input validation on user-provided paths
 - Ignore WebSocket connection cleanup
+- Commit code without running lint checks
 
 ✅ **Do:**
 - Use Bun.serve() and native Web APIs (Request/Response)
@@ -52,3 +87,4 @@ packages/
 - Validate and sanitize all file paths and user inputs
 - Use the websocket protocol
 - Use structured logging with relevant context
+- Always run `bun run lint:ts` before committing
