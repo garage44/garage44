@@ -8,7 +8,7 @@ import {Router, getCurrentUrl, route} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
 import {Login} from '@/components/pages/login/login'
 import {deepSignal} from 'deepsignal'
-import {toIso6391} from '@garage44/enola/iso-codes'
+import {toIso6391} from '../../../lib/enola/iso-codes.ts'
 import {useEffect} from 'preact/hooks'
 
 const state = deepSignal({

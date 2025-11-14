@@ -1,5 +1,5 @@
 import {collectSource, pathRef} from '@garage44/common/lib/paths.ts'
-import type {EnolaTag} from '@garage44/enola/types.ts'
+import type {EnolaTag} from './enola/types.ts'
 import {enola} from '../service.ts'
 import {hash} from '@garage44/common/lib/utils.ts'
 

@@ -1,7 +1,7 @@
 import {$s} from '@/app'
 import {ws} from '@garage44/common/app'
 import {pathCreate, pathDelete, pathUpdate} from '@garage44/common/lib/paths.ts'
-import type {EnolaTag} from '@garage44/enola/types.ts'
+import type {EnolaTag} from '../../../../../lib/enola/types.ts'
 import {GroupActions} from '@/components/elements/group-actions/group-actions'
 import {Button, FieldText, Icon} from '@garage44/common/components'
 import {TranslationGroup} from '@/components/elements'

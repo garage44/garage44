@@ -6,7 +6,7 @@
 - **Status**: Accepted
 - **Date**: 2025-04-17
 - **Tags**: [infrastructure, architecture, backend, frontend, tooling]
-- **Impact Areas**: [expressio, pyrite, common, bunchy, enola]
+- **Impact Areas**: [expressio, pyrite, common, bunchy]
 - **Decision Type**: architecture_pattern
 - **Related Decisions**: [ADR-002, ADR-003, ADR-004, ADR-008, ADR-012]
 - **Supersedes**: []
@@ -54,10 +54,6 @@ Implement a monorepo structure with four distinct packages:
   - State management
   - Validation utilities
 
-- **`enola/`** - Translation service wrapper (MIT licensed)
-  - Translation provider abstractions
-  - Language code mappings
-  - Translation engine implementations
 
 ## Consequences
 
@@ -133,7 +129,6 @@ Implement a monorepo structure with four distinct packages:
 - **expressio** = AGPL: Core i18n business logic is the commercial value proposition
 - **common** = MIT: Shared utilities encourage ecosystem growth without licensing friction
 - **bunchy** = MIT: Dev tooling should be reusable across any project
-- **enola** = MIT: Translation service abstraction benefits from community contributions
 - **pyrite** (added later) = AGPL: Separate commercial product with shared infrastructure
 
 **Trade-off Analysis:**
@@ -168,10 +163,6 @@ packages/
 │   ├── lib/          # WebSocket, store, validation
 │   ├── css/          # Shared design tokens
 │   └── package.json
-├── enola/            # MIT - Translation services
-│   ├── engines/      # Provider implementations
-│   ├── languages.ts  # Language mappings
-│   └── package.json
 └── pyrite/           # AGPL - Video conferencing (added later)
     ├── api/          # Backend API
     ├── src/          # Frontend components
@@ -196,8 +187,7 @@ packages/
 // packages/expressio/package.json
 {
   "dependencies": {
-    "@garage44/common": "workspace:*",
-    "@garage44/enola": "workspace:*"
+    "@garage44/common": "workspace:*"
   }
 }
 
@@ -229,7 +219,7 @@ packages/
 
 // ❌ Don't put business logic in common package
 // packages/common/lib/translation-business-rules.ts ❌
-// This belongs in expressio or enola, not common
+// This belongs in expressio, not common
 
 // ❌ Don't mix licensing (AGPL code in MIT package)
 // packages/common/lib/expressio-specific-logic.ts ❌
@@ -237,11 +227,10 @@ packages/
 
 // ✅ Do respect package boundaries
 import { WSClient } from '@garage44/common/lib/ws-client';
-import { translate } from '@garage44/enola';
 
 // ✅ Do keep domain logic in domain packages
 // packages/expressio/lib/translation-workflow.ts ✅
-// packages/enola/engines/deepl.ts ✅
+// packages/expressio/lib/enola/engines/deepl.ts ✅
 
 // ✅ Do keep shared infrastructure in common
 // packages/common/lib/ws-client.ts ✅
@@ -308,7 +297,6 @@ import { translate } from '@garage44/enola';
 - Applications (expressio, pyrite) depend on common infrastructure (desired coupling)
 - Common package must remain domain-agnostic (enforced decoupling)
 - Build tools (bunchy) isolated from business logic (clean separation)
-- Translation services (enola) abstracted from application logic (plugin pattern)
 
 **Future Constraints:**
 - New code must be placed in appropriate package (discipline required)
@@ -325,6 +313,11 @@ import { translate } from '@garage44/enola';
 - Created four packages: expressio, bunchy, common, enola
 - Established domain-based separation pattern
 - Implemented Bun workspaces
+
+**Enola Merger** (2025-01-XX):
+- Merged enola package into expressio as `lib/enola/`
+- Enola was only used by expressio, so separation was unnecessary
+- Simplified dependency management by removing inter-package dependency
 
 **Validation** (Ongoing):
 - Added pyrite package (date not documented, but validated pattern scalability)

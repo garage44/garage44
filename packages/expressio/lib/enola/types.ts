@@ -15,11 +15,11 @@ interface EnolaConfig {
 
 interface EnolaEngine {
     config: EnolaEngineConfig
+    init: (config: {api_key: string; base_url: string}, logger: EnolaLogger) => Promise<void>
     logger: EnolaLogger
-    init: (config: {api_key: string, base_url: string}, logger: EnolaLogger) => Promise<void>
     translate: (tag: EnolaTag, targetLanguage: TargetLanguage) => Promise<string>
     translateBatch: (batch: EnolaTag[], targetLanguage: TargetLanguage) => Promise<string[]>
-    usage: () => Promise<{count: number, limit: number}>
+    usage: () => Promise<{count: number; limit: number}>
 }
 
 interface EnolaEngineConfig {
@@ -43,38 +43,38 @@ interface EnolaLogger {
 }
 
 interface EnolaTag {
-    source: string
     cache?: string
+    source: string
     target: Record<string, string>
 }
 
 interface TargetLanguage {
     engine: 'anthropic' | 'deepl'
+    formality: 'default' | 'more' | 'less'
     id: string
     name: string
-    formality: 'default' | 'more' | 'less'
 }
 
 type TranscriptionSystem =
-  | 'ala_lc'    // Arabic, Persian, etc
-  | 'din'       // Arabic DIN 31635
-  | 'pinyin'    // Chinese
-  | 'wade_giles' // Chinese
-  | 'hepburn'   // Japanese
-  | 'kunrei'    // Japanese
-  | 'revised'   // Korean
-  | 'mcr'       // Korean (McCune-Reischauer)
-  | 'scientific' // Russian/Cyrillic
-  | 'iast'      // Sanskrit/Hindi
-  | 'dmg'       // Persian
-  | null;
+    | 'ala_lc'    // Arabic, Persian, etc
+    | 'din'       // Arabic DIN 31635
+    | 'pinyin'    // Chinese
+    | 'wade_giles' // Chinese
+    | 'hepburn'   // Japanese
+    | 'kunrei'    // Japanese
+    | 'revised'   // Korean
+    | 'mcr'       // Korean (McCune-Reischauer)
+    | 'scientific' // Russian/Cyrillic
+    | 'iast'      // Sanskrit/Hindi
+    | 'dmg'       // Persian
+    | null
 
 interface Language {
-  engines: string[]
-  formality?: string[]
-  id: string
-  name: string
-  transcription?: TranscriptionSystem[]
+    engines: string[]
+    formality?: string[]
+    id: string
+    name: string
+    transcription?: TranscriptionSystem[]
 }
 
 export {
