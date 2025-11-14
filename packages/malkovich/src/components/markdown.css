@@ -5,6 +5,15 @@
     line-height: 1.7;
     max-width: 900px;
     padding: var(--spacer-6);
+    width: 100%;
+
+    /* Reduce padding on mobile - minimal left/right padding */
+    @media (max-width: 768px) {
+        max-width: 100%;
+        overflow-x: hidden;
+        padding: var(--spacer-2) var(--spacer-05);
+        width: 100%;
+    }
 }
 
 /* Headings */
@@ -17,6 +26,11 @@
     line-height: 1.2;
     margin: var(--spacer-6) 0 var(--spacer-3) 0;
     padding-bottom: var(--spacer-2);
+
+    /* Reduce top margin on mobile */
+    @media (max-width: 768px) {
+        margin: var(--spacer-2) 0 var(--spacer-2) 0;
+    }
 }
 
 .c-markdown-page h2 {
@@ -84,6 +98,11 @@
     color: var(--surface-7);
     margin: var(--spacer-2) 0;
     padding-left: var(--spacer-4);
+
+    /* Reduce list padding on mobile */
+    @media (max-width: 768px) {
+        padding-left: var(--spacer-2);
+    }
 }
 
 .c-markdown-page li {

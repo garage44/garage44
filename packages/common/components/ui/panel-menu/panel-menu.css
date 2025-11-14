@@ -237,4 +237,31 @@
             margin-left: auto;
         }
     }
+
+    /* Mobile styles - overlay menu */
+    @media (max-width: 768px) {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        width: 280px;
+        max-width: 85vw;
+        transition: transform 0.3s ease-in-out;
+
+        /* Always hide menu by default on mobile */
+        transform: translateX(-100%);
+        visibility: hidden;
+
+        /* Show menu when not collapsed on mobile */
+        &:not(.collapsed) {
+            transform: translateX(0);
+            visibility: visible;
+        }
+
+        /* Ensure collapsed menu is always hidden */
+        &.collapsed {
+            transform: translateX(-100%);
+            visibility: hidden;
+        }
+    }
 }

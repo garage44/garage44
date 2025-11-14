@@ -11,6 +11,15 @@
     max-width: 1800px;
     overflow-y: scroll;
     padding: var(--spacer-6);
+    width: 100%;
+
+    /* Reduce padding on mobile - minimal left/right padding */
+    @media (max-width: 768px) {
+        max-width: 100%;
+        overflow-x: hidden;
+        padding: var(--spacer-2) var(--spacer-05);
+        width: 100%;
+    }
 
     /* Grid layout for component cards on wider screens */
 
@@ -18,6 +27,11 @@
         display: grid;
         gap: var(--spacer-6);
         grid-template-columns: 1fr;
+
+        /* Reduce gap on mobile */
+        @media (max-width: 768px) {
+            gap: var(--spacer-3);
+        }
 
         /* Two columns on tablets and larger */
         @media (min-width: 1200px) {

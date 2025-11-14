@@ -32,10 +32,25 @@ export default function env(env, _storeParam = null) {
     }
 
     const mediaQuery = globalThis.matchMedia('(max-width: 768px)')
-    env.layout = mediaQuery.matches ? 'tablet' : 'desktop'
-    mediaQuery.addListener((event) => {
-        env.layout = event.matches ? 'tablet' : 'desktop'
-    })
+
+    const updateLayout = () => {
+        const newLayout = mediaQuery.matches ? 'mobile' : 'desktop'
+        env.layout = newLayout
+        if (store && store.state) {
+            store.state.env.layout = newLayout
+        }
+    }
+
+    // Set initial layout
+    updateLayout()
+
+    // Listen for layout changes
+    if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', updateLayout)
+    } else {
+        // Fallback for older browsers
+        mediaQuery.addListener(updateLayout)
+    }
 
 
     env.url = window.location.pathname

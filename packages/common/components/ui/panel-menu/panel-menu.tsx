@@ -1,5 +1,5 @@
 import classnames from 'classnames'
-import {ComponentChildren} from 'preact'
+import {ComponentChildren} from 'preact/hooks'
 
 interface PanelMenuProps {
     actions?: ComponentChildren
@@ -44,6 +44,7 @@ export const PanelMenu = ({
     navigation,
     onCollapseChange,
 }: PanelMenuProps) => {
+
     const renderLogo = () => {
         const logoContent = (
             <>
@@ -74,7 +75,12 @@ export const PanelMenu = ({
     }
 
     return (
-        <aside class={classnames('c-panel-menu', 'fade-in', {collapsed})} style={{gridColumn: 'menu'}}>
+        <aside
+            class={classnames('c-panel-menu', 'fade-in', {
+                collapsed,
+            })}
+            style={{gridColumn: 'menu'}}
+        >
             <header>
                 {renderLogo()}
                 {onCollapseChange && (
@@ -89,19 +95,19 @@ export const PanelMenu = ({
                     </button>
                 )}
             </header>
-            <div class="content">
-                {navigation && (
-                    <div class="navigation" data-collapsed={collapsed}>
-                        {navigation}
-                    </div>
-                )}
-                {actions && (
-                    <div class="actions" data-collapsed={collapsed}>
-                        {actions}
-                    </div>
-                )}
-                {footer && <div class="footer">{footer}</div>}
-            </div>
+                <div class="content">
+                    {navigation && (
+                        <div class="navigation" data-collapsed={collapsed}>
+                            {navigation}
+                        </div>
+                    )}
+                    {actions && (
+                        <div class="actions" data-collapsed={collapsed}>
+                            {actions}
+                        </div>
+                    )}
+                    {footer && <div class="footer">{footer}</div>}
+                </div>
         </aside>
     )
 }

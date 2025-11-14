@@ -26,6 +26,7 @@
 
         .view {
             flex: 1;
+            overflow-x: hidden;
             overflow-y: scroll;
         }
     }
@@ -34,8 +35,130 @@
     @media (max-width: 768px) {
         grid-template-columns: [content] 1fr;
 
+        > .content {
+            grid-column: 1 / -1;
+        }
+
         &:has(.c-panel-context) {
             grid-template-columns: [content] 1fr [context] minmax(64px, auto);
         }
+    }
+}
+
+/* Mobile menu toggle button */
+.c-mobile-menu-toggle {
+    position: fixed;
+    top: var(--spacer-1);
+    right: var(--spacer-1);
+    z-index: 1001;
+    background: var(--surface-2);
+    border: 1px solid var(--surface-3);
+    border-radius: var(--border-radius-s);
+    color: var(--surface-7);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacer-1);
+    width: var(--spacer-6);
+    height: var(--spacer-6);
+    min-width: var(--spacer-6);
+    min-height: var(--spacer-6);
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-d);
+
+    &:hover {
+        background: var(--surface-3);
+        color: var(--surface-8);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+
+    svg {
+        display: block;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+
+    /* Show button on mobile when visible */
+    @media (max-width: 768px) {
+        &.is-visible {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+    }
+}
+
+/* Mobile menu close button */
+.c-mobile-menu-close {
+    position: fixed;
+    top: var(--spacer-1);
+    right: var(--spacer-1);
+    z-index: 1002;
+    background: var(--surface-2);
+    border: 1px solid var(--surface-3);
+    border-radius: var(--border-radius-s);
+    color: var(--surface-7);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacer-1);
+    width: var(--spacer-6);
+    height: var(--spacer-6);
+    min-width: var(--spacer-6);
+    min-height: var(--spacer-6);
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-d);
+
+    &:hover {
+        background: var(--surface-3);
+        color: var(--surface-8);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+
+    svg {
+        display: block;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+
+    /* Show button on mobile when visible */
+    @media (max-width: 768px) {
+        &.is-visible {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+    }
+}
+
+/* Mobile backdrop overlay */
+.c-panel-menu-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: oklch(from var(--surface-0) l c h / 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 999;
+    animation: fade-in 0.3s ease-in-out;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
     }
 }

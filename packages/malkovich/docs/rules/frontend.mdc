@@ -489,6 +489,15 @@ const TranslationResult = ({ original, translated, confidence }) => (
 ```
 
 ### Icon Component Usage
+
+**CRITICAL: Always use the Icon component from `@garage44/common/components` - NEVER use inline SVG or direct icon markup.**
+
+**Icon Management:**
+- All icons must be defined in `packages/common/components/ui/icon/icon.tsx` in the `svg` object
+- If an icon is missing, add it to `icon.tsx` first, then reference it via the Icon component
+- Icons use SVG path data (fill paths, not stroke paths)
+- Icon names should be descriptive and follow existing naming conventions
+
 ```tsx
 // ✅ Use Icon component from common library
 import {Icon} from '@garage44/common/components'
@@ -543,6 +552,25 @@ const BadComponent = () => (
     <i class="fas fa-check"></i> {/* Wrong! */}
     <span>🔍</span> {/* Wrong! Use Icon component */}
   </div>
+)
+
+// ❌ Don't use inline SVG paths
+const BadComponent = () => (
+  <button>
+    <svg width="24" height="24" viewBox="0 0 24 24">
+      <path d="M3 6h18M3 12h18M3 18h18" />
+    </svg>
+  </button>
+)
+
+// ✅ If icon is missing, add it to icon.tsx first
+// In packages/common/components/ui/icon/icon.tsx:
+// menu_hamburger: 'M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z',
+// Then use it:
+const GoodComponent = () => (
+  <button>
+    <Icon name="menu_hamburger" size="d" />
+  </button>
 )
 ```
 
@@ -692,6 +720,7 @@ bun run lint:css
 - Include functions in useEffect dependencies that depend on signals
 - Create inline styles - use CSS classes with modern nesting
 - Use direct SVG/font icons - use Icon component
+- Use inline SVG paths - add icon to icon.tsx and use Icon component
 - Use BEM naming (`.c-button__icon`) - use nesting instead
 - Import CSS files in components - Bunchy handles this automatically
 - Mutate props directly
