@@ -121,9 +121,14 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
 
         // Pull latest code from main branch
         console.log('[deploy] Pulling latest code from main branch...')
-        const pullResult = await $`git fetch origin main && git reset --hard origin/main`.quiet()
+        const pullResult = await $`git fetch origin main && git reset --hard origin/main`.nothrow()
         if (pullResult.exitCode !== 0) {
-            throw new Error('Failed to pull latest code')
+            const stderr = pullResult.stderr?.toString() || ''
+            const stdout = pullResult.stdout?.toString() || ''
+            console.error(`[deploy] Git pull failed with exit code ${pullResult.exitCode}`)
+            console.error(`[deploy] Git pull stderr: ${stderr}`)
+            console.error(`[deploy] Git pull stdout: ${stdout}`)
+            throw new Error(`Failed to pull latest code: ${stderr || stdout || 'Unknown error'}`)
         }
         console.log('[deploy] Code pulled successfully')
 
@@ -132,9 +137,15 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
 
         // Build all packages
         console.log('[deploy] Building all packages...')
-        const buildResult = await $`bun run build`.quiet()
+        const buildResult = await $`bun run build`.nothrow()
         if (buildResult.exitCode !== 0) {
-            throw new Error('Build failed')
+            const stderr = buildResult.stderr?.toString() || ''
+            const stdout = buildResult.stdout?.toString() || ''
+            const errorOutput = stderr || stdout || 'Unknown build error'
+            console.error(`[deploy] Build failed with exit code ${buildResult.exitCode}`)
+            console.error(`[deploy] Build stderr: ${stderr}`)
+            console.error(`[deploy] Build stdout: ${stdout}`)
+            throw new Error(`Build failed: ${errorOutput.slice(0, 1000)}`)
         }
         console.log('[deploy] Build completed successfully')
 

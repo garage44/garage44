@@ -3,12 +3,12 @@ import {MarkdownPage} from '../markdown'
 import {fetchMarkdown} from '../../lib/markdown'
 
 interface DocsProps {
+    filename?: string
     projectName?: string
     section?: string
-    filename?: string
 }
 
-export const Docs = ({projectName, section, filename}: DocsProps) => {
+export const Docs = ({filename, projectName, section}: DocsProps) => {
     const [filePath, setFilePath] = useState<string>('')
     const [loading, setLoading] = useState<boolean>(true)
     const [notFound, setNotFound] = useState<boolean>(false)
