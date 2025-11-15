@@ -73,7 +73,7 @@
 
     input:not([type="checkbox"]):not([type="radio"]),
     select {
-        height: 36px;
+        height: var(--spacer-5);
     }
 
     textarea {

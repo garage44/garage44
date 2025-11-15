@@ -157,7 +157,7 @@
 
     /* Form controls - dark theme */
     --input-height: 32px;
-    --input-bg: var(--surface-2);
+    --input-bg: var(--surface-1);
     --input-border: var(--surface-3);
     --input-text: var(--surface-7);
     --input-placeholder: var(--surface-5);

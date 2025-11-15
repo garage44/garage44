@@ -55,7 +55,13 @@ export function FieldUpload({
                     type="file"
                     accept={accept}
                 />
-                <div class="file-path">{model[0][model[1]] || placeholder}</div>
+                <div
+                    class="file-path"
+                    data-placeholder={placeholder}
+                    data-empty={!model[0][model[1]] ? 'true' : 'false'}
+                >
+                    {model[0][model[1]] || ''}
+                </div>
             </div>
             {help && <div class="help">{help}</div>}
         </div>
