@@ -423,7 +423,7 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         for (const packageName of packagesToDeploy) {
             const port = existing.ports[packageName as keyof typeof existing.ports] || existing.ports.malkovich
             const serviceName = `pr-${pr.number}-${packageName}.service`
-            
+
             // Try to stop via systemctl first
             const stopResult = await $`sudo /usr/bin/systemctl stop ${serviceName}`.nothrow()
             if (stopResult.exitCode !== 0) {
@@ -431,7 +431,7 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
                 const stderr = stopResult.stderr?.toString() || ''
                 const stdout = stopResult.stdout?.toString() || ''
                 console.warn(`[pr-deploy] Warning: Failed to stop ${packageName} service via systemctl: ${stderr || stdout || 'Unknown error'}`)
-                
+
                 // Try to kill any processes holding the port as fallback
                 console.log(`[pr-deploy] Attempting to kill processes on port ${port}...`)
                 const killResult = await $`sudo fuser -k ${port}/tcp`.nothrow()
