@@ -25,44 +25,45 @@ interface AppLayoutProps {
 export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
     // Access store state directly - DeepSignal reactivity will trigger re-renders
     // Accessing store.state.env?.layout in render makes it reactive
-    const isMobile = store.state.env?.layout === 'mobile'
+    // Safe check: ensure env exists and has layout property
+    const isMobile = store.state?.env?.layout === 'mobile'
 
     useEffect(() => {
         // On mobile, ensure menu starts collapsed (hidden) so hamburger button is visible
-        if (isMobile && store.state.panels?.menu && !store.state.panels.menu.collapsed) {
+        if (isMobile && store.state?.panels?.menu && !store.state.panels.menu.collapsed) {
             store.state.panels.menu.collapsed = true
             store.save()
         }
         // On mobile, ensure context starts collapsed (hidden) so toggle button is visible
-        if (isMobile && store.state.panels?.context && !store.state.panels.context.collapsed) {
+        if (isMobile && store.state?.panels?.context && !store.state.panels.context.collapsed) {
             store.state.panels.context.collapsed = true
             store.save()
         }
     }, [isMobile])
 
     const handleMobileMenuToggle = () => {
-        if (store.state.panels?.menu) {
+        if (store.state?.panels?.menu) {
             store.state.panels.menu.collapsed = !store.state.panels.menu.collapsed
             store.save()
         }
     }
 
     const handleMenuBackdropClick = () => {
-        if (isMobile && store.state.panels?.menu && !store.state.panels.menu.collapsed) {
+        if (isMobile && store.state?.panels?.menu && !store.state.panels.menu.collapsed) {
             store.state.panels.menu.collapsed = true
             store.save()
         }
     }
 
     const handleContextBackdropClick = () => {
-        if (isMobile && store.state.panels?.context && !store.state.panels.context.collapsed) {
+        if (isMobile && store.state?.panels?.context && !store.state.panels.context.collapsed) {
             store.state.panels.context.collapsed = true
             store.save()
         }
     }
 
     const handleMobileContextToggle = () => {
-        if (store.state.panels?.context) {
+        if (store.state?.panels?.context) {
             store.state.panels.context.collapsed = !store.state.panels.context.collapsed
             store.save()
         }
@@ -70,8 +71,9 @@ export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
 
     // Access store state directly in render for reactivity
     // Reading these values in render ensures component re-renders when they change
-    const menuCollapsed = store.state.panels?.menu?.collapsed ?? true // Default to collapsed on mobile
-    const contextCollapsed = store.state.panels?.context?.collapsed ?? true // Default to collapsed on mobile
+    // Safe checks: ensure store.state and panels exist
+    const menuCollapsed = store.state?.panels?.menu?.collapsed ?? true // Default to collapsed on mobile
+    const contextCollapsed = store.state?.panels?.context?.collapsed ?? true // Default to collapsed on mobile
 
     return (
         <div class="c-app-layout">
