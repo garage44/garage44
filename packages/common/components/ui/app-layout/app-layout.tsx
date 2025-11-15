@@ -31,6 +31,11 @@ export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
             store.state.panels.menu.collapsed = true
             store.save()
         }
+        // On mobile, ensure context starts collapsed (hidden) so toggle button is visible
+        if (isMobile && store.state.panels?.context && !store.state.panels.context.collapsed) {
+            store.state.panels.context.collapsed = true
+            store.save()
+        }
     }, [isMobile])
 
     const handleMobileMenuToggle = () => {
@@ -40,48 +45,90 @@ export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
         }
     }
 
-    const handleBackdropClick = () => {
+    const handleMenuBackdropClick = () => {
         if (isMobile && store.state.panels?.menu && !store.state.panels.menu.collapsed) {
             store.state.panels.menu.collapsed = true
             store.save()
         }
     }
 
-    // On mobile, always show a button:
-    // - Hamburger button when menu is closed (collapsed)
-    // - Close button when menu is open (not collapsed)
+    const handleContextBackdropClick = () => {
+        if (isMobile && store.state.panels?.context && !store.state.panels.context.collapsed) {
+            store.state.panels.context.collapsed = true
+            store.save()
+        }
+    }
+
+    const handleMobileContextToggle = () => {
+        if (store.state.panels?.context) {
+            store.state.panels.context.collapsed = !store.state.panels.context.collapsed
+            store.save()
+        }
+    }
+
+    // On mobile, always show buttons:
+    // - Hamburger button when menu is closed (collapsed) - positioned top-right
+    // - Close button when menu is open (not collapsed) - positioned top-right
+    // - Context toggle button when context is closed (collapsed) - positioned top-left
+    // - Context close button when context is open (not collapsed) - positioned top-left
     const menuCollapsed = store.state.panels?.menu?.collapsed ?? true // Default to collapsed on mobile
-    const showMobileToggle = isMobile && menuCollapsed
-    const showMobileClose = isMobile && !menuCollapsed
+    const contextCollapsed = store.state.panels?.context?.collapsed ?? true // Default to collapsed on mobile
+    const showMobileMenuToggle = isMobile && menuCollapsed && menu
+    const showMobileMenuClose = isMobile && !menuCollapsed && menu
+    const showMobileContextToggle = isMobile && contextCollapsed && context
+    const showMobileContextClose = isMobile && !contextCollapsed && context
 
     return (
         <div class="c-app-layout">
             <div style={{position: 'absolute', visibility: 'hidden'}}>{$t('direction_helper')}</div>
             {menu}
             {isMobile && !menuCollapsed && (
-                <div class="c-panel-menu-backdrop" onClick={handleBackdropClick} aria-hidden="true" />
+                <div class="c-panel-menu-backdrop" onClick={handleMenuBackdropClick} aria-hidden="true" />
+            )}
+            {isMobile && !contextCollapsed && (
+                <div class="c-panel-context-backdrop" onClick={handleContextBackdropClick} aria-hidden="true" />
             )}
             <main class="content">
                 {isMobile && (
                     <>
-                        <button
-                            class={classnames('c-mobile-menu-toggle', {
-                                'is-visible': showMobileToggle,
-                            })}
-                            onClick={handleMobileMenuToggle}
-                            aria-label="Open menu"
-                        >
-                            <Icon name="menu_hamburger" size="d" />
-                        </button>
-                        <button
-                            class={classnames('c-mobile-menu-close', {
-                                'is-visible': showMobileClose,
-                            })}
-                            onClick={handleMobileMenuToggle}
-                            aria-label="Close menu"
-                        >
-                            <Icon name="close_x" size="d" />
-                        </button>
+                        {/* Menu toggle buttons - positioned top-right */}
+                        {showMobileMenuToggle && (
+                            <button
+                                class="c-mobile-menu-toggle"
+                                onClick={handleMobileMenuToggle}
+                                aria-label="Open menu"
+                            >
+                                <Icon name="menu_hamburger" size="d" />
+                            </button>
+                        )}
+                        {showMobileMenuClose && (
+                            <button
+                                class="c-mobile-menu-close"
+                                onClick={handleMobileMenuToggle}
+                                aria-label="Close menu"
+                            >
+                                <Icon name="close_x" size="d" />
+                            </button>
+                        )}
+                        {/* Context toggle buttons - positioned top-left */}
+                        {showMobileContextToggle && (
+                            <button
+                                class="c-mobile-context-toggle"
+                                onClick={handleMobileContextToggle}
+                                aria-label="Open context panel"
+                            >
+                                <Icon name="menu_hamburger" size="d" />
+                            </button>
+                        )}
+                        {showMobileContextClose && (
+                            <button
+                                class="c-mobile-context-close"
+                                onClick={handleMobileContextToggle}
+                                aria-label="Close context panel"
+                            >
+                                <Icon name="close_x" size="d" />
+                            </button>
+                        )}
                     </>
                 )}
                 {children}

@@ -93,4 +93,42 @@
             display: none;
         }
     }
+
+    /* Hide collapse toggle on mobile - mobile controls handle this */
+    @media (max-width: 768px) {
+        .collapse-toggle {
+            display: none;
+        }
+    }
+
+    /* Mobile styles - overlay panel */
+    @media (max-width: 768px) {
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: 1000;
+        width: 280px;
+        max-width: 85vw;
+        transition: transform 0.3s ease-in-out;
+
+        /* Always hide panel by default on mobile */
+        transform: translateX(100%);
+        visibility: hidden;
+    }
+}
+
+/* Show panel when not collapsed on mobile - explicit selector outside nesting for production */
+@media (max-width: 768px) {
+    .c-panel-context:not(.collapsed) {
+        transform: translateX(0);
+        visibility: visible;
+    }
+}
+
+/* Ensure collapsed panel is always hidden on mobile - explicit selector outside nesting for production */
+@media (max-width: 768px) {
+    .c-panel-context.collapsed {
+        transform: translateX(100%);
+        visibility: hidden;
+    }
 }
