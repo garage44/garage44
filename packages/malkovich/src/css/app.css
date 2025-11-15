@@ -13,12 +13,14 @@
     padding: var(--spacer-6);
     width: 100%;
 
-    /* Reduce padding on mobile - minimal left/right padding */
+    /* Mobile-friendly padding and wrapping */
     @media (max-width: 768px) {
         max-width: 100%;
         overflow-x: hidden;
-        padding: var(--spacer-2) var(--spacer-05);
+        padding: var(--spacer-3) var(--spacer-2);
         width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
     /* Generic header styling for all styleguide pages */
