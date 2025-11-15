@@ -177,6 +177,21 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
         }
         console.log('[deploy] package.json verified')
 
+        // Install dependencies (must be run from workspace root)
+        console.log('[deploy] Installing dependencies...')
+        console.log(`[deploy] Installing from: ${process.cwd()}`)
+        const installResult = await $`bun install`.nothrow()
+        if (installResult.exitCode !== 0) {
+            const stderr = installResult.stderr?.toString() || ''
+            const stdout = installResult.stdout?.toString() || ''
+            const errorDetails = stderr || stdout || 'Unknown install error'
+            console.error(`[deploy] Install failed with exit code ${installResult.exitCode}`)
+            console.error(`[deploy] Install stderr: ${stderr}`)
+            console.error(`[deploy] Install stdout: ${stdout}`)
+            throw new Error(`Failed to install dependencies: ${errorDetails.slice(0, 500)}`)
+        }
+        console.log('[deploy] Dependencies installed successfully')
+
         // Build all packages
         console.log('[deploy] Building all packages...')
         console.log('[deploy] Build command: bun run build')
