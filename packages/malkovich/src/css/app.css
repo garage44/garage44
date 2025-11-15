@@ -22,6 +22,7 @@
     }
 
     /* Generic header styling for all styleguide pages */
+
     > h1 {
         color: var(--surface-8);
         font-size: var(--font-xxl);
@@ -54,6 +55,7 @@
         }
 
         /* Page header spans full width */
+
         > h1,
         > p {
             grid-column: 1 / -1;
@@ -61,6 +63,7 @@
 
         /* Reduce spacing between header and subheader on components page */
         /* The grid gap adds spacing between grid items, so we compensate with negative margin */
+
         > h1 {
             margin-bottom: var(--spacer-2);
         }

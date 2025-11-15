@@ -416,7 +416,7 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
 
         // Restart services
         for (const packageName of packagesToDeploy) {
-            const restartResult = await $`sudo systemctl restart pr-${pr.number}-${packageName}.service`.nothrow()
+            const restartResult = await $`sudo /usr/bin/systemctl restart pr-${pr.number}-${packageName}.service`.nothrow()
             if (restartResult.exitCode === 0) {
                 console.log(`[pr-deploy] Restarted ${packageName} service`)
             } else {

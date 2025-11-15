@@ -30,8 +30,8 @@
         color: var(--input-text);
         font-family: inherit;
         font-size: var(--font-d);
-        padding: var(--spacer-1) var(--spacer-2);
         line-height: 1.5;
+        padding: var(--spacer-1) var(--spacer-2);
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         width: 100%;
 
