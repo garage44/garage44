@@ -169,6 +169,20 @@ export async function initializeDefaultData() {
 
             logger.info(`[Database] Added admin user (${adminUser.username}) to general channel`)
 
+            // Create default "pyrite" channel
+            const pyriteChannelResult = channelInsert.run('pyrite', 'pyrite', 'Pyrite discussion channel', now)
+            const pyriteChannelId = pyriteChannelResult.lastInsertRowid as number
+
+            if (!pyriteChannelId || pyriteChannelId <= 0) {
+                logger.error('[Database] Failed to create pyrite channel - no channel ID returned')
+            } else {
+                logger.info(`[Database] Created pyrite channel (id: ${pyriteChannelId})`)
+
+                // Add admin to pyrite channel
+                memberInsert.run(pyriteChannelId, adminUser.id, 'admin', now)
+                logger.info(`[Database] Added admin user (${adminUser.username}) to pyrite channel`)
+            }
+
             // Sync default channels to Galene groups
             try {
                 const {ChannelManager} = await import('./channel-manager.ts')
