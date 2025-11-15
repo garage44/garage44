@@ -3,9 +3,6 @@ import {AppLayout, MenuItem, PanelMenu, Submenu, ThemeToggle} from '@garage44/co
 import {Router, Route, route} from 'preact-router'
 import {useState, useEffect} from 'preact/hooks'
 import {deepSignal} from 'deepsignal'
-import {Components} from './pages/components'
-import {Forms} from './pages/forms'
-import {Tokens} from './pages/tokens'
 import {Frontend} from './pages/frontend'
 import {Backend} from './pages/backend'
 import {Markdown} from './pages/markdown'
@@ -127,18 +124,22 @@ export const Main = () => {
 
         for (const node of docs) {
             // Skip index files - they're served as directory index
-            if (node.type === 'file' && (node.name === 'index.md' || node.name === 'index.mdc')) {
+            if (node.type === 'file' && (node.name === 'index.md' || node.name === 'index.mdc' || node.name === 'page.tsx')) {
                 continue
             }
 
             const fullPath = basePath ? `${basePath}/${node.name}` : node.name
-            // For files, remove extension from route; for directories, keep as is
+            // For files, remove extension from route and label; for directories, keep as is
+            const fileNameWithoutExt = node.type === 'file'
+                ? node.name.replace(/\.(md|mdc|tsx)$/, '')
+                : node.name
+            // Always remove extension from route (no .tsx in URLs)
             const routePathWithoutExt = node.type === 'file'
-                ? `/projects/${packageName}/docs/${basePath ? `${basePath}/` : ''}${node.name.replace(/\.(md|mdc)$/, '')}`
+                ? `/projects/${packageName}/docs/${basePath ? `${basePath}/` : ''}${fileNameWithoutExt}`
                 : `/projects/${packageName}/docs/${fullPath}`
             const routePath = `/projects/${packageName}/docs/${fullPath}`
-            // Check active state against both with and without extension (for backward compatibility)
-            const isActive = $s.currentRoute === routePathWithoutExt || $s.currentRoute.startsWith(`${routePathWithoutExt}/`) || $s.currentRoute === routePath || $s.currentRoute.startsWith(`${routePath}/`)
+            // Check active state against route without extension
+            const isActive = $s.currentRoute === routePathWithoutExt || $s.currentRoute.startsWith(`${routePathWithoutExt}/`)
 
             if (node.type === 'directory') {
                 // Recursively build children for directories
@@ -161,14 +162,10 @@ export const Main = () => {
                     ...(isDocsSectionActive && children && children.length > 0 && {children}),
                 })
             } else {
-                // For files, remove extension from route path
-                const fileNameWithoutExt = node.name.replace(/\.(md|mdc)$/, '')
-                const routePathWithoutExt = basePath
-                    ? `/projects/${packageName}/docs/${basePath}/${fileNameWithoutExt}`
-                    : `/projects/${packageName}/docs/${fileNameWithoutExt}`
+                // For files, use name without extension for label and route (remove .tsx from route too)
                 items.push({
                     active: isActive,
-                    id: node.name,
+                    id: fileNameWithoutExt,
                     label: fileNameWithoutExt,
                     nested: true,
                     onClick: () => {
@@ -322,50 +319,6 @@ export const Main = () => {
                                     </>
                                 )
                             })()}
-                            <MenuItem
-                                active={$s.currentRoute === '/tokens'}
-                                collapsed={$s.panels.menu.collapsed}
-                                href="/tokens"
-                                icon="settings"
-                                iconType="info"
-                                onClick={() => $s.currentRoute = '/tokens'}
-                                text="Design Tokens"
-                            />
-                            <MenuItem
-                                active={$s.currentRoute === '/components'}
-                                collapsed={$s.panels.menu.collapsed}
-                                href="/components"
-                                icon="dashboard"
-                                iconType="info"
-                                onClick={() => $s.currentRoute = '/components'}
-                                text="Components"
-                            />
-                            {isComponentsRoute && (
-                                <Submenu
-                                    collapsed={$s.panels.menu.collapsed}
-                                    items={[...components]
-                                        .sort((a, b) => a.localeCompare(b, undefined, {sensitivity: 'base'}))
-                                        .map((componentName) => {
-                                            const id = componentName.toLowerCase().replaceAll(/\s+/g, '-')
-                                            return {
-                                                active: activeComponent === id,
-                                                id,
-                                                label: componentName,
-                                                nested: true,
-                                                onClick: () => scrollToComponent(componentName),
-                                            }
-                                        })}
-                                />
-                            )}
-                            <MenuItem
-                                active={$s.currentRoute === '/forms'}
-                                collapsed={$s.panels.menu.collapsed}
-                                href="/forms"
-                                icon="message"
-                                iconType="info"
-                                onClick={() => $s.currentRoute = '/forms'}
-                                text="Forms"
-                            />
                         </>
                     }
                     actions={
@@ -380,12 +333,10 @@ export const Main = () => {
                     <Route path="/projects" component={Projects} />
                     <Route path="/projects/:projectName/docs/:section/:subsection/:filename?" component={Docs} />
                     <Route path="/projects/:projectName/docs/:section/:filename?" component={Docs} />
+                    <Route path="/projects/:projectName/docs/*" component={Docs} />
                     <Route path="/projects/:projectName" component={Project} />
                     <Route path="/frontend" component={Frontend} />
                     <Route path="/backend" component={Backend} />
-                    <Route path="/components" component={Components} />
-                    <Route path="/forms" component={Forms} />
-                    <Route path="/tokens" component={Tokens} />
                     <Route path="/:path+" component={Markdown} />
                 </Router>
             </div>

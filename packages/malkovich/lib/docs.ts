@@ -4,6 +4,7 @@ import {extractWorkspacePackages} from './workspace'
 
 export interface DocNode {
     children?: DocNode[]
+    contentType?: 'markdown' | 'component'
     name: string
     path: string
     type: 'file' | 'directory'
@@ -38,10 +39,11 @@ export async function discoverPackageDocs(
         return {docs: [], index: null}
     }
 
-    // Check for index.md or index.mdc
+    // Check for index.md, index.mdc, or page.tsx
     let index: string | null = null
     const indexMd = join(docsDir, 'index.md')
     const indexMdc = join(docsDir, 'index.mdc')
+    const pageTsx = join(docsDir, 'page.tsx')
 
     try {
         await stat(indexMd)
@@ -51,7 +53,12 @@ export async function discoverPackageDocs(
             await stat(indexMdc)
             index = `packages/${packageName}/docs/index.mdc`
         } catch {
-            // No index file
+            try {
+                await stat(pageTsx)
+                index = `packages/${packageName}/docs/page.tsx`
+            } catch {
+                // No index file
+            }
         }
     }
 
@@ -82,9 +89,9 @@ async function scanDirectory(dirPath: string, relativePath: string): Promise<Doc
 
             if (entry.isDirectory()) {
                 dirs.push(entry)
-            } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.mdc'))) {
+            } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.mdc') || entry.name.endsWith('.tsx'))) {
                 // Skip index files (they're served as directory index)
-                if (entry.name === 'index.md' || entry.name === 'index.mdc') {
+                if (entry.name === 'index.md' || entry.name === 'index.mdc' || entry.name === 'page.tsx') {
                     continue
                 }
                 files.push(entry)
@@ -100,9 +107,20 @@ async function scanDirectory(dirPath: string, relativePath: string): Promise<Doc
             const dirFullPath = join(dirPath, dir.name)
             const dirRelativePath = `${relativePath}/${dir.name}`
             const children = await scanDirectory(dirFullPath, dirRelativePath)
+            
+            // Check if directory has page.tsx (component-based doc)
+            const pageTsx = join(dirFullPath, 'page.tsx')
+            let contentType: 'markdown' | 'component' | undefined
+            try {
+                await stat(pageTsx)
+                contentType = 'component'
+            } catch {
+                contentType = 'markdown' // Default to markdown if no page.tsx
+            }
 
             nodes.push({
                 children,
+                contentType,
                 name: dir.name,
                 path: dirRelativePath,
                 type: 'directory',
@@ -111,7 +129,9 @@ async function scanDirectory(dirPath: string, relativePath: string): Promise<Doc
 
         // Process files
         for (const file of files) {
+            const contentType = file.name.endsWith('.tsx') ? 'component' : 'markdown'
             nodes.push({
+                contentType,
                 name: file.name,
                 path: `${relativePath}/${file.name}`,
                 type: 'file',
