@@ -1,11 +1,5 @@
 # ADR-002: Mixed License Strategy
 
-## Status
-Accepted
-
-## Date
-2025-04-17 (from commits `dbb72d6`, `fabc94a`)
-
 ## Context
 
 Expressio aims to balance multiple objectives:

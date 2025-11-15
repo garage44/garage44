@@ -16,8 +16,31 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
     // Extract from route if props not provided (preact-router fallback)
     const pathParts = window.location.pathname.split('/').filter(Boolean)
     const pkg = projectName || (pathParts[0] === 'projects' ? pathParts[1] : '')
-    const sec = section || (pathParts[2] === 'docs' ? pathParts[3] : '')
-    const file = filename || (pathParts[2] === 'docs' && pathParts[4] ? pathParts[4] : '')
+
+    // Extract the full path after /docs/ (handles nested directories like architecture/adr)
+    // Parse directly from URL to handle any nesting level
+    let sec = section
+    let file = filename
+
+    if (pathParts[0] === 'projects' && pathParts[2] === 'docs') {
+        // Get everything after 'docs'
+        const docsPath = pathParts.slice(3)
+
+        if (docsPath.length > 0) {
+            const lastPart = docsPath[docsPath.length - 1]
+
+            // If last part has .md or .mdc extension, it's definitely a file
+            if (lastPart.endsWith('.md') || lastPart.endsWith('.mdc')) {
+                file = lastPart
+                sec = docsPath.slice(0, -1).join('/')
+            } else {
+                // No file extension - treat entire path as section (directory)
+                // Will try index.md/index.mdc first, then try as file if that fails
+                sec = docsPath.join('/')
+                file = undefined
+            }
+        }
+    }
 
     useEffect(() => {
         const tryLoad = async () => {
@@ -29,7 +52,7 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
                 const fileWithMd = file.endsWith('.md') || file.endsWith('.mdc') ? file : `${file}.md`
                 const fileWithMdc = file.endsWith('.md') || file.endsWith('.mdc') ? file : `${file}.mdc`
 
-                const mdPath = `packages/${pkg}/docs/${sec}/${fileWithMd}`
+                const mdPath = sec ? `packages/${pkg}/docs/${sec}/${fileWithMd}` : `packages/${pkg}/docs/${fileWithMd}`
                 const mdContent = await fetchMarkdown(mdPath)
                 if (mdContent) {
                     setFilePath(mdPath)
@@ -37,7 +60,7 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
                     return
                 }
 
-                const mdcPath = `packages/${pkg}/docs/${sec}/${fileWithMdc}`
+                const mdcPath = sec ? `packages/${pkg}/docs/${sec}/${fileWithMdc}` : `packages/${pkg}/docs/${fileWithMdc}`
                 const mdcContent = await fetchMarkdown(mdcPath)
                 if (mdcContent) {
                     setFilePath(mdcPath)
@@ -49,26 +72,34 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
                 setNotFound(true)
                 setLoading(false)
             } else {
-                // No filename - section might be a file (without extension) or a directory
-                // First try section as a file (with .md or .mdc extension)
-                const sectionMd = `packages/${pkg}/docs/${sec}.md`
-                const sectionMdc = `packages/${pkg}/docs/${sec}.mdc`
+                // No filename - section might be a directory or a file (without extension)
+                // For paths with multiple parts, try last part as file first, then directory
+                const secParts = sec.split('/')
 
-                const sectionMdContent = await fetchMarkdown(sectionMd)
-                if (sectionMdContent) {
-                    setFilePath(sectionMd)
-                    setLoading(false)
-                    return
+                // If section has multiple parts, try last part as file first
+                // e.g., architecture/adr/004-preact-ws → try 004-preact-ws.md in architecture/adr/
+                if (secParts.length > 1) {
+                    const lastPart = secParts[secParts.length - 1]
+                    const parentSec = secParts.slice(0, -1).join('/')
+                    const fileMd = `packages/${pkg}/docs/${parentSec}/${lastPart}.md`
+                    const fileMdc = `packages/${pkg}/docs/${parentSec}/${lastPart}.mdc`
+
+                    const fileMdContent = await fetchMarkdown(fileMd)
+                    if (fileMdContent) {
+                        setFilePath(fileMd)
+                        setLoading(false)
+                        return
+                    }
+
+                    const fileMdcContent = await fetchMarkdown(fileMdc)
+                    if (fileMdcContent) {
+                        setFilePath(fileMdc)
+                        setLoading(false)
+                        return
+                    }
                 }
 
-                const sectionMdcContent = await fetchMarkdown(sectionMdc)
-                if (sectionMdcContent) {
-                    setFilePath(sectionMdc)
-                    setLoading(false)
-                    return
-                }
-
-                // Otherwise, try index.md first, then index.mdc (treating section as directory)
+                // Try as directory (index.md/index.mdc)
                 const indexMd = `packages/${pkg}/docs/${sec}/index.md`
                 const indexMdc = `packages/${pkg}/docs/${sec}/index.mdc`
 
@@ -86,7 +117,25 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
                     return
                 }
 
-                // Neither index file exists
+                // If no index found, try section as a file (with .md or .mdc extension)
+                const sectionMd = `packages/${pkg}/docs/${sec}.md`
+                const sectionMdc = `packages/${pkg}/docs/${sec}.mdc`
+
+                const sectionMdContent = await fetchMarkdown(sectionMd)
+                if (sectionMdContent) {
+                    setFilePath(sectionMd)
+                    setLoading(false)
+                    return
+                }
+
+                const sectionMdcContent = await fetchMarkdown(sectionMdc)
+                if (sectionMdcContent) {
+                    setFilePath(sectionMdc)
+                    setLoading(false)
+                    return
+                }
+
+                // Neither index file nor direct file exists
                 setFilePath('')
                 setNotFound(true)
                 setLoading(false)

@@ -13,12 +13,6 @@
 - **Superseded By**: [ADR-014]
 ---
 
-## Status
-Accepted (Superseded by ADR-014 for unified theme system)
-
-## Date
-2025-10-15
-
 ## Context
 
 ### Problem Statement

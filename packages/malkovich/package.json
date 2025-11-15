@@ -18,6 +18,7 @@
     "@preact/signals": "catalog:",
     "deepsignal": "catalog:",
     "marked": "^17.0.0",
+    "mermaid": "^11.12.1",
     "preact": "catalog:",
     "preact-router": "catalog:",
     "yargs": "catalog:"

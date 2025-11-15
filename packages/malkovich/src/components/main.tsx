@@ -6,7 +6,6 @@ import {deepSignal} from 'deepsignal'
 import {Components} from './pages/components'
 import {Forms} from './pages/forms'
 import {Tokens} from './pages/tokens'
-import {Home} from './pages/home'
 import {Frontend} from './pages/frontend'
 import {Backend} from './pages/backend'
 import {Markdown} from './pages/markdown'
@@ -60,7 +59,6 @@ const components = [
 // Local state for menu item collapsed states
 // Default to collapsed (true) - will be updated based on active route
 const menuState = deepSignal({
-    home: true,
     projects: true,
 })
 
@@ -75,17 +73,14 @@ export const Main = () => {
     const isProjectsRoute = $s.currentRoute === '/projects'
     const isProjectPage = routeParts[0] === 'projects' && routeParts.length >= 2 && currentPackage !== null
     const isDocsRoute = routeParts[0] === 'projects' && routeParts.length >= 3 && routeParts[2] === 'docs'
-    const isHomeRoute = $s.currentRoute === '/'
 
     // Update collapsed state based on active route
     // Active items should be uncollapsed (false), inactive items should be collapsed (true)
     useEffect(() => {
-        const isHomeActive = isHomeRoute || (isDocsRoute && currentPackage === 'malkovich')
-        const isProjectsActive = isProjectsRoute || isProjectPage || (isDocsRoute && currentPackage !== 'malkovich')
+        const isProjectsActive = isProjectsRoute || isProjectPage || isDocsRoute
 
-        menuState.home = !isHomeActive
         menuState.projects = !isProjectsActive
-    }, [isHomeRoute, isProjectsRoute, isProjectPage, isDocsRoute, currentPackage])
+    }, [isProjectsRoute, isProjectPage, isDocsRoute])
 
     // Extract current docs section path (e.g., "adr" or "adr/guide")
     // If we're on a file route, extract just the directory path
@@ -126,12 +121,9 @@ export const Main = () => {
     // Get current package docs
     const currentPackageDocs = docsStructure?.packages.find((p) => p.name === currentPackage)
 
-    // Get malkovich docs for Home submenu
-    const malkovichDocs = docsStructure?.packages.find((p) => p.name === 'malkovich')
-
-    // Build docs submenu items
-    const buildDocsSubmenu = (docs: DocNode[], packageName: string, basePath: string = ''): Array<{active: boolean; id: string; label: string; onClick: () => void}> => {
-        const items: Array<{active: boolean; id: string; label: string; onClick: () => void}> = []
+    // Build docs submenu items with nested structure
+    const buildDocsSubmenu = (docs: DocNode[], packageName: string, basePath: string = ''): Array<{active: boolean; id: string; label: string; nested?: boolean; onClick: () => void; children?: Array<any>}> => {
+        const items: Array<{active: boolean; id: string; label: string; nested?: boolean; onClick: () => void; children?: Array<any>}> = []
 
         for (const node of docs) {
             // Skip index files - they're served as directory index
@@ -149,14 +141,24 @@ export const Main = () => {
             const isActive = $s.currentRoute === routePathWithoutExt || $s.currentRoute.startsWith(`${routePathWithoutExt}/`) || $s.currentRoute === routePath || $s.currentRoute.startsWith(`${routePath}/`)
 
             if (node.type === 'directory') {
-                // For directories, link to index (route without filename)
+                // Recursively build children for directories
+                const children = node.children && node.children.length > 0
+                    ? buildDocsSubmenu(node.children, packageName, fullPath)
+                    : undefined
+
+                // Check if this directory or any of its children is active
+                const isDocsSectionActive = isDocsRoute && (currentDocsSection === node.name || (currentDocsSection && currentDocsSection.startsWith(node.name + '/')))
+
                 items.push({
-                    active: isActive,
+                    active: isActive || isDocsSectionActive,
                     id: node.name,
                     label: node.name,
+                    nested: true,
                     onClick: () => {
                         route(routePath)
                     },
+                    // Only include children if this section is active (or any child is active)
+                    ...(isDocsSectionActive && children && children.length > 0 && {children}),
                 })
             } else {
                 // For files, remove extension from route path
@@ -168,6 +170,7 @@ export const Main = () => {
                     active: isActive,
                     id: node.name,
                     label: fileNameWithoutExt,
+                    nested: true,
                     onClick: () => {
                         route(routePathWithoutExt)
                     },
@@ -243,46 +246,10 @@ export const Main = () => {
                     logoText="Garage44"
                     navigation={
                         <>
-                            <MenuItem
-                                active={isHomeRoute || (isDocsRoute && currentPackage === 'malkovich')}
-                                collapsed={$s.panels.menu.collapsed}
-                                href="/"
-                                icon={menuState.home ? 'folder_plus_outline' : 'folder_minus_outline'}
-                                iconType="info"
-                                onClick={() => $s.currentRoute = '/'}
-                                text="Home"
-                            />
-                            {!menuState.home && (isHomeRoute || (isDocsRoute && currentPackage === 'malkovich')) && malkovichDocs && malkovichDocs.docs.length > 0 && (
-                                <Submenu
-                                    collapsed={$s.panels.menu.collapsed}
-                                    items={buildDocsSubmenu(malkovichDocs.docs, 'malkovich').map((item) => {
-                                        // Check if this section is active (exact match) or if any nested child is active (starts with)
-                                        const isDocsSectionActive = isDocsRoute && (currentDocsSection === item.id || (currentDocsSection && currentDocsSection.startsWith(item.id + '/')))
-                                        const sectionNode = malkovichDocs.docs.find((d) => d.name === item.id && d.type === 'directory')
-                                        const nestedItems: Array<{active: boolean; id: string; label: string; nested?: boolean; onClick: () => void}> = []
-
-                                        // If this is the active docs section (or any child is active) and has children, add them as nested items
-                                        if (isDocsSectionActive && sectionNode && sectionNode.children && sectionNode.children.length > 0) {
-                                            const childrenItems = buildDocsSubmenu(sectionNode.children, 'malkovich', item.id).map((childItem) => ({
-                                                ...childItem,
-                                                nested: true,
-                                            }))
-                                            nestedItems.push(...childrenItems)
-                                        }
-
-                                        return {
-                                            ...item,
-                                            nested: true,
-                                            // Add nested children if this section is active (or any child is active)
-                                            ...(nestedItems.length > 0 && {children: nestedItems}),
-                                        }
-                                    })}
-                                />
-                            )}
                             {docsStructure && (() => {
-                                // Filter out malkovich from projects listing
+                                // Include all packages with docs, including malkovich
                                 const packagesWithDocs = docsStructure.packages
-                                    .filter((pkg) => pkg.index && pkg.name !== 'malkovich')
+                                    .filter((pkg) => pkg.index)
                                     .sort((a, b) => a.name.localeCompare(b.name, undefined, {sensitivity: 'base'}))
                                 if (packagesWithDocs.length === 0) return null
 
@@ -300,9 +267,18 @@ export const Main = () => {
                                         {!menuState.projects && (
                                             <Submenu
                                                 collapsed={$s.panels.menu.collapsed}
-                                                items={packagesWithDocs.flatMap((pkg) => {
+                                                items={packagesWithDocs.map((pkg) => {
                                                     const isActive = currentPackage === pkg.name
-                                                    const items = [{
+                                                    const packageDocs = docsStructure.packages.find((p) => p.name === pkg.name)
+
+                                                    const packageItem: {
+                                                        active: boolean
+                                                        id: string
+                                                        label: string
+                                                        nested: boolean
+                                                        onClick: () => void
+                                                        children?: Array<{active: boolean; id: string; label: string; nested?: boolean; onClick: () => void; children?: any[]}>
+                                                    } = {
                                                         active: isActive,
                                                         id: pkg.name,
                                                         label: pkg.name,
@@ -310,14 +286,14 @@ export const Main = () => {
                                                         onClick: () => {
                                                             route(`/projects/${pkg.name}`)
                                                         },
-                                                    }]
+                                                    }
 
-                                                    // If this package is active and has docs, add its docs submenu items
-                                                    if (isActive && currentPackageDocs && currentPackageDocs.docs.length > 0) {
-                                                        const docsItems = buildDocsSubmenu(currentPackageDocs.docs, pkg.name).map((item) => {
+                                                    // If this package is active and has docs, add its docs submenu items as children
+                                                    if (isActive && packageDocs && packageDocs.docs.length > 0) {
+                                                        const docsItems = buildDocsSubmenu(packageDocs.docs, pkg.name).map((item) => {
                                                             // Check if this section is active (exact match) or if any nested child is active (starts with)
                                                             const isDocsSectionActive = isDocsRoute && (currentDocsSection === item.id || (currentDocsSection && currentDocsSection.startsWith(item.id + '/')))
-                                                            const sectionNode = currentPackageDocs.docs.find((d) => d.name === item.id && d.type === 'directory')
+                                                            const sectionNode = packageDocs.docs.find((d) => d.name === item.id && d.type === 'directory')
                                                             const nestedItems: Array<{active: boolean; id: string; label: string; nested?: boolean; onClick: () => void}> = []
 
                                                             // If this is the active docs section (or any child is active) and has children, add them as nested items
@@ -336,10 +312,10 @@ export const Main = () => {
                                                                 ...(nestedItems.length > 0 && {children: nestedItems}),
                                                             }
                                                         })
-                                                        items.push(...docsItems)
+                                                        packageItem.children = docsItems
                                                     }
 
-                                                    return items
+                                                    return packageItem
                                                 })}
                                             />
                                         )}
@@ -400,8 +376,9 @@ export const Main = () => {
         >
             <div class="view">
                 <Router onChange={handleRouteChange}>
-                    <Route path="/" component={Home} default />
+                    <Route path="/" component={Projects} default />
                     <Route path="/projects" component={Projects} />
+                    <Route path="/projects/:projectName/docs/:section/:subsection/:filename?" component={Docs} />
                     <Route path="/projects/:projectName/docs/:section/:filename?" component={Docs} />
                     <Route path="/projects/:projectName" component={Project} />
                     <Route path="/frontend" component={Frontend} />

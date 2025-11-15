@@ -13,12 +13,6 @@
 - **Superseded By**: []
 ---
 
-## Status
-Accepted – Implemented across all packages in Expressio monorepo
-
-## Date
-2025-01-03
-
 ## Context
 
 Expressio's monorepo consists of TypeScript/React applications with complex linting requirements across multiple packages (expressio, bunchy, common). The project previously used basic ESLint configurations, but several challenges emerged:
@@ -293,46 +287,6 @@ Replace ESLint with **OxLint** across all packages with a comprehensive rule con
 - Enables: Instant linting feedback during development
 - Enables: Pattern of adopting Rust-based dev tools
 - Constrains: Must use OxLint-compatible disable syntax
-
-## Evolution Log
-
-**Initial Implementation** (2025-01-03):
-- Replaced ESLint with OxLint across all packages
-- Migrated 11 files with disable comments
-- Configured 180+ rules (vs ~50 with ESLint)
-
-**Validation** (Post-implementation):
-- 100x performance improvement confirmed (2-5s → 5-50ms)
-- Zero regressions in existing workflow
-- Team feedback positive (faster == better)
-- Caught issues ESLint missed (unused imports, performance anti-patterns)
-
-**Lessons Learned:**
-- ✅ Performance improvement exceeded expectations (100x)
-- ✅ Zero dependencies major win for security and simplicity
-- ✅ React performance rules immediately valuable
-- ✅ Migration straightforward (disable comment conversion)
-- ✅ Parallel linting works excellently in monorepo
-- ⚠️ Initial learning curve for OxLint-specific syntax (minimal)
-- ⚠️ Some nursery rules too experimental (disabled them)
-- ⚠️ IDE integration took time to catch up (now resolved)
-- 💡 Rust-based tools generally faster and simpler
-- 💡 Pattern applicable to other dev tools (formatters, etc.)
-
-**Adjustment Recommendations:**
-- Document OxLint configuration for team
-- Create templates for common rule sets
-- Evaluate other Rust-based dev tools (formatters, bundlers)
-- Monitor OxLint releases for new useful rules
-- Consider contributing to OxLint ecosystem
-
-**Validation Metrics:**
-- Speed: 100x improvement (✅ exceeds 10x target)
-- Rules: 180+ active (✅ 3x more than ESLint)
-- Dependencies: 0 (✅ from 50+)
-- Migration effort: 11 files (✅ minimal)
-- Team satisfaction: 9/10 (✅ excellent)
-- Issues found: Immediately caught problems ESLint missed (✅)
 
 ## References
 - [OxLint Official Documentation](https://oxc.rs/docs/guide/usage/linter/rules.html)

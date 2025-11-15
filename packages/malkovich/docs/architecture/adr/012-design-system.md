@@ -13,12 +13,6 @@
 - **Superseded By**: []
 ---
 
-## Status
-Accepted
-
-## Date
-2025-10-15
-
 ## Context
 
 ### Problem Statement
@@ -451,32 +445,6 @@ Button, Field Text, Field Checkbox, Icon, Progress, Field Select, Field Checkbox
 - Enables: Rapid application development with consistent UX
 - Enables: Easy visual redesigns (change tokens centrally)
 - Constrains: Must maintain backward compatibility in shared components
-
-## Evolution Log
-
-**Initial Implementation** (2025-10-15):
-- Moved design tokens from expressio to common package
-- Created AppLayout and Sidebar generic components
-- Enhanced styleguide UX as reference implementation
-
-**Lessons Learned:**
-- ✅ Generic components successfully reused across 3 applications
-- ✅ Design token centralization eliminates duplication
-- ✅ Sidebar component flexible enough for different use cases
-- ✅ Styleguide improvements demonstrate design system value
-- ✅ Code reduction (300+ lines) exceeded expectations
-- ⚠️ Initial overhead creating generic components (worth it long-term)
-- ⚠️ Coordination needed for breaking changes
-- ⚠️ Documentation critical for adoption
-- 💡 Generic components make new features much faster
-- 💡 Centralized tokens enable easy visual redesigns
-
-**Validation Metrics:**
-- Code reduction: 300+ lines (✅ significant)
-- Token duplication: 0% (✅ eliminated)
-- Component reuse: AppLayout + Sidebar used by 3 apps (✅)
-- Visual consistency: Passed audit (✅)
-- Developer feedback: 9/10 (✅ excellent)
 
 ## Related Decisions
 

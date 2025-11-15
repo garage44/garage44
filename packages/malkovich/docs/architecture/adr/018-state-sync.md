@@ -13,12 +13,6 @@
 - **Superseded By**: []
 ---
 
-## Status
-Proposed - Phased implementation in progress
-
-## Date
-2025-01-27
-
 ## Context
 
 ### Problem Statement
@@ -486,30 +480,6 @@ const toggleCam = () => {
 - Phase 3 (advanced features) requires Phase 2 to be complete
 - Changes to Phase 1 may affect later phases
 - Must validate each phase before proceeding
-
-## Evolution Log
-
-**Initial Decision** (2025-01-27):
-- Proposed phased rebuild strategy for broken video conferencing
-- Identified Phase 1: Basic connectivity and stream creation
-- Identified Phase 2: State synchronization
-- Identified Phase 3: Advanced features
-- Focused on button actions → stream creation flow
-
-**Implementation Plan:**
-- Phase 1: Fix stream creation flow (button → getUserMedia → addUserMedia → mount)
-- Phase 1: Verify remote stream handling via Galene RTP
-- Phase 1: **Test and fix** Stream component mounting logic (mountUpstream/mountDownstream) - untested, probably broken
-- Phase 1: **Focus on VideoStrip** - simpler, easier to test, renders in right panel
-- Phase 1: **Defer Group component** - probably broken, extract layout algorithm later if needed
-- Phase 2: Add state synchronization callbacks to VideoStrip (future)
-- Phase 3: Add advanced features (future)
-
-**Lessons Learned:**
-- [To be filled during Phase 1 implementation]
-
-**Adjustment Recommendations:**
-- [To be filled based on implementation experience]
 
 ## Related Decisions
 

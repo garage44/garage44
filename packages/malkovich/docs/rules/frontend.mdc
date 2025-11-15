@@ -89,6 +89,7 @@ export const TranslationGroup = ({ translations, onSelect }: TranslationProps) =
 import {deepSignal} from 'deepsignal'
 
 // ✅ CRITICAL: Define state OUTSIDE component to prevent infinite re-renders
+// For shared state across component instances:
 const state = deepSignal({
     username: '',
     password: '',
@@ -101,7 +102,20 @@ const MyComponent = () => {
   return <div onClick={() => state.count++}>{state.count}</div>
 }
 
-// ❌ DON'T define state inside component - causes infinite re-renders
+// ✅ For per-instance component state, use useRef to store DeepSignal
+const PerInstanceComponent = () => {
+  const stateRef = useRef(deepSignal({
+    content: '',
+    loading: true,
+    error: null as string | null,
+  }))
+  const state = stateRef.current
+
+  // ✅ State is created once per component instance, stable across renders
+  return <div onClick={() => state.count++}>{state.count}</div>
+}
+
+// ❌ DON'T define state inside component directly - causes infinite re-renders
 const BadComponent = () => {
   const state = deepSignal({count: 0}) // Wrong! Recreated on every render
   return <div onClick={() => state.count++}>{state.count}</div>
@@ -109,9 +123,6 @@ const BadComponent = () => {
 
 // ✅ Real example from login component
 const LoginComponent = () => {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
   // State is defined outside component - stable across renders
   const {validation, isValid, resetTouched} = createValidator({
     password: [state.$password, required('Password is required')],
@@ -133,9 +144,10 @@ const LoginComponent = () => {
   </div>
 }
 
-// ❌ Don't use useState for component state
+// ❌ Don't use useState for component state - ALWAYS use DeepSignal
 const BadComponent = () => {
   const [count, setCount] = useState(0) // Wrong! Use deepSignal instead
+  const [loading, setLoading] = useState(false) // Wrong! Use deepSignal instead
 }
 ```
 
@@ -208,33 +220,44 @@ const WorkspaceSelector = () => (
 
 **useEffect with Signals:**
 ```tsx
-// ✅ Proper useEffect with signals - avoid infinite loops
-const LoginComponent = () => {
-  const [loading, setLoading] = useState(false)
+// ✅ Proper useEffect with signals - use effect() from @preact/signals to watch DeepSignal
+import {effect} from '@preact/signals'
+import {deepSignal} from 'deepsignal'
 
-  // State defined outside component (prevents recreation)
-  const state = deepSignal({
-    username: '',
-    password: ''
-  })
+const MarkdownComponent = () => {
+  const stateRef = useRef(deepSignal({
+    content: '',
+    loading: true,
+    error: null as string | null,
+  }))
+  const state = stateRef.current
 
-  const handleKeyPress = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !loading) {
-      handleLogin()
-    }
-  }, [loading, handleLogin])
-
-  // ✅ useEffect with minimal dependencies
+  // ✅ Use effect() to watch DeepSignal state changes
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyPress)
-    return () => {
-      document.removeEventListener('keydown', handleKeyPress)
-    }
-  }, [animated]) // ✅ Only depend on stable props, not functions
+    const unsubscribe = effect(() => {
+      // Access state properties to track changes
+      const content = state.content
+      const loading = state.loading
 
-  // ❌ DON'T include functions in dependency array if they depend on signals
-  // This causes infinite re-renders:
-  // }, [animated, handleKeyPress]) // Wrong!
+      if (!loading && content) {
+        // React to state changes immediately
+        renderContent(content)
+      }
+    })
+
+    return unsubscribe
+  }, [state])
+
+  // ✅ Component re-renders when state properties are accessed in JSX
+  if (state.loading) return <div>Loading...</div>
+  if (state.error) return <div>Error: {state.error}</div>
+  return <div>{state.content}</div>
+}
+
+// ❌ DON'T use useState - always use DeepSignal
+const BadComponent = () => {
+  const [loading, setLoading] = useState(false) // Wrong!
+  const [content, setContent] = useState('') // Wrong!
 }
 ```
 
@@ -715,9 +738,10 @@ bun run lint:css
 ## Common Anti-patterns
 
 ❌ **Don't do:**
-- Use useState instead of deepSignal for component state
-- Define deepSignal state inside components (causes infinite re-renders)
+- Use useState instead of deepSignal for component state - **ALWAYS use DeepSignal**
+- Define deepSignal state directly inside components (causes infinite re-renders) - use useRef instead
 - Include functions in useEffect dependencies that depend on signals
+- Use setTimeout/requestAnimationFrame for state-driven rendering - render synchronously
 - Create inline styles - use CSS classes with modern nesting
 - Use direct SVG/font icons - use Icon component
 - Use inline SVG paths - add icon to icon.tsx and use Icon component
@@ -734,14 +758,17 @@ bun run lint:css
 - Commit code without running lint checks
 
 ✅ **Do:**
-- Define deepSignal state OUTSIDE components for stability
-- Use deepSignal for component-level reactive state
+- Define deepSignal state OUTSIDE components for shared state, or use useRef for per-instance state
+- Use deepSignal for ALL component-level reactive state (never useState)
+- Use useRef(deepSignal({...})) for per-instance component state
+- Use effect() from @preact/signals to watch DeepSignal changes in useEffect
+- Render synchronously when state changes - avoid setTimeout/requestAnimationFrame delays
 - Pass signals directly to Field components (model={state.$field})
 - Include validation prop in Field components
 - Access global state through $s object
 - Use existing CSS custom properties (var(--spacer-1), var(--font-d))
 - Use Icon component from @garage44/common/components
-- Handle loading/error states gracefully
+- Handle loading/error states gracefully with DeepSignal
 - Access underlying signals with $ prefix for form fields
 - Use WebSocket events with `events.on('app:init', ...)` pattern
 - Test with multiple languages and character sets

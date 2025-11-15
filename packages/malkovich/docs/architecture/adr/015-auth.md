@@ -13,12 +13,6 @@
 - **Superseded By**: []
 ---
 
-## Status
-Proposed - Ready for implementation
-
-## Date
-2025-01-27
-
 ## Context
 
 ### Problem Statement
@@ -393,29 +387,6 @@ return <Login onLogin={handleLogin} />
 - Authentication changes require coordination across applications
 - Anonymous access patterns must be preserved for public content
 - Credential storage format becomes a shared contract
-
-## Evolution Log
-
-**Initial Decision** (2025-01-27):
-- Proposed unified authentication flow to eliminate user friction
-- Identified shared Login component as key architectural element
-- Planned auto-connect logic for seamless group access
-
-**Implementation Plan:**
-- Create shared Login component in common package
-- Update Pyrite and Expressio to use shared component
-- Implement automatic group connection with stored credentials
-- Maintain fallback login screen for error cases
-
-**Lessons Learned:**
-- [To be filled during implementation]
-- [To be filled during implementation]
-- [To be filled during implementation]
-
-**Adjustment Recommendations:**
-- [To be filled based on implementation experience]
-- [To be filled based on user feedback]
-- [To be filled based on performance metrics]
 
 ## Related Decisions
 

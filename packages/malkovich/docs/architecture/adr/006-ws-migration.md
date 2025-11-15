@@ -13,12 +13,6 @@
 - **Superseded By**: []
 ---
 
-## Status
-Accepted
-
-## Date
-2025-06-02 (from commit `7d98433`)
-
 ## Context
 
 The workspaces API was initially implemented as a traditional REST endpoint:
@@ -367,45 +361,6 @@ const broadcastWorkspace = debounce((workspace) => {
 - Need to handle WebSocket scaling (connection limits, load balancing)
 - Enables: Real-time collaboration features, live progress updates
 - Constrains: Must support WebSocket in deployment environment
-
-## Evolution Log
-
-**Initial Implementation** (2025-06-02):
-- Migrated `/api/workspaces` GET endpoint from REST to WebSocket
-- First major endpoint migration validating the pattern
-- Immediate positive feedback from users
-
-**Lessons Learned:**
-- ✅ Migration pattern works well - incremental with fallback
-- ✅ Real-time updates dramatically improve UX
-- ✅ Users no longer need manual refresh - major win
-- ✅ WebSocket infrastructure from ADR-004 made migration smooth
-- ✅ Timestamp-based ordering prevents race conditions effectively
-- ⚠️ Initial debugging harder than REST (learned WebSocket debugging tools)
-- ⚠️ Connection drop handling needed careful attention
-- ⚠️ Debouncing important for high-frequency updates
-- 💡 Pattern applicable to many other endpoints
-- 💡 Real-time collaboration became natural extension
-
-**Future Migration Candidates:**
-- Translation progress updates (high frequency, long-running)
-- User presence indicators (collaboration feature)
-- Configuration changes (multi-user editing)
-- Error notifications (immediate feedback)
-
-**Adjustment Recommendations:**
-- Create reusable pattern for future REST→WebSocket migrations
-- Document WebSocket message formats systematically
-- Build testing tools for WebSocket scenarios
-- Consider migration tool/script for common pattern
-- Monitor additional endpoints for migration candidates
-
-**Validation Metrics:**
-- Update latency: 20-50ms average (✅ well under 100ms target)
-- User complaints about stale data: Reduced to near zero (✅)
-- Connection stability: 99.95% uptime (✅ exceeds 99% target)
-- REST fallback usage: < 0.1% (✅ well under 1% target)
-- User satisfaction: Significant improvement in feedback (✅)
 
 ## Related Decisions
 

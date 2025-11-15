@@ -13,12 +13,6 @@
 - **Superseded By**: []
 ---
 
-## Status
-Proposed - Ready for implementation
-
-## Date
-2025-01-27
-
 ## Context
 
 ### Problem Statement
@@ -422,38 +416,6 @@ connection.onfiletransfer = onFileTransfer  // File transfer in Galene
 - Direct connection requirement constrains proxy-based solutions for RTP
 - Feature separation must be maintained (chat in Pyrite, media in Galene)
 - Channel slugs must remain unique and directly match Galene group names (1:1 mapping)
-
-## Evolution Log
-
-**Initial Decision** (2025-01-27):
-- Proposed direct WebSocket connection revival for Galene media functionality
-- **Historical Context**: Connection was disabled during migration from old Pyrite repo to new Garage44 monorepo
-- **Old Implementation**: Connected directly to `ws://location.host/ws` (same origin assumption)
-- **New Implementation**: Uses status fetching for flexible deployment (supports remote Galene servers)
-- Identified protocol handshake missing version field as critical fix
-- Determined feature distribution: Galene (media + file transfer), Pyrite (chat)
-- Planned status fetching pattern following Galene's standard client approach
-- Designed channel-to-group mapping: channel slugs directly match Galene group names (1:1 mapping)
-- Channel structure includes `id` (auto-increment), `name` (human-friendly title), `slug` (unique routing identifier matching Galene group name)
-- Decided to use WebSocket proxy to solve origin restrictions and simplify connection (no endpoint lookup needed)
-
-**Implementation Plan:**
-- Add `slug` field to channel structure and update routing to use slugs instead of numeric IDs
-- Fix protocol handshake to include `version: ["2"]` field (per Galene protocol spec)
-- Update `connect()` to get channel, connect through proxy (`ws://location.host/sfu`), no endpoint lookup needed
-- Remove mock connection, restore WebSocket connection through proxy
-- Disable chat handlers (`onchat`, `onclearchat`), maintain file transfer handler
-- Verify proxy in `middleware.ts` is properly configured and forwards messages correctly
-- Ensure channel slug directly matches Galene group name (1:1 mapping, no separate field needed)
-- Test connection establishment, RTP messaging, file transfer through proxy
-- Verify chat system continues working independently
-
-**Lessons Learned:**
-- [To be filled during implementation]
-
-**Adjustment Recommendations:**
-- [To be filled based on implementation experience]
-- [To be filled based on testing results]
 
 ## Related Decisions
 

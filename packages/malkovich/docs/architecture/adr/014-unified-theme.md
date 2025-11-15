@@ -13,12 +13,6 @@
 - **Superseded By**: []
 ---
 
-## Status
-Accepted
-
-## Date
-2025-10-16 (Supersedes ADR-013)
-
 ## Context
 
 ### Problem Statement

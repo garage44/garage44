@@ -1,11 +1,5 @@
 # ADR-005: Centralized CI/CD at Monorepo Root
 
-## Status
-Accepted
-
-## Date
-2025-04-17 (from commit `5cd4cd7`)
-
 ## Context
 
 Initially, the monorepo was set up with individual CI/CD workflows for each package:

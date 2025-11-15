@@ -13,12 +13,6 @@
 - **Superseded By**: []
 ---
 
-## Status
-Proposed - Ready for implementation
-
-## Date
-2025-01-27
-
 ## Context
 
 ### Problem Statement
@@ -491,30 +485,6 @@ const PanelContext = ({children, collapsed}: PanelContextProps) => {
 - New video features must work within vertical strip layout without competing with chat
 - Additional side panels should respect three-column structure and chat priority
 - Layout changes must maintain chat as primary interface, video as optional presence
-
-## Evolution Log
-
-**Initial Decision** (2025-01-27):
-- Proposed three-column layout reflecting chat-first paradigm shift
-- Identified chat as primary interface, video as optional presence indicator
-- Planned seamless channel-to-group connection for optional video
-- Designed adaptive panel width to preserve chat space when video inactive
-
-**Implementation Plan:**
-- Rename PanelContext to PanelMenu in common package
-- Create new PanelContext component for right sidebar
-- Update AppLayout to CSS Grid with menu/context props
-- Update all applications (Pyrite, Expressio, Styleguide) to use new naming
-- Create PanelContext usage in Pyrite for video controls + tiles
-- Implement vertical video tiles layout
-- Ensure seamless channel-to-group connection
-
-**Lessons Learned:**
-- [To be filled during implementation]
-
-**Adjustment Recommendations:**
-- [To be filled based on implementation experience]
-- [To be filled based on user feedback]
 
 ## Related Decisions
 

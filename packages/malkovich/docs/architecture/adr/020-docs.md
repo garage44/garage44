@@ -13,12 +13,6 @@
 - **Superseded By**: []
 ---
 
-## Status
-Accepted - Malkovich platform system implemented as unified documentation and deployment tool
-
-## Date
-2025-01-27
-
 ## Context
 
 As the Garage44 monorepo evolved, we needed a unified platform for:
@@ -291,28 +285,6 @@ const content = readFileSync(fullPath, 'utf-8') // Correct - self-contained
 - **Monorepo Structure**: Malkovich assumes workspace structure - constrains to monorepos
 - **Domain Convention**: Main domain → malkovich, subdomains → apps - standardizes deployment
 - **AGENTS.md Standard**: Assumes AGENTS.md becomes standard - may need adaptation
-
-## Evolution Log
-
-**Initial Decision** (2025-01-27):
-- Created malkovich as unified platform documentation and deployment tool
-- Moved all documentation (ADRs, rules) into malkovich package
-- Implemented auto-discovery from workspace structure
-- Integrated webhook and publishing workflows
-- Added deployment generation commands
-- Created AGENTS.md generation for AI discovery
-
-**Lessons Learned:**
-- Auto-discovery eliminates configuration drift and reduces maintenance
-- Self-contained documentation enables installable package for other projects
-- Unified platform simplifies deployment and documentation management
-- AGENTS.md provides standard entry point for AI agents
-
-**Adjustment Recommendations:**
-- Consider adding more deployment targets (Docker, Kubernetes)
-- Evaluate adding more documentation formats (OpenAPI, GraphQL schemas)
-- Consider adding documentation versioning for historical access
-- Evaluate adding documentation search functionality
 
 ## Related Decisions
 

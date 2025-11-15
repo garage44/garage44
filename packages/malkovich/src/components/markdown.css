@@ -224,3 +224,29 @@
     font-size: var(--font-l);
     margin-top: var(--spacer-2);
 }
+
+/* Mermaid diagrams */
+
+.c-markdown-page .mermaid {
+    background-color: var(--surface-1);
+    border: 1px solid var(--surface-3);
+    border-radius: var(--border-radius-d);
+    margin: var(--spacer-4) 0;
+    overflow-x: auto;
+    padding: var(--spacer-4);
+    text-align: center;
+}
+
+.c-markdown-page .mermaid svg {
+    height: auto;
+    max-width: 100%;
+}
+
+/* Ensure mermaid diagrams are responsive on mobile */
+@media (max-width: 768px) {
+
+    .c-markdown-page .mermaid {
+        margin: var(--spacer-3) 0;
+        padding: var(--spacer-2);
+    }
+}

@@ -1,9 +1,5 @@
 # ADR-008: Isomorphic Logger for Node/Bun and Browser Environments
 
-## Status
-
-**Accepted** – Implemented in Expressio monorepo
-
 ## Context
 
 Expressio previously used Winston and custom loggers for backend logging, but these solutions were not compatible with browser environments. As the codebase evolved, some shared utilities and modules (in `@garage44/common`) were imported by both backend (Bun/Node) and frontend (browser/Preact) code. This led to runtime errors (e.g., `process is not defined`) when Node-specific APIs were referenced in browser bundles.

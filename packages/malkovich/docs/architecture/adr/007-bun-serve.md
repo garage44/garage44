@@ -13,10 +13,6 @@
 - **Superseded By**: []
 ---
 
-## Status
-
-Accepted (Migrated from Express to Bun.serve)
-
 ## Context
 
 Expressio currently uses Express.js as its HTTP server framework and the `ws` library for WebSocket functionality. The project runs on Bun runtime, which provides native HTTP server capabilities through `Bun.serve()` and built-in WebSocket support. **Critical constraint**: The `ws` library has a bug in Bun's newer runtimes, forcing Expressio to remain on an older version of Bun and preventing access to newer Bun features, performance improvements, and security updates.
@@ -522,46 +518,6 @@ The migration was completed faster than initially estimated, validating the "sin
 - Enables: Full access to latest Bun features and improvements
 - Enables: Simpler architecture with fewer dependencies
 - Constrains: Bun.serve-specific deployment requirements
-
-## Evolution Log
-
-**Initial Implementation** (2025-06-02):
-- Migrated from Express + ws to Bun.serve + native WebSocket
-- Completed in ~6 hours (faster than estimated)
-- Unblocked ability to upgrade Bun runtime
-
-**Validation** (Post-migration):
-- All existing functionality working
-- Performance improvements observed
-- No regressions detected
-- Runtime upgrades now possible
-
-**Lessons Learned:**
-- ✅ Migration faster than expected (6 hours vs estimated 1 day)
-- ✅ Bun.serve API simpler than anticipated
-- ✅ Native WebSocket as capable as ws library
-- ✅ Dependency reduction significant (5 packages removed)
-- ✅ Performance improvements measurable
-- ⚠️ Session management needed custom implementation
-- ⚠️ WebSocket upgrade handling different from Express
-- ⚠️ Error handling patterns needed adjustment
-- 💡 Native APIs generally simpler than frameworks
-- 💡 Runtime compatibility blockers should be addressed quickly
-
-**Adjustment Recommendations:**
-- Document Bun.serve patterns for team
-- Create middleware helpers for common patterns
-- Build testing tools for Bun WebSocket scenarios
-- Consider this pattern for future framework evaluations
-- Prioritize runtime compatibility in dependency selection
-
-**Validation Metrics:**
-- Runtime upgrade: ✅ Successfully upgraded to latest Bun
-- Migration time: 6 hours (✅ under estimated 8 hours)
-- Feature parity: 100% (✅ all functionality working)
-- Performance: ~15-20% improvement in request handling (✅)
-- Dependency reduction: 5 packages removed (✅)
-- Regressions: 0 (✅ no functionality lost)
 
 ## References
 

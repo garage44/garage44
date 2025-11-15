@@ -6,7 +6,7 @@
 
 **Monorepo Structure**: Domain-separated packages (ADR-001)
 - `expressio/` - i18n application (AGPL)
-- `pyrite/` - Video conferencing (AGPL)  
+- `pyrite/` - Video conferencing (AGPL)
 - `common/` - Shared utilities (MIT)
 - `bunchy/` - Dev tooling (MIT)
 
@@ -17,10 +17,6 @@
 
 **Frontend**: Preact + WebSocket (ADR-004)
 - State: DeepSignal (not useState)
-- Communication: WebSocket-first for real-time
-- Styling: Modern CSS with OKLCH colors (ADR-011)
-
-**Backend**: Bun.serve() (ADR-007)
 - NOT Express.js
 - WebSocket server in common package
 - Isomorphic logger (ADR-008)
@@ -71,17 +67,17 @@ graph TB
         Expressio[Expressio<br/>Preact + DeepSignal]
         Pyrite[Pyrite<br/>Preact + DeepSignal]
     end
-    
+
     subgraph "Shared Infrastructure"
         Common[Common Package<br/>Components, WS Client, Utils]
         Bunchy[Bunchy<br/>Dev Tooling, Hot Reload]
     end
-    
+
     subgraph "Backend Services"
-        BunServer[Bun.serve()<br/>API + WebSocket]
+        BunServer["Bun.serve<br/>API + WebSocket"]
         Logger[Isomorphic Logger]
     end
-    
+
     Expressio --> Common
     Pyrite --> Common
     Expressio --> BunServer
@@ -115,13 +111,13 @@ sequenceDiagram
     participant WSClient
     participant Server
     participant State
-    
+
     Client->>WSClient: ws.connect()
     WSClient->>Server: WebSocket Connection
     Server->>WSClient: /i18n/state (full sync)
     WSClient->>State: Update global state
     State->>Client: Reactive UI update
-    
+
     Client->>WSClient: ws.post('/api/workspaces/123/translate')
     WSClient->>Server: POST request
     Server->>WSClient: /i18n/sync (delta)
@@ -140,7 +136,7 @@ sequenceDiagram
 - **Exports**: API routes, business logic, Preact components
 - **Boundary Rule**: No business logic in common package
 
-### Pyrite Package  
+### Pyrite Package
 - **Purpose**: Video conferencing
 - **License**: AGPL
 - **Dependencies**: `@garage44/common`

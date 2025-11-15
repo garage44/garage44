@@ -13,12 +13,6 @@
 - **Superseded By**: []
 ---
 
-## Status
-Accepted
-
-## Date
-2025-04-17 (from commit `ec0185b`)
-
 ## Context
 
 Expressio combines multiple concerns:
@@ -64,10 +58,10 @@ graph TB
     Pyrite[pyrite/<br/>AGPL<br/>Video Conf] --> Common
     Expressio --> Bunchy[bunchy/<br/>MIT<br/>Dev Tools]
     Pyrite --> Bunchy
-    
+
     Common -.->|No deps| Common
     Bunchy -.->|No deps| Bunchy
-    
+
     style Expressio fill:#e1f5ff
     style Pyrite fill:#e1f5ff
     style Common fill:#fff4e1
@@ -84,17 +78,17 @@ graph LR
         Expressio[Expressio<br/>i18n Business Logic]
         Pyrite[Pyrite<br/>Video Conf Logic]
     end
-    
+
     subgraph "Infrastructure Packages (MIT)"
         Common[Common<br/>Components, WS, Utils]
         Bunchy[Bunchy<br/>Dev Tooling]
     end
-    
+
     Expressio -->|depends on| Common
     Pyrite -->|depends on| Common
     Expressio -.->|dev only| Bunchy
     Pyrite -.->|dev only| Bunchy
-    
+
     Expressio -.->|no deps| Expressio
     Pyrite -.->|no deps| Pyrite
     Common -.->|no deps| Common
@@ -352,45 +346,6 @@ import { WSClient } from '@garage44/common/lib/ws-client';
 - Enables: Easy addition of new applications (pyrite was added smoothly)
 - Enables: Independent open-source publishing of utilities
 - Constrains: Inter-package refactoring more complex than single codebase
-
-## Evolution Log
-
-**Initial Decision** (2025-04-17):
-- Created three packages: expressio, bunchy, common
-- Established domain-based separation pattern
-- Implemented Bun workspaces
-
-**Validation** (Ongoing):
-- Added pyrite package (date not documented, but validated pattern scalability)
-- Structure successfully scaled to multiple applications
-- Common package successfully reused across both expressio and pyrite
-
-**Lessons Learned:**
-- ✅ Domain-based separation clearer than technical layer separation
-- ✅ Bun workspaces make monorepo management seamless
-- ✅ Package boundaries reduce cognitive load (clear where code belongs)
-- ✅ Mixed licensing strategy works well with package separation
-- ✅ Adding new application (pyrite) validated extensibility
-- ✅ Common package reuse exceeded expectations (~40% of code shared)
-- ⚠️ Initial learning curve for team (took ~1 week to internalize boundaries)
-- ⚠️ Temptation to put business logic in common (requires discipline)
-- ⚠️ TypeScript path aliases need careful configuration
-- 💡 Package structure makes testing easier (can test packages in isolation)
-- 💡 Clear boundaries make onboarding faster (developers understand scope quickly)
-
-**Adjustment Recommendations:**
-- Document clear rules for what belongs in each package
-- Regular architecture reviews to catch boundary violations
-- Consider automated linting to enforce package boundaries (dependency-cruiser)
-- Create decision tree for "where does this code go?"
-- Celebrate when boundaries prevent bugs (positive reinforcement)
-
-**Validation Metrics:**
-- Circular dependencies: 0 (✅ maintained invariant)
-- Code reuse: ~40% in common package (✅ exceeds 30% target)
-- Package purpose clarity: 9/10 developer survey (✅ clear structure)
-- Build time: 5-10s parallel (✅ acceptable)
-- Onboarding time: ~2 days to understand structure (✅ fast)
 
 ## Related Decisions
 
