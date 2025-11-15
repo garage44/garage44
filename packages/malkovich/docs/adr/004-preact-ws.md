@@ -63,6 +63,69 @@ Implement a real-time architecture using:
 - WebSocket-driven state updates
 - Persistent and volatile state separation
 
+## Architecture Diagram
+
+### Communication Flow
+
+```mermaid
+sequenceDiagram
+    participant UI as Preact Component
+    participant WS as WSClient<br/>(common/lib/ws-client.ts)
+    participant Server as Bun Server<br/>(Bun.serve)
+    participant State as Global State<br/>($s)
+    
+    Note over UI,State: Initial Connection
+    UI->>WS: ws.connect()
+    WS->>Server: WebSocket Connection
+    Server->>WS: /i18n/state (full sync)
+    WS->>State: Update $s.workspace.i18n
+    State->>UI: Reactive update (DeepSignal)
+    
+    Note over UI,State: Real-time Update
+    Server->>WS: /i18n/sync (delta)
+    WS->>State: pathUpdate($s.workspace.i18n, path, value)
+    State->>UI: Automatic re-render
+    
+    Note over UI,State: User Action
+    UI->>WS: ws.post('/api/workspaces/123/translate')
+    WS->>Server: POST request
+    Server->>WS: /i18n/sync (response)
+    WS->>State: Apply changes
+    State->>UI: UI updates
+```
+
+### Component Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend (Preact)"
+        Component[Preact Component]
+        DeepSignal[DeepSignal State<br/>state = deepSignal({...})]
+        WSClient[WSClient<br/>from @/app]
+    end
+    
+    subgraph "Common Package"
+        WSClientLib[ws-client.ts<br/>WebSocket abstraction]
+        StoreLib[store.ts<br/>State management]
+    end
+    
+    subgraph "Backend (Bun)"
+        BunServer[Bun.serve()<br/>HTTP + WebSocket]
+        WSServer[ws-server.ts<br/>WebSocket handlers]
+    end
+    
+    Component --> DeepSignal
+    Component --> WSClient
+    WSClient --> WSClientLib
+    WSClientLib --> BunServer
+    BunServer --> WSServer
+    WSServer -.->|events| WSClientLib
+    WSClientLib -.->|updates| StoreLib
+    StoreLib -.->|reactive| Component
+```
+
+**Pattern**: WebSocket-first for real-time, DeepSignal for reactive state, Preact for lightweight UI.
+
 ## Consequences
 
 ### Positive

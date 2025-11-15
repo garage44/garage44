@@ -54,6 +54,52 @@ Implement a monorepo structure with four distinct packages:
   - State management
   - Validation utilities
 
+## Architecture Diagram
+
+### Package Dependency Graph
+
+```mermaid
+graph TB
+    Expressio[expressio/<br/>AGPL<br/>i18n App] --> Common[common/<br/>MIT<br/>Shared Utils]
+    Pyrite[pyrite/<br/>AGPL<br/>Video Conf] --> Common
+    Expressio --> Bunchy[bunchy/<br/>MIT<br/>Dev Tools]
+    Pyrite --> Bunchy
+    
+    Common -.->|No deps| Common
+    Bunchy -.->|No deps| Bunchy
+    
+    style Expressio fill:#e1f5ff
+    style Pyrite fill:#e1f5ff
+    style Common fill:#fff4e1
+    style Bunchy fill:#fff4e1
+```
+
+**Rule**: No circular dependencies. Common and Bunchy have zero dependencies.
+
+### C4 Container: Package Boundaries
+
+```mermaid
+graph LR
+    subgraph "Business Domain Packages (AGPL)"
+        Expressio[Expressio<br/>i18n Business Logic]
+        Pyrite[Pyrite<br/>Video Conf Logic]
+    end
+    
+    subgraph "Infrastructure Packages (MIT)"
+        Common[Common<br/>Components, WS, Utils]
+        Bunchy[Bunchy<br/>Dev Tooling]
+    end
+    
+    Expressio -->|depends on| Common
+    Pyrite -->|depends on| Common
+    Expressio -.->|dev only| Bunchy
+    Pyrite -.->|dev only| Bunchy
+    
+    Expressio -.->|no deps| Expressio
+    Pyrite -.->|no deps| Pyrite
+    Common -.->|no deps| Common
+    Bunchy -.->|no deps| Bunchy
+```
 
 ## Consequences
 

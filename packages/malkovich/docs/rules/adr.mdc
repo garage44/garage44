@@ -19,11 +19,12 @@ Garage44 is a monorepo containing multiple applications (Expressio, Pyrite, Styl
 
 ### 1. Consult Existing ADRs
 
-Read relevant ADRs in `adr/` before making decisions:
+Read relevant ADRs before making decisions:
 
-- **Start here**: `adr/README.md` - Overview, index, and core principles
-- **Learn patterns**: `adr/guide/PATTERNS.md` - Reusable decision patterns
-- **Get guidance**: `adr/guide/AI-REASONING-GUIDE.md` - How to use ADRs effectively
+- **Start here**: `packages/malkovich/docs/adr/ARCHITECTURE.md` - Current system state with diagrams
+- **Quick reference**: `packages/malkovich/docs/adr/index.md` - ADR index by category
+- **Learn patterns**: `packages/malkovich/docs/adr/guide/PATTERNS.md` - Reusable decision patterns
+- **Get guidance**: `packages/malkovich/docs/adr/guide/AI-REASONING-GUIDE.md` - How to use ADRs effectively
 
 **Search strategies**:
 ```bash
@@ -31,7 +32,9 @@ Read relevant ADRs in `adr/` before making decisions:
 "How are WebSocket connections handled?" → ADR-004, ADR-006
 
 # Use grep for specific technologies
-grep -i "websocket\|bun\|preact" adr/*.md
+grep -i "websocket\|bun\|preact" packages/malkovich/docs/adr/*.md
+
+# Check ARCHITECTURE.md for current state overview
 ```
 
 ### 2. Cite ADRs in Plans
@@ -83,10 +86,11 @@ Recommend creating an ADR when making architecturally significant decisions:
 
 After successful implementation of significant decisions:
 1. Document the decision as an ADR
-2. Use `adr/guide/TEMPLATE.md` for structure
-3. Follow `adr/guide/PLAN-TO-ADR-TEMPLATE.md` for conversion
-4. Include lessons learned during implementation
-5. Add to `adr/README.md` index
+2. Use `packages/malkovich/docs/adr/guide/TEMPLATE-LLM.md` for structure (optimized for AI consumption)
+3. Follow `packages/malkovich/docs/adr/guide/PLAN-TO-ADR-TEMPLATE.md` for conversion
+4. Include diagrams (C4 or Mermaid) where appropriate
+5. Add to `packages/malkovich/docs/adr/index.md` index
+6. Update `packages/malkovich/docs/adr/ARCHITECTURE.md` if system-wide impact
 
 ## Core Architectural Principles
 
@@ -232,21 +236,31 @@ Based on ADRs, explicitly avoid:
 
 ## Resources
 
-- **ADR Index**: `adr/README.md`
-- **Decision Patterns**: `adr/guide/PATTERNS.md`
-- **AI Guide**: `adr/guide/AI-REASONING-GUIDE.md`
-- **ADR Template**: `adr/guide/TEMPLATE.md`
-- **Plan Conversion**: `adr/guide/PLAN-TO-ADR-TEMPLATE.md`
+- **Architecture Reference**: `packages/malkovich/docs/adr/ARCHITECTURE.md` - Current state with diagrams
+- **ADR Index**: `packages/malkovich/docs/adr/index.md` - Categorized index
+- **Decision Patterns**: `packages/malkovich/docs/adr/guide/PATTERNS.md` - Reusable frameworks
+- **AI Guide**: `packages/malkovich/docs/adr/guide/AI-REASONING-GUIDE.md` - Detailed guidance
+- **ADR Template**: `packages/malkovich/docs/adr/guide/TEMPLATE-LLM.md` - AI-optimized template
+- **Plan Conversion**: `packages/malkovich/docs/adr/guide/PLAN-TO-ADR-TEMPLATE.md` - Conversion guide
 
 ## Notes for AI Assistants
 
-1. **Always start** by reading relevant ADRs before proposing architectural changes
-2. **Cite specific ADRs** in plans to demonstrate consistency
-3. **Flag contradictions** explicitly with justification
-4. **Suggest ADRs** for architecturally significant decisions
-5. **Use patterns** from guide/PATTERNS.md as decision frameworks
-6. **Check principles** against README.md core principles
-7. **Document learnings** to improve future ADRs
+1. **Always start** with `ARCHITECTURE.md` for current system state overview
+2. **Search ADRs** by category/tag in `index.md` when evaluating decisions
+3. **Cite specific ADRs** in plans to demonstrate consistency
+4. **Flag contradictions** explicitly with justification
+5. **Suggest ADRs** for architecturally significant decisions
+6. **Use patterns** from `guide/PATTERNS.md` as decision frameworks
+7. **Include diagrams** (C4 or Mermaid) in new ADRs where appropriate
+8. **Check principles** against architectural principles in `ARCHITECTURE.md`
+9. **Update ARCHITECTURE.md** if decision has system-wide impact
+
+**Key Changes in New ADR System**:
+- `ARCHITECTURE.md` provides current state (not history - Git handles that)
+- Higher information density - structured, less prose
+- Diagrams included where appropriate (C4, Mermaid)
+- `TEMPLATE-LLM.md` optimized for AI consumption
+- Removed "Evolution Log" sections (Git is the log)
 
 This approach ensures continuous improvement through the feedback loop:
 **Plan → Build → ADR → Learning → Better Future Plans**
