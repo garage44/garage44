@@ -71,7 +71,7 @@
     display: grid;
     gap: var(--spacer-2);
     grid-template-columns: 1fr 1fr;
-    margin-bottom: var(--spacer-15);
+    margin-bottom: var(--spacer-3);
 }
 
 .form-row:last-child {
@@ -81,54 +81,28 @@
 /* Form Actions */
 
 .form-actions {
-    background: var(--surface-6);
-    border-top: 1px solid var(--surface-5);
+    background: var(--surface-2);
+    border-top: 1px solid var(--surface-3);
     display: flex;
     gap: var(--spacer-2);
     justify-content: flex-end;
     margin: var(--spacer-4) calc(-1 * var(--spacer-5)) calc(-1 * var(--spacer-5));
-    padding: var(--spacer-2) var(--spacer-5);
+    padding: var(--spacer-3) var(--spacer-5);
 }
 
 /* Slider Container */
 
-.form-slider {
-
-    &-container {
-        align-items: center;
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacer-3);
-        height: 140px;
-        justify-content: center;
-        position: relative;
-    }
-
-    &-label {
-        color: var(--surface-2);
-        font-size: var(--font-s);
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-}
-
-/* Enhanced Field Styling - Clean and Functional */
-
-.form-demo .field {
-    margin-bottom: var(--spacer-15);
+.form-slider-container {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-2);
+    justify-content: center;
+    min-height: 100px;
     position: relative;
 }
 
-
-/* Checkbox and Radio Styling */
-
-.form-demo .field input[type="checkbox"],
-.form-demo .field input[type="radio"] {
-    accent-color: var(--primary-5);
-    margin-right: var(--spacer-2);
-    transform: scale(1.2);
-}
+/* Field spacing is handled by _field.css - no overrides needed */
 
 /* Button Group Styling */
 
@@ -138,16 +112,7 @@
 }
 
 .form-actions .button {
-    border: 1px solid var(--surface-5);
-    min-width: 100px;
-    padding: var(--spacer-2) var(--spacer-4);
-    transition: all 0.2s ease;
-}
-
-.form-actions .button:hover {
-    background: var(--white);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transform: translateY(-1px);
+    min-width: 120px;
 }
 
 /* Validation State Display */
@@ -231,13 +196,13 @@
     }
 
     .form-row {
-        gap: var(--spacer-3);
+        gap: var(--spacer-2);
         grid-template-columns: 1fr;
-        margin-bottom: var(--spacer-3);
+        margin-bottom: var(--spacer-2);
     }
 
     .form-slider-container {
-        height: 100px;
+        min-height: 80px;
     }
 
     .validation-state {

@@ -29,7 +29,7 @@ export const FieldTextarea = ({ value, onChange, label, placeholder = '', help, 
 
     return (
         <div class="c-field-textarea field">
-            {label && <label class="field-label" for={uniqueId}>{label}</label>}
+            {label && <div class="label">{label}</div>}
             <textarea
                 ref={fieldRef}
                 id={uniqueId}

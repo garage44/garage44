@@ -182,6 +182,7 @@ export const Forms = () => {
                                 />
                                 <FieldCheckboxGroup
                                     className=""
+                                    label="Notifications"
                                     model={[
                                         {label: 'Email notifications', value: formData.notifications.email},
                                         {label: 'Push notifications', value: formData.notifications.push},
@@ -235,8 +236,8 @@ export const Forms = () => {
                                 />
                             </div>
                             <div class="form-row">
-                                <div class="form-slider-container">
-                                    <div class="form-slider-label">Experience Level</div>
+                                <div class="form-slider-container field">
+                                    <div class="label">Experience Level</div>
                                     <FieldSlider
                                         value={formData.experienceLevel}
                                         onChange={(v) => formData.experienceLevel = v}

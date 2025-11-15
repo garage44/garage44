@@ -15,12 +15,4 @@
             color: var(--primary-5);
         }
     }
-
-    .field-label {
-        color: var(--surface-1);
-        font-size: var(--font-s);
-        font-weight: 500;
-        margin: var(--spacer-1) 0;
-        text-transform: capitalize;
-    }
 }

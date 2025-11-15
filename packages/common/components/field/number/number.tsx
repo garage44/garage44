@@ -13,9 +13,7 @@ export const FieldNumber = ({ value, onChange, label = 'Label me', help = '', pl
 
     return (
         <div class="c-field-number field">
-            <div class="label-container">
-                <label class="field-label" for={uniqueId}>{label}</label>
-            </div>
+            <div class="label">{label}</div>
             <input
                 id={uniqueId}
                 value={value}

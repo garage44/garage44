@@ -14,9 +14,7 @@ export const FieldRadioGroup = ({ value, onChange, options, label, help, transla
 
     return (
         <div class="c-field-radio-group field">
-            <div class="checkbox-row">
-                {label && <div class="field-label">{label}</div>}
-            </div>
+            {label && <div class="label">{label}</div>}
             <div class="options">
                 {options.map((option) => (
                     <div key={option[0]} class="option">
