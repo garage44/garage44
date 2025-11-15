@@ -418,18 +418,50 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         console.log('[pr-deploy] Regenerating nginx configurations...')
         await generateNginxConfig(existing, packagesToDeploy)
 
-        // Restart services
+        // Stop services first to ensure clean restart
+        console.log('[pr-deploy] Stopping services...')
         for (const packageName of packagesToDeploy) {
-            const restartResult = await $`sudo /usr/bin/systemctl restart pr-${pr.number}-${packageName}.service`.nothrow()
-            if (restartResult.exitCode === 0) {
-                console.log(`[pr-deploy] Restarted ${packageName} service`)
+            const port = existing.ports[packageName as keyof typeof existing.ports] || existing.ports.malkovich
+            const serviceName = `pr-${pr.number}-${packageName}.service`
+
+            // Try to stop via systemctl first
+            const stopResult = await $`sudo /usr/bin/systemctl stop ${serviceName}`.nothrow()
+            if (stopResult.exitCode !== 0) {
+                // Log warning but continue - service might not be running
+                const stderr = stopResult.stderr?.toString() || ''
+                const stdout = stopResult.stdout?.toString() || ''
+                console.warn(`[pr-deploy] Warning: Failed to stop ${packageName} service via systemctl: ${stderr || stdout || 'Unknown error'}`)
+
+                // Try to kill any processes holding the port as fallback
+                console.log(`[pr-deploy] Attempting to kill processes on port ${port}...`)
+                const killResult = await $`sudo fuser -k ${port}/tcp`.nothrow()
+                if (killResult.exitCode === 0) {
+                    console.log(`[pr-deploy] Killed processes on port ${port}`)
+                } else {
+                    console.warn(`[pr-deploy] No processes found on port ${port} (or fuser not available)`)
+                }
             } else {
-                const stderr = restartResult.stderr?.toString() || ''
-                const stdout = restartResult.stdout?.toString() || ''
+                console.log(`[pr-deploy] Stopped ${packageName} service`)
+            }
+        }
+
+        // Wait a moment for processes to fully stop and ports to be released
+        console.log('[pr-deploy] Waiting for processes to fully stop...')
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+
+        // Start services
+        console.log('[pr-deploy] Starting services...')
+        for (const packageName of packagesToDeploy) {
+            const startResult = await $`sudo /usr/bin/systemctl start pr-${pr.number}-${packageName}.service`.nothrow()
+            if (startResult.exitCode === 0) {
+                console.log(`[pr-deploy] Started ${packageName} service`)
+            } else {
+                const stderr = startResult.stderr?.toString() || ''
+                const stdout = startResult.stdout?.toString() || ''
                 // Check if service exists
                 const statusResult = await $`sudo systemctl status pr-${pr.number}-${packageName}.service --no-pager -l`.nothrow()
                 const statusOutput = statusResult.stdout?.toString() || ''
-                throw new Error(`Failed to restart ${packageName} service: ${stderr || stdout || 'Unknown error'}\nService status: ${statusOutput}`)
+                throw new Error(`Failed to start ${packageName} service: ${stderr || stdout || 'Unknown error'}\nService status: ${statusOutput}`)
             }
         }
 
