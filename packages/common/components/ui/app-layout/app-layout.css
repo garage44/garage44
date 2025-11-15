@@ -129,11 +129,13 @@
         flex-shrink: 0;
     }
 
-    /* Show button on mobile */
+    /* Show button on mobile when visible */
     @media (max-width: 768px) {
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
+        &.is-visible {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
     }
 }
 
@@ -175,11 +177,13 @@
         flex-shrink: 0;
     }
 
-    /* Show button on mobile */
+    /* Show button on mobile when visible */
     @media (max-width: 768px) {
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
+        &.is-visible {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
     }
 }
 
@@ -221,11 +225,13 @@
         flex-shrink: 0;
     }
 
-    /* Show button on mobile */
+    /* Show button on mobile when visible */
     @media (max-width: 768px) {
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
+        &.is-visible {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
     }
 }
 

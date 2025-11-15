@@ -72,13 +72,6 @@ export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
     // Reading these values in render ensures component re-renders when they change
     const menuCollapsed = store.state.panels?.menu?.collapsed ?? true // Default to collapsed on mobile
     const contextCollapsed = store.state.panels?.context?.collapsed ?? true // Default to collapsed on mobile
-    
-    // Always render buttons - CSS will handle visibility based on screen size
-    // This ensures buttons are available even if isMobile isn't set correctly initially
-    const showMobileMenuToggle = menuCollapsed && menu
-    const showMobileMenuClose = !menuCollapsed && menu
-    const showMobileContextToggle = contextCollapsed && context
-    const showMobileContextClose = !contextCollapsed && context
 
     return (
         <div class="c-app-layout">
@@ -92,44 +85,52 @@ export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
             )}
             <main class="content">
                 {/* Menu toggle buttons - positioned top-right */}
-                {/* Always render - CSS handles mobile visibility */}
-                {showMobileMenuToggle && (
-                    <button
-                        class="c-mobile-menu-toggle"
-                        onClick={handleMobileMenuToggle}
-                        aria-label="Open menu"
-                    >
-                        <Icon name="menu_hamburger" size="d" />
-                    </button>
-                )}
-                {showMobileMenuClose && (
-                    <button
-                        class="c-mobile-menu-close"
-                        onClick={handleMobileMenuToggle}
-                        aria-label="Close menu"
-                    >
-                        <Icon name="close_x" size="d" />
-                    </button>
+                {/* Always render when menu exists - CSS handles mobile visibility and collapsed state */}
+                {menu && (
+                    <>
+                        <button
+                            class={classnames('c-mobile-menu-toggle', {
+                                'is-visible': menuCollapsed,
+                            })}
+                            onClick={handleMobileMenuToggle}
+                            aria-label="Open menu"
+                        >
+                            <Icon name="menu_hamburger" size="d" />
+                        </button>
+                        <button
+                            class={classnames('c-mobile-menu-close', {
+                                'is-visible': !menuCollapsed,
+                            })}
+                            onClick={handleMobileMenuToggle}
+                            aria-label="Close menu"
+                        >
+                            <Icon name="close_x" size="d" />
+                        </button>
+                    </>
                 )}
                 {/* Context toggle buttons - positioned top-left */}
-                {/* Always render - CSS handles mobile visibility */}
-                {showMobileContextToggle && (
-                    <button
-                        class="c-mobile-context-toggle"
-                        onClick={handleMobileContextToggle}
-                        aria-label="Open context panel"
-                    >
-                        <Icon name="menu_hamburger" size="d" />
-                    </button>
-                )}
-                {showMobileContextClose && (
-                    <button
-                        class="c-mobile-context-close"
-                        onClick={handleMobileContextToggle}
-                        aria-label="Close context panel"
-                    >
-                        <Icon name="close_x" size="d" />
-                    </button>
+                {/* Always render when context exists - CSS handles mobile visibility and collapsed state */}
+                {context && (
+                    <>
+                        <button
+                            class={classnames('c-mobile-context-toggle', {
+                                'is-visible': contextCollapsed,
+                            })}
+                            onClick={handleMobileContextToggle}
+                            aria-label="Open context panel"
+                        >
+                            <Icon name="menu_hamburger" size="d" />
+                        </button>
+                        <button
+                            class={classnames('c-mobile-context-close', {
+                                'is-visible': !contextCollapsed,
+                            })}
+                            onClick={handleMobileContextToggle}
+                            aria-label="Close context panel"
+                        >
+                            <Icon name="close_x" size="d" />
+                        </button>
+                    </>
                 )}
                 {children}
             </main>
