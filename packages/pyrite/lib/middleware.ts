@@ -184,8 +184,10 @@ async function initMiddleware(_bunchyConfig) {
     })
 
     // Create unified final handler with built-in authentication API
+    // Use environment variable for config path if set (for PR deployments)
+    const configPath = process.env.CONFIG_PATH || '~/.pyriterc'
     const finalHandleRequest = createFinalHandler({
-        configPath: '~/.pyriterc',
+        configPath,
         contextFunctions: {
             adminContext: contextFunctions.adminContext,
             deniedContext: contextFunctions.deniedContext,

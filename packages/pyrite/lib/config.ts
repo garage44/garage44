@@ -34,7 +34,9 @@ const config = rc('pyrite', {
 })
 
 async function initConfig(config) {
-    const configPath = path.join(homedir(), '.pyriterc')
+    // Check for environment variable first (for PR deployments and isolated instances)
+    const envConfigPath = process.env.CONFIG_PATH
+    const configPath = envConfigPath || path.join(homedir(), '.pyriterc')
     // Check if the config file exists
     if (!await fs.pathExists(configPath)) {
         await saveConfig()
@@ -43,7 +45,9 @@ async function initConfig(config) {
 }
 
 async function saveConfig() {
-    const configPath = path.join(homedir(), '.pyriterc')
+    // Check for environment variable first (for PR deployments and isolated instances)
+    const envConfigPath = process.env.CONFIG_PATH
+    const configPath = envConfigPath || path.join(homedir(), '.pyriterc')
     const data = copyObject(config)
     delete data.configs
     delete data.config

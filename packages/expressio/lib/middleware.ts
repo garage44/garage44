@@ -94,8 +94,10 @@ async function initMiddleware(_bunchyConfig) {
     const publicPath = path.join(runtime.service_dir, 'public')
 
     // Create unified final handler with built-in authentication API
+    // Use environment variable for config path if set (for PR deployments)
+    const configPath = process.env.CONFIG_PATH || '~/.expressiorc'
     const finalHandleRequest = createFinalHandler({
-        configPath: '~/.expressiorc',
+        configPath,
         contextFunctions: {
             adminContext,
             deniedContext,

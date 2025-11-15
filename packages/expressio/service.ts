@@ -565,7 +565,9 @@ void cli.usage('Usage: $0 [task]')
         const database = initDatabase(undefined, 'expressio', logger)
 
         // Initialize common service (including UserManager) with database
-        await service.init({appName: 'expressio', configPath: '~/.expressiorc', useBcrypt: false}, database)
+        // Use environment variable for config path if set (for PR deployments)
+        const configPath = process.env.CONFIG_PATH || '~/.expressiorc'
+        await service.init({appName: 'expressio', configPath, useBcrypt: false}, database)
 
         // Initialize enola first
         await enola.init(config.enola, logger)

@@ -65,7 +65,9 @@ interface Logger {
 }
 
 export function initDatabase(dbPath?: string, appName?: string, logger?: Logger): Database {
-    const finalPath = dbPath || (appName ? path.join(homedir(), `.${appName}.db`) : path.join(homedir(), '.app.db'))
+    // Check for environment variable first (for PR deployments and isolated instances)
+    const envDbPath = process.env.DB_PATH
+    const finalPath = dbPath || envDbPath || (appName ? path.join(homedir(), `.${appName}.db`) : path.join(homedir(), '.app.db'))
 
     if (logger) {
         logger.info(`[Database] Initializing SQLite database at ${finalPath}`)
