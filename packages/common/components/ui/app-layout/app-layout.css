@@ -148,7 +148,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: oklch(from var(--surface-0) l c h / 0.6);
+    background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(2px);
     z-index: 999;
     animation: fade-in 0.3s ease-in-out;

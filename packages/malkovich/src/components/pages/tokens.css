@@ -1,13 +1,5 @@
 .c-tokens {
 
-    h1 {
-        color: var(--surface-8);
-        font-size: var(--font-xxl);
-        font-weight: 700;
-        margin-bottom: var(--spacer-2);
-        margin-top: 0;
-    }
-
     h2 {
         color: var(--surface-7);
         font-size: var(--font-xl);
@@ -22,12 +14,6 @@
         font-weight: 600;
         margin-bottom: var(--spacer-2);
         margin-top: var(--spacer-4);
-    }
-
-    > p {
-        color: var(--surface-5);
-        font-size: var(--font-l);
-        margin-bottom: var(--spacer-6);
     }
 
     .token-section {

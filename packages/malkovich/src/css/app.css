@@ -21,6 +21,21 @@
         width: 100%;
     }
 
+    /* Generic header styling for all styleguide pages */
+    > h1 {
+        color: var(--surface-8);
+        font-size: var(--font-xxl);
+        font-weight: 700;
+        margin-bottom: var(--spacer-2);
+        margin-top: 0;
+    }
+
+    > p {
+        color: var(--surface-5);
+        font-size: var(--font-l);
+        margin-bottom: var(--spacer-6);
+    }
+
     /* Grid layout for component cards on wider screens */
 
     &.c-components {
@@ -39,10 +54,20 @@
         }
 
         /* Page header spans full width */
-
         > h1,
         > p {
             grid-column: 1 / -1;
+        }
+
+        /* Reduce spacing between header and subheader on components page */
+        /* The grid gap adds spacing between grid items, so we compensate with negative margin */
+        > h1 {
+            margin-bottom: var(--spacer-2);
+        }
+
+        > p {
+            margin-bottom: var(--spacer-6);
+            margin-top: calc(-1 * var(--spacer-6));
         }
     }
 }

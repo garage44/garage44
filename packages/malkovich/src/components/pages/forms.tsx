@@ -95,10 +95,8 @@ export const Forms = () => {
 
     return (
         <div class="styleguide-page">
-            <div class="forms-header">
-                <h1>Forms</h1>
-                <p>Comprehensive form showcase demonstrating all field components with best practices for form layout and user experience.</p>
-            </div>
+            <h1>Forms</h1>
+            <p>Comprehensive form showcase demonstrating all field components with best practices for form layout and user experience.</p>
 
             <div class="form-demo">
                 <form onSubmit={handleSubmit} class="form">
