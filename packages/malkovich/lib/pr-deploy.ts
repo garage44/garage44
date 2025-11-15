@@ -447,7 +447,7 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
 
         // Wait a moment for processes to fully stop and ports to be released
         console.log('[pr-deploy] Waiting for processes to fully stop...')
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        await new Promise((resolve) => setTimeout(resolve, 2000))
 
         // Start services
         console.log('[pr-deploy] Starting services...')
