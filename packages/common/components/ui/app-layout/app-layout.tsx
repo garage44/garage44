@@ -23,6 +23,8 @@ interface AppLayoutProps {
  * </AppLayout>
  */
 export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
+    // Access store state directly - DeepSignal reactivity will trigger re-renders
+    // Accessing store.state.env?.layout in render makes it reactive
     const isMobile = store.state.env?.layout === 'mobile'
 
     useEffect(() => {
@@ -66,17 +68,17 @@ export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
         }
     }
 
-    // On mobile, always show buttons:
-    // - Hamburger button when menu is closed (collapsed) - positioned top-right
-    // - Close button when menu is open (not collapsed) - positioned top-right
-    // - Context toggle button when context is closed (collapsed) - positioned top-left
-    // - Context close button when context is open (not collapsed) - positioned top-left
+    // Access store state directly in render for reactivity
+    // Reading these values in render ensures component re-renders when they change
     const menuCollapsed = store.state.panels?.menu?.collapsed ?? true // Default to collapsed on mobile
     const contextCollapsed = store.state.panels?.context?.collapsed ?? true // Default to collapsed on mobile
-    const showMobileMenuToggle = isMobile && menuCollapsed && menu
-    const showMobileMenuClose = isMobile && !menuCollapsed && menu
-    const showMobileContextToggle = isMobile && contextCollapsed && context
-    const showMobileContextClose = isMobile && !contextCollapsed && context
+    
+    // Always render buttons - CSS will handle visibility based on screen size
+    // This ensures buttons are available even if isMobile isn't set correctly initially
+    const showMobileMenuToggle = menuCollapsed && menu
+    const showMobileMenuClose = !menuCollapsed && menu
+    const showMobileContextToggle = contextCollapsed && context
+    const showMobileContextClose = !contextCollapsed && context
 
     return (
         <div class="c-app-layout">
@@ -89,47 +91,45 @@ export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
                 <div class="c-panel-context-backdrop" onClick={handleContextBackdropClick} aria-hidden="true" />
             )}
             <main class="content">
-                {isMobile && (
-                    <>
-                        {/* Menu toggle buttons - positioned top-right */}
-                        {showMobileMenuToggle && (
-                            <button
-                                class="c-mobile-menu-toggle"
-                                onClick={handleMobileMenuToggle}
-                                aria-label="Open menu"
-                            >
-                                <Icon name="menu_hamburger" size="d" />
-                            </button>
-                        )}
-                        {showMobileMenuClose && (
-                            <button
-                                class="c-mobile-menu-close"
-                                onClick={handleMobileMenuToggle}
-                                aria-label="Close menu"
-                            >
-                                <Icon name="close_x" size="d" />
-                            </button>
-                        )}
-                        {/* Context toggle buttons - positioned top-left */}
-                        {showMobileContextToggle && (
-                            <button
-                                class="c-mobile-context-toggle"
-                                onClick={handleMobileContextToggle}
-                                aria-label="Open context panel"
-                            >
-                                <Icon name="menu_hamburger" size="d" />
-                            </button>
-                        )}
-                        {showMobileContextClose && (
-                            <button
-                                class="c-mobile-context-close"
-                                onClick={handleMobileContextToggle}
-                                aria-label="Close context panel"
-                            >
-                                <Icon name="close_x" size="d" />
-                            </button>
-                        )}
-                    </>
+                {/* Menu toggle buttons - positioned top-right */}
+                {/* Always render - CSS handles mobile visibility */}
+                {showMobileMenuToggle && (
+                    <button
+                        class="c-mobile-menu-toggle"
+                        onClick={handleMobileMenuToggle}
+                        aria-label="Open menu"
+                    >
+                        <Icon name="menu_hamburger" size="d" />
+                    </button>
+                )}
+                {showMobileMenuClose && (
+                    <button
+                        class="c-mobile-menu-close"
+                        onClick={handleMobileMenuToggle}
+                        aria-label="Close menu"
+                    >
+                        <Icon name="close_x" size="d" />
+                    </button>
+                )}
+                {/* Context toggle buttons - positioned top-left */}
+                {/* Always render - CSS handles mobile visibility */}
+                {showMobileContextToggle && (
+                    <button
+                        class="c-mobile-context-toggle"
+                        onClick={handleMobileContextToggle}
+                        aria-label="Open context panel"
+                    >
+                        <Icon name="menu_hamburger" size="d" />
+                    </button>
+                )}
+                {showMobileContextClose && (
+                    <button
+                        class="c-mobile-context-close"
+                        onClick={handleMobileContextToggle}
+                        aria-label="Close context panel"
+                    >
+                        <Icon name="close_x" size="d" />
+                    </button>
                 )}
                 {children}
             </main>
