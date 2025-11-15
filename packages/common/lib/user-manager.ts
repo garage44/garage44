@@ -47,6 +47,7 @@ export class UserManager {
         const userCount = database.query<{count: number}, []>('SELECT COUNT(*) as count FROM users').get()
         if (!userCount || userCount.count === 0) {
             await this.createDefaultAdmin()
+            await this.createDefaultUsers()
         }
     }
 
@@ -55,6 +56,7 @@ export class UserManager {
         const users = await this.loadUsers()
         if (users.length === 0) {
             await this.createDefaultAdmin()
+            await this.createDefaultUsers()
         }
     }
 
@@ -97,6 +99,39 @@ export class UserManager {
             now,
             now,
         )
+    }
+
+    private async createDefaultUsers() {
+        if (!this.db) throw new Error('Database not initialized')
+
+        const defaultUsers = [
+            {username: 'alice', displayName: 'Alice', email: 'alice@localhost'},
+            {username: 'bob', displayName: 'Bob', email: 'bob@localhost'},
+            {username: 'charlie', displayName: 'Charlie', email: 'charlie@localhost'},
+        ]
+
+        for (const userData of defaultUsers) {
+            // Check if user already exists
+            const existingUser = await this.getUserByUsername(userData.username)
+            if (existingUser) {
+                continue
+            }
+
+            await this.createUser({
+                username: userData.username,
+                email: userData.email,
+                profile: {
+                    displayName: userData.displayName,
+                },
+                permissions: {
+                    admin: false,
+                },
+                password: {
+                    key: userData.username, // Password same as username for default users
+                    type: 'plaintext',
+                },
+            })
+        }
     }
 
     async loadUsers(): Promise<User[]> {
