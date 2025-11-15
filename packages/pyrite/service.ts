@@ -71,7 +71,9 @@ void cli.usage('Usage: $0 [task]')
 
         // Initialize common service (including UserManager) with database
         // This creates the default admin user if it doesn't exist
-        await service.init({appName: 'pyrite', configPath: '~/.pyriterc', useBcrypt: false}, database)
+        // Use environment variable for config path if set (for PR deployments)
+        const configPath = process.env.CONFIG_PATH || '~/.pyriterc'
+        await service.init({appName: 'pyrite', configPath, useBcrypt: false}, database)
 
         // Initialize Pyrite-specific default data (channels, etc.)
         // Must run AFTER service.init() so that the admin user exists

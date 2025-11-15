@@ -46,7 +46,9 @@ export function initDatabase(dbPath?: string): Database {
         return db
     }
 
-    const finalPath = dbPath || path.join(homedir(), '.pyrite.db')
+    // Check for environment variable first (for PR deployments and isolated instances)
+    const envDbPath = process.env.DB_PATH
+    const finalPath = dbPath || envDbPath || path.join(homedir(), '.pyrite.db')
 
     // Initialize common database (creates users table)
     db = initCommonDatabase(finalPath, 'pyrite', logger)

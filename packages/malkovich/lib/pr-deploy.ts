@@ -110,12 +110,16 @@ export async function deployPR(pr: PRMetadata): Promise<{
         const prDir = path.join(PR_DEPLOYMENTS_DIR, `pr-${pr.number}`)
         const repoDir = path.join(prDir, 'repo')
         const logsDir = path.join(prDir, 'logs')
+        const dataDir = path.join(prDir, 'data')
 
         if (!existsSync(prDir)) {
             mkdirSync(prDir, {recursive: true})
         }
         if (!existsSync(logsDir)) {
             mkdirSync(logsDir, {recursive: true})
+        }
+        if (!existsSync(dataDir)) {
+            mkdirSync(dataDir, {recursive: true})
         }
 
         // Allocate ports
@@ -492,6 +496,11 @@ async function generateSystemdServices(deployment: PRDeployment, packagesToDeplo
         }
 
         const serviceFile = `/etc/systemd/system/pr-${deployment.number}-${packageName}.service`
+        // Use isolated database and config paths for PR deployments
+        const prDataDir = path.join(deployment.directory, 'data')
+        const dbPath = path.join(prDataDir, `${packageName}.db`)
+        const configPath = path.join(prDataDir, `.${packageName}rc`)
+        
         const content = `[Unit]
 Description=PR #${deployment.number} ${packageName} service
 After=network.target
@@ -503,6 +512,8 @@ Group=garage44
 WorkingDirectory=${workdir}
 Environment="NODE_ENV=production"
 Environment="BUN_ENV=production"
+Environment="DB_PATH=${dbPath}"
+Environment="CONFIG_PATH=${configPath}"
 Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 ExecStart=/home/garage44/.bun/bin/bun run server -- --port ${port}
 Restart=always

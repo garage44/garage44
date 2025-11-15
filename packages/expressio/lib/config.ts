@@ -49,7 +49,9 @@ const config = rc('expressio', {
 })
 
 async function initConfig(config) {
-    const configPath = path.join(homedir(), '.expressiorc')
+    // Check for environment variable first (for PR deployments and isolated instances)
+    const envConfigPath = process.env.CONFIG_PATH
+    const configPath = envConfigPath || path.join(homedir(), '.expressiorc')
     // Check if the config file exists
     if (!await fs.pathExists(configPath)) {
         await saveConfig()
@@ -58,7 +60,9 @@ async function initConfig(config) {
 }
 
 async function saveConfig() {
-    const configPath = path.join(homedir(), '.expressiorc')
+    // Check for environment variable first (for PR deployments and isolated instances)
+    const envConfigPath = process.env.CONFIG_PATH
+    const configPath = envConfigPath || path.join(homedir(), '.expressiorc')
     const data = copyObject(config)
     delete data.configs
     delete data.config
