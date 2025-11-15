@@ -217,7 +217,7 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
         for (const packageName of packagesToDeploy) {
             try {
                 console.log(`[deploy] Restarting ${packageName} service...`)
-                const restartResult = await $`sudo systemctl restart ${packageName}.service`.nothrow()
+                const restartResult = await $`sudo /usr/bin/systemctl restart ${packageName}.service`.nothrow()
                 if (restartResult.exitCode === 0) {
                     console.log(`[deploy] ${packageName} service restarted successfully`)
                 } else {

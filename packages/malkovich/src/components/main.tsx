@@ -27,7 +27,6 @@ interface DocsStructure {
     packages: PackageDocs[]
 }
 
-// List of all components for the submenu
 const components = [
     'Button',
     'Field Text',
