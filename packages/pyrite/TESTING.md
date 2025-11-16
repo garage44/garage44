@@ -194,18 +194,7 @@ NODE_ENV=production bun service.ts start
 
 ### Configuration Requirements
 
-**Minimum `.pyriterc`:**
-```json
-{
-  "sfu": {
-    "url": "http://localhost:8443",
-    "path": "/path/to/galene/data"
-  }
-}
-```
-
-**Full `.pyriterc`:**
-See `.pyriterc.example` for all options
+Edit `~/.pyriterc` with your settings. See `.pyriterc.example` for all available options.
 
 ## Troubleshooting
 
@@ -277,8 +266,7 @@ curl http://localhost:8443/
 
 2. **Configure Pyrite**
    - Copy `.pyriterc.example` to `~/.pyriterc`
-   - Update `sfu.url` and `sfu.path`
-   - Add admin users
+   - Edit `~/.pyriterc` with your settings (see `.pyriterc.example` for all options)
 
 3. **Test basic flow**
    - Start Pyrite: `bun run dev`

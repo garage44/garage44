@@ -16,20 +16,6 @@ Pyrite provides a self-hosted video conferencing solution with:
 - **i18n support** - Multi-language interface (English, German, French, Dutch)
 - **Responsive design** - Works on desktop and mobile devices
 
-## Quick Start
-
-```bash
-# Install globally
-bunx @garage44/pyrite start
-
-# Or from source
-cd packages/pyrite
-bun install
-bun run dev
-```
-
-Access Pyrite at `http://localhost:3030` (default login: `admin/admin`).
-
 ## Getting Started
 
 ### Prerequisites
@@ -53,7 +39,7 @@ Create a `.pyriterc` file in your home directory:
 cp packages/pyrite/.pyriterc.example ~/.pyriterc
 ```
 
-Edit `~/.pyriterc` with your configuration. At minimum, configure:
+Edit `~/.pyriterc` with your configuration. See `.pyriterc.example` for all available options. At minimum, configure:
 
 - `sfu.path` - Path to Galène data directory
 - `sfu.url` - Galène HTTP endpoint (default: `http://localhost:8443`)
@@ -70,44 +56,18 @@ cd packages/pyrite
 bun run dev
 ```
 
+Access Pyrite at `http://localhost:3030` (default login: `admin/admin`).
+
 ## Configuration
 
 Pyrite uses the [rc](https://www.npmjs.com/package/rc) configuration pattern. Configuration is loaded from:
 
 1. Command-line arguments
 2. Environment variables (prefixed with `pyrite_`)
-3. `.pyriterc` file in your home directory
+3. `.pyriterc` file in your home directory (or `CONFIG_PATH` environment variable)
 4. Default values
 
-### Essential Configuration
-
-```json
-{
-  "listen": {
-    "host": "0.0.0.0",
-    "port": 3030
-  },
-  "sfu": {
-    "path": "/path/to/galene/data",
-    "url": "http://localhost:8443",
-    "admin": {
-      "username": "admin",
-      "password": "changeme"
-    }
-  },
-  "users": [
-    {
-      "username": "admin",
-      "password": "changeme",
-      "permissions": {
-        "op": true,
-        "present": true,
-        "record": true
-      }
-    }
-  ]
-}
-```
+Edit `~/.pyriterc` to customize settings. See `.pyriterc.example` for all available options.
 
 **Security Note**: Store `.pyriterc` with restricted permissions (`chmod 600 ~/.pyriterc`) as it contains passwords.
 
@@ -138,26 +98,14 @@ packages/pyrite/
 
 ### Development Workflow
 
-**Start development server** (with hot reload):
-
 ```bash
+# Development mode (with hot reload)
 bun run dev
-```
 
-This starts:
-- Bun.serve() backend on port 3030
-- Bunchy file watcher for hot reload
-- WebSocket server for real-time updates
-
-**Build for production**:
-
-```bash
+# Build for production
 bun run build
-```
 
-**Run production server**:
-
-```bash
+# Run production server
 bun run server
 ```
 
