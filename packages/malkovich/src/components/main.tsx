@@ -54,7 +54,7 @@ const components = [
 
 // Map package names to icons
 const packageIcons: Record<string, string> = {
-    bunchy: 'cog_outline',
+    bunchy: 'refresh',
     common: 'settings',
     expressio: 'translate',
     malkovich: 'viewlist',
