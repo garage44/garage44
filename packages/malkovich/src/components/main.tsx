@@ -54,11 +54,11 @@ const components = [
 
 // Map package names to icons
 const packageIcons: Record<string, string> = {
-    bunchy: 'cog_outline',
-    common: 'settings',
     expressio: 'translate',
-    malkovich: 'viewlist',
     pyrite: 'webcam',
+    malkovich: 'viewlist',
+    common: 'settings',
+    bunchy: 'cog_outline',
 }
 
 // Local state for menu item collapsed states per package
@@ -87,7 +87,7 @@ export const Main = () => {
         if (state.docsStructure) {
             const packagesWithDocs = state.docsStructure.packages
                 .filter((pkg) => pkg.index)
-            
+
             for (const pkg of packagesWithDocs) {
                 const isPackageActive = currentPackage === pkg.name && (isProjectPage || isDocsRoute)
                 // Initialize if not set, then update based on active state

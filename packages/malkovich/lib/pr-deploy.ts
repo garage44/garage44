@@ -10,7 +10,7 @@ import {
 } from './pr-registry'
 import {extractWorkspacePackages, isApplicationPackage} from './workspace'
 
-const PR_DEPLOYMENTS_DIR = path.join(homedir(), 'garage44')
+const PR_DEPLOYMENTS_DIR = path.join(homedir(), '.malkovich', 'pr-deployments')
 const PR_PORT_BASE = 40000
 const PR_PORT_RANGE = 10000
 
