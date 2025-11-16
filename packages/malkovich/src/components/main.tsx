@@ -54,11 +54,11 @@ const components = [
 
 // Map package names to icons
 const packageIcons: Record<string, string> = {
-    expressio: 'translate',
-    pyrite: 'webcam',
-    malkovich: 'viewlist',
-    common: 'settings',
     bunchy: 'cog_outline',
+    common: 'settings',
+    expressio: 'translate',
+    malkovich: 'viewlist',
+    pyrite: 'webcam',
 }
 
 // Local state for menu item collapsed states per package
