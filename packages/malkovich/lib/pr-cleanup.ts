@@ -32,9 +32,44 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
         // Find all PR services (use wildcard pattern)
         console.log(`[pr-cleanup] Stopping all services for PR #${prNumber}...`)
         try {
+            // First, disable services to prevent auto-restart (critical for Restart=always services)
+            await $`sudo systemctl disable pr-${prNumber}-*.service 2>/dev/null || true`.quiet()
+            console.log('[pr-cleanup] Disabled all services')
+
             // Stop all services matching pattern
             await $`sudo systemctl stop pr-${prNumber}-*.service 2>/dev/null || true`.quiet()
             console.log('[pr-cleanup] Stopped all services')
+
+            // Wait a moment for processes to fully stop
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+
+            // Kill any remaining processes that might be holding ports
+            // Discover which packages were deployed to determine ports
+            const repoDir = `${deployment.directory}/repo`
+            let packagesToClean: string[] = []
+
+            if (existsSync(repoDir)) {
+                const allPackages = extractWorkspacePackages(repoDir)
+                const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+                packagesToClean = [...appPackages, 'malkovich'] // Always include malkovich
+            } else {
+                // Fallback: use known packages if repo directory doesn't exist
+                packagesToClean = ['expressio', 'pyrite', 'malkovich']
+            }
+
+            // Kill any processes on PR ports
+            const portMap: Record<string, number> = {
+                expressio: deployment.ports.expressio,
+                malkovich: deployment.ports.malkovich,
+                pyrite: deployment.ports.pyrite,
+            }
+
+            for (const packageName of packagesToClean) {
+                const port = portMap[packageName as keyof typeof portMap] || deployment.ports.malkovich
+                // Try to kill processes on the port (fuser might not be available, so use nothrow)
+                await $`sudo fuser -k ${port}/tcp 2>/dev/null || true`.quiet().nothrow()
+            }
+            console.log('[pr-cleanup] Killed any remaining processes on PR ports')
         } catch (error) {
             console.warn('[pr-cleanup] Failed to stop services:', error)
         }
@@ -57,6 +92,7 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
             console.warn('[pr-cleanup] Failed to remove systemd units:', error)
         }
 
+        // Reload systemd after removing service files
         await $`sudo systemctl daemon-reload`.quiet()
 
         // Remove nginx configurations for all package subdomains

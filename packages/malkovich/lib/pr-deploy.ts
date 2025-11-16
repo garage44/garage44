@@ -518,8 +518,7 @@ Environment="DB_PATH=${dbPath}"
 Environment="CONFIG_PATH=${configPath}"
 Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 ExecStart=/home/garage44/.bun/bin/bun service.ts start --port ${port}
-Restart=always
-RestartSec=10
+Restart=no
 StandardOutput=journal
 StandardError=journal
 
