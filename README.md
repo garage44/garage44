@@ -11,6 +11,8 @@ Modern web applications built with Bun, Preact, and DeepSignal.
 
 AI-powered i18n automation platform. Automates translation workflows using AI providers (DeepL, Claude) and exports translation runtime for frontend applications.
 
+**🌐 Live:** [expressio.garage44.org](https://expressio.garage44.org)
+
 ```bash
 bunx @garage44/expressio start
 # Login: admin/admin
@@ -22,6 +24,8 @@ bunx @garage44/expressio start
 ### Pyrite
 
 Video conferencing frontend for the [Galène](https://galene.org/) SFU. Self-hosted solution with multi-party video, screen sharing, and chat.
+
+**🌐 Live:** [pyrite.garage44.org](https://pyrite.garage44.org)
 
 ```bash
 cd packages/pyrite
