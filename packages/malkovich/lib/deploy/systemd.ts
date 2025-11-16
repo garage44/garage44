@@ -6,6 +6,7 @@ import {join} from 'path'
  */
 function generateServiceFile(packageName: string, domain: string, port: number): string {
     const serviceName = packageName
+    const processName = packageName
     const workingDir = `/home/garage44/garage44/packages/${packageName}`
 
     return `[Unit]
@@ -20,7 +21,7 @@ WorkingDirectory=${workingDir}
 Environment="NODE_ENV=production"
 Environment="BUN_ENV=production"
 Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/garage44/.bun/bin/bun run server -- --port ${port}
+ExecStart=/bin/sh -c 'exec -a "${processName}" /home/garage44/.bun/bin/bun run server -- --port ${port}'
 Restart=always
 RestartSec=10
 StandardOutput=journal

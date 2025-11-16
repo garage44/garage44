@@ -528,6 +528,7 @@ async function generateSystemdServices(deployment: PRDeployment, packagesToDeplo
         }
 
         const serviceFile = `/etc/systemd/system/pr-${deployment.number}-${packageName}.service`
+        const processName = `pr-${deployment.number}-${packageName}`
         // Use isolated database and config paths for PR deployments
         const prDataDir = path.join(deployment.directory, 'data')
         const dbPath = path.join(prDataDir, `${packageName}.db`)
@@ -547,7 +548,7 @@ Environment="BUN_ENV=production"
 Environment="DB_PATH=${dbPath}"
 Environment="CONFIG_PATH=${configPath}"
 Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/garage44/.bun/bin/bun run server -- --port ${port}
+ExecStart=/bin/sh -c 'exec -a "${processName}" /home/garage44/.bun/bin/bun run server -- --port ${port}'
 Restart=always
 RestartSec=10
 StandardOutput=journal
