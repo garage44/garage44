@@ -48,6 +48,11 @@ async function generateServiceFile(packageName: string, domain: string, port: nu
     const workingDir = `/home/garage44/garage44/packages/${packageName}`
     const wrapperPath = await ensureProcessNameWrapper()
 
+    // Malkovich needs WEBHOOK_SECRET for GitHub webhook handling
+    const webhookSecretEnv = packageName === 'malkovich'
+        ? 'Environment="WEBHOOK_SECRET=your-webhook-secret-here"\n'
+        : ''
+
     return `[Unit]
 Description=${packageName} service
 After=network.target
@@ -59,7 +64,7 @@ Group=garage44
 WorkingDirectory=${workingDir}
 Environment="NODE_ENV=production"
 Environment="BUN_ENV=production"
-Environment="PATH=/home/garage44/.bun/bin:/home/garage44/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+${webhookSecretEnv}Environment="PATH=/home/garage44/.bun/bin:/home/garage44/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 ExecStart=${wrapperPath} ${processName} /home/garage44/.bun/bin/bun service.ts start -- --port ${port}
 Restart=always
 RestartSec=10
