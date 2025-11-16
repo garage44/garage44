@@ -211,36 +211,6 @@ export async function deployPR(pr: PRMetadata): Promise<{
         }
         console.log('[pr-deploy] Dependencies installed successfully')
 
-        // Bun's catalog dependencies should be auto-resolved, but verify they're available
-        // If not, we may need to install them explicitly (Bun should handle this automatically)
-        console.log('[pr-deploy] Verifying catalog dependencies are resolved...')
-        const testImport = await $`bun -e "import('@preact/signals').then(() => console.log('OK')).catch(e => {console.error('FAIL:', e.message); process.exit(1)})"`.nothrow()
-        if (testImport.exitCode === 0) {
-            console.log('[pr-deploy] Catalog dependencies verified')
-        } else {
-            const testError = testImport.stderr?.toString() || testImport.stdout?.toString() || ''
-            console.warn(`[pr-deploy] Catalog dependency check failed: ${testError}`)
-            console.log('[pr-deploy] Installing catalog dependencies explicitly...')
-
-            // Read catalog from package.json and install dependencies
-            const packageJsonPath = path.join(repoDir, 'package.json')
-            if (existsSync(packageJsonPath)) {
-                const packageJson = JSON.parse(await Bun.file(packageJsonPath).text())
-                const catalog = packageJson.workspaces?.catalog || {}
-                const catalogDeps = Object.keys(catalog)
-
-                if (catalogDeps.length > 0) {
-                    console.log(`[pr-deploy] Installing ${catalogDeps.length} catalog dependencies...`)
-                    const catalogInstall = await $`bun install ${catalogDeps.join(' ')}`.nothrow()
-                    if (catalogInstall.exitCode === 0) {
-                        console.log('[pr-deploy] Catalog dependencies installed')
-                    } else {
-                        console.warn('[pr-deploy] Failed to install catalog dependencies explicitly')
-                    }
-                }
-            }
-        }
-
         // Build packages
         console.log('[pr-deploy] Building packages...')
         try {

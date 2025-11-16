@@ -41,8 +41,18 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
 
         // Remove all systemd units matching pattern
         try {
-            await $`sudo rm -f /etc/systemd/system/pr-${prNumber}-*.service`.quiet()
-            console.log('[pr-cleanup] Removed all systemd units')
+            const rmResult = await $`sudo rm -f /etc/systemd/system/pr-${prNumber}-*.service`.quiet().nothrow()
+            if (rmResult.exitCode === 0) {
+                console.log('[pr-cleanup] Removed all systemd units')
+            } else {
+                const stderr = rmResult.stderr?.toString() || ''
+                // Check if it's just a "no matches" error (non-fatal)
+                if (stderr.includes('no matches found')) {
+                    console.warn(`[pr-cleanup] No systemd units found for PR #${prNumber} (may have been removed already)`)
+                } else {
+                    console.warn('[pr-cleanup] Failed to remove systemd units:', stderr)
+                }
+            }
         } catch (error) {
             console.warn('[pr-cleanup] Failed to remove systemd units:', error)
         }
