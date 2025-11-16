@@ -23,7 +23,7 @@ WorkingDirectory=${workingDir}
 Environment="NODE_ENV=production"
 Environment="BUN_ENV=production"
 ${webhookSecretEnv}Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/garage44/.bun/bin/bun service.ts start -- --port ${port}
+ExecStart=/home/garage44/.bun/bin/bun service.ts start --port ${port}
 Restart=always
 RestartSec=10
 StandardOutput=journal
