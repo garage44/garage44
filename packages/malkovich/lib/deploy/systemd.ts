@@ -1,12 +1,15 @@
 import {extractWorkspacePackages, isApplicationPackage, findWorkspaceRoot} from '../workspace'
-import {join} from 'path'
 
 /**
  * Generate systemd service file for a package
  */
-function generateServiceFile(packageName: string, domain: string, port: number): string {
-    const serviceName = packageName
+async function generateServiceFile(packageName: string, domain: string, port: number): Promise<string> {
     const workingDir = `/home/garage44/garage44/packages/${packageName}`
+
+    // Malkovich needs WEBHOOK_SECRET for GitHub webhook handling
+    const webhookSecretEnv = packageName === 'malkovich'
+        ? 'Environment="WEBHOOK_SECRET=your-webhook-secret-here"\n'
+        : ''
 
     return `[Unit]
 Description=${packageName} service
@@ -19,8 +22,8 @@ Group=garage44
 WorkingDirectory=${workingDir}
 Environment="NODE_ENV=production"
 Environment="BUN_ENV=production"
-Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/garage44/.bun/bin/bun run server -- --port ${port}
+${webhookSecretEnv}Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/garage44/.bun/bin/bun service.ts start -- --port ${port}
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -34,15 +37,15 @@ WantedBy=multi-user.target
 /**
  * Generate systemd service files for all packages
  */
-export function generateSystemd(domain: string): string {
+export async function generateSystemd(domain: string): Promise<string> {
     const workspaceRoot = findWorkspaceRoot() || process.cwd()
     const packages = extractWorkspacePackages(workspaceRoot)
-    const appPackages = packages.filter(pkg => isApplicationPackage(pkg))
+    const appPackages = packages.filter((pkg) => isApplicationPackage(pkg))
 
     // Port assignments
     const ports: Record<string, number> = {
-        'malkovich': 3032,
         'expressio': 3030,
+        'malkovich': 3032,
         'pyrite': 3031,
     }
 
@@ -51,14 +54,14 @@ export function generateSystemd(domain: string): string {
 
     // Generate malkovich service (main domain)
     output += `# Malkovich service (main domain: ${domain})\n`
-    output += generateServiceFile('malkovich', domain, ports['malkovich'])
+    output += await generateServiceFile('malkovich', domain, ports['malkovich'])
     output += '\n'
 
     // Generate services for application packages
     for (const pkg of appPackages) {
         const port = ports[pkg] || 3030 + appPackages.indexOf(pkg)
         output += `# ${pkg} service (subdomain: ${pkg}.${domain})\n`
-        output += generateServiceFile(pkg, domain, port)
+        output += await generateServiceFile(pkg, domain, port)
         output += '\n'
     }
 

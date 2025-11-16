@@ -426,7 +426,9 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
 
             // Try to stop via systemctl first
             const stopResult = await $`sudo /usr/bin/systemctl stop ${serviceName}`.nothrow()
-            if (stopResult.exitCode !== 0) {
+            if (stopResult.exitCode === 0) {
+                console.log(`[pr-deploy] Stopped ${packageName} service`)
+            } else {
                 // Log warning but continue - service might not be running
                 const stderr = stopResult.stderr?.toString() || ''
                 const stdout = stopResult.stdout?.toString() || ''
@@ -440,8 +442,6 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
                 } else {
                     console.warn(`[pr-deploy] No processes found on port ${port} (or fuser not available)`)
                 }
-            } else {
-                console.log(`[pr-deploy] Stopped ${packageName} service`)
             }
         }
 
@@ -532,7 +532,7 @@ async function generateSystemdServices(deployment: PRDeployment, packagesToDeplo
         const prDataDir = path.join(deployment.directory, 'data')
         const dbPath = path.join(prDataDir, `${packageName}.db`)
         const configPath = path.join(prDataDir, `.${packageName}rc`)
-        
+
         const content = `[Unit]
 Description=PR #${deployment.number} ${packageName} service
 After=network.target
@@ -547,7 +547,7 @@ Environment="BUN_ENV=production"
 Environment="DB_PATH=${dbPath}"
 Environment="CONFIG_PATH=${configPath}"
 Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/garage44/.bun/bin/bun run server -- --port ${port}
+ExecStart=/home/garage44/.bun/bin/bun service.ts start -- --port ${port}
 Restart=always
 RestartSec=10
 StandardOutput=journal
