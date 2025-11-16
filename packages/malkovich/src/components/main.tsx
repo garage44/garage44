@@ -52,11 +52,18 @@ const components = [
     'Context Select',
 ]
 
-// Local state for menu item collapsed states
+// Map package names to icons
+const packageIcons: Record<string, string> = {
+    expressio: 'translate',
+    pyrite: 'webcam',
+    malkovich: 'viewlist',
+    common: 'settings',
+    bunchy: 'cog_outline',
+}
+
+// Local state for menu item collapsed states per package
 // Default to collapsed (true) - will be updated based on active route
-const menuState = deepSignal({
-    projects: true,
-})
+const menuState = deepSignal<Record<string, boolean>>({})
 
 // Component state - defined outside component to prevent re-creation on each render
 const state = deepSignal({
@@ -77,10 +84,23 @@ export const Main = () => {
     // Update collapsed state based on active route
     // Active items should be uncollapsed (false), inactive items should be collapsed (true)
     useEffect(() => {
-        const isProjectsActive = isProjectsRoute || isProjectPage || isDocsRoute
-
-        menuState.projects = !isProjectsActive
-    }, [isProjectsRoute, isProjectPage, isDocsRoute])
+        if (state.docsStructure) {
+            const packagesWithDocs = state.docsStructure.packages
+                .filter((pkg) => pkg.index)
+            
+            for (const pkg of packagesWithDocs) {
+                const isPackageActive = currentPackage === pkg.name && (isProjectPage || isDocsRoute)
+                // Initialize if not set, then update based on active state
+                if (menuState[pkg.name] === undefined) {
+                    menuState[pkg.name] = true // Default to collapsed
+                }
+                // If this package is active, uncollapse it; otherwise keep current state
+                if (isPackageActive) {
+                    menuState[pkg.name] = false
+                }
+            }
+        }
+    }, [isProjectsRoute, isProjectPage, isDocsRoute, currentPackage, state.docsStructure])
 
     // Extract current docs section path (e.g., "adr" or "adr/guide")
     // If we're on a file route, extract just the directory path
@@ -249,63 +269,62 @@ export const Main = () => {
 
                             return (
                                 <>
-                                    <MenuItem
-                                        active={isProjectsRoute || isProjectPage}
-                                        collapsed={$s.panels.menu.collapsed}
-                                        href="/projects"
-                                        icon={menuState.projects ? 'folder_plus_outline' : 'folder_minus_outline'}
-                                        iconType="info"
-                                        onClick={() => {}}
-                                        text="Projects"
-                                    />
-                                    {!menuState.projects && (
-                                        <Submenu
-                                            collapsed={$s.panels.menu.collapsed}
-                                            items={packagesWithDocs.map((pkg) => {
-                                                const isActive = currentPackage === pkg.name
-                                                const packageDocs = state.docsStructure.packages.find((p) => p.name === pkg.name)
+                                    {packagesWithDocs.map((pkg) => {
+                                        const isActive = currentPackage === pkg.name && (isProjectPage || isDocsRoute)
+                                        const packageDocs = state.docsStructure.packages.find((p) => p.name === pkg.name)
+                                        const isCollapsed = menuState[pkg.name] !== false // Default to collapsed if not set
+                                        const iconName = packageIcons[pkg.name] || 'folder_plus_outline'
 
-                                                const packageItem: SubmenuItem = {
-                                                    active: isActive,
-                                                    id: pkg.name,
-                                                    label: pkg.name,
+                                        // Build docs submenu items if this package has docs
+                                        let docsSubmenuItems: SubmenuItem[] | undefined
+                                        if (packageDocs && packageDocs.docs.length > 0) {
+                                            docsSubmenuItems = buildDocsSubmenu(packageDocs.docs, pkg.name).map((item) => {
+                                                // Check if this section is active (exact match) or if any nested child is active (starts with)
+                                                const isDocsSectionActive = isDocsRoute && currentPackage === pkg.name && (currentDocsSection === item.id || (currentDocsSection && currentDocsSection.startsWith(item.id + '/')))
+                                                const sectionNode = packageDocs.docs.find((d) => d.name === item.id && d.type === 'directory')
+                                                const nestedItems: SubmenuItem[] = []
+
+                                                // If this is the active docs section (or any child is active) and has children, add them as nested items
+                                                if (isDocsSectionActive && sectionNode && sectionNode.children && sectionNode.children.length > 0) {
+                                                    const childrenItems = buildDocsSubmenu(sectionNode.children, pkg.name, item.id).map((childItem) => ({
+                                                        ...childItem,
+                                                        nested: true,
+                                                    }))
+                                                    nestedItems.push(...childrenItems)
+                                                }
+
+                                                return {
+                                                    ...item,
                                                     nested: true,
-                                                    onClick: () => {
-                                                        route(`/projects/${pkg.name}`)
-                                                    },
+                                                    // Add nested children if this section is active (or any child is active)
+                                                    ...(nestedItems.length > 0 && {children: nestedItems}),
                                                 }
+                                            })
+                                        }
 
-                                                // If this package is active and has docs, add its docs submenu items as children
-                                                if (isActive && packageDocs && packageDocs.docs.length > 0) {
-                                                    const docsItems = buildDocsSubmenu(packageDocs.docs, pkg.name).map((item) => {
-                                                        // Check if this section is active (exact match) or if any nested child is active (starts with)
-                                                        const isDocsSectionActive = isDocsRoute && (currentDocsSection === item.id || (currentDocsSection && currentDocsSection.startsWith(item.id + '/')))
-                                                        const sectionNode = packageDocs.docs.find((d) => d.name === item.id && d.type === 'directory')
-                                                        const nestedItems: SubmenuItem[] = []
-
-                                                        // If this is the active docs section (or any child is active) and has children, add them as nested items
-                                                        if (isDocsSectionActive && sectionNode && sectionNode.children && sectionNode.children.length > 0) {
-                                                            const childrenItems = buildDocsSubmenu(sectionNode.children, pkg.name, item.id).map((childItem) => ({
-                                                                ...childItem,
-                                                                nested: true,
-                                                            }))
-                                                            nestedItems.push(...childrenItems)
-                                                        }
-
-                                                        return {
-                                                            ...item,
-                                                            nested: true,
-                                                            // Add nested children if this section is active (or any child is active)
-                                                            ...(nestedItems.length > 0 && {children: nestedItems}),
-                                                        }
-                                                    })
-                                                    packageItem.children = docsItems
-                                                }
-
-                                                return packageItem
-                                            })}
-                                        />
-                                    )}
+                                        return (
+                                            <div key={pkg.name}>
+                                                <MenuItem
+                                                    active={isActive}
+                                                    collapsed={$s.panels.menu.collapsed}
+                                                    href={`/projects/${pkg.name}`}
+                                                    icon={iconName}
+                                                    iconType="info"
+                                                    onClick={() => {
+                                                        // Toggle collapsed state
+                                                        menuState[pkg.name] = !isCollapsed
+                                                    }}
+                                                    text={pkg.name}
+                                                />
+                                                {!isCollapsed && docsSubmenuItems && docsSubmenuItems.length > 0 && (
+                                                    <Submenu
+                                                        collapsed={$s.panels.menu.collapsed}
+                                                        items={docsSubmenuItems}
+                                                    />
+                                                )}
+                                            </div>
+                                        )
+                                    })}
                                 </>
                             )
                         })() : null
