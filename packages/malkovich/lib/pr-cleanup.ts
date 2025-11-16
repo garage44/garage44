@@ -9,6 +9,27 @@ import {
 import {extractWorkspacePackages, isApplicationPackage} from './workspace'
 
 /**
+ * Restart the main malkovich service after cleanup completes
+ * This ensures malkovich is running with the latest code
+ */
+async function restartMalkovichService(): Promise<void> {
+    console.log('[pr-cleanup] Restarting main malkovich service...')
+    try {
+        const restartResult = await $`sudo /usr/bin/systemctl restart malkovich.service`.nothrow()
+        if (restartResult.exitCode === 0) {
+            console.log('[pr-cleanup] Malkovich service restarted successfully')
+        } else {
+            const stderr = restartResult.stderr?.toString() || ''
+            const stdout = restartResult.stdout?.toString() || ''
+            console.warn(`[pr-cleanup] Failed to restart malkovich service (non-fatal): ${stderr || stdout || 'Unknown error'}`)
+        }
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.warn(`[pr-cleanup] Error restarting malkovich service (non-fatal): ${message}`)
+    }
+}
+
+/**
  * Cleanup a specific PR deployment
  */
 export async function cleanupPRDeployment(prNumber: number): Promise<{
@@ -182,6 +203,9 @@ server {
 
         console.log(`[pr-cleanup] PR #${prNumber} cleaned up successfully`)
 
+        // Restart main malkovich service after cleanup completes
+        await restartMalkovichService()
+
         return {
             message: `PR #${prNumber} cleaned up successfully`,
             success: true,
@@ -189,6 +213,10 @@ server {
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-cleanup] Cleanup failed: ${message}`)
+
+        // Restart main malkovich service even on failure to ensure it's running
+        await restartMalkovichService()
+
         return {
             message: `Cleanup failed: ${message}`,
             success: false,

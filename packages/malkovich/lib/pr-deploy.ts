@@ -8,11 +8,96 @@ import {
     updatePRDeployment,
     type PRDeployment,
 } from './pr-registry'
-import {extractWorkspacePackages, isApplicationPackage} from './workspace'
+import {extractWorkspacePackages, isApplicationPackage, findWorkspaceRoot} from './workspace'
 
 const PR_DEPLOYMENTS_DIR = path.join(homedir(), '.malkovich', 'pr-deployments')
 const PR_PORT_BASE = 40000
 const PR_PORT_RANGE = 10000
+
+/**
+ * Fetch branches from remote to ensure branch info is available
+ * Returns the main repository path
+ */
+async function fetchMainRepository(): Promise<string | null> {
+    const mainRepoPath = process.env.REPO_PATH || findWorkspaceRoot() || process.cwd()
+
+    if (!existsSync(mainRepoPath)) {
+        console.warn(`[pr-deploy] Main repository path does not exist: ${mainRepoPath}`)
+        return null
+    }
+
+    if (!existsSync(path.join(mainRepoPath, '.git'))) {
+        console.warn(`[pr-deploy] Main repository is not a git repository: ${mainRepoPath}`)
+        return null
+    }
+
+    console.log('[pr-deploy] Fetching branches from remote...')
+    const originalCwd = process.cwd()
+
+    try {
+        process.chdir(mainRepoPath)
+        const fetchResult = await $`git fetch origin`.nothrow()
+        if (fetchResult.exitCode === 0) {
+            console.log('[pr-deploy] Branches fetched successfully')
+        } else {
+            const stderr = fetchResult.stderr?.toString() || ''
+            const stdout = fetchResult.stdout?.toString() || ''
+            console.warn(`[pr-deploy] Git fetch failed (non-fatal): ${stderr || stdout || 'Unknown error'}`)
+        }
+        return mainRepoPath
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.warn(`[pr-deploy] Git fetch error (non-fatal): ${message}`)
+        return mainRepoPath
+    } finally {
+        process.chdir(originalCwd)
+    }
+}
+
+/**
+ * Get SHA for a branch from the main repository
+ * Assumes fetchMainRepository() has already been called
+ */
+async function getBranchSHA(branch: string): Promise<string | null> {
+    const mainRepoPath = process.env.REPO_PATH || findWorkspaceRoot() || process.cwd()
+
+    if (!existsSync(mainRepoPath) || !existsSync(path.join(mainRepoPath, '.git'))) {
+        return null
+    }
+
+    const originalCwd = process.cwd()
+    try {
+        process.chdir(mainRepoPath)
+        const result = await $`git rev-parse origin/${branch}`.quiet().nothrow()
+        if (result.exitCode === 0) {
+            return result.stdout.toString().trim()
+        }
+        return null
+    } finally {
+        process.chdir(originalCwd)
+    }
+}
+
+/**
+ * Restart the main malkovich service after deployment/cleanup completes
+ * This ensures malkovich is running with the latest code
+ */
+async function restartMalkovichService(): Promise<void> {
+    console.log('[pr-deploy] Restarting main malkovich service...')
+    try {
+        const restartResult = await $`sudo /usr/bin/systemctl restart malkovich.service`.nothrow()
+        if (restartResult.exitCode === 0) {
+            console.log('[pr-deploy] Malkovich service restarted successfully')
+        } else {
+            const stderr = restartResult.stderr?.toString() || ''
+            const stdout = restartResult.stdout?.toString() || ''
+            console.warn(`[pr-deploy] Failed to restart malkovich service (non-fatal): ${stderr || stdout || 'Unknown error'}`)
+        }
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.warn(`[pr-deploy] Error restarting malkovich service (non-fatal): ${message}`)
+    }
+}
 
 export interface PRMetadata {
     author: string
@@ -89,6 +174,24 @@ export async function deployPR(pr: PRMetadata): Promise<{
     try {
         console.log(`[pr-deploy] Starting deployment for PR #${pr.number}`)
 
+        // Fetch branches to ensure branch info is available
+        await fetchMainRepository()
+
+        // Resolve SHA if not provided
+        let head_sha = pr.head_sha
+        if (!head_sha) {
+            const sha = await getBranchSHA(pr.head_ref)
+            if (!sha) {
+                return {
+                    deployment: null,
+                    message: `Failed to resolve SHA for branch ${pr.head_ref}. Make sure the branch exists on remote.`,
+                    success: false,
+                }
+            }
+            head_sha = sha
+            pr = {...pr, head_sha: sha}
+        }
+
         // Validate PR source - block forks completely
         const trustLevel = validatePRSource(pr)
         if (trustLevel !== 'trusted') {
@@ -134,7 +237,7 @@ export async function deployPR(pr: PRMetadata): Promise<{
             created: Date.now(),
             directory: prDir,
             head_ref: pr.head_ref,
-            head_sha: pr.head_sha,
+            head_sha: head_sha,
             number: pr.number,
             ports,
             status: 'deploying',
@@ -186,12 +289,12 @@ export async function deployPR(pr: PRMetadata): Promise<{
             throw new Error('Failed to fetch PR branch')
         }
 
-        const checkoutResult = await $`git checkout ${pr.head_sha}`.quiet()
+        const checkoutResult = await $`git checkout ${head_sha}`.quiet()
         if (checkoutResult.exitCode !== 0) {
             await updatePRDeployment(pr.number, {status: 'failed'})
             throw new Error('Failed to checkout PR commit')
         }
-        console.log(`[pr-deploy] Checked out commit: ${pr.head_sha}`)
+        console.log(`[pr-deploy] Checked out commit: ${head_sha}`)
 
         // Install dependencies (must be run from workspace root)
         console.log('[pr-deploy] Installing dependencies...')
@@ -286,6 +389,9 @@ export async function deployPR(pr: PRMetadata): Promise<{
             console.log(`[pr-deploy]   ${packageName}: https://${subdomain} (port ${port})`)
         }
 
+        // Restart main malkovich service after successful deployment
+        await restartMalkovichService()
+
         return {
             deployment: {
                 ...deployment,
@@ -297,6 +403,10 @@ export async function deployPR(pr: PRMetadata): Promise<{
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-deploy] Deployment failed: ${message}`)
+
+        // Restart main malkovich service even on failure to ensure it's running
+        await restartMalkovichService()
+
         return {
             deployment: null,
             message: `Deployment failed: ${message}`,
@@ -325,6 +435,20 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
     try {
         console.log(`[pr-deploy] Updating PR #${pr.number}...`)
 
+        // Fetch branches to ensure branch info is available
+        await fetchMainRepository()
+
+        // Resolve SHA if not provided
+        let head_sha = pr.head_sha
+        if (!head_sha) {
+            const sha = await getBranchSHA(pr.head_ref)
+            if (!sha) {
+                throw new Error(`Failed to resolve SHA for branch ${pr.head_ref}. Make sure the branch exists on remote.`)
+            }
+            head_sha = sha
+            pr = {...pr, head_sha: sha}
+        }
+
         const repoDir = path.join(existing.directory, 'repo')
 
         // Verify repo directory exists
@@ -349,14 +473,14 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
             throw new Error(`Failed to fetch branch ${pr.head_ref}: ${stderr || stdout || 'Unknown error'}`)
         }
 
-        console.log(`[pr-deploy] Checking out commit ${pr.head_sha}...`)
-        const checkoutResult = await $`git checkout ${pr.head_sha}`.nothrow()
+        console.log(`[pr-deploy] Checking out commit ${head_sha}...`)
+        const checkoutResult = await $`git checkout ${head_sha}`.nothrow()
         if (checkoutResult.exitCode !== 0) {
             const stderr = checkoutResult.stderr?.toString() || ''
             const stdout = checkoutResult.stdout?.toString() || ''
-            throw new Error(`Failed to checkout commit ${pr.head_sha}: ${stderr || stdout || 'Unknown error'}`)
+            throw new Error(`Failed to checkout commit ${head_sha}: ${stderr || stdout || 'Unknown error'}`)
         }
-        console.log(`[pr-deploy] Checked out commit: ${pr.head_sha}`)
+        console.log(`[pr-deploy] Checked out commit: ${head_sha}`)
 
         // Rebuild
         console.log('[pr-deploy] Installing dependencies...')
@@ -437,11 +561,14 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
 
         // Update deployment record
         await updatePRDeployment(pr.number, {
-            head_sha: pr.head_sha,
+            head_sha: head_sha,
             status: 'running',
         })
 
         console.log(`[pr-deploy] PR #${pr.number} updated successfully`)
+
+        // Restart main malkovich service after successful update
+        await restartMalkovichService()
 
         return {
             deployment: existing,
@@ -458,6 +585,9 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
         } catch (statusError) {
             console.error('[pr-deploy] Failed to update deployment status:', statusError)
         }
+
+        // Restart main malkovich service even on failure to ensure it's running
+        await restartMalkovichService()
 
         return {
             deployment: null,

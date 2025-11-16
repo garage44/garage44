@@ -268,17 +268,10 @@ const _ = cli.usage('Usage: $0 [task]')
     , async (argv) => {
         const {deployPR} = await import('./lib/pr-deploy')
 
-        // Get latest SHA if not provided
-        let sha = argv.sha
-        if (!sha) {
-            const result = await $`git rev-parse origin/${argv.branch}`.quiet()
-            sha = result.stdout.toString().trim()
-        }
-
         const pr = {
             author: argv.author,
             head_ref: argv.branch,
-            head_sha: sha,
+            head_sha: argv.sha || undefined, // Let deployPR resolve if not provided
             is_fork: false,  // Local PRs are trusted
             number: argv.number,
             repo_full_name: 'garage44/garage44',
