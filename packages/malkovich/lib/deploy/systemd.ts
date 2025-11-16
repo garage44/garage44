@@ -1,13 +1,52 @@
 import {extractWorkspacePackages, isApplicationPackage, findWorkspaceRoot} from '../workspace'
+import {existsSync, mkdirSync} from 'fs'
+import {$} from 'bun'
 import {join} from 'path'
+
+/**
+ * Ensure the set-process-name wrapper binary is available
+ * Compiles once and reuses the binary for all subsequent deployments
+ */
+async function ensureProcessNameWrapper(): Promise<string> {
+    const wrapperPath = '/home/garage44/.local/bin/set-process-name'
+    const sourcePath = join(import.meta.dir, 'set-process-name.c')
+
+    // Check if binary already exists and is executable (reuse it)
+    if (existsSync(wrapperPath)) {
+        try {
+            const stat = await Bun.file(wrapperPath).stat()
+            if (stat.mode & 0o111) { // Check if executable
+                return wrapperPath
+            }
+        } catch {
+            // File exists but can't stat, try to compile anyway
+        }
+    }
+
+    // Ensure .local/bin directory exists
+    const binDir = '/home/garage44/.local/bin'
+    if (!existsSync(binDir)) {
+        mkdirSync(binDir, {recursive: true})
+    }
+
+    // Compile the wrapper (only happens once, then reused)
+    const compileResult = await $`gcc -o ${wrapperPath} ${sourcePath}`.nothrow()
+    if (compileResult.exitCode !== 0) {
+        const stderr = compileResult.stderr?.toString() || ''
+        const stdout = compileResult.stdout?.toString() || ''
+        throw new Error(`Failed to compile set-process-name wrapper: ${stderr || stdout || 'Unknown error'}\nMake sure gcc is installed.`)
+    }
+
+    return wrapperPath
+}
 
 /**
  * Generate systemd service file for a package
  */
-function generateServiceFile(packageName: string, domain: string, port: number): string {
-    const serviceName = packageName
+async function generateServiceFile(packageName: string, domain: string, port: number): Promise<string> {
     const processName = packageName
     const workingDir = `/home/garage44/garage44/packages/${packageName}`
+    const wrapperPath = await ensureProcessNameWrapper()
 
     return `[Unit]
 Description=${packageName} service
@@ -20,8 +59,8 @@ Group=garage44
 WorkingDirectory=${workingDir}
 Environment="NODE_ENV=production"
 Environment="BUN_ENV=production"
-Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/bin/sh -c 'exec -a "${processName}" /home/garage44/.bun/bin/bun run server -- --port ${port}'
+Environment="PATH=/home/garage44/.bun/bin:/home/garage44/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=${wrapperPath} ${processName} /home/garage44/.bun/bin/bun service.ts start -- --port ${port}
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -35,15 +74,15 @@ WantedBy=multi-user.target
 /**
  * Generate systemd service files for all packages
  */
-export function generateSystemd(domain: string): string {
+export async function generateSystemd(domain: string): Promise<string> {
     const workspaceRoot = findWorkspaceRoot() || process.cwd()
     const packages = extractWorkspacePackages(workspaceRoot)
-    const appPackages = packages.filter(pkg => isApplicationPackage(pkg))
+    const appPackages = packages.filter((pkg) => isApplicationPackage(pkg))
 
     // Port assignments
     const ports: Record<string, number> = {
-        'malkovich': 3032,
         'expressio': 3030,
+        'malkovich': 3032,
         'pyrite': 3031,
     }
 
@@ -52,14 +91,14 @@ export function generateSystemd(domain: string): string {
 
     // Generate malkovich service (main domain)
     output += `# Malkovich service (main domain: ${domain})\n`
-    output += generateServiceFile('malkovich', domain, ports['malkovich'])
+    output += await generateServiceFile('malkovich', domain, ports['malkovich'])
     output += '\n'
 
     // Generate services for application packages
     for (const pkg of appPackages) {
         const port = ports[pkg] || 3030 + appPackages.indexOf(pkg)
         output += `# ${pkg} service (subdomain: ${pkg}.${domain})\n`
-        output += generateServiceFile(pkg, domain, port)
+        output += await generateServiceFile(pkg, domain, port)
         output += '\n'
     }
 

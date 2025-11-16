@@ -426,7 +426,9 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
 
             // Try to stop via systemctl first
             const stopResult = await $`sudo /usr/bin/systemctl stop ${serviceName}`.nothrow()
-            if (stopResult.exitCode !== 0) {
+            if (stopResult.exitCode === 0) {
+                console.log(`[pr-deploy] Stopped ${packageName} service`)
+            } else {
                 // Log warning but continue - service might not be running
                 const stderr = stopResult.stderr?.toString() || ''
                 const stdout = stopResult.stdout?.toString() || ''
@@ -440,8 +442,6 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
                 } else {
                     console.warn(`[pr-deploy] No processes found on port ${port} (or fuser not available)`)
                 }
-            } else {
-                console.log(`[pr-deploy] Stopped ${packageName} service`)
             }
         }
 
@@ -507,9 +507,50 @@ function discoverPackagesToDeploy(repoDir: string): string[] {
 }
 
 /**
+ * Ensure the set-process-name wrapper binary is available
+ * Compiles once and reuses the binary for all subsequent deployments
+ */
+async function ensureProcessNameWrapper(): Promise<string> {
+    const wrapperPath = '/home/garage44/.local/bin/set-process-name'
+    const sourcePath = path.join(import.meta.dir, 'deploy', 'set-process-name.c')
+
+    // Check if binary already exists and is executable (reuse it)
+    if (existsSync(wrapperPath)) {
+        try {
+            const stat = await Bun.file(wrapperPath).stat()
+            if (stat.mode & 0o111) { // Check if executable
+                return wrapperPath
+            }
+        } catch {
+            // File exists but can't stat, try to compile anyway
+        }
+    }
+
+    // Ensure .local/bin directory exists
+    const binDir = '/home/garage44/.local/bin'
+    if (!existsSync(binDir)) {
+        mkdirSync(binDir, {recursive: true})
+    }
+
+    // Compile the wrapper (only happens once, then reused)
+    console.log('[pr-deploy] Compiling set-process-name wrapper (one-time setup)...')
+    const compileResult = await $`gcc -o ${wrapperPath} ${sourcePath}`.nothrow()
+    if (compileResult.exitCode !== 0) {
+        const stderr = compileResult.stderr?.toString() || ''
+        const stdout = compileResult.stdout?.toString() || ''
+        throw new Error(`Failed to compile set-process-name wrapper: ${stderr || stdout || 'Unknown error'}\nMake sure gcc is installed.`)
+    }
+
+    console.log('[pr-deploy] set-process-name wrapper compiled successfully')
+    return wrapperPath
+}
+
+/**
  * Generate systemd service files for PR deployment
  */
 async function generateSystemdServices(deployment: PRDeployment, packagesToDeploy: string[]): Promise<void> {
+    // Ensure wrapper binary is available (compiles once, then reused)
+    const wrapperPath = await ensureProcessNameWrapper()
     // Map package names to port allocations
     const portMap: Record<string, number> = {
         expressio: deployment.ports.expressio,
@@ -533,7 +574,7 @@ async function generateSystemdServices(deployment: PRDeployment, packagesToDeplo
         const prDataDir = path.join(deployment.directory, 'data')
         const dbPath = path.join(prDataDir, `${packageName}.db`)
         const configPath = path.join(prDataDir, `.${packageName}rc`)
-        
+
         const content = `[Unit]
 Description=PR #${deployment.number} ${packageName} service
 After=network.target
@@ -547,8 +588,8 @@ Environment="NODE_ENV=production"
 Environment="BUN_ENV=production"
 Environment="DB_PATH=${dbPath}"
 Environment="CONFIG_PATH=${configPath}"
-Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/bin/sh -c 'exec -a "${processName}" /home/garage44/.bun/bin/bun run server -- --port ${port}'
+Environment="PATH=/home/garage44/.bun/bin:/home/garage44/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=${wrapperPath} ${processName} /home/garage44/.bun/bin/bun service.ts start -- --port ${port}
 Restart=always
 RestartSec=10
 StandardOutput=journal

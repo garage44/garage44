@@ -225,7 +225,7 @@ const _ = cli.usage('Usage: $0 [task]')
             })
     , async (argv) => {
         const {generateSystemd} = await import('./lib/deploy/systemd')
-        const output = generateSystemd(argv.domain)
+        const output = await generateSystemd(argv.domain)
         console.log(output)
     })
     .command('generate-nginx', 'Generate nginx configuration', (yargs) =>
