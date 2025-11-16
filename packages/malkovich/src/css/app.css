@@ -16,11 +16,11 @@
     /* Mobile-friendly padding and wrapping */
     @media (max-width: 768px) {
         max-width: 100%;
+        overflow-wrap: break-word;
         overflow-x: hidden;
         padding: var(--spacer-3) var(--spacer-2);
         width: 100%;
         word-wrap: break-word;
-        overflow-wrap: break-word;
     }
 
     /* Generic header styling for all styleguide pages */
