@@ -200,7 +200,7 @@
             align-items: center;
             border-top: 1px solid var(--surface-2);
             display: flex;
-            justify-content: center;
+            justify-content: flex-end;
             padding: var(--spacer-1);
             width: 100%;
 
@@ -215,7 +215,7 @@
                 justify-content: center;
                 padding: var(--spacer-1);
                 transition: all 0.2s ease;
-                width: 100%;
+                width: auto;
 
                 &:hover {
                     background: var(--surface-3);
@@ -265,9 +265,10 @@
             }
 
             .collapse-toggle-container {
+                justify-content: center;
+
                 .collapse-toggle {
                     padding: var(--spacer-05);
-                    width: auto;
                 }
             }
         }
