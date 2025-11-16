@@ -12,7 +12,7 @@ import {
     FieldTextarea,
     FieldUpload,
     Icon,
-} from '@garage44/common/components'
+} from '@/components'
 import {deepSignal} from 'deepsignal'
 
 

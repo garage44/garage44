@@ -6,14 +6,16 @@
     "access": "public"
   },
   "files": [
+    "LICENSE.md",
     "README.md",
     "app.ts",
+    "assets/**",
     "css/**",
     "components/**",
     "components.ts",
     "fonts/**",
     "lib/**",
-    "scss/**/*",
+    "service.ts",
     "tsconfig.json",
     "types.ts"
   ],

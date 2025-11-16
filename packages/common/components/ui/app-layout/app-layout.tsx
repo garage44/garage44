@@ -1,8 +1,8 @@
 import {useEffect} from 'preact/hooks'
 import type {ComponentChildren} from 'preact'
 import {$t} from '@/app'
-import {store} from '@garage44/common/app'
-import {Icon} from '@garage44/common/components'
+import {store} from '@/app'
+import {Icon} from '@/components'
 import classnames from 'classnames'
 
 interface AppLayoutProps {

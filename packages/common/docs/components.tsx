@@ -21,13 +21,13 @@ import {
     Notifications,
     Progress,
     Splash,
-} from '@garage44/common/components'
+} from '@/components'
 // Import utilities from malkovich using relative paths
 import {ComponentDemo} from '../../malkovich/src/components/lib/component-demo'
-import {Notifier} from '@garage44/common/lib/notifier'
+import {Notifier} from '@/lib/notifier'
 import {StateView} from '../../malkovich/src/components/lib/state-view'
 import {deepSignal} from 'deepsignal'
-import {svg} from '@garage44/common/components/ui/icon/icon'
+import {svg} from '@/components/ui/icon/icon'
 
 
 const data = deepSignal({
