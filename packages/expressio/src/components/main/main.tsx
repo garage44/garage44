@@ -4,7 +4,7 @@ import {$t} from '@garage44/expressio'
 import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
 import {Settings} from '@/components/settings/settings'
 import {AppLayout, FieldSelect, MenuGroup, MenuItem, Notifications, PanelMenu, Progress, UserMenu} from '@garage44/common/components'
-import {Router, getCurrentUrl, route} from 'preact-router'
+import {Link, Router, getCurrentUrl, route} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
 import {Login} from '@/components/pages/login/login'
 import {deepSignal} from 'deepsignal'
@@ -87,6 +87,8 @@ export const Main = () => {
             menu={
                 <PanelMenu
                     collapsed={$s.panels.menu.collapsed}
+                    LinkComponent={Link}
+                    logoHref="/"
                     onCollapseChange={(collapsed) => {
                         $s.panels.menu.collapsed = collapsed
                     }}
@@ -95,14 +97,14 @@ export const Main = () => {
                     navigation={
 
                         <MenuGroup collapsed={$s.panels.menu.collapsed}>
-                            {$s.profile.admin && <MenuItem
+                            <MenuItem
                                 active={$s.env.url === '/'}
                                 collapsed={$s.panels.menu.collapsed}
                                 href="/"
-                                icon="settings"
+                                icon="dashboard"
                                 iconType="info"
                                 text={$t(i18n.menu.settings)}
-                            />}
+                            />
                             <FieldSelect
                                 disabled={!$s.workspaces.length}
                                 help={$t(i18n.menu.workspaces.help)}
