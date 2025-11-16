@@ -2,6 +2,8 @@
 
 Platform documentation and deployment tool for the Garage44 monorepo. Provides unified documentation hub, component styleguide, and automated PR deployment system.
 
+**🌐 Live:** [garage44.org](https://garage44.org)
+
 ## Overview
 
 Malkovich serves as the central platform for:

@@ -2,6 +2,8 @@
 
 Video conferencing platform built with Preact, DeepSignal, and Bun. Provides a modern web interface for the [Galène](https://galene.org/) SFU (Selective Forwarding Unit).
 
+**🌐 Live:** [pyrite.garage44.org](https://pyrite.garage44.org)
+
 Pyrite is part of the **garage44/common** infrastructure, sharing the same tech stack as [Expressio](../expressio/) - Bun runtime, Preact frontend, DeepSignal state management, and Bunchy for development.
 
 ## What It Does

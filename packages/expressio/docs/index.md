@@ -2,6 +2,8 @@
 
 AI-powered i18n automation tool. Automates translation workflows using AI providers (DeepL, Claude) while maintaining source-text control and code synchronization.
 
+**🌐 Live:** [expressio.garage44.org](https://expressio.garage44.org)
+
 Expressio is part of the **garage44/common** infrastructure, sharing the same tech stack as [Pyrite](../pyrite/) - Bun runtime, Preact frontend, DeepSignal state management, and Bunchy for development with HMR.
 
 ## What It Does
