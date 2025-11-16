@@ -1,5 +1,6 @@
 import classnames from 'classnames'
 import {ComponentChildren} from 'preact/hooks'
+import {Icon} from '../icon/icon'
 
 interface PanelMenuProps {
     actions?: ComponentChildren
@@ -83,17 +84,6 @@ export const PanelMenu = ({
         >
             <header>
                 {renderLogo()}
-                {onCollapseChange && (
-                    <button
-                        class="collapse-toggle"
-                        onClick={() => onCollapseChange(!collapsed)}
-                        aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d={collapsed ? 'M10 8l-4-4v8l4-4z' : 'M6 8l4-4v8l-4-4z'} />
-                        </svg>
-                    </button>
-                )}
             </header>
                 <div class="content">
                     {navigation && (
@@ -107,6 +97,19 @@ export const PanelMenu = ({
                         </div>
                     )}
                     {footer && <div class="footer">{footer}</div>}
+                    {onCollapseChange && (
+                        <button
+                            class="collapse-toggle"
+                            onClick={() => onCollapseChange(!collapsed)}
+                            aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
+                        >
+                            <Icon
+                                name={collapsed ? 'collapseright' : 'collapseleft'}
+                                size="d"
+                                type="info"
+                            />
+                        </button>
+                    )}
                 </div>
         </aside>
     )
