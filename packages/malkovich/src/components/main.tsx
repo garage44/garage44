@@ -1,6 +1,6 @@
 import {$s} from '@/app'
 import {AppLayout, MenuItem, PanelMenu, Submenu, ThemeToggle} from '@garage44/common/components'
-import {Router, Route, route} from 'preact-router'
+import {Router, Route, route, Link} from 'preact-router'
 import {useEffect} from 'preact/hooks'
 import {deepSignal} from 'deepsignal'
 import {Frontend} from './pages/frontend'
@@ -254,6 +254,8 @@ export const Main = () => {
             menu={
                 <PanelMenu
                     collapsed={$s.panels.menu.collapsed}
+                    LinkComponent={Link}
+                    logoHref="/"
                     onCollapseChange={(collapsed) => {
                         $s.panels.menu.collapsed = collapsed
                     }}
