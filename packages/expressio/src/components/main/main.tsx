@@ -95,14 +95,14 @@ export const Main = () => {
                     navigation={
 
                         <MenuGroup collapsed={$s.panels.menu.collapsed}>
-                            {$s.profile.admin && <MenuItem
+                            <MenuItem
                                 active={$s.env.url === '/'}
                                 collapsed={$s.panels.menu.collapsed}
                                 href="/"
-                                icon="settings"
+                                icon="dashboard"
                                 iconType="info"
                                 text={$t(i18n.menu.settings)}
-                            />}
+                            />
                             <FieldSelect
                                 disabled={!$s.workspaces.length}
                                 help={$t(i18n.menu.workspaces.help)}
