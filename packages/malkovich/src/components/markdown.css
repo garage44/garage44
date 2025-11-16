@@ -146,7 +146,7 @@
     background-color: var(--surface-2);
     border: 1px solid var(--surface-3);
     border-radius: var(--border-radius-s);
-    color: var(--primary-3);
+    color: var(--primary-5);
     font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
     font-size: 0.9em;
     overflow-wrap: break-word;
@@ -158,7 +158,7 @@
     background-color: var(--surface-1);
     border: 1px solid var(--surface-3);
     border-radius: var(--border-radius-d);
-    color: var(--surface-7);
+    color: var(--surface-8);
     font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
     font-size: var(--font-s);
     line-height: 1.6;
