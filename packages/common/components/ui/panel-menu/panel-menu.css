@@ -74,34 +74,6 @@
             }
         }
 
-        .collapse-toggle {
-            align-items: center;
-            background: transparent;
-            border: none;
-            color: var(--surface-6);
-            cursor: pointer;
-            display: flex;
-            height: var(--spacer-4);
-            justify-content: center;
-            padding: var(--spacer-05);
-            transition: color 0.2s ease;
-            width: var(--spacer-4);
-
-            &:hover {
-                color: var(--surface-8);
-            }
-
-            svg {
-                display: block;
-            }
-        }
-    }
-
-    /* Hide collapse toggle on mobile - mobile controls handle this */
-    @media (max-width: 768px) {
-        header .collapse-toggle {
-            display: none;
-        }
     }
 
     .content {
@@ -223,6 +195,46 @@
             padding: var(--spacer-1);
             width: 100%;
         }
+
+        .collapse-toggle-container {
+            align-items: center;
+            border-top: 1px solid var(--surface-2);
+            display: flex;
+            justify-content: center;
+            padding: var(--spacer-1);
+            width: 100%;
+
+            .collapse-toggle {
+                align-items: center;
+                background: var(--surface-2);
+                border: 1px solid var(--surface-3);
+                border-radius: var(--spacer-05);
+                color: var(--surface-7);
+                cursor: pointer;
+                display: flex;
+                justify-content: center;
+                padding: var(--spacer-1);
+                transition: all 0.2s ease;
+                width: 100%;
+
+                &:hover {
+                    background: var(--surface-3);
+                    border-color: var(--surface-4);
+                    color: var(--surface-8);
+                }
+
+                .c-icon {
+                    display: block;
+                }
+            }
+        }
+    }
+
+    /* Hide collapse toggle on mobile - mobile controls handle this */
+    @media (max-width: 768px) {
+        .collapse-toggle-container {
+            display: none;
+        }
     }
 
     &.collapsed {
@@ -251,11 +263,15 @@
                     margin-top: var(--spacer-1);
                 }
             }
+
+            .collapse-toggle-container {
+                .collapse-toggle {
+                    padding: var(--spacer-05);
+                    width: auto;
+                }
+            }
         }
 
-        .collapse-toggle {
-            margin-left: auto;
-        }
     }
 
     /* Mobile styles - overlay menu */
