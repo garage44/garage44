@@ -1,52 +1,10 @@
 import {extractWorkspacePackages, isApplicationPackage, findWorkspaceRoot} from '../workspace'
-import {existsSync, mkdirSync} from 'fs'
-import {$} from 'bun'
-import {join} from 'path'
-
-/**
- * Ensure the set-process-name wrapper binary is available
- * Compiles once and reuses the binary for all subsequent deployments
- */
-async function ensureProcessNameWrapper(): Promise<string> {
-    const wrapperPath = '/home/garage44/.local/bin/set-process-name'
-    const sourcePath = join(import.meta.dir, 'set-process-name.c')
-
-    // Check if binary already exists and is executable (reuse it)
-    if (existsSync(wrapperPath)) {
-        try {
-            const stat = await Bun.file(wrapperPath).stat()
-            if (stat.mode & 0o111) { // Check if executable
-                return wrapperPath
-            }
-        } catch {
-            // File exists but can't stat, try to compile anyway
-        }
-    }
-
-    // Ensure .local/bin directory exists
-    const binDir = '/home/garage44/.local/bin'
-    if (!existsSync(binDir)) {
-        mkdirSync(binDir, {recursive: true})
-    }
-
-    // Compile the wrapper (only happens once, then reused)
-    const compileResult = await $`gcc -o ${wrapperPath} ${sourcePath}`.nothrow()
-    if (compileResult.exitCode !== 0) {
-        const stderr = compileResult.stderr?.toString() || ''
-        const stdout = compileResult.stdout?.toString() || ''
-        throw new Error(`Failed to compile set-process-name wrapper: ${stderr || stdout || 'Unknown error'}\nMake sure gcc is installed.`)
-    }
-
-    return wrapperPath
-}
 
 /**
  * Generate systemd service file for a package
  */
 async function generateServiceFile(packageName: string, domain: string, port: number): Promise<string> {
-    const processName = packageName
     const workingDir = `/home/garage44/garage44/packages/${packageName}`
-    const wrapperPath = await ensureProcessNameWrapper()
 
     // Malkovich needs WEBHOOK_SECRET for GitHub webhook handling
     const webhookSecretEnv = packageName === 'malkovich'
@@ -64,8 +22,8 @@ Group=garage44
 WorkingDirectory=${workingDir}
 Environment="NODE_ENV=production"
 Environment="BUN_ENV=production"
-${webhookSecretEnv}Environment="PATH=/home/garage44/.bun/bin:/home/garage44/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=${wrapperPath} ${processName} /home/garage44/.bun/bin/bun service.ts start -- --port ${port}
+${webhookSecretEnv}Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/garage44/.bun/bin/bun service.ts start -- --port ${port}
 Restart=always
 RestartSec=10
 StandardOutput=journal
