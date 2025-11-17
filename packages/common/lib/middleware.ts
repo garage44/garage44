@@ -128,9 +128,21 @@ const authMiddleware = async (request: Request, session: unknown, userManager: U
 }
 
 // Helper to set session cookie in response
-const setSessionCookie = (response: Response, sessionId: string, sessionCookieName: string) => {
+const setSessionCookie = (response: Response, sessionId: string, sessionCookieName: string, request?: Request) => {
     const headers = new Headers(response.headers)
-    headers.set('Set-Cookie', `${sessionCookieName}=${sessionId}; Path=/; HttpOnly; SameSite=Strict`)
+    
+    // Check if request is over HTTPS (for PR deployments and production)
+    // Check X-Forwarded-Proto header (set by nginx) or request URL protocol
+    let isSecure = false
+    if (request) {
+        const forwardedProto = request.headers.get('X-Forwarded-Proto')
+        const url = new URL(request.url)
+        isSecure = forwardedProto === 'https' || url.protocol === 'https:'
+    }
+    
+    // Add Secure flag when served over HTTPS (required for cookies on HTTPS sites)
+    const secureFlag = isSecure ? '; Secure' : ''
+    headers.set('Set-Cookie', `${sessionCookieName}=${sessionId}; Path=/; HttpOnly; SameSite=Strict${secureFlag}`)
     return new Response(response.body, {
         headers,
         status: response.status,
@@ -197,7 +209,7 @@ export const createMiddleware = (config: MiddlewareConfig, userManager: UserMana
         },
         handleWebSocket,
         sessionMiddleware: (request: Request) => sessionMiddleware(request, config.sessionCookieName),
-        setSessionCookie: (response: Response, sessionId: string) => setSessionCookie(response, sessionId, config.sessionCookieName),
+        setSessionCookie: (response: Response, sessionId: string, request?: Request) => setSessionCookie(response, sessionId, config.sessionCookieName, request),
         userManager,
     }
 }
@@ -347,9 +359,11 @@ export const createFinalHandler = (config: {
                 } else {
                     context = baseContext
                 }
-                return new Response(JSON.stringify(context), {
+                const noSecurityResponse = new Response(JSON.stringify(context), {
                     headers: {'Content-Type': 'application/json'},
                 })
+                // Set session cookie (with Secure flag for HTTPS)
+                return unifiedMiddleware.setSessionCookie(noSecurityResponse, finalSessionId, request)
             }
 
             // Check session for user context
@@ -378,9 +392,11 @@ export const createFinalHandler = (config: {
                 context = config.contextFunctions.deniedContext()
             }
 
-            return new Response(JSON.stringify(context), {
+            const contextResponse = new Response(JSON.stringify(context), {
                 headers: {'Content-Type': 'application/json'},
             })
+            // Set session cookie (with Secure flag for HTTPS)
+            return unifiedMiddleware.setSessionCookie(contextResponse, finalSessionId, request)
         }
 
         // Handle /api/users/me - get current user profile
@@ -403,7 +419,7 @@ export const createFinalHandler = (config: {
             }
 
             // Return user data in the format expected by the frontend
-            return new Response(JSON.stringify({
+            const userMeResponse = new Response(JSON.stringify({
                 id: user.id,
                 profile: {
                     avatar: user.profile.avatar || 'placeholder-1.png',
@@ -413,6 +429,8 @@ export const createFinalHandler = (config: {
             }), {
                 headers: {'Content-Type': 'application/json'},
             })
+            // Set session cookie (with Secure flag for HTTPS)
+            return unifiedMiddleware.setSessionCookie(userMeResponse, finalSessionId, request)
         }
 
         if (url.pathname === '/api/login' && request.method === 'POST') {
@@ -446,9 +464,11 @@ export const createFinalHandler = (config: {
                 console.log(`[AUTH] Authentication failed for user: ${username}`)
             }
 
-            return new Response(JSON.stringify(context), {
+            const loginResponse = new Response(JSON.stringify(context), {
                 headers: {'Content-Type': 'application/json'},
             })
+            // Set session cookie after login (with Secure flag for HTTPS)
+            return unifiedMiddleware.setSessionCookie(loginResponse, sessionId, request)
         }
 
         if (url.pathname === '/api/logout' && request.method === 'GET') {
@@ -458,9 +478,11 @@ export const createFinalHandler = (config: {
             }
 
             const context = config.contextFunctions.deniedContext()
-            return new Response(JSON.stringify(context), {
+            const logoutResponse = new Response(JSON.stringify(context), {
                 headers: {'Content-Type': 'application/json'},
             })
+            // Set session cookie after logout (with Secure flag for HTTPS)
+            return unifiedMiddleware.setSessionCookie(logoutResponse, sessionId, request)
         }
 
         // Serve static files from public directory
@@ -495,7 +517,7 @@ export const createFinalHandler = (config: {
             config.logger.info(`[HTTP] API route matched ${url.pathname}`)
             config.devContext.addHttp({method: request.method, status: apiResponse.status, ts: Date.now(), url: url.pathname})
             // Set session cookie if this is a new session
-            return unifiedMiddleware.setSessionCookie(apiResponse, finalSessionId)
+            return unifiedMiddleware.setSessionCookie(apiResponse, finalSessionId, request)
         }
 
         // SPA fallback - serve index.html for all other routes
@@ -506,7 +528,7 @@ export const createFinalHandler = (config: {
                     headers: {'Content-Type': 'text/html'},
                 })
                 config.devContext.addHttp({method: request.method, status: 200, ts: Date.now(), url: url.pathname})
-                return unifiedMiddleware.setSessionCookie(response, sessionId)
+                return unifiedMiddleware.setSessionCookie(response, sessionId, request)
             }
         } catch (error) {
             // index.html doesn't exist
@@ -517,7 +539,7 @@ export const createFinalHandler = (config: {
         config.logger.info(`[HTTP] 404 for ${url.pathname}`)
         const response = new Response('Not Found', {status: 404})
         config.devContext.addHttp({method: request.method, status: 404, ts: Date.now(), url: url.pathname})
-        return unifiedMiddleware.setSessionCookie(response, finalSessionId)
+        return unifiedMiddleware.setSessionCookie(response, finalSessionId, request)
     }
 }
 
