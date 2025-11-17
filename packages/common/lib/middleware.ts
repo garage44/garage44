@@ -442,8 +442,11 @@ export const createFinalHandler = (config: {
             const user = await config.userManager.authenticate(username, password)
 
             if (user) {
+                // Use finalSession and finalSessionId to ensure we're modifying the session that will be used
                 // Set the user in session
-                ;(session as {userid: string}).userid = user.username
+                ;(finalSession as {userid: string}).userid = user.username
+                // Explicitly save the session to ensure it persists
+                sessions.set(finalSessionId, finalSession)
 
                 const baseContext = user.permissions?.admin
                     ? await Promise.resolve(config.contextFunctions.adminContext())
@@ -468,13 +471,15 @@ export const createFinalHandler = (config: {
                 headers: {'Content-Type': 'application/json'},
             })
             // Set session cookie after login (with Secure flag for HTTPS)
-            return unifiedMiddleware.setSessionCookie(loginResponse, sessionId, request)
+            // Use finalSessionId to ensure consistency with the session we just modified
+            return unifiedMiddleware.setSessionCookie(loginResponse, finalSessionId, request)
         }
 
         if (url.pathname === '/api/logout' && request.method === 'GET') {
-            // Clear the session
-            if (session) {
-                (session as {userid: string | null}).userid = null
+            // Clear the session - use finalSession to ensure we're modifying the correct session
+            if (finalSession) {
+                (finalSession as {userid: string | null}).userid = null
+                sessions.set(finalSessionId, finalSession)
             }
 
             const context = config.contextFunctions.deniedContext()
@@ -482,7 +487,7 @@ export const createFinalHandler = (config: {
                 headers: {'Content-Type': 'application/json'},
             })
             // Set session cookie after logout (with Secure flag for HTTPS)
-            return unifiedMiddleware.setSessionCookie(logoutResponse, sessionId, request)
+            return unifiedMiddleware.setSessionCookie(logoutResponse, finalSessionId, request)
         }
 
         // Serve static files from public directory
