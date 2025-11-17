@@ -83,32 +83,32 @@ export const PanelMenu = ({
         >
             <header>
                 {renderLogo()}
-                {onCollapseChange && (
-                    <button
-                        class="collapse-toggle"
-                        onClick={() => onCollapseChange(!collapsed)}
-                        aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
-                        title={collapsed ? 'Expand panel' : 'Collapse panel'}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d={collapsed ? 'M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z' : 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'} />
-                        </svg>
-                    </button>
-                )}
             </header>
-                <div class="content">
-                    {navigation && (
-                        <div class="navigation" data-collapsed={collapsed}>
-                            {navigation}
-                        </div>
-                    )}
-                    {actions && (
-                        <div class="actions" data-collapsed={collapsed}>
-                            {actions}
-                        </div>
-                    )}
-                    {footer && <div class="footer">{footer}</div>}
-                </div>
+            <div class="content">
+                {navigation && (
+                    <div class="navigation" data-collapsed={collapsed}>
+                        {navigation}
+                    </div>
+                )}
+                {actions && (
+                    <div class="actions" data-collapsed={collapsed}>
+                        {actions}
+                    </div>
+                )}
+                {footer && <div class="footer">{footer}</div>}
+            </div>
+            {onCollapseChange && (
+                <button
+                    class="collapse-toggle"
+                    onClick={() => onCollapseChange(!collapsed)}
+                    aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
+                    title={collapsed ? 'Expand panel' : 'Collapse panel'}
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d={collapsed ? 'M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z' : 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'} />
+                    </svg>
+                </button>
+            )}
         </aside>
     )
 }

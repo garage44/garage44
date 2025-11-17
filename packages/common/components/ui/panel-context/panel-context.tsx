@@ -101,6 +101,12 @@ export const PanelContext = ({
                 width: collapsed ? `${minWidth}px` : `${currentWidth}px`,
             }}
         >
+            {onWidthChange && !collapsed && (
+                <div ref={resizerRef} class="resize-handle" aria-label="Resize panel" />
+            )}
+            <div class="content">
+                {children}
+            </div>
             {onCollapseChange && (
                 <button
                     class="collapse-toggle"
@@ -113,12 +119,6 @@ export const PanelContext = ({
                     </svg>
                 </button>
             )}
-            {onWidthChange && !collapsed && (
-                <div ref={resizerRef} class="resize-handle" aria-label="Resize panel" />
-            )}
-            <div class="content">
-                {children}
-            </div>
         </aside>
     )
 }

@@ -73,42 +73,44 @@
                 position: absolute;
             }
         }
+    }
 
-        .collapse-toggle {
-            align-items: center;
-            background: var(--surface-2);
-            border: 1px solid var(--surface-3);
-            border-radius: var(--radius-sm);
-            color: var(--surface-7);
-            cursor: pointer;
-            display: flex;
-            height: var(--spacer-4);
-            justify-content: center;
-            padding: var(--spacer-05);
-            transition: all 0.2s ease;
-            width: var(--spacer-4);
+    .collapse-toggle {
+        align-items: center;
+        background: var(--surface-2);
+        border: 1px solid var(--surface-3);
+        border-radius: var(--radius-sm);
+        color: var(--surface-7);
+        cursor: pointer;
+        display: flex;
+        flex-shrink: 0;
+        height: var(--spacer-4);
+        justify-content: center;
+        margin: var(--spacer-05) auto;
+        padding: var(--spacer-05);
+        transition: all 0.2s ease;
+        width: calc(100% - var(--spacer-1));
 
-            &:hover {
-                background: var(--surface-3);
-                border-color: var(--surface-4);
-                color: var(--surface-8);
-            }
+        &:hover {
+            background: var(--surface-3);
+            border-color: var(--surface-4);
+            color: var(--surface-8);
+        }
 
-            &:active {
-                background: var(--surface-4);
-            }
+        &:active {
+            background: var(--surface-4);
+        }
 
-            svg {
-                display: block;
-                height: 14px;
-                width: 14px;
-            }
+        svg {
+            display: block;
+            height: 14px;
+            width: 14px;
         }
     }
 
     /* Hide collapse toggle on mobile - mobile controls handle this */
     @media (max-width: 768px) {
-        header .collapse-toggle {
+        .collapse-toggle {
             display: none;
         }
     }
@@ -120,6 +122,8 @@
         flex-direction: column;
         height: 100%;
         justify-content: flex-start;
+        min-height: 0;
+        overflow: hidden;
         width: 100%;
 
         .navigation {
@@ -238,17 +242,11 @@
         width: var(--spacer-5);
 
         header {
-            flex-wrap: wrap;
-            gap: var(--spacer-05);
-            justify-content: center;
             padding: var(--spacer-05);
         }
 
         .logo {
-            flex: 0 0 100%;
             justify-content: center;
-            order: 1;
-            width: 100%;
 
             .l-name,
             img {
@@ -259,19 +257,6 @@
                 height: 28px;
                 margin-inline-end: 0;
                 width: 28px;
-            }
-        }
-
-        .collapse-toggle {
-            flex: 0 0 auto;
-            height: var(--spacer-3);
-            margin-left: 0;
-            order: 2;
-            width: var(--spacer-3);
-
-            svg {
-                height: 12px;
-                width: 12px;
             }
         }
 
@@ -290,24 +275,14 @@
                     margin-top: var(--spacer-05);
                 }
 
-                /* Hide all channel items except active one when collapsed */
-                .channel.item:not(.active) {
-                    display: none;
-                }
-
                 /* Hide headers when collapsed */
                 .channels-header,
                 .people-header {
                     display: none;
                 }
 
-                /* Hide people section when collapsed */
-                .people-section {
-                    display: none;
-                }
-
-                /* Show only icon for active channel when collapsed */
-                .channel.item.active {
+                /* Show all channel items as icons when collapsed */
+                .channel.item {
                     justify-content: center;
                     padding: var(--spacer-05);
 
@@ -317,6 +292,29 @@
 
                     .c-icon {
                         margin: 0;
+                    }
+                }
+
+                /* Show people section when collapsed */
+                .people-section {
+                    .people-list {
+                        .person.item {
+                            justify-content: center;
+                            padding: var(--spacer-05);
+
+                            .status-indicator {
+                                display: none;
+                            }
+
+                            .person-name {
+                                display: none;
+                            }
+
+                            .person-avatar {
+                                height: 24px;
+                                width: 24px;
+                            }
+                        }
                     }
                 }
             }
@@ -329,7 +327,13 @@
         }
 
         .collapse-toggle {
-            margin-left: auto;
+            height: var(--spacer-3);
+            width: calc(100% - var(--spacer-1));
+
+            svg {
+                height: 12px;
+                width: 12px;
+            }
         }
     }
 

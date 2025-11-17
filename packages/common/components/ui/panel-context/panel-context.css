@@ -39,15 +39,13 @@
         color: var(--surface-7);
         cursor: pointer;
         display: flex;
+        flex-shrink: 0;
         height: var(--spacer-4);
         justify-content: center;
+        margin: var(--spacer-05) auto;
         padding: var(--spacer-05);
-        position: absolute;
-        right: var(--spacer-05);
-        top: var(--spacer-05);
         transition: all 0.2s ease;
-        width: var(--spacer-4);
-        z-index: 10;
+        width: calc(100% - var(--spacer-1));
 
         &:hover {
             background: var(--surface-3);
@@ -61,6 +59,8 @@
 
         svg {
             display: block;
+            height: 14px;
+            width: 14px;
         }
     }
 
@@ -86,6 +86,7 @@
         flex-direction: row;
         gap: var(--spacer-1);
         height: 100%;
+        min-height: 0;
         overflow-y: auto;
         padding: var(--spacer-1);
         width: 100%;
@@ -98,6 +99,16 @@
 
         .resize-handle {
             display: none;
+        }
+
+        .collapse-toggle {
+            height: var(--spacer-3);
+            width: calc(100% - var(--spacer-1));
+
+            svg {
+                height: 12px;
+                width: 12px;
+            }
         }
     }
 
