@@ -75,12 +75,6 @@ jobs:
             exit 1
           fi
 
-      - name: Wait for deployment
-        if: steps.deploy.outputs.deployment_triggered == 'true'
-        run: |
-          echo "Waiting 30 seconds for deployment to complete..."
-          sleep 30
-
       - name: Comment PR with deployment URL
         if: steps.deploy.outputs.deployment_triggered == 'true'
         uses: actions/github-script@v7
