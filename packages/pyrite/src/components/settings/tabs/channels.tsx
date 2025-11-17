@@ -115,18 +115,18 @@ export default function TabChannels() {
                             <h3>Create New Channel</h3>
                             <div class="c-settings-tab-channels__form">
                                 <FieldText
-                                    model={state.$formData.name}
+                                    model={state.formData.$name}
                                     label="Channel Name"
                                     placeholder="Enter channel name"
                                 />
                                 <FieldText
-                                    model={state.$formData.slug}
+                                    model={state.formData.$slug}
                                     label="Slug (Galene Group Name)"
                                     placeholder="Enter slug (must match Galene group name)"
                                     help="This slug will be used as the Galene group name"
                                 />
                                 <FieldText
-                                    model={state.$formData.description}
+                                    model={state.formData.$description}
                                     label="Description"
                                     placeholder="Enter channel description"
                                 />
@@ -148,16 +148,16 @@ export default function TabChannels() {
                                 {state.editing === channel.id ? (
                                     <div class="c-settings-tab-channels__form">
                                         <FieldText
-                                            model={state.$formData.name}
+                                            model={state.formData.$name}
                                             label="Channel Name"
                                         />
                                         <FieldText
-                                            model={state.$formData.slug}
+                                            model={state.formData.$slug}
                                             label="Slug (Galene Group Name)"
                                             help="This slug will be used as the Galene group name"
                                         />
                                         <FieldText
-                                            model={state.$formData.description}
+                                            model={state.formData.$description}
                                             label="Description"
                                         />
                                         <div class="c-settings-tab-channels__actions">
