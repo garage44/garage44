@@ -11,7 +11,9 @@
     "eslint": "^9.17.0",
     "eslint-plugin-perfectionist": "^4.15.1",
     "eslint-plugin-react": "^7.37.5",
+    "lefthook": "^2.0.4",
     "lightningcss": "^1.30.2",
+    "lint-staged": "^15.2.0",
     "oxlint": "^1.7.0",
     "playwright": "^1.48.0",
     "stylelint": "^16.25.0",
@@ -52,16 +54,25 @@
       "yargs": "^18.0.0"
     },
     "catalogs": {
-       "dev": {
-          "@types/node": "^22.13.14",
-          "@types/yargs": "^17.0.32",
-          "bun-types": "^1.2.7",
-          "eslint": "^9.17.0",
-          "oxlint": "^0.16.6",
-          "stylelint": "^16.17.0",
-          "stylelint-order": "^7.0.0"
-       }
+      "dev": {
+        "@types/node": "^22.13.14",
+        "@types/yargs": "^17.0.32",
+        "bun-types": "^1.2.7",
+        "eslint": "^9.17.0",
+        "oxlint": "^0.16.6",
+        "stylelint": "^16.17.0",
+        "stylelint-order": "^7.0.0"
+      }
     },
     "packages": ["packages/*"]
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "oxlint --fix",
+      "eslint --fix"
+    ],
+    "*.css": [
+      "stylelint --fix"
+    ]
   }
 }
