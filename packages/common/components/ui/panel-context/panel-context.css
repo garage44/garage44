@@ -84,7 +84,10 @@
             align-self: center;
             margin: var(--spacer-05) auto;
             max-width: calc(100% - var(--spacer-1));
+            pointer-events: auto;
+            position: relative;
             width: auto;
+            z-index: 100001;
         }
     }
 
