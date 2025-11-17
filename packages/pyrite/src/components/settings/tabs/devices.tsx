@@ -90,7 +90,7 @@ export default function TabDevices() {
     }, [$s.devices.cam.resolution, $s.devices.cam.selected, $s.devices.mic.selected])
 
     return (
-        <section class="c-tab-devices tab-content active">
+        <section class="c-tab-devices">
             <div class="camera-field">
                 <FieldSelect
                     value={$s.devices.cam.selected}

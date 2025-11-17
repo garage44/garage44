@@ -32,7 +32,7 @@ export default function TabMedia() {
     ]
 
     return (
-        <section class="tab-content active">
+        <section class="c-tab-media">
             <FieldSelect
                 value={$s.media.accept}
                 onChange={(value) => $s.media.accept = value}
