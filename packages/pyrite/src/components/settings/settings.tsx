@@ -50,16 +50,16 @@ export default function Settings({tabId}: SettingsProps) {
             component: <Profile />,
             icon: 'settings',
             id: 'profile',
-            label: $t('ui.settings.profile.name'),
-            tip: $t('ui.settings.profile.name'),
+            label: $t('ui.settings.profile.name') || 'Profile',
+            tip: $t('ui.settings.profile.name') || 'Profile',
         },
         ...(showUserSettings ? [
             {
                 component: <UsersManagement $t={$t} />,
                 icon: 'user',
                 id: 'users',
-                label: $t('ui.settings.users.name'),
-                tip: $t('ui.settings.users.name'),
+                label: $t('ui.settings.users.name') || 'Users',
+                tip: $t('ui.settings.users.name') || 'Users',
             },
         ] : []),
         {
@@ -73,15 +73,15 @@ export default function Settings({tabId}: SettingsProps) {
             component: <TabDevices />,
             icon: 'webcam',
             id: 'devices',
-            label: $t('ui.settings.devices'),
-            tip: $t('ui.settings.devices'),
+            label: $t('ui.settings.devices') || 'Devices',
+            tip: $t('ui.settings.devices') || 'Devices',
         },
         {
             component: <TabMedia />,
             icon: 'media',
             id: 'media',
-            label: $t('ui.settings.media.name'),
-            tip: $t('ui.settings.media.name'),
+            label: $t('ui.settings.media.name') || 'Media',
+            tip: $t('ui.settings.media.name') || 'Media',
         },
     ]
 

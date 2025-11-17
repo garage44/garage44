@@ -1,141 +1,91 @@
 .c-users-management-tab {
     display: flex;
     flex-direction: column;
-    gap: var(--spacer-2);
-    padding: var(--spacer-2);
-    min-height: 400px;
+    gap: var(--spacer-4);
 }
 
-.c-users-management-tab .loading,
-.c-users-management-tab .error {
-    padding: var(--spacer-2);
-    text-align: center;
-    border-radius: var(--radius-1);
-}
-
-.c-users-management-tab .error {
-    background: var(--error-surface);
-    color: var(--error-text);
-}
-
-.c-users-management-tab .actions-header {
-    display: flex;
-    justify-content: flex-start;
-    padding-bottom: var(--spacer-2);
-    border-bottom: 1px solid var(--border-1);
-}
-
-.c-users-management-tab .users-list {
-    /* CollectionView styles are in collection-view.css */
-}
-
-.c-users-management-tab .user-username-cell {
-    display: flex;
+.c-users-management-tab__header {
     align-items: center;
-    gap: var(--spacer-1);
+    display: flex;
+    justify-content: space-between;
+
+    h2 {
+        color: var(--surface-7);
+        font-size: var(--font-l);
+        font-weight: var(--font-weight-semibold, 600);
+        margin: 0;
+    }
 }
 
-.c-users-management-tab .user-icon {
-    width: 20px;
-    height: 20px;
-    color: var(--text-2);
-    flex-shrink: 0;
-}
-
-.c-users-management-tab .username {
-    font-weight: 500;
-    color: var(--text-1);
-    font-size: var(--font-d);
-}
-
-.c-users-management-tab .user-role-empty {
-    color: var(--text-3);
-    font-style: italic;
-}
-
-.c-users-management-tab .admin-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    background: var(--accent-surface);
-    color: var(--accent-text);
-    border-radius: var(--radius-0);
-    font-size: var(--font-f);
-    font-weight: 500;
-}
-
-/* Row actions are handled by CollectionView component */
-
-.c-users-management-tab .empty-state {
-    padding: var(--spacer-4);
-    text-align: center;
-    color: var(--text-2);
-    font-size: var(--font-d);
-}
-
-/* User Editor Styles */
-.c-users-management-tab .user-editor {
-    padding: var(--spacer-2);
-    background: var(--surface-1);
-    border: 1px solid var(--border-1);
-    border-radius: var(--radius-1);
-}
-
-.c-users-management-tab .user-editor h3 {
-    margin: 0 0 var(--spacer-2) 0;
-    font-size: var(--font-c);
-    color: var(--text-1);
-}
-
-.c-users-management-tab .form-group {
+.c-users-management-tab__list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacer-1);
-    margin-bottom: var(--spacer-2);
+    gap: var(--spacer-2);
+}
 
-    &.checkbox {
-        flex-direction: row;
-        align-items: center;
+.c-users-management-tab__item {
+    background: var(--surface-2);
+    border: 1px solid var(--surface-3);
+    border-radius: var(--spacer-1);
+    padding: var(--spacer-2);
+}
+
+.c-users-management-tab__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-2);
+}
+
+.c-users-management-tab__content {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+
+    h3 {
+        color: var(--surface-8);
+        font-size: var(--font-d);
+        font-weight: var(--font-weight-semibold, 600);
+        margin: 0 0 var(--spacer-1);
+    }
+
+    p {
+        color: var(--surface-6);
+        font-size: var(--font-s);
+        margin: 0;
     }
 }
 
-.c-users-management-tab .form-group label {
-    font-weight: 500;
-    font-size: var(--font-d);
-    color: var(--text-1);
-}
-
-.c-users-management-tab .form-group input[type="text"],
-.c-users-management-tab .form-group input[type="password"] {
-    padding: var(--spacer-1);
-    border: 1px solid var(--border-1);
-    border-radius: var(--radius-1);
-    background: var(--surface-0);
-    color: var(--text-1);
-    font-size: var(--font-d);
-    transition: all 0.2s ease;
-
-    &:focus {
-        outline: none;
-        border-color: var(--accent-border);
-        background: var(--surface-1);
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-}
-
-.c-users-management-tab .form-group input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-
-.c-users-management-tab .editor-actions {
+.c-users-management-tab__actions {
     display: flex;
     gap: var(--spacer-1);
-    margin-top: var(--spacer-2);
-    padding-top: var(--spacer-2);
-    border-top: 1px solid var(--border-1);
+}
+
+.c-users-management-tab__create-form {
+    background: var(--surface-2);
+    border: 1px solid var(--surface-3);
+    border-radius: var(--spacer-1);
+    padding: var(--spacer-3);
+
+    h3 {
+        color: var(--surface-7);
+        font-size: var(--font-d);
+        font-weight: var(--font-weight-semibold, 600);
+        margin: 0 0 var(--spacer-2);
+    }
+}
+
+.c-users-management-tab__badge {
+    background: var(--info-3);
+    border-radius: var(--spacer-1);
+    color: var(--info-8);
+    display: inline-block;
+    font-size: var(--font-s);
+    font-weight: var(--font-weight-semibold, 600);
+    padding: var(--spacer-05) var(--spacer-1);
+}
+
+.c-users-management-tab__empty {
+    color: var(--surface-6);
+    padding: var(--spacer-4);
+    text-align: center;
 }
