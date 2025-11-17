@@ -52,6 +52,11 @@ export const PanelContext = ({
         const resizer = resizerRef.current
 
         const handleMouseDown = (e: MouseEvent) => {
+            // Don't prevent default if clicking on the collapse button
+            const target = e.target as HTMLElement
+            if (target.closest('.c-button.variant-toggle')) {
+                return
+            }
             e.preventDefault()
             setIsResizing(true)
 
