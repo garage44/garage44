@@ -9,7 +9,6 @@ export default function TabChannels() {
     const stateRef = useRef(deepSignal({
         channels: [] as Channel[],
         loading: false,
-        syncing: false,
         editing: null as number | null,
         formData: {
             description: '',
@@ -86,24 +85,6 @@ export default function TabChannels() {
         }
     }
 
-    const handleSyncAll = async () => {
-        state.syncing = true
-        try {
-            // Sync all channels by calling sync endpoint
-            const response = await api.post('/api/channels/sync', {})
-            const {success, failed} = response
-            if (failed > 0) {
-                notifier.notify({level: 'warning', message: `Synced ${success} channels, ${failed} failed`})
-            } else {
-                notifier.notify({level: 'success', message: `Successfully synced ${success} channels with Galene`})
-            }
-        } catch (error) {
-            const message = error instanceof Error ? error.message : 'Failed to sync channels'
-            notifier.notify({level: 'error', message})
-        } finally {
-            state.syncing = false
-        }
-    }
 
     const startEdit = (channel: Channel) => {
         state.editing = channel.id
@@ -123,21 +104,6 @@ export default function TabChannels() {
         <section class="c-settings-tab-channels tab-content active">
             <div class="c-settings-tab-channels__header">
                 <h2>Channel Configuration</h2>
-                <div class="c-settings-tab-channels__header-actions">
-                    <Button
-                        icon="Sync"
-                        label="Sync All with Galene"
-                        onClick={handleSyncAll}
-                        type="info"
-                        disabled={state.syncing}
-                    />
-                    <Button
-                        icon="Plus"
-                        label="Create Channel"
-                        onClick={handleCreate}
-                        type="info"
-                    />
-                </div>
             </div>
 
             {state.loading ? (
@@ -149,24 +115,27 @@ export default function TabChannels() {
                             <h3>Create New Channel</h3>
                             <div class="c-settings-tab-channels__form">
                                 <FieldText
-                                    model={state.$formData.name}
+                                    value={state.formData.name}
+                                    onChange={(value) => state.formData.name = value}
                                     label="Channel Name"
                                     placeholder="Enter channel name"
                                 />
                                 <FieldText
-                                    model={state.$formData.slug}
+                                    value={state.formData.slug}
+                                    onChange={(value) => state.formData.slug = value}
                                     label="Slug (Galene Group Name)"
                                     placeholder="Enter slug (must match Galene group name)"
                                     help="This slug will be used as the Galene group name"
                                 />
                                 <FieldText
-                                    model={state.$formData.description}
+                                    value={state.formData.description}
+                                    onChange={(value) => state.formData.description = value}
                                     label="Description"
                                     placeholder="Enter channel description"
                                 />
                                 <div class="c-settings-tab-channels__actions">
                                     <Button
-                                        icon="Plus"
+                                        icon="plus"
                                         label="Create Channel"
                                         onClick={handleCreate}
                                         type="success"
@@ -182,27 +151,30 @@ export default function TabChannels() {
                                 {state.editing === channel.id ? (
                                     <div class="c-settings-tab-channels__form">
                                         <FieldText
-                                            model={state.$formData.name}
+                                            value={state.formData.name}
+                                            onChange={(value) => state.formData.name = value}
                                             label="Channel Name"
                                         />
                                         <FieldText
-                                            model={state.$formData.slug}
+                                            value={state.formData.slug}
+                                            onChange={(value) => state.formData.slug = value}
                                             label="Slug (Galene Group Name)"
                                             help="This slug will be used as the Galene group name"
                                         />
                                         <FieldText
-                                            model={state.$formData.description}
+                                            value={state.formData.description}
+                                            onChange={(value) => state.formData.description = value}
                                             label="Description"
                                         />
                                         <div class="c-settings-tab-channels__actions">
                                             <Button
-                                                icon="Save"
+                                                icon="save"
                                                 label="Save"
                                                 onClick={() => handleUpdate(channel.id)}
                                                 type="success"
                                             />
                                             <Button
-                                                icon="Close"
+                                                icon="close"
                                                 label="Cancel"
                                                 onClick={cancelEdit}
                                                 type="default"
@@ -218,13 +190,13 @@ export default function TabChannels() {
                                         </div>
                                         <div class="c-settings-tab-channels__actions">
                                             <Button
-                                                icon="Edit"
+                                                icon="edit"
                                                 onClick={() => startEdit(channel)}
                                                 tip="Edit"
                                                 variant="menu"
                                             />
                                             <Button
-                                                icon="Trash"
+                                                icon="trash"
                                                 onClick={() => handleDelete(channel.id)}
                                                 tip="Delete"
                                                 type="danger"
