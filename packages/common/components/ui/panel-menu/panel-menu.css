@@ -88,7 +88,9 @@
         height: var(--spacer-4);
         justify-content: center;
         margin: var(--spacer-05) var(--spacer-05) var(--spacer-05) auto;
-        padding: var(--spacer-05);
+        min-height: var(--spacer-4);
+        min-width: var(--spacer-4);
+        padding: 0;
         transition: all 0.2s ease;
         width: var(--spacer-4);
 
@@ -255,9 +257,9 @@
             }
 
             svg.icon {
-                height: 28px;
+                height: 36px;
                 margin-inline-end: 0;
-                width: 28px;
+                width: 36px;
             }
         }
 
@@ -329,13 +331,16 @@
 
         .collapse-toggle {
             align-self: center;
-            height: var(--spacer-3);
+            height: var(--spacer-4);
             margin: var(--spacer-05) auto;
+            min-height: var(--spacer-4);
+            min-width: var(--spacer-4);
+            padding: 0;
             width: calc(100% - var(--spacer-1));
 
             svg {
-                height: 12px;
-                width: 12px;
+                height: 14px;
+                width: 14px;
             }
         }
     }
