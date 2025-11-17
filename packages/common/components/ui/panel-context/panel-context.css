@@ -37,7 +37,7 @@
         margin: var(--spacer-05) auto var(--spacer-05) var(--spacer-2);
         pointer-events: auto;
         position: relative;
-        z-index: 20;
+        z-index: 100001;
     }
 
     .resize-handle {
