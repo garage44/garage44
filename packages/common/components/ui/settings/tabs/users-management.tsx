@@ -200,7 +200,7 @@ export function UsersManagement({
 
     return (
         <section class="c-users-management-tab">
-            <div class="c-users-management-tab__header">
+            <div class="header">
                 <h2>User Management</h2>
             </div>
 
@@ -209,9 +209,9 @@ export function UsersManagement({
             ) : (
                 <>
                     {state.editing === null && (
-                        <div class="c-users-management-tab__create-form">
+                        <div class="create-form">
                             <h3>Create New User</h3>
-                            <div class="c-users-management-tab__form">
+                            <div class="form">
                                 <FieldText
                                     model={state.formData.$username}
                                     label={$t('user.management.field.username') || 'Username'}
@@ -224,11 +224,11 @@ export function UsersManagement({
                                     placeholder={$t('user.management.placeholder.password') || 'Enter password'}
                                 />
                                 <FieldCheckbox
-                                    model={state.$formData.$admin}
+                                    model={state.formData.$admin}
                                     label={$t('user.management.field.admin') || 'Admin'}
                                     help={$t('user.management.field.admin_help') || 'Grant administrator privileges'}
                                 />
-                                <div class="c-users-management-tab__actions">
+                                <div class="actions">
                                     <Button
                                         icon="plus"
                                         label={$t('user.management.action.add_user') || 'Create User'}
@@ -240,11 +240,11 @@ export function UsersManagement({
                         </div>
                     )}
 
-                    <div class="c-users-management-tab__list">
+                    <div class="list">
                         {state.users.map((user) => (
-                            <div key={user.id} class="c-users-management-tab__item">
+                            <div key={user.id} class="item">
                                 {state.editing === user.id ? (
-                                    <div class="c-users-management-tab__form">
+                                    <div class="form">
                                         <FieldText
                                             model={state.formData.$username}
                                             label={$t('user.management.field.username') || 'Username'}
@@ -257,11 +257,11 @@ export function UsersManagement({
                                             placeholder={$t('user.management.placeholder.password_optional') || 'Leave empty to keep current password'}
                                         />
                                         <FieldCheckbox
-                                            model={state.$formData.$admin}
+                                            model={state.formData.$admin}
                                             label={$t('user.management.field.admin') || 'Admin'}
                                             help={$t('user.management.field.admin_help') || 'Grant administrator privileges'}
                                         />
-                                        <div class="c-users-management-tab__actions">
+                                        <div class="actions">
                                             <Button
                                                 icon="save"
                                                 label={$t('user.management.action.save') || 'Save'}
@@ -277,14 +277,14 @@ export function UsersManagement({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div class="c-users-management-tab__content">
+                                    <div class="content">
                                         <div>
                                             <h3>{user.username}</h3>
                                             {user.permissions?.admin && (
-                                                <p class="c-users-management-tab__badge">Admin</p>
+                                                <p class="badge">Admin</p>
                                             )}
                                         </div>
-                                        <div class="c-users-management-tab__actions">
+                                        <div class="actions">
                                             <Button
                                                 icon="edit"
                                                 onClick={() => startEdit(user)}
@@ -304,7 +304,7 @@ export function UsersManagement({
                             </div>
                         ))}
                         {state.users.length === 0 && (
-                            <div class="c-users-management-tab__empty">
+                            <div class="empty">
                                 <p>No users yet. Create your first user above.</p>
                             </div>
                         )}

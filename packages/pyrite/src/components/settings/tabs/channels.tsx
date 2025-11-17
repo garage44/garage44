@@ -102,7 +102,7 @@ export default function TabChannels() {
 
     return (
         <section class="c-settings-tab-channels">
-            <div class="c-settings-tab-channels__header">
+            <div class="header">
                 <h2>Channel Configuration</h2>
             </div>
 
@@ -111,9 +111,9 @@ export default function TabChannels() {
             ) : (
                 <>
                     {state.editing === null && (
-                        <div class="c-settings-tab-channels__create-form">
+                        <div class="create-form">
                             <h3>Create New Channel</h3>
-                            <div class="c-settings-tab-channels__form">
+                            <div class="form">
                                 <FieldText
                                     model={state.formData.$name}
                                     label="Channel Name"
@@ -130,7 +130,7 @@ export default function TabChannels() {
                                     label="Description"
                                     placeholder="Enter channel description"
                                 />
-                                <div class="c-settings-tab-channels__actions">
+                                <div class="actions">
                                     <Button
                                         icon="plus"
                                         label="Create Channel"
@@ -142,11 +142,11 @@ export default function TabChannels() {
                         </div>
                     )}
 
-                    <div class="c-settings-tab-channels__list">
+                    <div class="list">
                         {state.channels.map((channel) => (
-                            <div key={channel.id} class="c-settings-tab-channels__item">
+                            <div key={channel.id} class="item">
                                 {state.editing === channel.id ? (
-                                    <div class="c-settings-tab-channels__form">
+                                    <div class="form">
                                         <FieldText
                                             model={state.formData.$name}
                                             label="Channel Name"
@@ -160,7 +160,7 @@ export default function TabChannels() {
                                             model={state.formData.$description}
                                             label="Description"
                                         />
-                                        <div class="c-settings-tab-channels__actions">
+                                        <div class="actions">
                                             <Button
                                                 icon="save"
                                                 label="Save"
@@ -176,13 +176,13 @@ export default function TabChannels() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div class="c-settings-tab-channels__content">
+                                    <div class="content">
                                         <div>
                                             <h3>{channel.name}</h3>
-                                            <p class="c-settings-tab-channels__slug">Slug: {channel.slug}</p>
+                                            <p class="slug">Slug: {channel.slug}</p>
                                             <p>{channel.description || 'No description'}</p>
                                         </div>
-                                        <div class="c-settings-tab-channels__actions">
+                                        <div class="actions">
                                             <Button
                                                 icon="edit"
                                                 onClick={() => startEdit(channel)}
@@ -202,7 +202,7 @@ export default function TabChannels() {
                             </div>
                         ))}
                         {state.channels.length === 0 && (
-                            <div class="c-settings-tab-channels__empty">
+                            <div class="empty">
                                 <p>No channels yet. Create your first channel above.</p>
                             </div>
                         )}
