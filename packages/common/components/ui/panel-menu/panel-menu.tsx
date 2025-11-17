@@ -1,5 +1,6 @@
 import classnames from 'classnames'
 import {ComponentChildren} from 'preact/hooks'
+import {Button} from '../button/button'
 
 interface PanelMenuProps {
     actions?: ComponentChildren
@@ -98,16 +99,13 @@ export const PanelMenu = ({
                 {footer && <div class="footer">{footer}</div>}
             </div>
             {onCollapseChange && (
-                <button
-                    class="collapse-toggle"
+                <Button
+                    icon={collapsed ? 'chevron_right' : 'chevron_left'}
                     onClick={() => onCollapseChange(!collapsed)}
-                    aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
-                    title={collapsed ? 'Expand panel' : 'Collapse panel'}
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d={collapsed ? 'M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z' : 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'} />
-                    </svg>
-                </button>
+                    tip={collapsed ? 'Expand panel' : 'Collapse panel'}
+                    type="info"
+                    variant="toggle"
+                />
             )}
         </aside>
     )

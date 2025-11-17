@@ -75,45 +75,15 @@
         }
     }
 
-    .collapse-toggle {
-        align-items: center;
+    .c-button.variant-toggle {
         align-self: flex-end;
-        background: var(--surface-2);
-        border: 1px solid var(--surface-3);
-        border-radius: var(--radius-sm);
-        color: var(--surface-7);
-        cursor: pointer;
-        display: flex;
         flex-shrink: 0;
-        height: var(--spacer-4);
-        justify-content: center;
         margin: var(--spacer-05) var(--spacer-05) var(--spacer-05) auto;
-        min-height: var(--spacer-4);
-        min-width: var(--spacer-4);
-        padding: 0;
-        transition: all 0.2s ease;
-        width: var(--spacer-4);
-
-        &:hover {
-            background: var(--surface-3);
-            border-color: var(--surface-4);
-            color: var(--surface-8);
-        }
-
-        &:active {
-            background: var(--surface-4);
-        }
-
-        svg {
-            display: block;
-            height: 14px;
-            width: 14px;
-        }
     }
 
     /* Hide collapse toggle on mobile - mobile controls handle this */
     @media (max-width: 768px) {
-        .collapse-toggle {
+        .c-button.variant-toggle {
             display: none;
         }
     }
@@ -329,19 +299,10 @@
             }
         }
 
-        .collapse-toggle {
+        .c-button.variant-toggle {
             align-self: center;
-            height: var(--spacer-4);
             margin: var(--spacer-05) auto;
-            min-height: var(--spacer-4);
-            min-width: var(--spacer-4);
-            padding: 0;
             width: calc(100% - var(--spacer-1));
-
-            svg {
-                height: 14px;
-                width: 14px;
-            }
         }
     }
 

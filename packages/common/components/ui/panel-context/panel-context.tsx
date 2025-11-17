@@ -1,6 +1,7 @@
 import classnames from 'classnames'
 import {ComponentChildren} from 'preact'
 import {useEffect, useRef, useState} from 'preact/hooks'
+import {Button} from '../button/button'
 
 interface PanelContextProps {
     children: ComponentChildren
@@ -108,16 +109,13 @@ export const PanelContext = ({
                 {children}
             </div>
             {onCollapseChange && (
-                <button
-                    class="collapse-toggle"
+                <Button
+                    icon={collapsed ? 'chevron_left' : 'chevron_right'}
                     onClick={() => onCollapseChange(!collapsed)}
-                    aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
-                    title={collapsed ? 'Expand panel' : 'Collapse panel'}
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d={collapsed ? 'M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z' : 'M15.41 16.59L14 18l-6-6 6-6 1.41 1.41L10.83 12z'} />
-                    </svg>
-                </button>
+                    tip={collapsed ? 'Expand panel' : 'Collapse panel'}
+                    type="info"
+                    variant="toggle"
+                />
             )}
         </aside>
     )
