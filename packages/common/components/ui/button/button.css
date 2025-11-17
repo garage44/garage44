@@ -108,6 +108,11 @@
         padding: var(--spacer-1);
         width: auto;
 
+        &.size-s {
+            min-width: calc(var(--spacer-1) * 3);
+            padding: var(--spacer-05);
+        }
+
         .label {
             display: none;
         }

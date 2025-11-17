@@ -5,6 +5,7 @@ import {useEffect, useMemo, useRef} from 'preact/hooks'
 import {$s} from '@/app'
 import {$t, ws, logger} from '@garage44/common/app'
 import {loadGlobalUsers} from '@/models/chat'
+import {Icon} from '@garage44/common/components'
 import type {Channel} from '../../types.ts'
 
 // Helper function outside component to avoid recreation
@@ -108,6 +109,7 @@ export default function ChannelsContext() {
                                     setAutofocus()
                                 }}
                             >
+                                <Icon name="chat" type="info" />
                                 <div class="flex-column">
                                     <div class="name">
                                         #{channel.name}

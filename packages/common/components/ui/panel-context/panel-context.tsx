@@ -1,6 +1,7 @@
 import classnames from 'classnames'
 import {ComponentChildren} from 'preact'
 import {useEffect, useRef, useState} from 'preact/hooks'
+import {Button} from '../button/button'
 
 interface PanelContextProps {
     children: ComponentChildren
@@ -51,6 +52,11 @@ export const PanelContext = ({
         const resizer = resizerRef.current
 
         const handleMouseDown = (e: MouseEvent) => {
+            // Don't prevent default if clicking on the collapse button
+            const target = e.target as HTMLElement
+            if (target.closest('.c-button.variant-toggle')) {
+                return
+            }
             e.preventDefault()
             setIsResizing(true)
 
@@ -101,23 +107,22 @@ export const PanelContext = ({
                 width: collapsed ? `${minWidth}px` : `${currentWidth}px`,
             }}
         >
-            {onCollapseChange && (
-                <button
-                    class="collapse-toggle"
-                    onClick={() => onCollapseChange(!collapsed)}
-                    aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
-                >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path d={collapsed ? 'M6 8l4-4v8l-4-4z' : 'M10 8l-4-4v8l4-4z'} />
-                    </svg>
-                </button>
-            )}
             {onWidthChange && !collapsed && (
                 <div ref={resizerRef} class="resize-handle" aria-label="Resize panel" />
             )}
             <div class="content">
                 {children}
             </div>
+            {onCollapseChange && (
+                <Button
+                    icon={collapsed ? 'chevron_left' : 'chevron_right'}
+                    onClick={() => onCollapseChange(!collapsed)}
+                    size="s"
+                    tip={collapsed ? 'Expand panel' : 'Collapse panel'}
+                    type="info"
+                    variant="toggle"
+                />
+            )}
         </aside>
     )
 }

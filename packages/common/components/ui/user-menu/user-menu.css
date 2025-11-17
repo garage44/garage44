@@ -40,9 +40,16 @@
 
     &.collapsed {
         justify-content: center;
+        padding: var(--spacer-05);
 
         .name {
             display: none;
+        }
+
+        .avatar-img,
+        .avatar-initials {
+            height: var(--spacer-4);
+            width: var(--spacer-4);
         }
     }
 }

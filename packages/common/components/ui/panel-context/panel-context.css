@@ -4,10 +4,11 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    min-width: 64px;
+    min-width: 56px;
     position: relative;
     transition: width 0.3s ease;
     width: auto;
+    z-index: 100001;
 
     &.fade-in {
         animation: fade-in 0.2s ease-in forwards;
@@ -31,37 +32,20 @@
         opacity: 1 !important;
     }
 
-    .collapse-toggle {
-        align-items: center;
-        background: transparent;
-        border: none;
-        color: var(--surface-6);
-        cursor: pointer;
-        display: flex;
-        height: var(--spacer-4);
-        justify-content: center;
-        padding: var(--spacer-05);
-        position: absolute;
-        right: var(--spacer-05);
-        top: var(--spacer-05);
-        transition: color 0.2s ease;
-        width: var(--spacer-4);
-        z-index: 10;
-
-        &:hover {
-            color: var(--surface-8);
-        }
-
-        svg {
-            display: block;
-        }
+    .c-button.variant-toggle {
+        align-self: flex-start;
+        flex-shrink: 0;
+        margin: var(--spacer-05) auto var(--spacer-05) var(--spacer-2);
+        pointer-events: auto;
+        position: relative;
     }
 
     .resize-handle {
         background: transparent;
         cursor: ew-resize;
-        height: 100%;
+        height: calc(100% - var(--spacer-5));
         left: 0;
+        pointer-events: auto;
         position: absolute;
         top: 0;
         width: 4px;
@@ -79,24 +63,36 @@
         flex-direction: row;
         gap: var(--spacer-1);
         height: 100%;
+        min-height: 0;
         overflow-y: auto;
         padding: var(--spacer-1);
+        position: relative;
         width: 100%;
+        z-index: 1;
     }
 
     &.collapsed {
         /* Fixed width when collapsed - not resizable */
-        min-width: 64px;
-        width: 64px;
+        min-width: 56px;
+        width: 56px;
 
         .resize-handle {
             display: none;
+        }
+
+        .c-button.variant-toggle {
+            align-self: center;
+            margin: var(--spacer-05) auto;
+            max-width: calc(100% - var(--spacer-1));
+            pointer-events: auto;
+            position: relative;
+            width: auto;
         }
     }
 
     /* Hide collapse toggle on mobile - mobile controls handle this */
     @media (max-width: 768px) {
-        .collapse-toggle {
+        .c-button.variant-toggle {
             display: none;
         }
     }

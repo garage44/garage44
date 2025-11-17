@@ -187,7 +187,6 @@ export const Main = () => {
                         }
                         collapsed={$s.panels.menu.collapsed}
                         onCollapseChange={(collapsed) => {
-                            // Synchronize collapse state: both panels collapse together
                             $s.panels.menu.collapsed = collapsed
                             store.save()
                         }}

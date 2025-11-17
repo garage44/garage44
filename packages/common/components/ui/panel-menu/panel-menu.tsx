@@ -1,5 +1,6 @@
 import classnames from 'classnames'
 import {ComponentChildren} from 'preact/hooks'
+import {Button} from '../button/button'
 
 interface PanelMenuProps {
     actions?: ComponentChildren
@@ -83,31 +84,30 @@ export const PanelMenu = ({
         >
             <header>
                 {renderLogo()}
-                {onCollapseChange && (
-                    <button
-                        class="collapse-toggle"
-                        onClick={() => onCollapseChange(!collapsed)}
-                        aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d={collapsed ? 'M10 8l-4-4v8l4-4z' : 'M6 8l4-4v8l-4-4z'} />
-                        </svg>
-                    </button>
-                )}
             </header>
-                <div class="content">
-                    {navigation && (
-                        <div class="navigation" data-collapsed={collapsed}>
-                            {navigation}
-                        </div>
-                    )}
-                    {actions && (
-                        <div class="actions" data-collapsed={collapsed}>
-                            {actions}
-                        </div>
-                    )}
-                    {footer && <div class="footer">{footer}</div>}
-                </div>
+            <div class="content">
+                {navigation && (
+                    <div class="navigation" data-collapsed={collapsed}>
+                        {navigation}
+                    </div>
+                )}
+                {actions && (
+                    <div class="actions" data-collapsed={collapsed}>
+                        {actions}
+                    </div>
+                )}
+                {footer && <div class="footer">{footer}</div>}
+            </div>
+            {onCollapseChange && (
+                <Button
+                    icon={collapsed ? 'chevron_right' : 'chevron_left'}
+                    onClick={() => onCollapseChange(!collapsed)}
+                    size="s"
+                    tip={collapsed ? 'Expand panel' : 'Collapse panel'}
+                    type="info"
+                    variant="toggle"
+                />
+            )}
         </aside>
     )
 }
