@@ -8,6 +8,7 @@
     position: relative;
     transition: width 0.3s ease;
     width: auto;
+    z-index: 100001;
 
     &.fade-in {
         animation: fade-in 0.2s ease-in forwards;
@@ -36,10 +37,7 @@
         flex-shrink: 0;
         margin: var(--spacer-05) auto var(--spacer-05) var(--spacer-2);
         pointer-events: auto;
-        position: absolute;
-        right: var(--spacer-05);
-        top: var(--spacer-05);
-        z-index: 100001 !important;
+        position: relative;
     }
 
     .resize-handle {
@@ -84,15 +82,11 @@
 
         .c-button.variant-toggle {
             align-self: center;
-            bottom: var(--spacer-05);
-            left: 50%;
-            margin: 0;
+            margin: var(--spacer-05) auto;
             max-width: calc(100% - var(--spacer-1));
             pointer-events: auto;
-            position: absolute;
-            transform: translateX(-50%);
+            position: relative;
             width: auto;
-            z-index: 100001 !important;
         }
     }
 
