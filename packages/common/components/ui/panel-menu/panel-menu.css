@@ -23,6 +23,7 @@
         font-weight: 500;
         padding: var(--spacer-05) var(--spacer-1);
         position: relative;
+        min-height: var(--spacer-5);
 
         a.logo {
             cursor: pointer;
@@ -49,9 +50,8 @@
             }
 
             .icon {
-                height: 50px;
-                transform: scale(1.25);
-                width: 50px;
+                height: 40px;
+                width: 40px;
             }
         }
 
@@ -100,6 +100,8 @@
 
             svg {
                 display: block;
+                height: 14px;
+                width: 14px;
             }
         }
     }
@@ -235,14 +237,41 @@
     &.collapsed {
         width: var(--spacer-5);
 
+        header {
+            flex-wrap: wrap;
+            gap: var(--spacer-05);
+            justify-content: center;
+            padding: var(--spacer-05);
+        }
+
         .logo {
+            flex: 0 0 100%;
+            justify-content: center;
+            order: 1;
+            width: 100%;
+
             .l-name,
             img {
                 display: none;
             }
 
             svg.icon {
+                height: 28px;
                 margin-inline-end: 0;
+                width: 28px;
+            }
+        }
+
+        .collapse-toggle {
+            flex: 0 0 auto;
+            height: var(--spacer-3);
+            margin-left: 0;
+            order: 2;
+            width: var(--spacer-3);
+
+            svg {
+                height: 12px;
+                width: 12px;
             }
         }
 
@@ -255,10 +284,10 @@
             /* Navigation items with icons will be visible when collapsed */
             .navigation {
                 /* Ensure proper spacing for icon-only items */
-                padding: var(--spacer-1) 0;
+                padding: var(--spacer-05) 0;
 
                 .menu-group {
-                    margin-top: var(--spacer-1);
+                    margin-top: var(--spacer-05);
                 }
 
                 /* Hide all channel items except active one when collapsed */
@@ -280,7 +309,7 @@
                 /* Show only icon for active channel when collapsed */
                 .channel.item.active {
                     justify-content: center;
-                    padding: var(--spacer-1);
+                    padding: var(--spacer-05);
 
                     .flex-column {
                         display: none;
@@ -295,6 +324,7 @@
             .actions {
                 /* Center avatar when collapsed */
                 justify-content: center;
+                padding: var(--spacer-05);
             }
         }
 

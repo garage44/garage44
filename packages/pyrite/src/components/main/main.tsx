@@ -186,6 +186,10 @@ export const Main = () => {
                             />
                         }
                         collapsed={$s.panels.menu.collapsed}
+                        onCollapseChange={(collapsed) => {
+                            $s.panels.menu.collapsed = collapsed
+                            store.save()
+                        }}
                         logoHref="/settings/groups"
                         logoText="PYRITE"
                         logoVersion={process.env.APP_VERSION || '2.0.0'}
