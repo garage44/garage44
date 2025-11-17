@@ -33,9 +33,10 @@
 
     .collapse-toggle {
         align-items: center;
-        background: transparent;
-        border: none;
-        color: var(--surface-6);
+        background: var(--surface-2);
+        border: 1px solid var(--surface-3);
+        border-radius: var(--radius-sm);
+        color: var(--surface-7);
         cursor: pointer;
         display: flex;
         height: var(--spacer-4);
@@ -44,12 +45,18 @@
         position: absolute;
         right: var(--spacer-05);
         top: var(--spacer-05);
-        transition: color 0.2s ease;
+        transition: all 0.2s ease;
         width: var(--spacer-4);
         z-index: 10;
 
         &:hover {
+            background: var(--surface-3);
+            border-color: var(--surface-4);
             color: var(--surface-8);
+        }
+
+        &:active {
+            background: var(--surface-4);
         }
 
         svg {

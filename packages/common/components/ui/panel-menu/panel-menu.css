@@ -76,19 +76,26 @@
 
         .collapse-toggle {
             align-items: center;
-            background: transparent;
-            border: none;
-            color: var(--surface-6);
+            background: var(--surface-2);
+            border: 1px solid var(--surface-3);
+            border-radius: var(--radius-sm);
+            color: var(--surface-7);
             cursor: pointer;
             display: flex;
             height: var(--spacer-4);
             justify-content: center;
             padding: var(--spacer-05);
-            transition: color 0.2s ease;
+            transition: all 0.2s ease;
             width: var(--spacer-4);
 
             &:hover {
+                background: var(--surface-3);
+                border-color: var(--surface-4);
                 color: var(--surface-8);
+            }
+
+            &:active {
+                background: var(--surface-4);
             }
 
             svg {
@@ -229,10 +236,13 @@
         width: var(--spacer-5);
 
         .logo {
-
             .l-name,
             img {
                 display: none;
+            }
+
+            svg.icon {
+                margin-inline-end: 0;
             }
         }
 
@@ -250,6 +260,41 @@
                 .menu-group {
                     margin-top: var(--spacer-1);
                 }
+
+                /* Hide all channel items except active one when collapsed */
+                .channel.item:not(.active) {
+                    display: none;
+                }
+
+                /* Hide headers when collapsed */
+                .channels-header,
+                .people-header {
+                    display: none;
+                }
+
+                /* Hide people section when collapsed */
+                .people-section {
+                    display: none;
+                }
+
+                /* Show only icon for active channel when collapsed */
+                .channel.item.active {
+                    justify-content: center;
+                    padding: var(--spacer-1);
+
+                    .flex-column {
+                        display: none;
+                    }
+
+                    .c-icon {
+                        margin: 0;
+                    }
+                }
+            }
+
+            .actions {
+                /* Center avatar when collapsed */
+                justify-content: center;
             }
         }
 

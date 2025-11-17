@@ -88,9 +88,10 @@ export const PanelMenu = ({
                         class="collapse-toggle"
                         onClick={() => onCollapseChange(!collapsed)}
                         aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
+                        title={collapsed ? 'Expand panel' : 'Collapse panel'}
                     >
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <path d={collapsed ? 'M10 8l-4-4v8l4-4z' : 'M6 8l4-4v8l-4-4z'} />
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d={collapsed ? 'M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z' : 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z'} />
                         </svg>
                     </button>
                 )}

@@ -16,6 +16,7 @@
         min-width: 180px;
         padding: var(--spacer-1);
         position: absolute;
+        text-align: left;
         z-index: 1000;
 
         &.top {
@@ -26,6 +27,9 @@
         &.bottom {
             top: 100%;
             margin-top: var(--spacer-1);
+            left: 0;
+            right: auto;
+            transform: none;
         }
 
         &.left {
