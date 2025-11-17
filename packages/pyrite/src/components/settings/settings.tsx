@@ -64,10 +64,10 @@ export default function Settings({tabId}: SettingsProps) {
         ] : []),
         {
             component: <TabChannels />,
-            icon: 'Channel',
+            icon: 'chat',
             id: 'channels',
-            label: $t('ui.settings.channels.name'),
-            tip: $t('ui.settings.channels.name'),
+            label: $t('ui.settings.channels.name') || 'Channels',
+            tip: $t('ui.settings.channels.name') || 'Channels',
         },
         {
             component: <TabDevices />,
