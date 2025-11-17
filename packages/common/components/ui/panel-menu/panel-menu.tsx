@@ -102,6 +102,7 @@ export const PanelMenu = ({
                 <Button
                     icon={collapsed ? 'chevron_right' : 'chevron_left'}
                     onClick={() => onCollapseChange(!collapsed)}
+                    size="s"
                     tip={collapsed ? 'Expand panel' : 'Collapse panel'}
                     type="info"
                     variant="toggle"

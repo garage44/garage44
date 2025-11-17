@@ -302,7 +302,8 @@
         .c-button.variant-toggle {
             align-self: center;
             margin: var(--spacer-05) auto;
-            width: calc(100% - var(--spacer-1));
+            max-width: calc(100% - var(--spacer-1));
+            width: auto;
         }
     }
 

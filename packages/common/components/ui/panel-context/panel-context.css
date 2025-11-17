@@ -35,12 +35,14 @@
         align-self: flex-start;
         flex-shrink: 0;
         margin: var(--spacer-05) auto var(--spacer-05) var(--spacer-05);
+        position: relative;
+        z-index: 10;
     }
 
     .resize-handle {
         background: transparent;
         cursor: ew-resize;
-        height: 100%;
+        height: calc(100% - var(--spacer-5));
         left: 0;
         position: absolute;
         top: 0;
@@ -77,7 +79,8 @@
         .c-button.variant-toggle {
             align-self: center;
             margin: var(--spacer-05) auto;
-            width: calc(100% - var(--spacer-1));
+            max-width: calc(100% - var(--spacer-1));
+            width: auto;
         }
     }
 

@@ -112,6 +112,7 @@ export const PanelContext = ({
                 <Button
                     icon={collapsed ? 'chevron_left' : 'chevron_right'}
                     onClick={() => onCollapseChange(!collapsed)}
+                    size="s"
                     tip={collapsed ? 'Expand panel' : 'Collapse panel'}
                     type="info"
                     variant="toggle"
