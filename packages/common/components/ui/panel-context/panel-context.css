@@ -4,7 +4,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    min-width: 64px;
+    min-width: 56px;
     position: relative;
     transition: width 0.3s ease;
     width: auto;
@@ -33,6 +33,7 @@
 
     .collapse-toggle {
         align-items: center;
+        align-self: flex-start;
         background: var(--surface-2);
         border: 1px solid var(--surface-3);
         border-radius: var(--radius-sm);
@@ -42,10 +43,10 @@
         flex-shrink: 0;
         height: var(--spacer-4);
         justify-content: center;
-        margin: var(--spacer-05) auto;
+        margin: var(--spacer-05) auto var(--spacer-05) var(--spacer-05);
         padding: var(--spacer-05);
         transition: all 0.2s ease;
-        width: calc(100% - var(--spacer-1));
+        width: var(--spacer-4);
 
         &:hover {
             background: var(--surface-3);
@@ -94,15 +95,17 @@
 
     &.collapsed {
         /* Fixed width when collapsed - not resizable */
-        min-width: 64px;
-        width: 64px;
+        min-width: 56px;
+        width: 56px;
 
         .resize-handle {
             display: none;
         }
 
         .collapse-toggle {
+            align-self: center;
             height: var(--spacer-3);
+            margin: var(--spacer-05) auto;
             width: calc(100% - var(--spacer-1));
 
             svg {
