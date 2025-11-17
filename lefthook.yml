@@ -2,3 +2,9 @@ pre-commit:
   commands:
     lint-staged:
       run: bunx lint-staged
+
+commit-msg:
+  commands:
+    commitlint:
+      run: bunx commitlint --edit {1} || echo "⚠️  Commit message doesn't follow Conventional Commits format. This will fail in CI."
+      exit_code: 0
