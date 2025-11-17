@@ -291,8 +291,11 @@ export const createFinalHandler = (config: {
             return unifiedResponse
         }
 
-        // Re-get session after unified middleware to ensure we have the latest version
-        const {session: finalSession, sessionId: finalSessionId} = unifiedMiddleware.sessionMiddleware(request)
+        // Reuse the same session from the first call instead of creating a new one
+        // This ensures we don't create multiple sessions for the same request
+        // The session object is passed by reference, so modifications persist
+        const finalSession = session
+        const finalSessionId = sessionId
 
         // Populate session with user if GARAGE44_NO_SECURITY is enabled (again, in case unified middleware created a new session)
         if (process.env.GARAGE44_NO_SECURITY && !(finalSession as {userid?: string}).userid) {
@@ -446,6 +449,8 @@ export const createFinalHandler = (config: {
                 // Set the user in session
                 ;(finalSession as {userid: string}).userid = user.username
                 // Explicitly save the session to ensure it persists
+                // Since JavaScript objects are passed by reference, modifying finalSession updates the Map entry
+                // But we explicitly set it again to ensure it's stored with the correct sessionId
                 sessions.set(finalSessionId, finalSession)
 
                 const baseContext = user.permissions?.admin
