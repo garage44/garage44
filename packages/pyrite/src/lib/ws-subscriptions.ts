@@ -232,6 +232,7 @@ const initPresenceSubscriptions = () => {
             }
 
             // If this is the current group, add user to users list
+            // Note: Skip if this is the current user joining (they're already added via joinGroup response)
             if ($s.sfu.channel.name === groupId) {
                 // Normalize userId to string for consistent comparison
                 if (!userId) {
@@ -239,6 +240,14 @@ const initPresenceSubscriptions = () => {
                     return
                 }
                 const normalizedUserId = String(userId).trim()
+                const isCurrentUser = $s.profile.id && String($s.profile.id).trim() === normalizedUserId
+                
+                // Skip adding current user - they're already added via joinGroup() response
+                if (isCurrentUser) {
+                    logger.debug(`[Presence] Skipping current user ${normalizedUserId} - already added via joinGroup response`)
+                    return
+                }
+                
                 const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedUserId)
                 if (userIndex === -1) {
                     // User doesn't exist, add it
@@ -256,13 +265,13 @@ const initPresenceSubscriptions = () => {
                         },
                         username,
                     })
+                    // Always deduplicate after any modification (safety net)
+                    deduplicateUsers()
                 } else {
                     // User already exists, log and skip to prevent duplicate
                     logger.debug(`[Presence] User ${normalizedUserId} already exists in users list, skipping add`)
                 }
             }
-            // Always deduplicate after any modification (safety net)
-            deduplicateUsers()
         })
 
         // User left group (broadcast from backend)
@@ -527,38 +536,59 @@ export const joinGroup = async (groupId: string) => {
 
     // Response contains current members list
     if (response && response.members) {
-        // Update users list with current members
-        for (const member of response.members) {
-            // Normalize member.id to string for consistent comparison
-            if (!member || !member.id) {
-                logger.warn(`[joinGroup] Skipping member: invalid member data`)
-                continue
+        // Clear existing users for this group first to avoid stale data
+        // Then add all current members
+        const currentGroupId = $s.sfu.channel.name
+        if (currentGroupId === groupId) {
+            // Remove users that are no longer in the group (keep only current members)
+            const memberIds = new Set(
+                response.members
+                    .filter(m => m && m.id)
+                    .map(m => String(m.id).trim())
+            )
+            
+            // Filter out users not in current members list
+            $s.users = $s.users.filter((u) => {
+                if (!u || !u.id) return false
+                const normalizedId = String(u.id).trim()
+                return memberIds.has(normalizedId)
+            })
+            
+            // Add/update all current members
+            for (const member of response.members) {
+                // Normalize member.id to string for consistent comparison
+                if (!member || !member.id) {
+                    logger.warn(`[joinGroup] Skipping member: invalid member data`)
+                    continue
+                }
+                const normalizedMemberId = String(member.id).trim()
+                const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedMemberId)
+                if (userIndex === -1) {
+                    // User doesn't exist, add it
+                    $s.users.push({
+                        data: {
+                            availability: {id: 'available'},
+                            mic: true,
+                            raisehand: false,
+                        },
+                        id: normalizedMemberId,
+                        permissions: {
+                            op: false,
+                            present: false,
+                            record: false,
+                        },
+                        username: member.username,
+                    })
+                } else {
+                    // User exists, update username if changed
+                    if (member.username && $s.users[userIndex].username !== member.username) {
+                        $s.users[userIndex].username = member.username
+                    }
+                }
             }
-            const normalizedMemberId = String(member.id).trim()
-            const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedMemberId)
-            if (userIndex === -1) {
-                // User doesn't exist, add it
-                $s.users.push({
-                    data: {
-                        availability: {id: 'available'},
-                        mic: true,
-                        raisehand: false,
-                    },
-                    id: normalizedMemberId,
-                    permissions: {
-                        op: false,
-                        present: false,
-                        record: false,
-                    },
-                    username: member.username,
-                })
-            } else {
-                // User already exists, log and skip to prevent duplicate
-                logger.debug(`[joinGroup] User ${normalizedMemberId} already exists in users list, skipping add`)
-            }
+            // Ensure no duplicates exist (safety net)
+            deduplicateUsers()
         }
-        // Ensure no duplicates exist (safety net)
-        deduplicateUsers()
     }
 }
 
