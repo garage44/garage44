@@ -4,9 +4,11 @@ import {enola, logger, workspaces} from '../service.ts'
 
 export default function apiConfig(router) {
     // HTTP API endpoints using familiar Express-like pattern
-    router.get('/api/config', async () => {
-        // For now, assume admin user since we don't have session context here
-        // In a real implementation, you'd get the user from the session
+    router.get('/api/config', async() => {
+        /*
+         * For now, assume admin user since we don't have session context here
+         * In a real implementation, you'd get the user from the session
+         */
         const user = await userManager.getUserByUsername('admin')
         return new Response(JSON.stringify({
             enola: enola.getConfig(user?.permissions.admin || false),
@@ -20,7 +22,7 @@ export default function apiConfig(router) {
         })
     })
 
-    router.post('/api/config', async (req) => {
+    router.post('/api/config', async(req) => {
         // For now, assume admin user since we don't have session context here
         const user = await userManager.getUserByUsername('admin')
         if (!user?.permissions.admin) {
@@ -30,7 +32,11 @@ export default function apiConfig(router) {
             })
         }
 
-        const body = await req.json() as {enola: {engines: Record<string, {api_key?: string; base_url?: string}>}; language_ui: string; workspaces: Array<{source_file?: string; workspace_id: string}>}
+        const body = await req.json() as {
+            enola: {engines: Record<string, {api_key?: string; base_url?: string}>}
+            language_ui: string
+            workspaces: Array<{source_file?: string; workspace_id: string}>
+        }
         config.enola = body.enola
 
         for (const [engineName, engine] of Object.entries(config.enola.engines)) {
@@ -60,9 +66,11 @@ export default function apiConfig(router) {
             await workspaces.delete(workspace.config.workspace_id)
         }
         // Add missing workspaces (only if source_file is provided)
-        for (const description of body.workspaces) {if (!workspaces.get(description.workspace_id) && description.source_file) {
-await workspaces.add({source_file: description.source_file, workspace_id: description.workspace_id})
-}}
+        for (const description of body.workspaces) {
+            if (!workspaces.get(description.workspace_id) && description.source_file) {
+                await workspaces.add({source_file: description.source_file, workspace_id: description.workspace_id})
+            }
+        }
 
         await saveConfig()
 

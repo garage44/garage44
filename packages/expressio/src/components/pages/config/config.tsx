@@ -8,7 +8,6 @@ import {loadConfig} from '@/lib/config'
 import {useEffect} from 'preact/hooks'
 
 export function Config() {
-
     const {errors, isValid, validation} = createValidator({
         language_ui: [
             $s.language_ui.$selection,
@@ -36,8 +35,10 @@ export function Config() {
     })
 
     useEffect(() => {
-(async() => {await loadConfig()})()
-}, [])
+        (async() => {
+            await loadConfig()
+        })()
+    }, [])
 
     return (
         <div class='c-config view'>
@@ -65,22 +66,21 @@ export function Config() {
                         {/* $t('config.label.deepl_key') */}
                         {/* $t('config.label.deepl_base_url') */}
                         <FieldText
+                            copyable={true}
                             help={$t(i18n.config.help[`${engine.name}_key` as keyof typeof i18n.config.help])}
                             label={$t(i18n.config.label[`${engine.name}_key` as keyof typeof i18n.config.label])}
                             model={engine.$api_key}
                             type='password'
-                            copyable={true}
                             validation={validation?.value[`${engine.name}_key`]}
                         />
 
-                        {'base_url' in engine && (
-<FieldText
-    help={$t(i18n.config.help[`${engine.name}_base_url` as keyof typeof i18n.config.help])}
-    label={$t(i18n.config.label[`${engine.name}_base_url` as keyof typeof i18n.config.label])}
-    model={engine.$base_url}
-    validation={validation?.value[`${engine.name}_base_url`]}
-/>
-                        )}
+                        {'base_url' in engine &&
+                            <FieldText
+                                help={$t(i18n.config.help[`${engine.name}_base_url` as keyof typeof i18n.config.help])}
+                                label={$t(i18n.config.label[`${engine.name}_base_url` as keyof typeof i18n.config.label])}
+                                model={engine.$base_url}
+                                validation={validation?.value[`${engine.name}_base_url`]}
+                            />}
 </div>
                     )
                 })}

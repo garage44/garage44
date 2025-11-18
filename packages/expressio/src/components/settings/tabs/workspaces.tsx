@@ -17,8 +17,8 @@ const state = deepSignal({
 
 export default function TabWorkspaces() {
     if (!$s.workspace) {
-return null
-}
+        return null
+    }
 
     // Updated validator usage
     const {errors, isValid, validation} = createValidator({
@@ -78,22 +78,30 @@ return null
                     {$t(i18n.settings.label.target_languages)}
                 </div>
                 <div class='options'>
-                    {state.target_languages.toSorted((a, b) => a.name.localeCompare(b.name)).map((language) => {
-                        return (
-<div
-    key={language.id}
-    class={classnames('option', {
-        'is-invalid': !validation.value[`target_${language.id}_engine`].isValid || !validation.value[`target_${language.id}_formality`].isValid,
-        'is-touched': validation.value[`target_${language.id}_engine`].isTouched || validation.value[`target_${language.id}_formality`].isTouched,
-    })}
->
+                    {state.target_languages
+                        .toSorted((a, b) => a.name.localeCompare(b.name))
+                        .map((language) => {
+                            return (
+                                <div
+                                    class={classnames('option', {
+                                        'is-invalid':
+                                            !validation.value[`target_${language.id}_engine`].isValid ||
+                                            !validation.value[`target_${language.id}_formality`].isValid,
+                                        'is-touched':
+                                            validation.value[`target_${language.id}_engine`].isTouched ||
+                                            validation.value[`target_${language.id}_formality`].isTouched,
+                                    })}
+                                    key={language.id}
+                                >
                             <div class='field-wrapper'>
                                 <FieldCheckbox
-                                    onInput={(value) => {
-if (!value) {language.$engine.value = ''}
-}}
                                     label={language.name}
                                     model={language.$selected}
+                                    onInput={(value) => {
+                                        if (!value) {
+                                            language.$engine.value = ''
+                                        }
+                                    }}
                                 />
                                 <FieldSelect
                                     disabled={!language.selected}
@@ -105,8 +113,8 @@ if (!value) {language.$engine.value = ''}
                                     placeholder={$t(i18n.settings.placeholder.translation)}
                                 />
                             </div>
-                            {language.formality_supported.includes(language.engine) && (
-<div class='language-options'>
+                            {language.formality_supported.includes(language.engine) &&
+                                <div class='language-options'>
                                 <FieldSelect
                                     disabled={!language.selected}
                                     label={$t(i18n.settings.label.formality)}
@@ -114,15 +122,14 @@ if (!value) {language.$engine.value = ''}
                                     options={state.formality}
                                     placeholder={$t(i18n.settings.placeholder.formality)}
                                 />
-</div>
-                            )}
+                                </div>}
                             <div class='validation'>
                                 {validation.value[`target_${language.id}_engine`].errors.join(', ')}
                                 {validation.value[`target_${language.id}_formality`].errors.join(', ')}
                             </div>
-</div>
-                        )
-                    })}
+                                </div>
+                            )
+                        })}
                 </div>
                 <div class='help'>
                     {$t(i18n.settings.help.target_languages)}
@@ -131,8 +138,8 @@ if (!value) {language.$engine.value = ''}
 
             <FieldCheckbox
                 help={$t(i18n.settings.help.sync_enabled)}
-                model={$s.workspace.config.sync.$enabled}
                 label={$t(i18n.settings.label.sync_enabled)}
+                model={$s.workspace.config.sync.$enabled}
             />
             <FieldText
                 disabled={!$s.workspace.config.sync.enabled}
@@ -143,10 +150,11 @@ if (!value) {language.$engine.value = ''}
             <FieldCheckbox
                 disabled={!$s.workspace.config.sync.enabled}
                 help={$t(i18n.settings.help.sync_suggestions)}
-                model={$s.workspace.config.sync.$suggestions}
                 label={$t(i18n.settings.label.sync_suggestions)}
+                model={$s.workspace.config.sync.$suggestions}
             />
             <Button
+                disabled={!isValid.value}
                 label={$t(i18n.settings.label.update_settings)}
                 onClick={async() => {
                     if (!isValid.value) {
@@ -164,13 +172,16 @@ if (!value) {language.$engine.value = ''}
                             }
                         })
                     // Merge the selected languages state back to the workspace config.
-                    $s.workspace.config.languages.target.splice(0, $s.workspace.config.languages.target.length, ...selectedLanguages)
+                    $s.workspace.config.languages.target.splice(
+                        0,
+                        $s.workspace.config.languages.target.length,
+                        ...selectedLanguages,
+                    )
                     await api.post(`/api/workspaces/${$s.workspace.config.workspace_id}`, {
                         workspace: $s.workspace,
                     })
                     notifier.notify({message: $t(i18n.notifications.settings_updated), type: 'info'})
                 }}
-                disabled={!isValid.value}
                 tip={errors.value}
                 type='info'
             />

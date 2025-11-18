@@ -3,7 +3,16 @@ import {api, notifier, ws} from '@garage44/common/app'
 import {$t} from '@garage44/expressio'
 import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
 import {Settings} from '@/components/settings/settings'
-import {AppLayout, FieldSelect, MenuGroup, MenuItem, Notifications, PanelMenu, Progress, UserMenu} from '@garage44/common/components'
+import {
+    AppLayout,
+    FieldSelect,
+    MenuGroup,
+    MenuItem,
+    Notifications,
+    PanelMenu,
+    Progress,
+    UserMenu,
+} from '@garage44/common/components'
 import {Link, Router, getCurrentUrl, route} from 'preact-router'
 import {mergeDeep} from '@garage44/common/lib/utils'
 import {Login} from '@/components/pages/login/login'
@@ -17,10 +26,13 @@ const state = deepSignal({
 
 export const Main = () => {
     useEffect(() => {
-        ;(async() => {
+        (async() => {
             const context = await api.get('/api/context')
-            // Context now includes full user profile (id, username, profile.avatar, profile.displayName)
-            // Set user authentication/admin flags
+
+            /*
+             * Context now includes full user profile (id, username, profile.avatar, profile.displayName)
+             * Set user authentication/admin flags
+             */
             $s.profile.admin = context.admin || false
             $s.profile.authenticated = context.authenticated || false
             // Set profile data from context
@@ -41,13 +53,19 @@ export const Main = () => {
                     enola: config.enola,
                     workspaces: config.workspaces,
                 }, {usage: {loading: false}})
-            } else {route('/login')}
+            } else {
+                route('/login')
+            }
         })()
     }, [])
 
-    if ($s.profile.authenticated === null) {return null}
+    if ($s.profile.authenticated === null) {
+        return null
+    }
 
-    if ($s.profile.authenticated === false) {return <Login />}
+    if ($s.profile.authenticated === false) {
+        return <Login />
+    }
     const handleRoute = async({url}: {url: string}) => {
         // Update URL in global state for reactive access
         $s.env.url = url
@@ -81,10 +99,47 @@ export const Main = () => {
         <AppLayout
             menu={(
                 <PanelMenu
+                    actions={(
+                        <UserMenu
+                            collapsed={$s.panels.menu.collapsed}
+                            onLogout={async() => {
+                                const result = await api.get('/api/logout')
+                                $s.profile.authenticated = result.authenticated || false
+                                $s.profile.admin = result.admin || false
+                                route('/')
+                            }}
+                            settingsHref='/settings'
+                            user={{
+                                id: $s.profile.id || null,
+                                profile: {
+                                    avatar: $s.profile.avatar || null,
+                                    displayName: $s.profile.displayName || $s.profile.username || 'User',
+                                },
+                            }}
+                        />
+                      )}
                     collapsed={$s.panels.menu.collapsed}
+                    footer={
+                        !!Object.values($s.enola.engines).length &&
+                        <div class='engines'>
+                            {Object.values($s.enola.engines).filter((i) => i.active).map((engine) => {
+                                return (
+                                <div class='usage' key={engine.name}>
+                                        {$t(i18n.menu.usage, {engine: engine.name})}
+                                        <Progress
+                                            boundaries={[engine.usage.count, engine.usage.limit]}
+                                            iso6391={toIso6391($s.language_ui.selection)}
+                                            loading={engine.usage.loading}
+                                            percentage={engine.usage.count / engine.usage.limit}
+                                        />
+                                </div>
+                                )
+                            })}
+                        </div>
+
+                    }
                     LinkComponent={Link}
                     logoHref='/'
-                    onCollapseChange={(collapsed) => {$s.panels.menu.collapsed = collapsed}}
                     logoSrc='/public/img/logo.svg'
                     logoText='Expressio'
                     navigation={(
@@ -106,7 +161,8 @@ export const Main = () => {
                                     $s.workspace = (await ws.get(`/api/workspaces/${workspace_id}`))
                                     // Check if current route is valid for the new workspace
                                     const currentPath = getCurrentUrl()
-                                    const isValidRoute = currentPath.endsWith('/settings') || currentPath.endsWith('/translations')
+                                    const isValidRoute =
+                                        currentPath.endsWith('/settings') || currentPath.endsWith('/translations')
 
                                     // If we're not on a valid workspace route, default to settings
                                     let newRoute
@@ -115,8 +171,8 @@ export const Main = () => {
                                         const routeSuffix = currentPath.endsWith('/settings') ? 'settings' : 'translations'
                                         newRoute = `/workspaces/${workspace_id}/${routeSuffix}`
                                     } else {
-newRoute = `/workspaces/${workspace_id}/settings`
-}
+                                        newRoute = `/workspaces/${workspace_id}/settings`
+                                    }
 
                                     route(newRoute)
                                 }}
@@ -144,42 +200,9 @@ newRoute = `/workspaces/${workspace_id}/settings`
                             />
                         </MenuGroup>
                       )}
-                    actions={(
-                        <UserMenu
-                            collapsed={$s.panels.menu.collapsed}
-                            onLogout={async() => {
-                                const result = await api.get('/api/logout')
-                                $s.profile.authenticated = result.authenticated || false
-                                $s.profile.admin = result.admin || false
-                                route('/')
-                            }}
-                            settingsHref='/settings'
-                            user={{
-                                id: $s.profile.id || null,
-                                profile: {
-                                    avatar: $s.profile.avatar || null,
-                                    displayName: $s.profile.displayName || $s.profile.username || 'User',
-                                },
-                            }}
-                        />
-                      )}
-                    footer={
-                        !!Object.values($s.enola.engines).length && (
-                            <div class='engines'>
-                                {Object.values($s.enola.engines).filter((i) => i.active).map((engine) => (
-                                    <div class='usage' key={engine.name}>
-                                        {$t(i18n.menu.usage, {engine: engine.name})}
-                                        <Progress
-                                            boundaries={[engine.usage.count, engine.usage.limit]}
-                                            loading={engine.usage.loading}
-                                            percentage={engine.usage.count / engine.usage.limit}
-                                            iso6391={toIso6391($s.language_ui.selection)}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )
-                    }
+                    onCollapseChange={(collapsed) => {
+                        $s.panels.menu.collapsed = collapsed
+                    }}
                 />
               )}
         >

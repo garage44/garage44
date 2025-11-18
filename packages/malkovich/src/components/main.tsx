@@ -105,7 +105,7 @@ export const Main = () => {
                 }
             }
         }
-    }, [isProjectsRoute, isProjectPage, isDocsRoute, currentPackage, state.docsStructure])
+    }, [isProjectsRoute, isProjectPage, isDocsRoute, currentPackage])
 
     /*
      * Extract current docs section path (e.g., "adr" or "adr/guide")

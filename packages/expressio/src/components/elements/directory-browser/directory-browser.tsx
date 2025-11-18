@@ -27,7 +27,7 @@ async function loadDirectory(path = null) {
             directories: response.directories,
             parentPath: response.parent,
         })
-    } catch (error) {
+    } catch(error) {
         // oxlint-disable-next-line no-console
         console.error('Failed to load directory:', error)
     }
@@ -35,8 +35,9 @@ async function loadDirectory(path = null) {
 }
 
 export function DirectoryBrowser({onSelect}) {
-
-    useEffect(() => {loadDirectory()}, [])
+    useEffect(() => {
+        loadDirectory()
+    }, [])
 
     return (
 <div class='c-directory-browser'>
@@ -46,8 +47,8 @@ export function DirectoryBrowser({onSelect}) {
                 onClick={() => onSelect(state.current)}
                 tip={() => {
                     if (state.current.workspace) {
-return 'Add directory to workspaces'
-}
+                        return 'Add directory to workspaces'
+                    }
                     return 'Create new workspace'
                 }}
                 type='info'
@@ -56,7 +57,7 @@ return 'Add directory to workspaces'
         <div class='wrapper'>
             <div class='current-path'>{state.current.path}</div>
             <div class='directory-list'>
-                {state.parentPath && (
+                {state.parentPath &&
                     <div class='directory-item'>
                         <div
                             class='directory'
@@ -64,16 +65,13 @@ return 'Add directory to workspaces'
                         >
 ..
                         </div>
-                    </div>
-                )}
-                {state.directories.map((dir) => (
-                    <div
-                        class={classnames('directory', {'is-workspace': dir.is_workspace})}
-                        onClick={() => loadDirectory(dir.path)}
-                    >
+                    </div>}
+                {state.directories.map((dir) => <div
+                    class={classnames('directory', {'is-workspace': dir.is_workspace})}
+                    onClick={() => loadDirectory(dir.path)}
+                >
 {dir.name}
-                    </div>
-                ))}
+                </div>)}
             </div>
         </div>
 </div>

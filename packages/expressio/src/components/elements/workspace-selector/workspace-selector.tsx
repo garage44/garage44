@@ -20,13 +20,17 @@ export function WorkspaceSelector({workspaces}: WorkspaceSelectorProps) {
 
             <div class='wrapper'>
                 <div className='options'>
-                    {workspaces.map((workspace:WorkspaceDescription) => (
-                        <div className={classnames('option', workspace.status)} key={workspace.workspace_id}>
+                    {workspaces.map((workspace: WorkspaceDescription) => {
+                        return (
+                            <div
+                                className={classnames('option', workspace.status)}
+                                key={workspace.workspace_id}
+                            >
                             <Icon
                                 name='close'
                                 onClick={() => {
-workspaces.splice(0, workspaces.length, ...workspaces.filter((w) => w !== workspace))
-}}
+                                    workspaces.splice(0, workspaces.length, ...workspaces.filter((w) => w !== workspace))
+                                }}
                                 tip={
                                     workspace.status === 'existing' ?
                                             $t(i18n.settings.tip.workspace_existing, {source_file: workspace.source_file}) :
@@ -34,18 +38,19 @@ workspaces.splice(0, workspaces.length, ...workspaces.filter((w) => w !== worksp
                                 }
                                 type='info'
                             />
-                            {workspace.status === 'new' ? (
-<FieldText
-    autofocus={true}
-    model={workspace.$workspace_id}
-/>
-                            ) : (
-<div className='label'>
-                                {workspace.workspace_id}
-</div>
-                            )}
-                        </div>
-                    ))}
+                            {workspace.status === 'new' ?
+
+                                    <FieldText
+                                        autofocus={true}
+                                        model={workspace.$workspace_id}
+                                    /> :
+
+                                    <div className='label'>
+                                        {workspace.workspace_id}
+                                    </div>}
+                            </div>
+                        )
+                    })}
                 </div>
                 <DirectoryBrowser
                     onSelect={({path, workspace}) => {

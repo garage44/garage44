@@ -12,7 +12,9 @@ interface SettingsProps {
     tabId?: string
 }
 
-const getRoute = (tabId: string) => {return `/settings?tab=${tabId}`}
+const getRoute = (tabId: string) => {
+    return `/settings?tab=${tabId}`
+}
 
 export function Settings({tabId}: SettingsProps) {
     // Extract tab from query params if not provided as prop
@@ -22,7 +24,7 @@ export function Settings({tabId}: SettingsProps) {
         const match = url.match(/[?&]tab=([^&]+)/)
         return match ? match[1] : undefined
     }, [tabId])
-    const saveSettings = async () => {
+    const saveSettings = async() => {
         store.save()
         notifier.notify({icon: 'Settings', message: $t(i18n.ui.settings.action.saved), type: 'info'})
     }
@@ -38,15 +40,17 @@ export function Settings({tabId}: SettingsProps) {
             label: $t(i18n.ui.settings.profile.name),
             tip: $t(i18n.ui.settings.profile.name),
         },
-        ...(showUserSettings ? [
-            {
-                component: <UsersManagement $t={$t} />,
-                icon: 'account',
-                id: 'users',
-                label: $t(i18n.ui.settings.users.name),
-                tip: $t(i18n.ui.settings.users.name),
-            },
-        ] : []),
+        ...showUserSettings ?
+                [
+                    {
+                        component: <UsersManagement $t={$t} />,
+                        icon: 'account',
+                        id: 'users',
+                        label: $t(i18n.ui.settings.users.name),
+                        tip: $t(i18n.ui.settings.users.name),
+                    },
+                ] :
+                [],
         {
             component: <TabWorkspaces />,
             icon: 'Workspace',
@@ -58,13 +62,13 @@ export function Settings({tabId}: SettingsProps) {
 
     return (
         <CommonSettings
-            title={$t(i18n.ui.settings.name)}
-            icon='settings'
-            tabs={tabs}
             activeTabId={activeTabId}
             defaultTab='profile'
             getRoute={getRoute}
+            icon='settings'
             onSave={saveSettings}
+            tabs={tabs}
+            title={$t(i18n.ui.settings.name)}
         />
     )
 }

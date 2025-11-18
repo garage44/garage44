@@ -42,7 +42,7 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
         const workspace = workspaces.get(workspace_id)
 
         // Determine which mode to use based on the request
-        const mode = (tag_modifier || (value && value._collapsed === true)) ? 'all' : 'groups'
+        const mode = tag_modifier || (value && value._collapsed === true) ? 'all' : 'groups'
 
         // Use new pathToggle signature with explicit mode string
         pathToggle(workspace.i18n, path, value, mode as 'all' | 'groups')
@@ -83,7 +83,7 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
                     targets: [result],
                     translations: workspace.config.languages.target.map((lang) => result.ref[result.id].target[lang.id]),
                 }
-            } catch (error) {
+            } catch(error) {
                 logger.error('Translation error:', error)
                 return {
                     cached: [],
@@ -98,7 +98,7 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
                 const {cached, targets, translations} = await translate_path(workspace, path, ignore_cache)
                 workspace.save()
                 return {cached, success: true, targets, translations}
-            } catch (error) {
+            } catch(error) {
                 logger.error('Translation error:', error)
                 return {
                     cached: [],
@@ -112,23 +112,26 @@ export function registerI18nWebSocketApiRoutes(wsManager: WebSocketServerManager
     })
 
     // oxlint-disable-next-line require-await
-    apiWs.post('/api/workspaces/:workspace_id/undo', async (_context, request) => {
+    apiWs.post('/api/workspaces/:workspace_id/undo', async(_context, request) => {
         const workspace = workspaces.get(request.params.workspace_id)
         workspace.undo()
     })
 
     // oxlint-disable-next-line require-await
-    apiWs.post('/api/workspaces/:workspace_id/redo', async (_context, request) => {
+    apiWs.post('/api/workspaces/:workspace_id/redo', async(_context, request) => {
         const workspace = workspaces.get(request.params.workspace_id)
         workspace.redo()
     })
 }
 
 // Default export for backward compatibility
-export default function apiI18n(router: {get: (path: string, handler: (req: Request, params: Record<string, string>) => Response) => void}) {
+export default function apiI18n(router: {
+    get: (path: string, handler: (req: Request, params: Record<string, string>) => Response) => void
+}) {
     // HTTP API endpoints using familiar Express-like pattern
     router.get('/api/workspaces/:workspace_id/translations', (req: Request, params: Record<string, string>) => {
-        const workspaceId = params.param0 // Extract workspace_id from path params
+        // Extract workspace_id from path params
+        const workspaceId = params.param0
         const workspace = workspaces.get(workspaceId)
         return new Response(JSON.stringify(i18nFormat(workspace.i18n, workspace.config.languages.target)), {
             headers: {'Content-Type': 'application/json'},

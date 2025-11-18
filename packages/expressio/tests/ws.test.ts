@@ -17,11 +17,17 @@ ws.on('open', function open() {
     ws.send(JSON.stringify(testMessage))
 })
 
-ws.on('message', function message(data) {console.log('📨 Received message:', data.toString())})
+ws.on('message', function message(data) {
+    console.log('📨 Received message:', data.toString())
+})
 
-ws.on('error', function error(err) {console.error('❌ WebSocket error:', err.message)})
+ws.on('error', function error(err) {
+    console.error('❌ WebSocket error:', err.message)
+})
 
-ws.on('close', function close(code, reason) {console.log('🔌 WebSocket connection closed:', code, reason)})
+ws.on('close', function close(code, reason) {
+    console.log('🔌 WebSocket connection closed:', code, reason)
+})
 
 // Close after 5 seconds
 setTimeout(() => {

@@ -14,17 +14,33 @@ import path from 'node:path'
 type Session = Record<string, string> | undefined
 
 class Router {
-    routes: {handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>; method: string; path: RegExp}[] = []
+    routes: Array<{
+        handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>
+        method: string
+        path: RegExp
+    }> = []
 
-    get(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {this.add('GET', path, handler)}
+    get(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
+        this.add('GET', path, handler)
+    }
 
-    post(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {this.add('POST', path, handler)}
+    post(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
+        this.add('POST', path, handler)
+    }
 
-    put(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {this.add('PUT', path, handler)}
+    put(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
+        this.add('PUT', path, handler)
+    }
 
-    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {this.add('DELETE', path, handler)}
+    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
+        this.add('DELETE', path, handler)
+    }
 
-    private add(method: string, path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
+    private add(
+        method: string,
+        path: string,
+        handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>,
+    ) {
         // Convert path params (e.g. /api/workspaces/:id) to regex
         const regex = new RegExp('^' + path.replaceAll(/:[^/]+/g, '([^/]+)') + '$')
         this.routes.push({
@@ -42,7 +58,9 @@ class Router {
                 // Extract params
                 const paramValues = pathname.match(path)?.slice(1) || []
                 const params: Record<string, string> = {}
-                paramValues.forEach((val, idx) => {params[`param${idx}`] = val})
+                paramValues.forEach((val, idx) => {
+                    params[`param${idx}`] = val
+                })
                 return await handler(req, params, session)
             }
         }
@@ -52,11 +70,15 @@ class Router {
 
 
 // Auth middleware that can be reused across workspace routes
-const requireAdmin = async (ctx, next) => {
-    if (!ctx.session?.userid) {throw new Error('Unauthorized')}
+const requireAdmin = async(ctx, next) => {
+    if (!ctx.session?.userid) {
+        throw new Error('Unauthorized')
+    }
 
-    // User lookup will be handled by middleware's UserManager
-    // The authentication check is done by the middleware layer
+    /*
+     * User lookup will be handled by middleware's UserManager
+     * The authentication check is done by the middleware layer
+     */
     return next(ctx)
 }
 
@@ -81,8 +103,10 @@ async function initMiddleware(_bunchyConfig) {
 
     const publicPath = path.join(runtime.service_dir, 'public')
 
-    // Create unified final handler with built-in authentication API
-    // Use environment variable for config path if set (for PR deployments)
+    /*
+     * Create unified final handler with built-in authentication API
+     * Use environment variable for config path if set (for PR deployments)
+     */
     const configPath = process.env.CONFIG_PATH || '~/.expressiorc'
     const finalHandleRequest = createFinalHandler({
         configPath,
@@ -105,7 +129,8 @@ async function initMiddleware(_bunchyConfig) {
 
     return {
         handleRequest: finalHandleRequest,
-        handleWebSocket: () => {}, // WebSocket handling is done in common middleware
+        // WebSocket handling is done in common middleware
+        handleWebSocket: () => {},
     }
 }
 

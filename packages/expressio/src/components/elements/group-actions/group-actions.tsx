@@ -21,20 +21,31 @@ export function GroupActions({className, group, path}: {className?: string; grou
             <Icon
                 disabled={$s.filter.length > 0}
                 name={(() => {
-                    if ($s.env.ctrlKey) {return 'plus_collaped'}
-                    if ($s.env.shiftKey) {return 'plus_extra'}
-                    if (group._collapsed) {return 'plus'}
+                    if ($s.env.ctrlKey) {
+                        return 'plus_collaped'
+                    }
+                    if ($s.env.shiftKey) {
+                        return 'plus_extra'
+                    }
+                    if (group._collapsed) {
+                        return 'plus'
+                    }
                     return 'minus'
-
                 })()}
                 onClick={(event: MouseEvent) => {
-                // Force uncollapse on Ctrl or Alt click. Ctrl-click will also
-                // make the source tags uncollapse.
+                /*
+                 * Force uncollapse on Ctrl or Alt click. Ctrl-click will also
+                 * make the source tags uncollapse.
+                 */
                     const forceUncollapse = event.ctrlKey || event.shiftKey
                     const newCollapsedState = forceUncollapse ? false : !group._collapsed
                     // Ctrl-click will uncollapse everything, Alt-click or collapsed state will collapse source tags
                     let tagModifier = null
-                    if (event.ctrlKey) {tagModifier = {_collapsed: false}} else if (event.shiftKey || newCollapsedState) {tagModifier = {_collapsed: true}}
+                    if (event.ctrlKey) {
+                        tagModifier = {_collapsed: false}
+                    } else if (event.shiftKey || newCollapsedState) {
+                        tagModifier = {_collapsed: true}
+                    }
                     ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/collapse`, {
                         path,
                         tag_modifier: tagModifier,
@@ -108,7 +119,7 @@ export function GroupActions({className, group, path}: {className?: string; grou
                                 type: 'error',
                             })
                         }
-                    } catch (error) {
+                    } catch(error) {
                         notifier.notify({
                             message: `Translation error: ${error.message}`,
                             type: 'error',
@@ -120,19 +131,18 @@ export function GroupActions({className, group, path}: {className?: string; grou
                 type={$s.env.ctrlKey ? 'danger' : 'info'}
             />
 
-            {path.length > 0 && (
-<Icon
-    name='trash'
-    onClick={async() => {
-        await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
-            path,
-        })
-    }}
-    size='s'
-    tip={$t(i18n.translation_group.tip.remove_group)}
-    type='info'
-/>
-            )}
+            {path.length > 0 &&
+                <Icon
+                    name='trash'
+                    onClick={async() => {
+                        await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
+                            path,
+                        })
+                    }}
+                    size='s'
+                    tip={$t(i18n.translation_group.tip.remove_group)}
+                    type='info'
+                />}
         </div>
 </div>
     )

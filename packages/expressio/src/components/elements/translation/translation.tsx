@@ -6,7 +6,6 @@ import {TranslationResult} from '@/components/elements'
 import classnames from 'classnames'
 
 export function Translation({group, path}) {
-
     const path_update = path.join('.')
 
     async function translate() {
@@ -27,7 +26,7 @@ export function Translation({group, path}) {
                     type: 'error',
                 })
             }
-        } catch (error) {
+        } catch(error) {
             notifier.notify({
                 message: `Translation error: ${error.message}`,
                 type: 'error',
@@ -39,7 +38,8 @@ export function Translation({group, path}) {
 <div class={classnames('c-translation', {
     redundant: group._redundant,
     soft: group._soft,
-    'tag-updated': $s.tags.updated === path_update})}
+    'tag-updated': $s.tags.updated === path_update,
+})}
 >
         <div class='source'>
 
@@ -55,7 +55,11 @@ export function Translation({group, path}) {
                     }}
                     size='s'
                     tip={$t(i18n.translation.tip.translation_view)}
-                    type={Object.keys(group.target).length === $s.workspace.config.languages.target.length ? 'success' : 'warning'}
+                    type={
+                        Object.keys(group.target).length === $s.workspace.config.languages.target.length ?
+                            'success' :
+                            'warning'
+                    }
                 />
                 <Icon
                     name='translate'
@@ -67,8 +71,8 @@ export function Translation({group, path}) {
                 <Icon
                     name='trash'
                     onClick={async() => {
-await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {path})
-}}
+                        await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {path})
+                    }}
                     size='s'
                     tip={$t(i18n.translation.tip.remove)}
                     type='info'
@@ -102,11 +106,13 @@ await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {pa
                         source: group.source,
                     })
                 }}
-                onKeyDown={(event: KeyboardEvent) => {if (event.key === 'Enter' && event.ctrlKey) {
-translate()
-} else if (event.key === ' ' && event.ctrlKey) {
-group._collapsed = !group._collapsed
-}}}
+                onKeyDown={(event: KeyboardEvent) => {
+                    if (event.key === 'Enter' && event.ctrlKey) {
+                        translate()
+                    } else if (event.key === ' ' && event.ctrlKey) {
+                        group._collapsed = !group._collapsed
+                    }
+                }}
                 placeholder={$t(i18n.translation.placeholder.translate)}
             />
         </div>

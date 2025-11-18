@@ -24,7 +24,8 @@ const config = rc('expressio', {
         level: 'debug',
     },
     session: {
-        cookie: {maxAge: 1000 * 60 * 60 * 24}, // One day
+        // One day
+        cookie: {maxAge: 1000 * 60 * 60 * 24},
         resave: false,
         saveUninitialized: true,
         secret: randomId(32),
@@ -53,7 +54,9 @@ async function initConfig(config) {
     const envConfigPath = process.env.CONFIG_PATH
     const configPath = envConfigPath || path.join(homedir(), '.expressiorc')
     // Check if the config file exists
-    if (!await fs.pathExists(configPath)) {await saveConfig()}
+    if (!await fs.pathExists(configPath)) {
+        await saveConfig()
+    }
     return config
 }
 

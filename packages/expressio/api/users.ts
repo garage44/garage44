@@ -11,7 +11,7 @@ export default function apiUsers(router) {
      * Note: /api/users/me is handled by common middleware
      * IMPORTANT: This must be registered BEFORE any other /api/users/:userid routes to avoid route matching issues
      */
-    router.post('/api/users/:userid/avatar', async (req: Request, params: Record<string, string>) => {
+    router.post('/api/users/:userid/avatar', async(req: Request, params: Record<string, string>) => {
         const userId = params.param0
 
         logger.info(`[Users API] POST /api/users/:userid/avatar - userId from params: ${userId}`)
@@ -66,8 +66,10 @@ export default function apiUsers(router) {
                 })
             }
 
-            // Validate file size (max 2MB)
-            const maxSize = 2 * 1024 * 1024 // 2MB
+            /*
+             * Validate file size (max 2MB)
+             */
+            const maxSize = 2 * 1024 * 1024
             if (file.size > maxSize) {
                 return new Response(JSON.stringify({error: 'file too large. max size: 2MB'}), {
                     headers: {'Content-Type': 'application/json'},
@@ -100,7 +102,8 @@ export default function apiUsers(router) {
 
             // Update user avatar in database (use user.id, not userId param)
             const avatarFilename = filename
-            const userDbId = user.id // Store the user ID to verify it doesn't change
+            // Store the user ID to verify it doesn't change
+            const userDbId = user.id
             logger.info(`[Users API] Updating user ${userDbId} avatar in DB to: ${avatarFilename}`)
             logger.info(`[Users API] Original user ID before update: ${userDbId}`)
 
@@ -129,7 +132,10 @@ export default function apiUsers(router) {
                 })
             }
 
-            logger.info(`[Users API] User updated successfully. New avatar: ${updatedUser.profile.avatar}, ID verified: ${updatedUser.id}`)
+            logger.info(
+                `[Users API] User updated successfully. New avatar: ${updatedUser.profile.avatar}, ` +
+                `ID verified: ${updatedUser.id}`,
+            )
 
             // Return success with avatar URL
             return new Response(JSON.stringify({
@@ -139,7 +145,7 @@ export default function apiUsers(router) {
             }), {
                 headers: {'Content-Type': 'application/json'},
             })
-        } catch (error) {
+        } catch(error) {
             logger.error(`[Users API] Error uploading avatar for user ${userId}:`, error)
             return new Response(JSON.stringify({error: 'failed to upload avatar'}), {
                 headers: {'Content-Type': 'application/json'},

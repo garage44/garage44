@@ -21,25 +21,26 @@ export async function syncLanguage(workspace, language, action) {
     keyMod(workspace.i18n, (_srcRef, _id, refPath) => {
         const {id, ref} = pathRef(workspace.i18n, refPath)
         if (typeof ref[id] === 'object' && 'target' in ref[id]) {
-            if (action === 'remove') {if (language.id in ref[id].target) {
-delete ref[id].target[language.id]
-}} else if (action === 'update') {
+            if (action === 'remove') {
+                if (language.id in ref[id].target) {
+                    delete ref[id].target[language.id]
+                }
+            } else if (action === 'update') {
                 // These are still placeholders; no need to translate these.
                 if (ref[id].source.startsWith('tag')) {
-ref[id].target[language.id] = ref[id].source
-} else {
-syncTags.push([ref[id], ref[id].source])
-}
+                    ref[id].target[language.id] = ref[id].source
+                } else {
+                    syncTags.push([ref[id], ref[id].source])
+                }
             }
-
         }
     })
 
     if (syncTags.length) {
         const translations = await enola.translateBatch(language.engine, syncTags, language)
         for (const [tag, translation] of translations) {
-tag.target[language.id] = translation
-}
+            tag.target[language.id] = translation
+        }
     }
 
     return syncTags

@@ -28,25 +28,33 @@ async function playwrightLogin(options: PlaywrightLoginOptions = {}) {
 
     // If security is disabled, /api/context already returns admin; still hit it to initialize
     await page.goto(`${baseUrl}/`)
-    const alreadyAuth = await page.evaluate(async () => {
+    const alreadyAuth = await page.evaluate(async() => {
         try {
             const response = await fetch('/api/context')
             const json = await response.json()
             return !!json?.authenticated
-        } catch {return false}
+        } catch {
+            return false
+        }
     })
     if (!alreadyAuth) {
         await page.locator('.id-field input').waitFor({state: 'visible'})
         await page.locator('.id-field input').fill(username)
         await page.locator('.password-field input').fill(password)
         const loginButton = page.getByRole('button', {name: /login/i})
-        if (await loginButton.count()) {await loginButton.first().click()} else {await page.locator('.login-container .c-button').first().click()}
-        await page.waitForFunction(async () => {
+        if (await loginButton.count()) {
+            await loginButton.first().click()
+        } else {
+            await page.locator('.login-container .c-button').first().click()
+        }
+        await page.waitForFunction(async() => {
             try {
                 const response = await fetch('/api/context')
                 const json = await response.json()
                 return !!json?.authenticated
-            } catch {return false}
+            } catch {
+                return false
+            }
         }, null, {timeout: 5000})
     }
 
@@ -56,7 +64,7 @@ async function playwrightLogin(options: PlaywrightLoginOptions = {}) {
     // Give the app a moment to settle and establish WS
     await page.waitForTimeout(500)
 
-    const text = await page.evaluate(async () => {
+    const text = await page.evaluate(async() => {
         const response = await fetch('/dev/snapshot')
         return response.text()
     })
@@ -66,7 +74,7 @@ async function playwrightLogin(options: PlaywrightLoginOptions = {}) {
 }
 
 describe('expressio login', () => {
-    it('logs in successfully and returns authentication result', async () => {
+    it('logs in successfully and returns authentication result', async() => {
         const result = await playwrightLogin({
             baseUrl: process.env.EXPRESSIO_URL || 'http://localhost:3030',
             headless: true,
