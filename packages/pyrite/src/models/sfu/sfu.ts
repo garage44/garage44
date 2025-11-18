@@ -28,30 +28,49 @@ import {formatBytes} from '@garage44/common/lib/utils'
 import {localStream, getUserMedia, removeLocalStream} from '@/models/media'
 import {currentGroup} from '@/models/group'
 
+// Flag to prevent infinite loops in reactive deduplication
+let isDeduplicating = false
+
 /**
  * Remove duplicate users from $s.users array based on normalized user ID
  * Keeps the first occurrence of each user
+ * This function is called immediately after any operation that modifies $s.users
  */
 function deduplicateUsers() {
-    const seenIds = new Set<string>()
-    const uniqueUsers: typeof $s.users = []
+    // Prevent re-entry to avoid infinite loops
+    if (isDeduplicating) return
+    if (!$s.users || $s.users.length === 0) return
     
-    for (const user of $s.users) {
-        if (!user || !user.id) continue
+    isDeduplicating = true
+    try {
+        const seenIds = new Set<string>()
+        const uniqueUsers: typeof $s.users = []
+        let duplicateCount = 0
         
-        const normalizedId = String(user.id).trim()
-        if (!seenIds.has(normalizedId)) {
-            seenIds.add(normalizedId)
-            uniqueUsers.push(user)
-        } else {
-            logger.debug(`[deduplicateUsers] Removing duplicate user: ${normalizedId} (${user.username || 'unknown'})`)
+        for (const user of $s.users) {
+            if (!user || !user.id) {
+                continue
+            }
+            
+            const normalizedId = String(user.id).trim()
+            if (!normalizedId) continue
+            
+            if (!seenIds.has(normalizedId)) {
+                seenIds.add(normalizedId)
+                uniqueUsers.push(user)
+            } else {
+                duplicateCount++
+                logger.debug(`[deduplicateUsers] Removing duplicate user: ${normalizedId} (${user.username || 'unknown'})`)
+            }
         }
-    }
-    
-    // Only update if we found duplicates
-    if (uniqueUsers.length !== $s.users.length) {
-        logger.info(`[deduplicateUsers] Removed ${$s.users.length - uniqueUsers.length} duplicate(s) from users list`)
-        $s.users = uniqueUsers
+        
+        // Only update if we found duplicates (prevents unnecessary reactivity triggers)
+        if (duplicateCount > 0) {
+            logger.info(`[deduplicateUsers] Removed ${duplicateCount} duplicate(s) from users list (${$s.users.length} -> ${uniqueUsers.length})`)
+            $s.users = uniqueUsers
+        }
+    } finally {
+        isDeduplicating = false
     }
 }
 
@@ -735,7 +754,7 @@ function onUser(id, kind) {
             logger.debug(`[onUser] User ${normalizedId} already exists, updating instead of duplicating`)
             $s.users.splice(userIndex, 1, user)
         }
-        // Ensure no duplicates exist (safety net)
+        // Always deduplicate after any modification (safety net)
         deduplicateUsers()
     } else if (kind === 'change') {
         if (id === $s.profile.id) {
@@ -768,6 +787,8 @@ function onUser(id, kind) {
         if (userIndex !== -1) {
             $s.users.splice(userIndex, 1, user)
         }
+        // Always deduplicate after any modification (safety net)
+        deduplicateUsers()
     } else if (kind === 'delete') {
         if (user.id === $s.sfu.channel.recording) {
             $s.sfu.channel.recording = false
@@ -780,6 +801,8 @@ function onUser(id, kind) {
         if (userIndex !== -1) {
             $s.users.splice(userIndex, 1)
         }
+        // Always deduplicate after any modification (safety net)
+        deduplicateUsers()
         events.emit('user', {action: 'del', user})
     }
 }

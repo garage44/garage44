@@ -5,31 +5,51 @@
 
 import {$s} from '@/app'
 import {events, logger, ws} from '@garage44/common/app'
+import {effect} from '@preact/signals'
+
+// Flag to prevent infinite loops in reactive deduplication
+let isDeduplicating = false
 
 /**
  * Remove duplicate users from $s.users array based on normalized user ID
  * Keeps the first occurrence of each user
+ * This function is called immediately after any operation that modifies $s.users
  */
 function deduplicateUsers() {
-    const seenIds = new Set<string>()
-    const uniqueUsers: typeof $s.users = []
+    // Prevent re-entry to avoid infinite loops
+    if (isDeduplicating) return
+    if (!$s.users || $s.users.length === 0) return
     
-    for (const user of $s.users) {
-        if (!user || !user.id) continue
+    isDeduplicating = true
+    try {
+        const seenIds = new Set<string>()
+        const uniqueUsers: typeof $s.users = []
+        let duplicateCount = 0
         
-        const normalizedId = String(user.id).trim()
-        if (!seenIds.has(normalizedId)) {
-            seenIds.add(normalizedId)
-            uniqueUsers.push(user)
-        } else {
-            logger.debug(`[deduplicateUsers] Removing duplicate user: ${normalizedId} (${user.username || 'unknown'})`)
+        for (const user of $s.users) {
+            if (!user || !user.id) {
+                continue
+            }
+            
+            const normalizedId = String(user.id).trim()
+            if (!normalizedId) continue
+            
+            if (!seenIds.has(normalizedId)) {
+                seenIds.add(normalizedId)
+                uniqueUsers.push(user)
+            } else {
+                duplicateCount++
+                logger.debug(`[deduplicateUsers] Removing duplicate user: ${normalizedId} (${user.username || 'unknown'})`)
+            }
         }
-    }
-    
-    // Only update if we found duplicates
-    if (uniqueUsers.length !== $s.users.length) {
-        logger.info(`[deduplicateUsers] Removed ${$s.users.length - uniqueUsers.length} duplicate(s) from users list`)
-        $s.users = uniqueUsers
+        
+        // Only update if we found duplicates (prevents unnecessary reactivity triggers)
+        if (duplicateCount > 0) {
+            logger.info(`[deduplicateUsers] Removed ${duplicateCount} duplicate(s) from users list (${$s.users.length} -> ${uniqueUsers.length})`)
+            $s.users = uniqueUsers
+        }
+    } finally {
+        isDeduplicating = false
     }
 }
 
@@ -39,6 +59,16 @@ function deduplicateUsers() {
  */
 export const initWebSocketSubscriptions = () => {
     logger.info('Initializing WebSocket subscriptions')
+
+    // Set up reactive deduplication - watches $s.users and removes duplicates automatically
+    effect(() => {
+        // Access $s.users to track changes
+        const users = $s.users
+        if (users && users.length > 0) {
+            // Deduplicate whenever users array changes
+            deduplicateUsers()
+        }
+    })
 
     // Listen for broadcasts from backend
     initChatSubscriptions()
@@ -230,9 +260,9 @@ const initPresenceSubscriptions = () => {
                     // User already exists, log and skip to prevent duplicate
                     logger.debug(`[Presence] User ${normalizedUserId} already exists in users list, skipping add`)
                 }
-                // Ensure no duplicates exist (safety net)
-                deduplicateUsers()
             }
+            // Always deduplicate after any modification (safety net)
+            deduplicateUsers()
         })
 
         // User left group (broadcast from backend)
@@ -262,6 +292,8 @@ const initPresenceSubscriptions = () => {
                     $s.users.splice(userIndex, 1)
                 }
             }
+            // Always deduplicate after any modification (safety net)
+            deduplicateUsers()
         })
 
         // User status update (broadcast from backend)
@@ -285,6 +317,8 @@ const initPresenceSubscriptions = () => {
             if (user) {
                 Object.assign(user.data, status)
             }
+            // Always deduplicate after any modification (safety net)
+            deduplicateUsers()
         })
 
         // Listen for user presence updates (from /users/presence broadcast)
