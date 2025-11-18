@@ -2,7 +2,7 @@ import {useEffect} from 'preact/hooks'
 import {Router, Route, Link} from 'preact-router'
 import Controls from './controls/controls'
 import GroupsContext from './context/context-groups'
-import {IconLogo, Notifications, PanelContext} from '@garage44/common/components'
+import {Notifications, PanelContext} from '@garage44/common/components'
 import {Groups} from './groups'
 import {Users} from './users/users'
 import {$s} from '@/app'
@@ -20,11 +20,6 @@ export const AdminApp = () => {
             <PanelContext
                 animate={animate}
                 collapsed={$s.panels.context.collapsed}
-                LinkComponent={Link}
-                logoHref='/settings/groups'
-                LogoIcon={IconLogo}
-                logoText='PYRITE'
-                logoVersion={process.env.APP_VERSION || '2.0.0'}
             >
                 <GroupsContext />
             </PanelContext>

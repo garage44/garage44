@@ -68,6 +68,7 @@
             .version {
                 bottom: var(--spacer-1);
                 color: var(--surface-5);
+                cursor: help;
                 font-size: var(--font-xs);
                 font-style: italic;
                 position: absolute;
