@@ -24,6 +24,10 @@ export interface CollectionManagerConfig<TItem, TFormData> {
      */
     deleteEndpoint: (id: string | number) => string
     /**
+     * HTTP method for delete (default: 'DELETE', users API uses 'GET')
+     */
+    deleteMethod?: 'GET' | 'DELETE'
+    /**
      * Function to get the ID from an item
      */
     getId: (item: TItem) => string | number
@@ -192,7 +196,12 @@ export function useCollectionManager<TItem, TFormData>(
         try {
             state.loading = true
             state.error = null
-            await api.delete(config.deleteEndpoint(itemId))
+            const method = config.deleteMethod || 'DELETE'
+            if (method === 'GET') {
+                await api.get(config.deleteEndpoint(itemId))
+            } else {
+                await api.delete(config.deleteEndpoint(itemId))
+            }
             state.items = state.items.filter((i) => config.getId(i) !== itemId)
             if (state.editing === itemId) {
                 state.editing = null

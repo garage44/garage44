@@ -2,7 +2,7 @@ import {useEffect} from 'preact/hooks'
 import {route} from 'preact-router'
 import {CollectionView, Button} from '@/components'
 import {useCollectionManager} from '@garage44/common/lib/collection-manager'
-import type {CollectionColumn} from '@/components/ui/collection-view/collection-view'
+import type {CollectionColumn} from '@/components'
 import type {User} from './users-management'
 
 export interface UsersListProps {
@@ -24,6 +24,7 @@ export function UsersList({
         updateEndpoint: (id) => `/api/users/${id}`,
         updateMethod: 'POST',
         deleteEndpoint: (id) => `/api/users/${id}/delete`,
+        deleteMethod: 'GET',
         getId: (user) => user.id,
         initialFormData: {username: '', password: '', admin: false},
         transformCreateData: (data) => ({
