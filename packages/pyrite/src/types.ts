@@ -42,6 +42,7 @@ export interface PyriteState extends CommonState {
             active: boolean
             list?: Array<unknown>
             lookup: Record<string, unknown>
+            selectedCategory?: 'smileys' | 'people' | 'animals' | 'food' | 'travel' | 'activities' | 'objects' | 'symbols' | 'flags'
         }
         message: string
         // Global users map: userId -> {username, avatar, status?}

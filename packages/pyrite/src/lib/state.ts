@@ -62,6 +62,7 @@ export const volatileState: Partial<PyriteState> = mergeDeep({
         emoji: {
             active: false,
             lookup: {},
+            selectedCategory: 'smileys' as 'smileys' | 'people' | 'animals' | 'food' | 'travel' | 'activities' | 'objects' | 'symbols' | 'flags',
         },
         message: '',
         width: 375,
