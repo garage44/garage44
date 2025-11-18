@@ -28,51 +28,8 @@ import {formatBytes} from '@garage44/common/lib/utils'
 import {localStream, getUserMedia, removeLocalStream} from '@/models/media'
 import {currentGroup} from '@/models/group'
 
-// Flag to prevent infinite loops in reactive deduplication
-let isDeduplicating = false
-
-/**
- * Remove duplicate users from $s.users array based on normalized user ID
- * Keeps the first occurrence of each user
- * This function is called immediately after any operation that modifies $s.users
- */
-function deduplicateUsers() {
-    // Prevent re-entry to avoid infinite loops
-    if (isDeduplicating) return
-    if (!$s.users || $s.users.length === 0) return
-    
-    isDeduplicating = true
-    try {
-        const seenIds = new Set<string>()
-        const uniqueUsers: typeof $s.users = []
-        let duplicateCount = 0
-        
-        for (const user of $s.users) {
-            if (!user || !user.id) {
-                continue
-            }
-            
-            const normalizedId = String(user.id).trim()
-            if (!normalizedId) continue
-            
-            if (!seenIds.has(normalizedId)) {
-                seenIds.add(normalizedId)
-                uniqueUsers.push(user)
-            } else {
-                duplicateCount++
-                logger.debug(`[deduplicateUsers] Removing duplicate user: ${normalizedId} (${user.username || 'unknown'})`)
-            }
-        }
-        
-        // Only update if we found duplicates (prevents unnecessary reactivity triggers)
-        if (duplicateCount > 0) {
-            logger.info(`[deduplicateUsers] Removed ${duplicateCount} duplicate(s) from users list (${$s.users.length} -> ${uniqueUsers.length})`)
-            $s.users = uniqueUsers
-        }
-    } finally {
-        isDeduplicating = false
-    }
-}
+// Note: Presence is managed by Pyrite presence system only
+// Galene SFU no longer modifies $s.users - it only manages connection.users
 
 export const protocol = _protocol
 export const commands = _commands
@@ -737,42 +694,29 @@ function onUser(id, kind) {
             connection.userAction('setdata', connection.id, $s.sfu.profile)
         }
 
-        // Normalize user ID to string for consistent comparison
-        // Check if user already exists (may have been added by presence system)
-        if (!id) {
-            logger.warn(`[onUser] Skipping user add: invalid ID`)
-            return
-        }
-        const normalizedId = String(id).trim()
-        const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedId)
-        if (userIndex === -1) {
-            // User doesn't exist, add it
-            $s.users.push(user)
-            events.emit('user', {action: 'add', user})
-        } else {
-            // User already exists, update it instead of duplicating
-            logger.debug(`[onUser] User ${normalizedId} already exists, updating instead of duplicating`)
-            $s.users.splice(userIndex, 1, user)
-        }
-        // Always deduplicate after any modification (safety net)
-        deduplicateUsers()
+        // Note: Presence is managed by Pyrite presence system, not Galene
+        // Galene users are stored in connection.users, not $s.users
+        // $s.users is only for Pyrite presence list
+        events.emit('user', {action: 'add', user})
     } else if (kind === 'change') {
         if (id === $s.profile.id) {
-            // Normalize user ID to string for consistent comparison
-            const normalizedId = String(user.id).trim()
-            const $user = $s.users.find((i) => i && i.id && String(i.id).trim() === normalizedId)
+            // Check permissions from Galene user data (connection.users), not $s.users
+            const galeneUser = connection.users[id]
+            const hadPresent = galeneUser?.permissions?.includes('present')
+            const hadOp = galeneUser?.permissions?.includes('op')
+            
             // Shutdown the local stream when the Present permission is taken away.
-            if ($user && $user.permissions.present && !user.permissions.present) {
+            if (hadPresent && !user.permissions.present) {
                 delUpMedia(localGlnStream)
                 $s.devices.cam.enabled = false
                 $s.devices.mic.enabled = false
 
                 notifier.notify({message: `Present permission removed in ${$s.sfu.channel.name}`, type: 'warning'})
-            } else if ($user && !$user.permissions.present && user.permissions.present) {
+            } else if (!hadPresent && user.permissions.present) {
                 notifier.notify({message: 'Present permission granted', type: 'info'})
-            } else if ($user && $user.permissions.op && !user.permissions.op) {
+            } else if (hadOp && !user.permissions.op) {
                 notifier.notify({message: 'Operator permission removed', type: 'warning'})
-            } else if ($user && !$user.permissions.op && user.permissions.op) {
+            } else if (!hadOp && user.permissions.op) {
                 notifier.notify({message: 'Operator permission granted', type: 'info'})
             }
 
@@ -781,28 +725,18 @@ function onUser(id, kind) {
             store.save()
         }
 
-        // Normalize user ID to string for consistent comparison
-        const normalizedId = String(user.id).trim()
-        const userIndex = $s.users.findIndex((i) => i && i.id && String(i.id).trim() === normalizedId)
-        if (userIndex !== -1) {
-            $s.users.splice(userIndex, 1, user)
-        }
-        // Always deduplicate after any modification (safety net)
-        deduplicateUsers()
+        // Note: Presence is managed by Pyrite presence system, not Galene
+        // Galene users are stored in connection.users, not $s.users
+        // $s.users is only for Pyrite presence list
     } else if (kind === 'delete') {
         if (user.id === $s.sfu.channel.recording) {
             $s.sfu.channel.recording = false
             notifier.notify({message: `Recording stopped in ${$s.sfu.channel.name}`, type: 'info'})
         }
 
-        // Normalize user ID to string for consistent comparison
-        const normalizedId = String(id).trim()
-        const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedId)
-        if (userIndex !== -1) {
-            $s.users.splice(userIndex, 1)
-        }
-        // Always deduplicate after any modification (safety net)
-        deduplicateUsers()
+        // Note: Presence is managed by Pyrite presence system, not Galene
+        // Galene users are stored in connection.users, not $s.users
+        // $s.users is only for Pyrite presence list
         events.emit('user', {action: 'del', user})
     }
 }
