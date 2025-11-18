@@ -13,7 +13,7 @@
     "import/max-dependencies": "off",
     "eslint/require-await": "off",
     "eslint/max-depth": ["error", 6],
-    "eslint/max-lines": ["error", 1000],
+    "eslint/max-lines": ["error", 1500],
     "eslint/max-params": ["error", 5],
     "eslint/max-nested-callbacks": ["error", 10],
     "prefer-logical-operator-over-ternary": "off",

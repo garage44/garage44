@@ -5,6 +5,7 @@ import path from 'path'
 import {
     addPRDeployment,
     getPRDeployment,
+    listActivePRDeployments,
     updatePRDeployment,
     type PRDeployment,
 } from './pr-registry'
@@ -593,6 +594,246 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
             deployment: null,
             message: `Update failed: ${message}`,
             success: false,
+        }
+    }
+}
+
+/**
+ * Update PR deployment by merging main into the PR branch
+ * Returns true if merge was successful and deployment updated, false if conflicts or errors
+ */
+async function updatePRDeploymentWithMain(deployment: PRDeployment): Promise<boolean> {
+    const repoDir = path.join(deployment.directory, 'repo')
+
+    // Verify repo directory exists
+    if (!existsSync(repoDir)) {
+        console.warn(`[pr-deploy] Repository directory not found for PR #${deployment.number}: ${repoDir}`)
+        return false
+    }
+
+    const originalCwd = process.cwd()
+
+    try {
+        process.chdir(repoDir)
+
+        // Get the repo name from the git remote (or use default)
+        let repoFullName = 'garage44/garage44' // Default fallback
+        const remoteUrlResult = await $`git remote get-url origin`.nothrow()
+        if (remoteUrlResult.exitCode === 0) {
+            const remoteUrl = remoteUrlResult.stdout?.toString().trim() || ''
+            // Extract repo name from URL (e.g., "https://github.com/owner/repo.git" -> "owner/repo")
+            const match = remoteUrl.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/)
+            if (match) {
+                repoFullName = `${match[1]}/${match[2]}`
+            }
+        }
+
+        // Ensure remote is set correctly
+        const githubUrl = `https://github.com/${repoFullName}.git`
+        await $`git remote set-url origin ${githubUrl}`.nothrow()
+
+        // Fetch latest from origin
+        console.log(`[pr-deploy] Fetching latest from origin for PR #${deployment.number}...`)
+        const fetchResult = await $`git fetch origin main ${deployment.head_ref}`.nothrow()
+        if (fetchResult.exitCode !== 0) {
+            const stderr = fetchResult.stderr?.toString() || ''
+            console.warn(`[pr-deploy] Failed to fetch for PR #${deployment.number}: ${stderr}`)
+            return false
+        }
+
+        // Checkout the PR branch (or create it if it doesn't exist locally)
+        console.log(`[pr-deploy] Checking out branch ${deployment.head_ref} for PR #${deployment.number}...`)
+        // First try to checkout the branch
+        let checkoutResult = await $`git checkout ${deployment.head_ref}`.nothrow()
+        if (checkoutResult.exitCode !== 0) {
+            // Branch might not exist locally, try to create it from the remote branch
+            checkoutResult = await $`git checkout -b ${deployment.head_ref} origin/${deployment.head_ref}`.nothrow()
+            if (checkoutResult.exitCode !== 0) {
+                // If that fails, try checking out the commit SHA directly
+                checkoutResult = await $`git checkout ${deployment.head_sha}`.nothrow()
+                if (checkoutResult.exitCode !== 0) {
+                    const stderr = checkoutResult.stderr?.toString() || ''
+                    console.warn(`[pr-deploy] Failed to checkout branch/commit for PR #${deployment.number}: ${stderr}`)
+                    return false
+                }
+            }
+        }
+
+        // Try to merge main into the PR branch
+        console.log(`[pr-deploy] Attempting to merge main into ${deployment.head_ref} for PR #${deployment.number}...`)
+        const mergeResult = await $`git merge origin/main --no-edit`.nothrow()
+
+        if (mergeResult.exitCode !== 0) {
+            // Check if it's a merge conflict
+            const stderr = mergeResult.stderr?.toString() || ''
+            const stdout = mergeResult.stdout?.toString() || ''
+            const output = (stderr + stdout).toLowerCase()
+
+            if (output.includes('conflict') || output.includes('merge conflict')) {
+                console.log(`[pr-deploy] Merge conflicts detected for PR #${deployment.number}, skipping update`)
+                // Abort the merge
+                await $`git merge --abort`.nothrow()
+                return false
+            }
+
+            // Other merge errors
+            console.warn(`[pr-deploy] Merge failed for PR #${deployment.number}: ${stderr || stdout}`)
+            // Try to abort the merge if it's in progress
+            await $`git merge --abort`.nothrow()
+            return false
+        }
+
+        // Merge successful! Get the new SHA
+        const newShaResult = await $`git rev-parse HEAD`.nothrow()
+        if (newShaResult.exitCode !== 0) {
+            console.warn(`[pr-deploy] Failed to get new SHA for PR #${deployment.number}`)
+            return false
+        }
+        const newSha = newShaResult.stdout?.toString().trim() || ''
+
+        console.log(`[pr-deploy] Successfully merged main into PR #${deployment.number}, new SHA: ${newSha}`)
+
+        // Now rebuild and redeploy
+        console.log(`[pr-deploy] Installing dependencies for PR #${deployment.number}...`)
+        const installResult = await $`bun install`.nothrow()
+        if (installResult.exitCode !== 0) {
+            const stderr = installResult.stderr?.toString() || ''
+            console.warn(`[pr-deploy] Failed to install dependencies for PR #${deployment.number}: ${stderr}`)
+            return false
+        }
+
+        console.log(`[pr-deploy] Building packages for PR #${deployment.number}...`)
+        const buildResult = await $`bun run build`.nothrow()
+        if (buildResult.exitCode !== 0) {
+            const stderr = buildResult.stderr?.toString() || ''
+            console.warn(`[pr-deploy] Build failed for PR #${deployment.number}: ${stderr}`)
+            return false
+        }
+
+        // Discover which packages to deploy
+        const packagesToDeploy = discoverPackagesToDeploy(repoDir)
+        console.log(`[pr-deploy] Discovered packages to restart for PR #${deployment.number}: ${packagesToDeploy.join(', ')}`)
+
+        // Regenerate systemd service files
+        console.log(`[pr-deploy] Regenerating systemd service files for PR #${deployment.number}...`)
+        await generateSystemdServices(deployment, packagesToDeploy)
+
+        // Regenerate nginx configs
+        console.log(`[pr-deploy] Regenerating nginx configurations for PR #${deployment.number}...`)
+        await generateNginxConfig(deployment, packagesToDeploy)
+
+        // Stop services first
+        console.log(`[pr-deploy] Stopping services for PR #${deployment.number}...`)
+        for (const packageName of packagesToDeploy) {
+            const port = deployment.ports[packageName as keyof typeof deployment.ports] || deployment.ports.malkovich
+            const serviceName = `pr-${deployment.number}-${packageName}.service`
+
+            const stopResult = await $`sudo /usr/bin/systemctl stop ${serviceName}`.nothrow()
+            if (stopResult.exitCode !== 0) {
+                // Try to kill processes on the port
+                await $`sudo fuser -k ${port}/tcp`.nothrow()
+            }
+        }
+
+        // Wait for processes to stop
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+
+        // Start services
+        console.log(`[pr-deploy] Starting services for PR #${deployment.number}...`)
+        for (const packageName of packagesToDeploy) {
+            const startResult = await $`sudo /usr/bin/systemctl start pr-${deployment.number}-${packageName}.service`.nothrow()
+            if (startResult.exitCode !== 0) {
+                const stderr = startResult.stderr?.toString() || ''
+                console.warn(`[pr-deploy] Failed to start ${packageName} service for PR #${deployment.number}: ${stderr}`)
+                // Continue with other services
+            }
+        }
+
+        // Update deployment record with new SHA
+        await updatePRDeployment(deployment.number, {
+            head_sha: newSha,
+            status: 'running',
+        })
+
+        console.log(`[pr-deploy] PR #${deployment.number} successfully updated with main branch changes`)
+        return true
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.error(`[pr-deploy] Error updating PR #${deployment.number} with main: ${message}`)
+        return false
+    } finally {
+        process.chdir(originalCwd)
+    }
+}
+
+/**
+ * Update all active PR deployments with latest main branch changes
+ * Only updates deployments where merge is successful (no conflicts)
+ */
+export async function updateAllPRDeploymentsWithMain(): Promise<{
+    failed: number
+    message: string
+    skipped: number
+    updated: number
+}> {
+    try {
+        console.log('[pr-deploy] Checking for active PR deployments to update with main...')
+
+        // Fetch main repository to ensure we have latest
+        await fetchMainRepository()
+
+        const activeDeployments = await listActivePRDeployments()
+
+        if (activeDeployments.length === 0) {
+            console.log('[pr-deploy] No active PR deployments to update')
+            return {
+                failed: 0,
+                message: 'No active PR deployments to update',
+                skipped: 0,
+                updated: 0,
+            }
+        }
+
+        console.log(`[pr-deploy] Found ${activeDeployments.length} active PR deployment(s) to update`)
+
+        let updated = 0
+        let skipped = 0
+        let failed = 0
+
+        // Update each deployment
+        for (const deployment of activeDeployments) {
+            console.log(`[pr-deploy] Updating PR #${deployment.number} (${deployment.head_ref})...`)
+
+            const success = await updatePRDeploymentWithMain(deployment)
+
+            if (success) {
+                updated++
+                console.log(`[pr-deploy] ✅ PR #${deployment.number} updated successfully`)
+            } else {
+                // Check if it was skipped due to conflicts or failed due to errors
+                // For now, we'll count merge conflicts as skipped and other errors as failed
+                skipped++
+                console.log(`[pr-deploy] ⏭️  PR #${deployment.number} skipped (merge conflicts or errors)`)
+            }
+        }
+
+        const message = `Updated ${updated} PR deployment(s), skipped ${skipped} (conflicts or errors)`
+        console.log(`[pr-deploy] ${message}`)
+
+        return {
+            failed,
+            message,
+            skipped,
+            updated,
+        }
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        console.error(`[pr-deploy] Error updating PR deployments with main: ${message}`)
+        return {
+            failed: 0,
+            message: `Failed to update PR deployments: ${message}`,
+            skipped: 0,
+            updated: 0,
         }
     }
 }

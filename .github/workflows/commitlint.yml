@@ -1,0 +1,41 @@
+name: Commitlint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  commitlint:
+    name: Validate Commit Messages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate commits
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            # For PRs, validate commits between base and head
+            bunx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+          else
+            # For pushes, validate commits in the push
+            # Handle first push (before is all zeros)
+            if [ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]; then
+              bunx commitlint --to ${{ github.event.after }} --verbose
+            else
+              bunx commitlint --from ${{ github.event.before }} --to ${{ github.event.after }} --verbose
+            fi
+          fi

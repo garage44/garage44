@@ -4,7 +4,7 @@ import {existsSync, unlinkSync} from 'fs'
 import {join as pathJoin} from 'path'
 import {findWorkspaceRoot, extractWorkspacePackages, isApplicationPackage} from './workspace'
 import {cleanupPRDeployment} from './pr-cleanup'
-import {deployPR, type PRMetadata} from './pr-deploy'
+import {deployPR, type PRMetadata, updateAllPRDeploymentsWithMain} from './pr-deploy'
 import {updatePRDeployment} from './pr-registry'
 
 interface PullRequestWebhookEvent {
@@ -130,7 +130,7 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
             console.log(`[deploy] Changed to repository directory: ${process.cwd()}`)
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error)
-            throw new Error(`Failed to change to repository directory: ${message}`)
+            throw new Error(`Failed to change to repository directory: ${message}`, {cause: error})
         }
 
         // Verify git repository
@@ -162,7 +162,7 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
             console.log(`[deploy] Bun version: ${bunVersion}`)
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error)
-            throw new Error(`Failed to verify bun installation: ${message}`)
+            throw new Error(`Failed to verify bun installation: ${message}`, {cause: error})
         }
 
         // Remove database files
@@ -424,6 +424,16 @@ export async function handleWebhook(req: Request): Promise<Response> {
         }
     }).catch((error) => {
         console.error(`[webhook] Deployment error: ${error.message}`)
+    })
+
+    // Update all active PR deployments with main branch changes
+    // This runs asynchronously and doesn't block the response
+    console.log('[webhook] Updating active PR deployments with main branch changes...')
+    updateAllPRDeploymentsWithMain().then((result) => {
+        console.log(`[webhook] PR deployments update: ${result.message}`)
+    }).catch((error) => {
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        console.error(`[webhook] Error updating PR deployments: ${errorMessage}`)
     })
 
     // Return immediately (deployment runs in background)
