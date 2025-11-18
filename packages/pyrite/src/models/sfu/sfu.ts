@@ -28,6 +28,9 @@ import {formatBytes} from '@garage44/common/lib/utils'
 import {localStream, getUserMedia, removeLocalStream} from '@/models/media'
 import {currentGroup} from '@/models/group'
 
+// Note: Presence is managed by Pyrite presence system only
+// Galene SFU no longer modifies $s.users - it only manages connection.users
+
 export const protocol = _protocol
 export const commands = _commands
 
@@ -691,23 +694,29 @@ function onUser(id, kind) {
             connection.userAction('setdata', connection.id, $s.sfu.profile)
         }
 
-        $s.users.push(user)
+        // Note: Presence is managed by Pyrite presence system, not Galene
+        // Galene users are stored in connection.users, not $s.users
+        // $s.users is only for Pyrite presence list
         events.emit('user', {action: 'add', user})
     } else if (kind === 'change') {
         if (id === $s.profile.id) {
-            const $user = $s.users.find((i) => i.id === user.id)
+            // Check permissions from Galene user data (connection.users), not $s.users
+            const galeneUser = connection.users[id]
+            const hadPresent = galeneUser?.permissions?.includes('present')
+            const hadOp = galeneUser?.permissions?.includes('op')
+            
             // Shutdown the local stream when the Present permission is taken away.
-            if ($user && $user.permissions.present && !user.permissions.present) {
+            if (hadPresent && !user.permissions.present) {
                 delUpMedia(localGlnStream)
                 $s.devices.cam.enabled = false
                 $s.devices.mic.enabled = false
 
                 notifier.notify({message: `Present permission removed in ${$s.sfu.channel.name}`, type: 'warning'})
-            } else if ($user && !$user.permissions.present && user.permissions.present) {
+            } else if (!hadPresent && user.permissions.present) {
                 notifier.notify({message: 'Present permission granted', type: 'info'})
-            } else if ($user && $user.permissions.op && !user.permissions.op) {
+            } else if (hadOp && !user.permissions.op) {
                 notifier.notify({message: 'Operator permission removed', type: 'warning'})
-            } else if ($user && !$user.permissions.op && user.permissions.op) {
+            } else if (!hadOp && user.permissions.op) {
                 notifier.notify({message: 'Operator permission granted', type: 'info'})
             }
 
@@ -716,20 +725,18 @@ function onUser(id, kind) {
             store.save()
         }
 
-        const userIndex = $s.users.findIndex((i) => i.id === user.id)
-        if (userIndex !== -1) {
-            $s.users.splice(userIndex, 1, user)
-        }
+        // Note: Presence is managed by Pyrite presence system, not Galene
+        // Galene users are stored in connection.users, not $s.users
+        // $s.users is only for Pyrite presence list
     } else if (kind === 'delete') {
         if (user.id === $s.sfu.channel.recording) {
             $s.sfu.channel.recording = false
             notifier.notify({message: `Recording stopped in ${$s.sfu.channel.name}`, type: 'info'})
         }
 
-        const userIndex = $s.users.findIndex((u) => u.id === id)
-        if (userIndex !== -1) {
-            $s.users.splice(userIndex, 1)
-        }
+        // Note: Presence is managed by Pyrite presence system, not Galene
+        // Galene users are stored in connection.users, not $s.users
+        // $s.users is only for Pyrite presence list
         events.emit('user', {action: 'del', user})
     }
 }

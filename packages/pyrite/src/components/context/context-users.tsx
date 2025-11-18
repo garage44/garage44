@@ -7,7 +7,20 @@ import {$s} from '@/app'
 
 export default function UsersContext() {
     const sortedUsers = useMemo(() => {
-        const users = [...$s.users]
+        // Deduplicate users by ID first (normalize IDs to strings for consistent comparison)
+        const seenIds = new Set<string>()
+        const uniqueUsers = $s.users.filter((user) => {
+            if (!user || !user.id) return false
+            const normalizedId = String(user.id).trim()
+            if (seenIds.has(normalizedId)) {
+                return false // Duplicate, skip
+            }
+            seenIds.add(normalizedId)
+            return true
+        })
+        
+        // Sort deduplicated users
+        const users = [...uniqueUsers]
         users.sort(function(a, b) {
             if (!a.username || !b.username) return 0
             const aLowerName = a.username.toLowerCase()
@@ -52,12 +65,6 @@ export default function UsersContext() {
                             </div> :
                             <div class='username'>
                                 {$t('user.anonymous')}
-                            </div>}
-                        {$s.users[0].id === user.id &&
-                            <div class='username'>
-                                (
-{$t('user.you')}
-)
                             </div>}
 
                         <div class='status'>

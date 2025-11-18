@@ -5,6 +5,53 @@
 
 import {$s} from '@/app'
 import {events, logger, ws} from '@garage44/common/app'
+import {effect} from '@preact/signals'
+
+// Flag to prevent infinite loops in reactive deduplication
+let isDeduplicating = false
+
+/**
+ * Remove duplicate users from $s.users array based on normalized user ID
+ * Keeps the first occurrence of each user
+ * This function is called immediately after any operation that modifies $s.users
+ */
+function deduplicateUsers() {
+    // Prevent re-entry to avoid infinite loops
+    if (isDeduplicating) return
+    if (!$s.users || $s.users.length === 0) return
+    
+    isDeduplicating = true
+    try {
+        const seenIds = new Set<string>()
+        const uniqueUsers: typeof $s.users = []
+        let duplicateCount = 0
+        
+        for (const user of $s.users) {
+            if (!user || !user.id) {
+                continue
+            }
+            
+            const normalizedId = String(user.id).trim()
+            if (!normalizedId) continue
+            
+            if (!seenIds.has(normalizedId)) {
+                seenIds.add(normalizedId)
+                uniqueUsers.push(user)
+            } else {
+                duplicateCount++
+                logger.debug(`[deduplicateUsers] Removing duplicate user: ${normalizedId} (${user.username || 'unknown'})`)
+            }
+        }
+        
+        // Only update if we found duplicates (prevents unnecessary reactivity triggers)
+        if (duplicateCount > 0) {
+            logger.info(`[deduplicateUsers] Removed ${duplicateCount} duplicate(s) from users list (${$s.users.length} -> ${uniqueUsers.length})`)
+            $s.users = uniqueUsers
+        }
+    } finally {
+        isDeduplicating = false
+    }
+}
 
 /**
  * Initialize all WebSocket subscriptions
@@ -12,6 +59,16 @@ import {events, logger, ws} from '@garage44/common/app'
  */
 export const initWebSocketSubscriptions = () => {
     logger.info('Initializing WebSocket subscriptions')
+
+    // Set up reactive deduplication - watches $s.users and removes duplicates automatically
+    effect(() => {
+        // Access $s.users to track changes
+        const users = $s.users
+        if (users && users.length > 0) {
+            // Deduplicate whenever users array changes
+            deduplicateUsers()
+        }
+    })
 
     // Listen for broadcasts from backend
     initChatSubscriptions()
@@ -175,16 +232,32 @@ const initPresenceSubscriptions = () => {
             }
 
             // If this is the current group, add user to users list
+            // Note: Skip if this is the current user joining (they're already added via joinGroup response)
             if ($s.sfu.channel.name === groupId) {
-                const existingUser = $s.users.find((u) => u.id === userId)
-                if (!existingUser) {
+                // Normalize userId to string for consistent comparison
+                if (!userId) {
+                    logger.warn(`[Presence] Skipping user add: invalid userId`)
+                    return
+                }
+                const normalizedUserId = String(userId).trim()
+                const isCurrentUser = $s.profile.id && String($s.profile.id).trim() === normalizedUserId
+                
+                // Skip adding current user - they're already added via joinGroup() response
+                if (isCurrentUser) {
+                    logger.debug(`[Presence] Skipping current user ${normalizedUserId} - already added via joinGroup response`)
+                    return
+                }
+                
+                const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedUserId)
+                if (userIndex === -1) {
+                    // User doesn't exist, add it
                     $s.users.push({
                         data: {
                             availability: {id: 'available'},
                             mic: true,
                             raisehand: false,
                         },
-                        id: userId,
+                        id: normalizedUserId,
                         permissions: {
                             op: false,
                             present: false,
@@ -192,6 +265,11 @@ const initPresenceSubscriptions = () => {
                         },
                         username,
                     })
+                    // Always deduplicate after any modification (safety net)
+                    deduplicateUsers()
+                } else {
+                    // User already exists, log and skip to prevent duplicate
+                    logger.debug(`[Presence] User ${normalizedUserId} already exists in users list, skipping add`)
                 }
             }
         })
@@ -216,11 +294,15 @@ const initPresenceSubscriptions = () => {
 
             // If this is the current group, remove user from users list
             if ($s.sfu.channel.name === groupId) {
-                const userIndex = $s.users.findIndex((u) => u.id === userId)
+                // Normalize userId to string for consistent comparison
+                const normalizedUserId = String(userId).trim()
+                const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedUserId)
                 if (userIndex !== -1) {
                     $s.users.splice(userIndex, 1)
                 }
             }
+            // Always deduplicate after any modification (safety net)
+            deduplicateUsers()
         })
 
         // User status update (broadcast from backend)
@@ -238,10 +320,14 @@ const initPresenceSubscriptions = () => {
                 }
             }
 
-            const user = $s.users.find((u) => u.id === userId)
+            // Normalize userId to string for consistent comparison
+            const normalizedUserId = String(userId).trim()
+            const user = $s.users.find((u) => u && u.id && String(u.id).trim() === normalizedUserId)
             if (user) {
                 Object.assign(user.data, status)
             }
+            // Always deduplicate after any modification (safety net)
+            deduplicateUsers()
         })
 
         // Listen for user presence updates (from /users/presence broadcast)
@@ -351,7 +437,9 @@ const initGroupSubscriptions = () => {
 
             logger.debug(`Operator action in group ${groupId}: ${action}`)
 
-            const targetUser = $s.users.find((u) => u.id === targetUserId)
+            // Normalize targetUserId to string for consistent comparison
+            const normalizedTargetUserId = String(targetUserId).trim()
+            const targetUser = $s.users.find((u) => u && u.id && String(u.id).trim() === normalizedTargetUserId)
 
             switch (action) {
                 case 'kick':
@@ -368,7 +456,7 @@ const initGroupSubscriptions = () => {
                         }
                     } else if (targetUser) {
                         // Another user was kicked
-                        const userIndex = $s.users.findIndex((u) => u.id === targetUserId)
+                        const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedTargetUserId)
                         if (userIndex !== -1) {
                             $s.users.splice(userIndex, 1)
                         }
@@ -448,25 +536,58 @@ export const joinGroup = async (groupId: string) => {
 
     // Response contains current members list
     if (response && response.members) {
-        // Update users list with current members
-        for (const member of response.members) {
-            const existingUser = $s.users.find((u) => u.id === member.id)
-            if (!existingUser) {
-                $s.users.push({
-                    data: {
-                        availability: {id: 'available'},
-                        mic: true,
-                        raisehand: false,
-                    },
-                    id: member.id,
-                    permissions: {
-                        op: false,
-                        present: false,
-                        record: false,
-                    },
-                    username: member.username,
-                })
+        // Clear existing users for this group first to avoid stale data
+        // Then add all current members
+        const currentGroupId = $s.sfu.channel.name
+        if (currentGroupId === groupId) {
+            // Remove users that are no longer in the group (keep only current members)
+            const memberIds = new Set(
+                response.members
+                    .filter(m => m && m.id)
+                    .map(m => String(m.id).trim())
+            )
+            
+            // Filter out users not in current members list
+            $s.users = $s.users.filter((u) => {
+                if (!u || !u.id) return false
+                const normalizedId = String(u.id).trim()
+                return memberIds.has(normalizedId)
+            })
+            
+            // Add/update all current members
+            for (const member of response.members) {
+                // Normalize member.id to string for consistent comparison
+                if (!member || !member.id) {
+                    logger.warn(`[joinGroup] Skipping member: invalid member data`)
+                    continue
+                }
+                const normalizedMemberId = String(member.id).trim()
+                const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedMemberId)
+                if (userIndex === -1) {
+                    // User doesn't exist, add it
+                    $s.users.push({
+                        data: {
+                            availability: {id: 'available'},
+                            mic: true,
+                            raisehand: false,
+                        },
+                        id: normalizedMemberId,
+                        permissions: {
+                            op: false,
+                            present: false,
+                            record: false,
+                        },
+                        username: member.username,
+                    })
+                } else {
+                    // User exists, update username if changed
+                    if (member.username && $s.users[userIndex].username !== member.username) {
+                        $s.users[userIndex].username = member.username
+                    }
+                }
             }
+            // Ensure no duplicates exist (safety net)
+            deduplicateUsers()
         }
     }
 }
