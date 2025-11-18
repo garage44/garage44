@@ -3,8 +3,6 @@ import {AppLayout, MenuItem, PanelMenu, Submenu, ThemeToggle} from '@garage44/co
 import {Router, Route, route, Link} from 'preact-router'
 import {useEffect} from 'preact/hooks'
 import {deepSignal} from 'deepsignal'
-import {Frontend} from './pages/frontend'
-import {Backend} from './pages/backend'
 import {Markdown} from './pages/markdown'
 import {Project} from './pages/project'
 import {Projects} from './pages/projects'
@@ -379,8 +377,6 @@ export const Main = () => {
                     <Route component={Docs} path='/projects/:projectName/docs/:section/:filename?' />
                     <Route component={Docs} path='/projects/:projectName/docs/*' />
                     <Route component={Project} path='/projects/:projectName' />
-                    <Route component={Frontend} path='/frontend' />
-                    <Route component={Backend} path='/backend' />
                     <Route component={Markdown} path='/:path+' />
                 </Router>
             </div>
