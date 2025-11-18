@@ -176,7 +176,9 @@ const initPresenceSubscriptions = () => {
 
             // If this is the current group, add user to users list
             if ($s.sfu.channel.name === groupId) {
-                const existingUser = $s.users.find((u) => u.id === userId)
+                // Normalize userId to string for consistent comparison
+                const normalizedUserId = String(userId)
+                const existingUser = $s.users.find((u) => String(u.id) === normalizedUserId)
                 if (!existingUser) {
                     $s.users.push({
                         data: {
@@ -184,7 +186,7 @@ const initPresenceSubscriptions = () => {
                             mic: true,
                             raisehand: false,
                         },
-                        id: userId,
+                        id: normalizedUserId,
                         permissions: {
                             op: false,
                             present: false,
@@ -216,7 +218,9 @@ const initPresenceSubscriptions = () => {
 
             // If this is the current group, remove user from users list
             if ($s.sfu.channel.name === groupId) {
-                const userIndex = $s.users.findIndex((u) => u.id === userId)
+                // Normalize userId to string for consistent comparison
+                const normalizedUserId = String(userId)
+                const userIndex = $s.users.findIndex((u) => String(u.id) === normalizedUserId)
                 if (userIndex !== -1) {
                     $s.users.splice(userIndex, 1)
                 }
@@ -238,7 +242,9 @@ const initPresenceSubscriptions = () => {
                 }
             }
 
-            const user = $s.users.find((u) => u.id === userId)
+            // Normalize userId to string for consistent comparison
+            const normalizedUserId = String(userId)
+            const user = $s.users.find((u) => String(u.id) === normalizedUserId)
             if (user) {
                 Object.assign(user.data, status)
             }
@@ -351,7 +357,9 @@ const initGroupSubscriptions = () => {
 
             logger.debug(`Operator action in group ${groupId}: ${action}`)
 
-            const targetUser = $s.users.find((u) => u.id === targetUserId)
+            // Normalize targetUserId to string for consistent comparison
+            const normalizedTargetUserId = String(targetUserId)
+            const targetUser = $s.users.find((u) => String(u.id) === normalizedTargetUserId)
 
             switch (action) {
                 case 'kick':
@@ -368,7 +376,7 @@ const initGroupSubscriptions = () => {
                         }
                     } else if (targetUser) {
                         // Another user was kicked
-                        const userIndex = $s.users.findIndex((u) => u.id === targetUserId)
+                        const userIndex = $s.users.findIndex((u) => String(u.id) === normalizedTargetUserId)
                         if (userIndex !== -1) {
                             $s.users.splice(userIndex, 1)
                         }
@@ -450,7 +458,9 @@ export const joinGroup = async (groupId: string) => {
     if (response && response.members) {
         // Update users list with current members
         for (const member of response.members) {
-            const existingUser = $s.users.find((u) => u.id === member.id)
+            // Normalize member.id to string for consistent comparison
+            const normalizedMemberId = String(member.id)
+            const existingUser = $s.users.find((u) => String(u.id) === normalizedMemberId)
             if (!existingUser) {
                 $s.users.push({
                     data: {
@@ -458,7 +468,7 @@ export const joinGroup = async (groupId: string) => {
                         mic: true,
                         raisehand: false,
                     },
-                    id: member.id,
+                    id: normalizedMemberId,
                     permissions: {
                         op: false,
                         present: false,
