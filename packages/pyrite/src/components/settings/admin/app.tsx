@@ -1,5 +1,5 @@
 import {useEffect} from 'preact/hooks'
-import {Router, Route, Link} from 'preact-router'
+import {Router, Route} from 'preact-router'
 import Controls from './controls/controls'
 import GroupsContext from './context/context-groups'
 import {Notifications, PanelContext} from '@garage44/common/components'

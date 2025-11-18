@@ -137,16 +137,16 @@ export const Main = () => {
             // Check permission - if permission is undefined, treat as false (no permission)
             const hasPermission = context.permission === true
 
-            if (!isAuthenticated) {
-                return 'Invalid credentials'
-            } else if (!hasPermission) {
-                return 'No permission'
-            } else {
+            if (isAuthenticated && hasPermission) {
                 notifier.notify({message: 'Login successful', type: 'info'})
                 ws.connect()
                 // Success
                 return null
             }
+            if (!isAuthenticated) {
+                return 'Invalid credentials'
+            }
+            return 'No permission'
         } catch(error) {
             logger.error('[Login] Login error:', error)
             return 'Login failed. Please try again.'
@@ -200,10 +200,10 @@ export const Main = () => {
                           )}
                         collapsed={$s.panels.menu.collapsed}
                         LinkComponent={Link}
+                        logoCommitHash={process.env.APP_COMMIT_HASH || ''}
                         logoHref='/settings/groups'
                         LogoIcon={IconLogo}
                         logoText='PYRITE'
-                        logoCommitHash={process.env.APP_COMMIT_HASH || ''}
                         logoVersion={process.env.APP_VERSION || '2.0.0'}
                         navigation={<ChannelsContext />}
                         onCollapseChange={(collapsed) => {
