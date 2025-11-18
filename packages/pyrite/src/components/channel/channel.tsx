@@ -34,9 +34,7 @@ export const Channel = ({channelSlug}: ChannelProps) => {
             // connectSFU will read credentials from $s.profile
             // It will use empty strings if not available, which may cause authentication to fail
             // but that's expected if user hasn't logged in properly
-            connectSFU().catch((error) => {
-                logger.error(`[Channel] Failed to connect to SFU for channel ${channelSlug}:`, error)
-            })
+            connectSFU().catch((error) => {logger.error(`[Channel] Failed to connect to SFU for channel ${channelSlug}:`, error)})
         }
     }, [channelSlug])
 
@@ -44,7 +42,7 @@ export const Channel = ({channelSlug}: ChannelProps) => {
     const channel = $s.channels.find((c) => c.slug === channelSlug)
 
     return (
-        <div class="c-channel">
+        <div class='c-channel'>
             <ChannelChat channelSlug={channelSlug} channel={channel} />
         </div>
     )

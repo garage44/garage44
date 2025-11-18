@@ -15,34 +15,34 @@ export default function TabMisc() {
     ]
 
     return (
-        <section class="c-admin-group-tab-misc tab-content active">
+        <section class='c-admin-group-tab-misc tab-content active'>
             <FieldText
                 value={$s.admin.group._newName}
                 onChange={(value) => $s.admin.group._newName = value}
                 help={$t('group.settings.misc.name_help')}
                 label={$t('group.settings.misc.name_label')}
-                placeholder="..."
+                placeholder='...'
             />
             <FieldText
                 value={$s.admin.group.description}
                 onChange={(value) => $s.admin.group.description = value}
                 help={$t('group.settings.misc.description_help')}
                 label={$t('group.settings.misc.description_label')}
-                placeholder="..."
+                placeholder='...'
             />
             <FieldText
                 value={$s.admin.group.contact}
                 onChange={(value) => $s.admin.group.contact = value}
                 help={$t('group.settings.misc.contact_help')}
                 label={$t('group.settings.misc.contact_label')}
-                placeholder="..."
+                placeholder='...'
             />
             <FieldText
                 value={$s.admin.group.comment}
                 onChange={(value) => $s.admin.group.comment = value}
                 help={$t('group.settings.misc.comment_help')}
                 label={$t('group.settings.misc.comment_label')}
-                placeholder="..."
+                placeholder='...'
             />
             <FieldCheckbox
                 value={$s.admin.group['allow-recording']}

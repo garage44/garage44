@@ -28,9 +28,7 @@ export function WorkspaceTranslations() {
             // Ignore events in input fields or content editable elements
             if (e.target instanceof HTMLInputElement ||
                 e.target instanceof HTMLTextAreaElement ||
-                (e.target instanceof HTMLElement && e.target.isContentEditable)) {
-                return
-            }
+                (e.target instanceof HTMLElement && e.target.isContentEditable)) {return}
 
             // Check for undo: Ctrl+Z (or Cmd+Z on Mac)
             if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
@@ -50,46 +48,45 @@ export function WorkspaceTranslations() {
         // Add event listener
         window.addEventListener('keydown', handleKeyDown)
         // Clean up event listener when component unmounts
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown)
-        }
+        return () => {window.removeEventListener('keydown', handleKeyDown)}
     }, []) // Empty dependency array means this runs once on mount
 
-    return <div class="c-translations">
+    return (
+<div class='c-translations'>
         <div className={classnames('workspace-info', {disabled: !$s.workspace})}>
-            <GroupActions className="horizontal" group={$s.workspace.i18n} path={[]}/>
-            <div className="history-actions">
+            <GroupActions className='horizontal' group={$s.workspace.i18n} path={[]} />
+            <div className='history-actions'>
                 <Icon
-                    name="chevron_left"
+                    name='chevron_left'
                     onClick={async() => {
-                        ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/undo`, {})
-                    }}
-                    tip={'History'}
-                    type="info"
+ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/undo`, {})
+}}
+                    tip='History'
+                    type='info'
                 />
                 <Icon
-                    name="history"
-                    tip={'History'}
-                    type="info"
+                    name='history'
+                    tip='History'
+                    type='info'
                 />
                 <Icon
-                    name="chevron_right"
+                    name='chevron_right'
                     onClick={async() => {
-                        ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/redo`, {})
-                    }}
-                    tip={'History'}
-                    type="info"
+ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/redo`, {})
+}}
+                    tip='History'
+                    type='info'
                 />
             </div>
-            <div className="translation-controls">
+            <div className='translation-controls'>
                 <FieldText
                     model={$s.$filter}
-                    placeholder={'Filter tag, translation or group...'}
+                    placeholder='Filter tag, translation or group...'
                 />
                 <Button
                     icon={$s.sort === 'asc' ? 'arrow_up_circle_ouline' : 'arrow_down_circle_outline'}
                     onClick={() => $s.sort = ($s.sort === 'asc' ? 'desc' : 'asc')}
-                    type="info"
+                    type='info'
                     label={`Sort: ${$s.sort === 'asc' ? 'A-Z' : 'Z-A'}`}
                 />
             </div>
@@ -101,7 +98,8 @@ export function WorkspaceTranslations() {
             filter={$s.filter}
             sort={$s.sort}
         />
-    </div>
+</div>
+    )
 }
 
 events.on('app:init', () => {
@@ -125,9 +123,7 @@ events.on('app:init', () => {
     ws.on('/i18n/state', ({i18n, timestamp, workspace_id}) => {
 
         // Only apply updates for the current workspace
-        if (!$s.workspace || $s.workspace.config.workspace_id !== workspace_id) {
-            return
-        }
+        if (!$s.workspace || $s.workspace.config.workspace_id !== workspace_id) {return}
 
         // Check if this update is newer than our current state
         // This prevents race conditions if messages arrive out of order

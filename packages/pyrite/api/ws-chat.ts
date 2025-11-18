@@ -16,9 +16,7 @@ let channelManager: ChannelManager | null = null
  * Helper function to get user ID from WebSocket context
  */
 async function getUserIdFromContext(context: {session?: {userid?: string}}): Promise<{userId: string | null; username: string | null}> {
-    if (!context.session?.userid) {
-        return {userId: null, username: null}
-    }
+    if (!context.session?.userid) {return {userId: null, username: null}}
     const user = await userManager.getUserByUsername(context.session.userid)
     return {
         userId: user?.id || null,
@@ -30,9 +28,7 @@ export const registerChatWebSocket = (wsManager: WebSocketServerManager) => {
     const api = wsManager.api
 
     // Initialize channel manager
-    if (!channelManager) {
-        channelManager = new ChannelManager(getDatabase())
-    }
+    if (!channelManager) {channelManager = new ChannelManager(getDatabase())}
 
     logger.info('[Chat WebSocket] Registering chat API routes...')
 

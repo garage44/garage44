@@ -40,7 +40,7 @@ Access the documentation via the malkovich package or visit the deployed instanc
     try {
         await writeFile(agentsPath, content, 'utf-8')
         console.log(`✅ Created AGENTS.md at ${agentsPath}`)
-    } catch (error) {
+    } catch(error) {
         console.error('❌ Failed to create AGENTS.md:', error)
         process.exit(1)
     }

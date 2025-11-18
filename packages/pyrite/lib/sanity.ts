@@ -16,11 +16,7 @@ export async function verifyConfig(app) {
     const pkg = JSON.parse(await fs.readFile(path.join(__dirname, '..', '..', 'package.json'), 'utf-8'))
     app.logger.info(`starting pyrite v${pkg.version}`)
     let configFile
-    if (app.settings.config) {
-        configFile = path.join(app.settings.config)
-    } else {
-        configFile = path.join(process.env.HOME, '.pyriterc')
-    }
+    if (app.settings.config) {configFile = path.join(app.settings.config)} else {configFile = path.join(process.env.HOME, '.pyriterc')}
     // Always keep a reference to the config file itself in the config.
     app.settings.config = configFile
 
@@ -41,9 +37,7 @@ export async function verifyConfig(app) {
                 },
             ])
             const sfuPathParts = config.sfuPath.split(path.sep)
-            if (sfuPathParts[0] === '~') {
-                sfuPathParts[0] = os.homedir()
-            }
+            if (sfuPathParts[0] === '~') {sfuPathParts[0] = os.homedir()}
 
             sfuPath = sfuPathParts.join(path.sep)
         }
@@ -114,10 +108,6 @@ export async function verifySFU() {
 
     try {
         const res = await fetch(`${app.settings.sfu.url}/stats.json`, {headers})
-        if (res.status === 401) {
-            app.logger.error('sfu endpoint unauthorized; check sfu config')
-        }
-    } catch {
-        app.logger.error(`sfu not detected (${app.settings.sfu.url})`)
-    }
+        if (res.status === 401) {app.logger.error('sfu endpoint unauthorized; check sfu config')}
+    } catch {app.logger.error(`sfu not detected (${app.settings.sfu.url})`)}
 }

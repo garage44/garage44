@@ -13,7 +13,7 @@ interface ScreenshotConfig {
 
 const SCREENSHOTS: ScreenshotConfig[] = [
     {
-        actions: async (page: Page) => {
+        actions: async(page: Page) => {
             await page.goto('http://localhost:3030')
             await page.waitForSelector('.c-login')
             await page.fill('.c-field-text input[type="text"]', 'admin')
@@ -22,8 +22,9 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         name: 'screenshot-login.png',
         url: 'http://localhost:3030',
         waitForSelector: '.c-login',
-    }, {
-        actions: async (page: Page) => {
+    },
+    {
+        actions: async(page: Page) => {
             // Login first
             await page.goto('http://localhost:3030')
             await page.waitForSelector('.c-login')
@@ -40,8 +41,9 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         },
         name: 'screenshot-config.png',
         url: 'http://localhost:3030',
-    }, {
-        actions: async (page: Page) => {
+    },
+    {
+        actions: async(page: Page) => {
             // Login first
             await page.goto('http://localhost:3030')
             await page.waitForSelector('.c-login')
@@ -61,7 +63,7 @@ const SCREENSHOTS: ScreenshotConfig[] = [
         url: 'http://localhost:3030',
     },
     {
-        actions: async (page: Page) => {
+        actions: async(page: Page) => {
             // Login first
             await page.goto('http://localhost:3030')
             await page.waitForSelector('.c-login')
@@ -91,7 +93,7 @@ async function waitForServer(maxAttempts = 30): Promise<boolean> {
             if (response.ok || response.status === 404) {
                 return true
             }
-        } catch (_error) {}
+        } catch(_error) {}
 
         console.log(`Waiting for server... (${i + 1}/${maxAttempts})`)
         await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -142,15 +144,14 @@ async function takeScreenshot(browser: Browser, config: ScreenshotConfig): Promi
         })
 
         console.log(`✅ Screenshot saved: ${config.name}`)
-
-    } catch (error) {
+    } catch(error) {
         console.error(`❌ Failed to take screenshot ${config.name}:`, error.message)
 
         // Log current URL for debugging
         try {
             const currentUrl = page.url()
             console.log(`  📍 Current URL: ${currentUrl}`)
-        } catch (_e) {
+        } catch(_e) {
             // Ignore if page is closed
         }
 
@@ -194,8 +195,10 @@ export async function takeScreenshots(): Promise<void> {
                 '--disable-setuid-sandbox',
                 '--hide-scrollbars',
             ],
-            headless: false, // Show browser window for debugging
-            slowMo: 1000, // Slow down actions by 1 second each
+            // Show browser window for debugging
+            headless: false,
+            // Slow down actions by 1 second each
+            slowMo: 1000,
         })
 
         // Take screenshots
@@ -205,8 +208,7 @@ export async function takeScreenshots(): Promise<void> {
         }
 
         console.log('\n🎉 All screenshots captured successfully!')
-
-    } catch (error) {
+    } catch(error) {
         console.error('❌ Screenshot capture failed:', error.message)
         throw error
     } finally {

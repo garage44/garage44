@@ -36,14 +36,11 @@ export function Config() {
     })
 
     useEffect(() => {
-
-        (async() => {
-            await loadConfig()
-        })()
-    }, [])
+(async() => {await loadConfig()})()
+}, [])
 
     return (
-        <div class="c-config view">
+        <div class='c-config view'>
             <FieldSelect
                 help={$t(i18n.config.help.ui_language)}
                 label={$t(i18n.config.label.ui_language)}
@@ -53,11 +50,12 @@ export function Config() {
                 validation={validation?.value.language_ui}
             />
 
-            <WorkspaceSelector workspaces={$s.workspaces}/>
+            <WorkspaceSelector workspaces={$s.workspaces} />
 
-            <div className="translators">
+            <div className='translators'>
                 {Object.values($s.enola.engines).map((engine) => {
-                    return <div class="section">
+                    return (
+<div class='section'>
                         {/* $t('config.help.anthropic_base_url') */}
                         {/* $t('config.help.anthropic_key') */}
                         {/* $t('config.help.deepl_base_url') */}
@@ -70,18 +68,21 @@ export function Config() {
                             help={$t(i18n.config.help[`${engine.name}_key` as keyof typeof i18n.config.help])}
                             label={$t(i18n.config.label[`${engine.name}_key` as keyof typeof i18n.config.label])}
                             model={engine.$api_key}
-                            type="password"
+                            type='password'
                             copyable={true}
                             validation={validation?.value[`${engine.name}_key`]}
                         />
 
-                        {'base_url' in engine && <FieldText
-                            help={$t(i18n.config.help[`${engine.name}_base_url` as keyof typeof i18n.config.help])}
-                            label={$t(i18n.config.label[`${engine.name}_base_url` as keyof typeof i18n.config.label])}
-                            model={engine.$base_url}
-                            validation={validation?.value[`${engine.name}_base_url`]}
-                        />}
-                    </div>
+                        {'base_url' in engine && (
+<FieldText
+    help={$t(i18n.config.help[`${engine.name}_base_url` as keyof typeof i18n.config.help])}
+    label={$t(i18n.config.label[`${engine.name}_base_url` as keyof typeof i18n.config.label])}
+    model={engine.$base_url}
+    validation={validation?.value[`${engine.name}_base_url`]}
+/>
+                        )}
+</div>
+                    )
                 })}
             </div>
 
@@ -100,7 +101,7 @@ export function Config() {
                     notifier.notify({message: $t(i18n.notifications.config_updated), type: 'info'})
                 }}
                 tip={errors?.value}
-                type="info"
+                type='info'
             />
         </div>
     )

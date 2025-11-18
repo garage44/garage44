@@ -19,9 +19,7 @@ export default function(router: unknown) {
         // Serve the recording file
         try {
             const file = Bun.file(recordingTarget)
-            if (await file.exists()) {
-                return new Response(file)
-            }
+            if (await file.exists()) {return new Response(file)}
             return new Response(JSON.stringify({error: 'recording not found'}), {
                 headers: {'Content-Type': 'application/json'},
                 status: 404,

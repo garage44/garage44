@@ -23,7 +23,7 @@ async function restartMalkovichService(): Promise<void> {
             const stdout = restartResult.stdout?.toString() || ''
             console.warn(`[pr-cleanup] Failed to restart malkovich service (non-fatal): ${stderr || stdout || 'Unknown error'}`)
         }
-    } catch (error) {
+    } catch(error) {
         const message = error instanceof Error ? error.message : String(error)
         console.warn(`[pr-cleanup] Error restarting malkovich service (non-fatal): ${message}`)
     }
@@ -64,15 +64,18 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
             // Wait a moment for processes to fully stop
             await new Promise((resolve) => setTimeout(resolve, 1000))
 
-            // Kill any remaining processes that might be holding ports
-            // Discover which packages were deployed to determine ports
+            /*
+             * Kill any remaining processes that might be holding ports
+             * Discover which packages were deployed to determine ports
+             */
             const repoDir = `${deployment.directory}/repo`
             let packagesToClean: string[] = []
 
             if (existsSync(repoDir)) {
                 const allPackages = extractWorkspacePackages(repoDir)
                 const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
-                packagesToClean = [...appPackages, 'malkovich'] // Always include malkovich
+                // Always include malkovich
+                packagesToClean = [...appPackages, 'malkovich']
             } else {
                 // Fallback: use known packages if repo directory doesn't exist
                 packagesToClean = ['expressio', 'pyrite', 'malkovich']
@@ -91,7 +94,7 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
                 await $`sudo fuser -k ${port}/tcp 2>/dev/null || true`.quiet().nothrow()
             }
             console.log('[pr-cleanup] Killed any remaining processes on PR ports')
-        } catch (error) {
+        } catch(error) {
             console.warn('[pr-cleanup] Failed to stop services:', error)
         }
 
@@ -109,7 +112,7 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
                     console.warn('[pr-cleanup] Failed to remove systemd units:', stderr)
                 }
             }
-        } catch (error) {
+        } catch(error) {
             console.warn('[pr-cleanup] Failed to remove systemd units:', error)
         }
 
@@ -125,14 +128,17 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
             if (existsSync(repoDir)) {
                 const allPackages = extractWorkspacePackages(repoDir)
                 const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
-                packagesToClean = [...appPackages, 'malkovich'] // Always include malkovich
+                // Always include malkovich
+                packagesToClean = [...appPackages, 'malkovich']
             } else {
                 // Fallback: use known packages if repo directory doesn't exist
                 packagesToClean = ['expressio', 'pyrite', 'malkovich']
             }
 
-            // Remove nginx configs for each package subdomain
-            // Replace with a "deployment removed" page instead of deleting
+            /*
+             * Remove nginx configs for each package subdomain
+             * Replace with a "deployment removed" page instead of deleting
+             */
             for (const packageName of packagesToClean) {
                 const subdomain = `pr-${prNumber}-${packageName}.garage44.org`
                 const configFile = `/etc/nginx/sites-available/${subdomain}`
@@ -168,7 +174,15 @@ server {
     add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
 
     # Return 410 Gone (resource permanently removed) with HTML response
-    return 410 '<!DOCTYPE html><html><head><title>PR Deployment Removed</title><style>body{font-family:system-ui,sans-serif;text-align:center;padding:50px;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:white;padding:40px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}h1{color:#333;margin-bottom:20px}p{color:#666;line-height:1.6}</style></head><body><div class="container"><h1>PR Deployment Removed</h1><p>This PR deployment (PR #${prNumber}) has been removed.</p><p>PR deployments are automatically cleaned up when the PR is closed or after 7 days.</p></div></body></html>';
+    return 410 '<!DOCTYPE html><html><head><title>PR Deployment Removed</title>'
+        '<style>body{font-family:system-ui,sans-serif;text-align:center;padding:50px;background:#f5f5f5}'
+        '.container{max-width:600px;margin:0 auto;background:white;padding:40px;'
+        'border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}'
+        'h1{color:#333;margin-bottom:20px}p{color:#666;line-height:1.6}</style></head>'
+        '<body><div class="container"><h1>PR Deployment Removed</h1>'
+        '<p>This PR deployment (PR #${prNumber}) has been removed.</p>'
+        '<p>PR deployments are automatically cleaned up when the PR is closed or after 7 days.</p>'
+        '</div></body></html>';
     add_header Content-Type "text/html" always;
 }
 `
@@ -185,8 +199,10 @@ server {
             }
 
             await $`sudo nginx -s reload`.quiet()
-            console.log(`[pr-cleanup] Updated nginx configurations to show "deployment removed" for ${packagesToClean.length} package(s)`)
-        } catch (error) {
+            console.log(
+                `[pr-cleanup] Updated nginx configurations to show "deployment removed" for ${packagesToClean.length} package(s)`,
+            )
+        } catch(error) {
             console.warn('[pr-cleanup] Failed to remove nginx configs:', error)
         }
 
@@ -194,7 +210,7 @@ server {
         try {
             await $`rm -rf ${deployment.directory}`.quiet()
             console.log('[pr-cleanup] Removed deployment directory')
-        } catch (error) {
+        } catch(error) {
             console.warn('[pr-cleanup] Failed to remove directory:', error)
         }
 
@@ -210,7 +226,7 @@ server {
             message: `PR #${prNumber} cleaned up successfully`,
             success: true,
         }
-    } catch (error) {
+    } catch(error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-cleanup] Cleanup failed: ${message}`)
 
@@ -249,14 +265,14 @@ export async function cleanupStaleDeployments(
             }
         }
 
-        const message = cleaned > 0
-            ? `Cleaned up ${cleaned} stale deployment(s)`
-            : 'No stale deployments found'
+        const message = cleaned > 0 ?
+            `Cleaned up ${cleaned} stale deployment(s)` :
+            'No stale deployments found'
 
         console.log(`[pr-cleanup] ${message}`)
 
         return {cleaned, message}
-    } catch (error) {
+    } catch(error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-cleanup] Stale cleanup failed: ${message}`)
         return {cleaned: 0, message: `Cleanup failed: ${message}`}
@@ -287,7 +303,8 @@ export async function listPRDeployments(): Promise<void> {
         if (existsSync(repoDir)) {
             const allPackages = extractWorkspacePackages(repoDir)
             const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
-            packagesToShow = [...appPackages, 'malkovich'] // Always include malkovich
+            // Always include malkovich
+            packagesToShow = [...appPackages, 'malkovich']
         } else {
             // Fallback: use known packages if repo directory doesn't exist
             packagesToShow = ['expressio', 'pyrite', 'malkovich']

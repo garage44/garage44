@@ -8,13 +8,13 @@ export default function TabChannels() {
     // Use DeepSignal for component state (per-instance, stable across renders)
     const stateRef = useRef(deepSignal({
         channels: [] as Channel[],
-        loading: false,
         editing: null as number | null,
         formData: {
             description: '',
             name: '',
             slug: '',
         },
+        loading: false,
     }))
     const state = stateRef.current
 
@@ -23,16 +23,10 @@ export default function TabChannels() {
         try {
             const data = await api.get('/api/channels')
             state.channels = Array.isArray(data) ? data : []
-        } catch {
-            notifier.notify({level: 'error', message: 'Failed to load channels'})
-        } finally {
-            state.loading = false
-        }
+        } catch {notifier.notify({level: 'error', message: 'Failed to load channels'})} finally {state.loading = false}
     }
 
-    useEffect(() => {
-        loadChannels()
-    }, [])
+    useEffect(() => {loadChannels()}, [])
 
     const handleCreate = async () => {
         if (!state.formData.name || !state.formData.slug) {
@@ -42,9 +36,9 @@ export default function TabChannels() {
 
         try {
             const newChannel = await api.post('/api/channels', {
+                description: state.formData.description,
                 name: state.formData.name,
                 slug: state.formData.slug,
-                description: state.formData.description,
             })
             state.channels = [...state.channels, newChannel]
             state.formData = {description: '', name: '', slug: ''}
@@ -58,9 +52,9 @@ export default function TabChannels() {
     const handleUpdate = async (channelId: number) => {
         try {
             const updated = await api.put(`/api/channels/${channelId}`, {
+                description: state.formData.description,
                 name: state.formData.name,
                 slug: state.formData.slug,
-                description: state.formData.description,
             })
             state.channels = state.channels.map((c) => c.id === channelId ? updated : c)
             state.editing = null
@@ -101,8 +95,8 @@ export default function TabChannels() {
     }
 
     return (
-        <section class="c-settings-tab-channels">
-            <div class="header">
+        <section class='c-settings-tab-channels'>
+            <div class='header'>
                 <h2>Channel Configuration</h2>
             </div>
 
@@ -111,90 +105,93 @@ export default function TabChannels() {
             ) : (
                 <>
                     {state.editing === null && (
-                        <div class="create-form">
+                        <div class='create-form'>
                             <h3>Create New Channel</h3>
-                            <div class="form">
+                            <div class='form'>
                                 <FieldText
                                     model={state.formData.$name}
-                                    label="Channel Name"
-                                    placeholder="Enter channel name"
+                                    label='Channel Name'
+                                    placeholder='Enter channel name'
                                 />
                                 <FieldText
                                     model={state.formData.$slug}
-                                    label="Slug (Galene Group Name)"
-                                    placeholder="Enter slug (must match Galene group name)"
-                                    help="This slug will be used as the Galene group name"
+                                    label='Slug (Galene Group Name)'
+                                    placeholder='Enter slug (must match Galene group name)'
+                                    help='This slug will be used as the Galene group name'
                                 />
                                 <FieldText
                                     model={state.formData.$description}
-                                    label="Description"
-                                    placeholder="Enter channel description"
+                                    label='Description'
+                                    placeholder='Enter channel description'
                                 />
-                                <div class="actions">
+                                <div class='actions'>
                                     <Button
-                                        icon="plus"
-                                        label="Create Channel"
+                                        icon='plus'
+                                        label='Create Channel'
                                         onClick={handleCreate}
-                                        type="success"
+                                        type='success'
                                     />
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    <div class="list">
+                    <div class='list'>
                         {state.channels.map((channel) => (
-                            <div key={channel.id} class="item">
+                            <div key={channel.id} class='item'>
                                 {state.editing === channel.id ? (
-                                    <div class="form">
+                                    <div class='form'>
                                         <FieldText
                                             model={state.formData.$name}
-                                            label="Channel Name"
+                                            label='Channel Name'
                                         />
                                         <FieldText
                                             model={state.formData.$slug}
-                                            label="Slug (Galene Group Name)"
-                                            help="This slug will be used as the Galene group name"
+                                            label='Slug (Galene Group Name)'
+                                            help='This slug will be used as the Galene group name'
                                         />
                                         <FieldText
                                             model={state.formData.$description}
-                                            label="Description"
+                                            label='Description'
                                         />
-                                        <div class="actions">
+                                        <div class='actions'>
                                             <Button
-                                                icon="save"
-                                                label="Save"
+                                                icon='save'
+                                                label='Save'
                                                 onClick={() => handleUpdate(channel.id)}
-                                                type="success"
+                                                type='success'
                                             />
                                             <Button
-                                                icon="close"
-                                                label="Cancel"
+                                                icon='close'
+                                                label='Cancel'
                                                 onClick={cancelEdit}
-                                                type="default"
+                                                type='default'
                                             />
                                         </div>
                                     </div>
                                 ) : (
-                                    <div class="content">
+                                    <div class='content'>
                                         <div>
                                             <h3>{channel.name}</h3>
-                                            <p class="slug">Slug: {channel.slug}</p>
+                                            <p class='slug'>
+Slug:
+{channel.slug}
+                                            </p>
                                             <p>{channel.description || 'No description'}</p>
                                         </div>
-                                        <div class="actions">
+                                        <div class='actions'>
                                             <Button
-                                                icon="edit"
+                                                icon='edit'
                                                 onClick={() => startEdit(channel)}
-                                                tip="Edit"
-                                                variant="menu"
+                                                tip='Edit'
+                                                variant='menu'
                                             />
                                             <Button
-                                                icon="trash"
+                                                icon='trash'
                                                 onClick={() => handleDelete(channel.id)}
-                                                tip="Delete"
-                                                type="danger"
-                                                variant="menu"
+                                                tip='Delete'
+                                                type='danger'
+                                                variant='menu'
                                             />
                                         </div>
                                     </div>
@@ -202,7 +199,7 @@ export default function TabChannels() {
                             </div>
                         ))}
                         {state.channels.length === 0 && (
-                            <div class="empty">
+                            <div class='empty'>
                                 <p>No channels yet. Create your first channel above.</p>
                             </div>
                         )}

@@ -21,12 +21,8 @@ export const Main = () => {
             // This ensures profile is populated on page load when user is already authenticated
             if (context.authenticated && context.username) {
                 $s.profile.username = context.username
-                if (context.id) {
-                    $s.profile.id = context.id
-                }
-                if (context.password) {
-                    $s.profile.password = context.password
-                }
+                if (context.id) {$s.profile.id = context.id}
+                if (context.password) {$s.profile.password = context.password}
                 if (context.profile) {
                     $s.profile.avatar = context.profile.avatar || 'placeholder-1.png'
                     $s.profile.displayName = context.profile.displayName || context.username || 'User'
@@ -50,9 +46,7 @@ export const Main = () => {
                     $s.chat.emoji.list = JSON.parse(await api.get('/api/chat/emoji'))
                     store.save()
                 }
-                for (const emoji of $s.chat.emoji.list) {
-                    emojiLookup.add(emoji.codePointAt())
-                }
+                for (const emoji of $s.chat.emoji.list) {emojiLookup.add(emoji.codePointAt())}
 
                 // Load current user info to populate $s.profile
                 // IMPORTANT: Preserve existing credentials (username/password) that were set during login
@@ -65,30 +59,22 @@ export const Main = () => {
 
                         $s.profile.id = userData.id
                         // Only set username if not already set (preserve login credentials)
-                        if (!existingUsername && userData.username) {
-                            $s.profile.username = userData.username
-                        }
+                        if (!existingUsername && userData.username) {$s.profile.username = userData.username}
                         $s.profile.displayName = userData.profile?.displayName || userData.username || 'User'
                         $s.profile.avatar = userData.profile?.avatar || 'placeholder-1.png'
 
                         // Restore password if it was set (it won't come from API)
-                        if (existingPassword) {
-                            $s.profile.password = existingPassword
-                        }
+                        if (existingPassword) {$s.profile.password = existingPassword}
 
                         // Ensure chat.users entry exists for backward compatibility
-                        if (!$s.chat.users) {
-                            $s.chat.users = {}
-                        }
+                        if (!$s.chat.users) {$s.chat.users = {}}
                         ;($s.chat.users as Record<string, {avatar: string; username: string}>)[userData.id] = {
                             avatar: $s.profile.avatar,
                             username: $s.profile.username,
                         }
                         logger.info(`[Main] Loaded user: ${userData.id}, avatar: ${$s.profile.avatar}, username preserved: ${!!existingUsername}, password preserved: ${!!existingPassword}`)
                     }
-                } catch (error) {
-                    logger.warn('[Main] Failed to load current user:', error)
-                }
+                } catch (error) {logger.warn('[Main] Failed to load current user:', error)}
             }
         })()
     }, [])
@@ -107,15 +93,9 @@ export const Main = () => {
             $s.profile.password = password
 
             // Also populate profile from context response (username, id, avatar, displayName, password)
-            if (context.username) {
-                $s.profile.username = context.username
-            }
-            if (context.password) {
-                $s.profile.password = context.password
-            }
-            if (context.id) {
-                $s.profile.id = context.id
-            }
+            if (context.username) {$s.profile.username = context.username}
+            if (context.password) {$s.profile.password = context.password}
+            if (context.id) {$s.profile.id = context.id}
             if (context.profile) {
                 $s.profile.avatar = context.profile.avatar || 'placeholder-1.png'
                 $s.profile.displayName = context.profile.displayName || context.username || 'User'
@@ -128,11 +108,7 @@ export const Main = () => {
             // Check permission - if permission is undefined, treat as false (no permission)
             const hasPermission = context.permission === true
 
-            if (!isAuthenticated) {
-                return 'Invalid credentials'
-            } else if (!hasPermission) {
-                return 'No permission'
-            } else {
+            if (!isAuthenticated) {return 'Invalid credentials'} else if (!hasPermission) {return 'No permission'} else {
                 notifier.notify({message: 'Login successful', type: 'info'})
                 ws.connect()
                 return null // Success
@@ -153,29 +129,29 @@ export const Main = () => {
         route('/')
     }
 
-    if ($s.admin.authenticated === null) {
-        return null
-    }
+    if ($s.admin.authenticated === null) {return null}
 
     if (!$s.admin.authenticated) {
-        return <Login
-            animated={true}
-            logo='/public/img/logo.svg'
-            title="Pyrite"
-            onLogin={handleLogin}
-        />
+        return (
+<Login
+    animated={true}
+    logo='/public/img/logo.svg'
+    title='Pyrite'
+    onLogin={handleLogin}
+/>
+        )
     }
 
     return (
-        <div class="c-conference-app app">
+        <div class='c-conference-app app'>
             <AppLayout
-                menu={
+                menu={(
                     <PanelMenu
-                        actions={
+                        actions={(
                             <UserMenu
                                 collapsed={$s.panels.menu.collapsed}
                                 onLogout={handleLogout}
-                                settingsHref="/settings"
+                                settingsHref='/settings'
                                 user={{
                                     id: $s.profile.id || undefined,
                                     profile: {
@@ -184,36 +160,39 @@ export const Main = () => {
                                     },
                                 }}
                             />
-                        }
+                          )}
                         collapsed={$s.panels.menu.collapsed}
                         onCollapseChange={(collapsed) => {
                             $s.panels.menu.collapsed = collapsed
                             store.save()
                         }}
-                        logoHref="/settings/groups"
-                        logoText="PYRITE"
+                        logoHref='/settings/groups'
+                        logoText='PYRITE'
                         logoVersion={process.env.APP_VERSION || '2.0.0'}
                         LogoIcon={IconLogo}
                         LinkComponent={Link}
                         navigation={<ChannelsContext />}
                     />
-                }
+                  )}
                 context={$s.chat.activeChannelSlug ? <PanelContextSfu /> : null}
             >
                 <Router>
-                    <Route path="/channels/:channelSlug/devices" component={Channel} />
-                    <Route path="/channels/:channelSlug" component={Channel} />
-                    <Route path="/settings/users/new" component={Settings} />
-                    <Route path="/settings/users/:userId" component={Settings} />
-                    <Route path="/settings" component={Settings} />
-                    <Route path="/settings/:tabId" component={Settings} />
-                    <Route default component={() => (
-                        <div class="c-welcome">
+                    <Route path='/channels/:channelSlug/devices' component={Channel} />
+                    <Route path='/channels/:channelSlug' component={Channel} />
+                    <Route path='/settings/users/new' component={Settings} />
+                    <Route path='/settings/users/:userId' component={Settings} />
+                    <Route path='/settings' component={Settings} />
+                    <Route path='/settings/:tabId' component={Settings} />
+                    <Route
+                        default
+                        component={() => (
+                        <div class='c-welcome'>
                             <IconLogo />
                             <h1>Welcome to Pyrite</h1>
                             <p>Select a channel from the sidebar to start chatting.</p>
                         </div>
-                    )} />
+                        )}
+                    />
                 </Router>
                 <Notifications notifications={$s.notifications} />
             </AppLayout>

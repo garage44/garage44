@@ -6,11 +6,11 @@ interface EmojiProps {
 
 export default function Emoji({onselect}: EmojiProps) {
     return (
-        <div class="c-emoji">
+        <div class='c-emoji'>
             {$s.chat.emoji.list.map((emoji, index) => (
                 <div
                     key={index}
-                    class="emoji"
+                    class='emoji'
                     onClick={(e) => onselect(e as MouseEvent, emoji)}
                 >
                     {emoji}

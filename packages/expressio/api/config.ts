@@ -60,11 +60,9 @@ export default function apiConfig(router) {
             await workspaces.delete(workspace.config.workspace_id)
         }
         // Add missing workspaces (only if source_file is provided)
-        for (const description of body.workspaces) {
-            if (!workspaces.get(description.workspace_id) && description.source_file) {
-                await workspaces.add({source_file: description.source_file, workspace_id: description.workspace_id})
-            }
-        }
+        for (const description of body.workspaces) {if (!workspaces.get(description.workspace_id) && description.source_file) {
+await workspaces.add({source_file: description.source_file, workspace_id: description.workspace_id})
+}}
 
         await saveConfig()
 

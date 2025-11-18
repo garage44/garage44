@@ -39,26 +39,18 @@ export default function Message({channelSlug, message}: MessageProps) {
                 }
 
                 messageData.push({type: 'emoji', value: char})
-            } else {
-                textBlock.value = textBlock.value + char
-            }
+            } else {textBlock.value = textBlock.value + char}
         }
         // Flush blocks.
-        if (textBlock.value.length) {
-            messageData.push(textBlock)
-        }
+        if (textBlock.value.length) {messageData.push(textBlock)}
 
         for (const [index, block] of messageData.entries()) {
             if (block.type !== 'text') continue
             const nodes = block.value.split(urlRegex).filter((i) => (!['http', 'https'].includes(i)))
             const replaceBlocks: MessageBlock[] = []
             for (const node of nodes) {
-                if (node.match(urlRegex)) {
-                    replaceBlocks.push({type: 'url', value: node})
-                } else {
-                    replaceBlocks.push({type: 'text', value: node})
-                }
-            }
+if (node.match(urlRegex)) {replaceBlocks.push({type: 'url', value: node})} else {replaceBlocks.push({type: 'text', value: node})}
+}
             messageData.splice(index, 1, ...replaceBlocks)
         }
 
@@ -74,15 +66,11 @@ export default function Message({channelSlug, message}: MessageProps) {
     let avatarUrl: string | null = null
     if (message.user_id) {
         // Try global users first (available across all channels)
-        if ($s.chat.users?.[message.user_id]) {
-            avatarUrl = getAvatarUrl($s.chat.users[message.user_id].avatar, message.user_id)
-        } else if (channelSlug) {
+        if ($s.chat.users?.[message.user_id]) {avatarUrl = getAvatarUrl($s.chat.users[message.user_id].avatar, message.user_id)} else if (channelSlug) {
             // Fallback to channel members for backward compatibility
             const channelKey = channelSlug
             const channel = $s.chat.channels[channelKey]
-            if (channel?.members?.[message.user_id]) {
-                avatarUrl = getAvatarUrl(channel.members[message.user_id].avatar, message.user_id)
-            }
+            if (channel?.members?.[message.user_id]) {avatarUrl = getAvatarUrl(channel.members[message.user_id].avatar, message.user_id)}
         }
     }
 
@@ -100,10 +88,13 @@ export default function Message({channelSlug, message}: MessageProps) {
         <div class={classnames('message', {command: !message.nick, [message.kind]: true})}>
             {message.kind === 'me' && (
                 <div>
-                    <div class="text">
-                        {message.nick} {$t(message.message)}...
+                    <div class='text'>
+                        {message.nick} 
+{' '}
+{$t(message.message)}
+...
                     </div>
-                    <div class="time">
+                    <div class='time'>
                         {formatTime(message.time)}
                     </div>
                 </div>
@@ -113,15 +104,15 @@ export default function Message({channelSlug, message}: MessageProps) {
                 <>
                     {message.nick && (
                         <header>
-                            <div class="author">
+                            <div class='author'>
                                 {avatarUrl ? (
-                                    <img src={avatarUrl} alt={message.nick} class="avatar" />
+                                    <img src={avatarUrl} alt={message.nick} class='avatar' />
                                 ) : (
-                                    <div class="avatar-initials">{getInitials(message.nick)}</div>
+                                    <div class='avatar-initials'>{getInitials(message.nick)}</div>
                                 )}
-                                <span class="username">{message.nick}</span>
+                                <span class='username'>{message.nick}</span>
                             </div>
-                            <div class="time">
+                            <div class='time'>
                                 {formatTime(message.time)}
                             </div>
                         </header>
@@ -129,10 +120,10 @@ export default function Message({channelSlug, message}: MessageProps) {
                     <section>
                         {messageModel.map((msgModel, index) => (
                             <span key={index}>
-                                {msgModel.type === 'text' && <span class="text">{msgModel.value}</span>}
-                                {msgModel.type === 'emoji' && <span class="emoji">{msgModel.value}</span>}
+                                {msgModel.type === 'text' && <span class='text'>{msgModel.value}</span>}
+                                {msgModel.type === 'emoji' && <span class='emoji'>{msgModel.value}</span>}
                                 {msgModel.type === 'url' && (
-                                    <a href={msgModel.value} target="_blank" rel="noopener noreferrer" class="url">
+                                    <a href={msgModel.value} target='_blank' rel='noopener noreferrer' class='url'>
                                         {msgModel.value}
                                     </a>
                                 )}

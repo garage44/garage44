@@ -38,9 +38,7 @@ async function initConfig(config) {
     const envConfigPath = process.env.CONFIG_PATH
     const configPath = envConfigPath || path.join(homedir(), '.pyriterc')
     // Check if the config file exists
-    if (!await fs.pathExists(configPath)) {
-        await saveConfig()
-    }
+    if (!await fs.pathExists(configPath)) {await saveConfig()}
     return config
 }
 

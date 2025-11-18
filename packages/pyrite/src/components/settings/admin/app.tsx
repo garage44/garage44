@@ -16,11 +16,11 @@ export const AdminApp = () => {
     }, [])
 
     return (
-        <div class="c-admin-app app">
+        <div class='c-admin-app app'>
             <PanelContext
                 collapsed={$s.panels.context.collapsed}
-                logoHref="/settings/groups"
-                logoText="PYRITE"
+                logoHref='/settings/groups'
+                logoText='PYRITE'
                 logoVersion={process.env.APP_VERSION || '2.0.0'}
                 LogoIcon={IconLogo}
                 LinkComponent={Link}
@@ -30,10 +30,10 @@ export const AdminApp = () => {
             </PanelContext>
             <Controls />
             <Router>
-                <Route path="/settings/groups" component={Groups} />
-                <Route path="/settings/groups/:groupId" component={Groups} />
-                <Route path="/settings/users" component={Users} />
-                <Route path="/settings/users/:userId" component={Users} />
+                <Route path='/settings/groups' component={Groups} />
+                <Route path='/settings/groups/:groupId' component={Groups} />
+                <Route path='/settings/users' component={Users} />
+                <Route path='/settings/users/:userId' component={Users} />
                 <Route default component={Groups} />
             </Router>
             <Notifications notifications={$s.notifications} />

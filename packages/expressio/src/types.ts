@@ -78,6 +78,7 @@ interface ExpressioStateBase {
         username: string
     }
     sort: 'asc' | 'desc'
+
     /** Keeps track which tags have been updated for visual feedback */
     tags: {
         updated: string

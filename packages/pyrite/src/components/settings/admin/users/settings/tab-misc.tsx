@@ -4,18 +4,18 @@ import {$t} from '@garage44/common/app'
 
 export default function TabMisc() {
     return (
-        <section class="c-users-settings-misc tab-content active">
+        <section class='c-users-settings-misc tab-content active'>
             <FieldText
                 value={$s.admin.user.name}
                 onChange={(value) => $s.admin.user.name = value}
                 label={$t('user.settings.misc.username_label')}
-                placeholder="..."
+                placeholder='...'
             />
             <FieldText
                 value={$s.admin.user.password}
                 onChange={(value) => $s.admin.user.password = value}
                 label={$t('user.settings.misc.password_label')}
-                placeholder="..."
+                placeholder='...'
             />
             <FieldCheckbox
                 value={$s.admin.user.admin}

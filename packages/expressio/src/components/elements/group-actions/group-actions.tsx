@@ -15,20 +15,15 @@ interface TranslationGroup {
 }
 
 export function GroupActions({className, group, path}: {className?: string; group: TranslationGroup; path: string[]}) {
-    return <div class={classnames('c-group-actions', className)}>
-        <div className="collapse-toggle">
+    return (
+<div class={classnames('c-group-actions', className)}>
+        <div className='collapse-toggle'>
             <Icon
                 disabled={$s.filter.length > 0}
                 name={(() => {
-                    if ($s.env.ctrlKey) {
-                        return 'plus_collaped'
-                    }
-                    if ($s.env.shiftKey) {
-                        return 'plus_extra'
-                    }
-                    if (group._collapsed) {
-                        return 'plus'
-                    }
+                    if ($s.env.ctrlKey) {return 'plus_collaped'}
+                    if ($s.env.shiftKey) {return 'plus_extra'}
+                    if (group._collapsed) {return 'plus'}
                     return 'minus'
 
                 })()}
@@ -39,38 +34,34 @@ export function GroupActions({className, group, path}: {className?: string; grou
                     const newCollapsedState = forceUncollapse ? false : !group._collapsed
                     // Ctrl-click will uncollapse everything, Alt-click or collapsed state will collapse source tags
                     let tagModifier = null
-                    if (event.ctrlKey) {
-                        tagModifier = {_collapsed: false}
-                    } else if (event.shiftKey || newCollapsedState) {
-                        tagModifier = {_collapsed: true}
-                    }
+                    if (event.ctrlKey) {tagModifier = {_collapsed: false}} else if (event.shiftKey || newCollapsedState) {tagModifier = {_collapsed: true}}
                     ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/collapse`, {
                         path,
                         tag_modifier: tagModifier,
                         value: {_collapsed: newCollapsedState},
                     })
                 }}
-                size="s"
+                size='s'
                 tip={group._collapsed ? $t(i18n.translation.tip.translation_view) : $t(i18n.translation.tip.translation_hide)}
-                type="info"
+                type='info'
             />
         </div>
 
-        <div class="group-actions">
+        <div class='group-actions'>
             <Icon
-                name="folder_plus_outline"
+                name='folder_plus_outline'
                 onClick={async() => {
                     await ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
                         path: [...path, `group_${randomId()}`],
                         value: {},
                     })
                 }}
-                size="s"
+                size='s'
                 tip={$t(i18n.translation_group.tip.add_group)}
-                type="info"
+                type='info'
             />
             <Icon
-                name="tag_plus_outline"
+                name='tag_plus_outline'
                 onClick={async() => {
                     const id = `tag_${randomId()}`
                     const targetPath = [...path, id]
@@ -89,13 +80,13 @@ export function GroupActions({className, group, path}: {className?: string; grou
                         value: ref[id],
                     })
                 }}
-                size="s"
+                size='s'
                 tip={$t(i18n.translation_group.tip.add_tag)}
-                type="info"
+                type='info'
             />
 
             <Icon
-                name="translate"
+                name='translate'
                 onClick={async() => {
                     try {
                         // Translate the group
@@ -124,22 +115,25 @@ export function GroupActions({className, group, path}: {className?: string; grou
                         })
                     }
                 }}
-                size="s"
+                size='s'
                 tip={$s.env.ctrlKey ? $t(i18n.translation.tip.translate_group_force) : $t(i18n.translation.tip.translate_group)}
                 type={$s.env.ctrlKey ? 'danger' : 'info'}
             />
 
-            {path.length > 0 && <Icon
-                name="trash"
-                onClick={async() => {
-                    await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
-                        path,
-                    })
-                }}
-                size="s"
-                tip={$t(i18n.translation_group.tip.remove_group)}
-                type="info"
-            />}
+            {path.length > 0 && (
+<Icon
+    name='trash'
+    onClick={async() => {
+        await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {
+            path,
+        })
+    }}
+    size='s'
+    tip={$t(i18n.translation_group.tip.remove_group)}
+    type='info'
+/>
+            )}
         </div>
-    </div>
+</div>
+    )
 }

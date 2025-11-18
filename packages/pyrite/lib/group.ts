@@ -13,9 +13,7 @@ const ROLES = ['op', 'other', 'presenter']
 const loadUsers = () => userManager.listUsers()
 const saveUsers = async (users) => {
     // Save users by updating each user individually
-    for (const user of users) {
-        await userManager.updateUser(user.id || user.username || user.name, user)
-    }
+    for (const user of users) {await userManager.updateUser(user.id || user.username || user.name, user)}
 }
 
 // Public group data Exposed on /api/groups/public
@@ -78,10 +76,8 @@ export async function loadGroupPermissions(groupName) {
         const userGroups = user.permissions?.groups || user.groups || {}
         for (const permissionName of Object.keys(userGroups)) {
             for (const _groupName of userGroups[permissionName]) {
-                if (groupName === _groupName) {
-                    permissions[permissionName].push(user.username || user.name)
-                }
-            }
+if (groupName === _groupName) {permissions[permissionName].push(user.username || user.name)}
+}
         }
     }
     return permissions
@@ -98,15 +94,11 @@ export async function saveGroupPermissions(groupName, groupPermissions) {
             for (const username of groupPermissions[permissionName]) {
                 if (user.name === username) {
                     userGroupMatch = true
-                    if (!user.groups[permissionName].includes(groupName)) {
-                        user.groups[permissionName].push(groupName)
-                    }
+                    if (!user.groups[permissionName].includes(groupName)) {user.groups[permissionName].push(groupName)}
                 }
             }
 
-            if (!userGroupMatch && user.groups[permissionName].includes(groupName)) {
-                user.groups[permissionName].splice(user.groups[permissionName].indexOf(groupName), 1)
-            }
+            if (!userGroupMatch && user.groups[permissionName].includes(groupName)) {user.groups[permissionName].splice(user.groups[permissionName].indexOf(groupName), 1)}
         }
     }
 
@@ -144,28 +136,18 @@ export async function loadGroup(groupName) {
         for (const [username, userConfig] of Object.entries(groupData.users)) {
             const permission = userConfig.permissions || 'other'
             // Map for internal display only
-            if (permission === 'op' && !groupData.op.includes(username)) {
-                groupData.op.push(username)
-            } else if (permission === 'present' && !groupData.presenter.includes(username)) {
-                groupData.presenter.push(username)
-            } else if (!groupData.other.includes(username)) {
-                groupData.other.push(username)
-            }
+            if (permission === 'op' && !groupData.op.includes(username)) {groupData.op.push(username)} else if (permission === 'present' && !groupData.presenter.includes(username)) {groupData.presenter.push(username)} else if (!groupData.other.includes(username)) {groupData.other.push(username)}
         }
     }
 
     // Handle public access field
     // Native Galene uses 'wildcard-user', Pyrite manages 'public-access' boolean
-    if (groupData['wildcard-user']) {
-        groupData['public-access'] = true
-    } else if (groupData.other) {
+    if (groupData['wildcard-user']) {groupData['public-access'] = true} else if (groupData.other) {
         // Pyrite legacy: empty object in 'other' array means public access
         const public_access_idx = groupData.other.findIndex(
             (obj) => obj && typeof obj === 'object' && Object.keys(obj).length === 0 && Object.getPrototypeOf(obj) === Object.prototype,
         )
-        if (public_access_idx === -1) {
-            groupData['public-access'] = false
-        } else {
+        if (public_access_idx === -1) {groupData['public-access'] = false} else {
             groupData['public-access'] = true
             groupData.other.splice(public_access_idx, 1)
         }
@@ -190,19 +172,13 @@ export async function loadGroups(publicEndpoint = false) {
     // Galene group endpoint; contains client count and locked info. Add it
     // to the more static Pyrite group info.
     let galeneGroups
-    try {
-        galeneGroups = await (await fetch(endpoint)).json()
-    } catch {
-        galeneGroups = []
-    }
+    try {galeneGroups = await (await fetch(endpoint)).json()} catch {galeneGroups = []}
 
     const groupsPath = path.join(config.sfu.path, 'groups')
 
     const glob = new Glob('**/*.json')
     const files = Array.from(glob.scanSync(groupsPath)).map((f) => path.join(groupsPath, f))
-    const groupNames = files.map((i) => {
-        return i.slice(groupsPath.length+1, i.length-5)
-    })
+    const groupNames = files.map((i) => {return i.slice(groupsPath.length+1, i.length-5)})
     const fileData = await Promise.all(groupNames.map((i) => loadGroup(i)))
 
     const groupsData = []
@@ -213,17 +189,11 @@ export async function loadGroups(publicEndpoint = false) {
         if (publicEndpoint) {
             // name, description, clientCount
             for (const [key, value] of Object.entries(groupData)) {
-                if (key === 'public' && value === false) {
-                    continue
-                }
+                if (key === 'public' && value === false) {continue}
 
-                if (PUBLIC_GROUP_FIELDS.includes(key)) {
-                    data[key] = value
-                }
+                if (PUBLIC_GROUP_FIELDS.includes(key)) {data[key] = value}
             }
-        } else {
-            data = groupData
-        }
+        } else {data = groupData}
 
         const galeneGroup = galeneGroups.find((i) => i.name === groupName)
         if (galeneGroup) {
@@ -269,14 +239,11 @@ export async function saveGroup(groupName, data) {
     delete saveData.clientCount
     delete saveData.locked
 
-    if (saveData['public-access'] === true) {
-        saveData.other.push({})
-    } else {
+    if (saveData['public-access'] === true) {saveData.other.push({})} else {
         const public_access_idx = saveData.other.findIndex(
-            (obj) => obj && Object.keys(obj).length === 0 && Object.getPrototypeOf(obj) === Object.prototype)
-        if (public_access_idx !== -1) {
-            saveData.other.splice(public_access_idx, 1)
-        }
+            (obj) => obj && Object.keys(obj).length === 0 && Object.getPrototypeOf(obj) === Object.prototype,
+        )
+        if (public_access_idx !== -1) {saveData.other.splice(public_access_idx, 1)}
     }
     delete saveData['public-access']
 
@@ -284,9 +251,7 @@ export async function saveGroup(groupName, data) {
 
     // All actions not directly related to the Galene file format
     // should go before removing the private variables.
-    for (const key of Object.keys(saveData)) {
-        if (key.startsWith('_')) delete saveData[key]
-    }
+    for (const key of Object.keys(saveData)) {if (key.startsWith('_')) delete saveData[key]}
 
     const groupsPath = path.join(config.sfu.path, 'groups')
     const currentGroupFile = path.join(groupsPath, `${data._name}.json`)

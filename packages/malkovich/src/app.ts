@@ -8,7 +8,7 @@ import {Main} from '@/components/main'
 import type {StyleguideState} from './types'
 import {type DeepSignal} from 'deepsignal'
 
-const $s = store.state  as unknown as DeepSignal<StyleguideState>
+const $s = store.state as unknown as DeepSignal<StyleguideState>
 
 store.load(persistantState, volatileState)
 
@@ -16,7 +16,7 @@ const app = new App()
 
 // Simple mock translations for the styleguide
 const mockTranslations = {
-    'direction_helper': 'ltr',
+    direction_helper: 'ltr',
     'nav.components': 'Components',
     'nav.forms': 'Forms',
     'nav.tokens': 'Design Tokens',

@@ -11,12 +11,8 @@ async function translate_tag(workspace, tagPath:string[], sourceText:string, per
     ref[id].source = sourceText
     ref[id].cache = hash(sourceText)
 
-    if (persist && ref[id]._soft) {
-        delete ref[id]._soft
-    }
-    if (!ref[id].target) {
-        ref[id].target = {}
-    }
+    if (persist && ref[id]._soft) {delete ref[id]._soft}
+    if (!ref[id].target) {ref[id].target = {}}
 
     const translations = []
     for (const language of workspace.config.languages.target) {
@@ -28,24 +24,18 @@ async function translate_tag(workspace, tagPath:string[], sourceText:string, per
             const translation = await enola.translate(language.engine, ref[id], language)
             translations.push(translation)
             // Add delay between languages
-            if (workspace.config.languages.target.indexOf(language) < workspace.config.languages.target.length - 1) {
-                await new Promise((resolve) => setTimeout(resolve, LANGUAGE_PROCESSING_DELAY))
-            }
+            if (workspace.config.languages.target.indexOf(language) < workspace.config.languages.target.length - 1) {await new Promise((resolve) => setTimeout(resolve, LANGUAGE_PROCESSING_DELAY))}
         } catch (error) {
             if (error.response?.status === 429) {
                 const retryAfter = error.response.headers['retry-after'] || 60
                 await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000))
                 const retryTranslation = await enola.translate(language.engine, ref[id], language)
                 translations.push(retryTranslation)
-            } else {
-                throw error
-            }
+            } else {throw error}
         }
     }
 
-    for (const [index, language] of workspace.config.languages.target.entries()) {
-        ref[id].target[language.id] = translations[index]
-    }
+    for (const [index, language] of workspace.config.languages.target.entries()) {ref[id].target[language.id] = translations[index]}
 
     // After translation is complete, broadcast the updated state
     workspace.broadcastI18nState()
@@ -57,9 +47,7 @@ async function translate_path(workspace, tagPath:string[], ignore_cache) {
     const {cached, targets} = collectSource(workspace.i18n, tagPath, ignore_cache)
     const translations = []
 
-    if (!targets.length) {
-        return {cached, targets, translations}
-    }
+    if (!targets.length) {return {cached, targets, translations}}
 
     // Add rate limiting and error handling for batch translation
     for (const language of workspace.config.languages.target) {
@@ -67,18 +55,14 @@ async function translate_path(workspace, tagPath:string[], ignore_cache) {
             const translation = await enola.translateBatch(language.engine, targets, language)
             translations.push(translation)
             // Add delay between languages
-            if (workspace.config.languages.target.indexOf(language) < workspace.config.languages.target.length - 1) {
-                await new Promise((resolve) => setTimeout(resolve, LANGUAGE_PROCESSING_DELAY))
-            }
+            if (workspace.config.languages.target.indexOf(language) < workspace.config.languages.target.length - 1) {await new Promise((resolve) => setTimeout(resolve, LANGUAGE_PROCESSING_DELAY))}
         } catch (error) {
             if (error.response?.status === 429) {
                 const retryAfter = error.response.headers['retry-after'] || 60
                 await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000))
                 const retryTranslation = await enola.translateBatch(language.engine, targets, language)
                 translations.push(retryTranslation)
-            } else {
-                throw error
-            }
+            } else {throw error}
         }
     }
 

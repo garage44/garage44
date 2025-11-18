@@ -33,7 +33,7 @@ export async function loadPRRegistry(): Promise<PRRegistry> {
     try {
         const content = readFileSync(REGISTRY_PATH, 'utf-8')
         return JSON.parse(content)
-    } catch (error) {
+    } catch(error) {
         console.error('[pr-registry] Failed to load registry:', error)
         return {}
     }
@@ -42,7 +42,7 @@ export async function loadPRRegistry(): Promise<PRRegistry> {
 export async function savePRRegistry(registry: PRRegistry): Promise<void> {
     try {
         writeFileSync(REGISTRY_PATH, JSON.stringify(registry, null, 2), 'utf-8')
-    } catch (error) {
+    } catch(error) {
         console.error('[pr-registry] Failed to save registry:', error)
         throw error
     }

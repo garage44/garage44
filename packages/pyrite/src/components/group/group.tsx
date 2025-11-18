@@ -26,8 +26,8 @@ export const Group = () => {
     // Computed: streamsCount and streamsPlayingCount
     const streamsCount = $s.streams.length
     const streamsPlayingCount = useMemo(() => {
-        return $s.streams.filter((s) => s.playing).length
-    }, [$s.streams])
+return $s.streams.filter((s) => s.playing).length
+}, [$s.streams])
 
     /**
      * Optimal space algorithm from Anton Dosov:
@@ -58,8 +58,8 @@ export const Group = () => {
 
             const area = width * height
             if (area > layout.area) {
-                layout = {area, cols, height, rows, width}
-            }
+layout = {area, cols, height, rows, width}
+}
         }
 
         viewRef.current.style.setProperty('--stream-width', `${layout.width}px`)
@@ -67,19 +67,19 @@ export const Group = () => {
 
     // Watch streamsCount and streamsPlayingCount
     useEffect(() => {
-        requestAnimationFrame(calcLayout)
-    }, [streamsCount, streamsPlayingCount, calcLayout])
+requestAnimationFrame(calcLayout)
+}, [streamsCount, streamsPlayingCount, calcLayout])
 
     // Auto-connect logic
     useEffect(() => {
         const attemptAutoConnect = async () => {
             if ($s.sfu.channel.connected) {
-                return // Already connected
+return // Already connected
             }
 
             const group = currentGroup()
             if (!group) {
-                return // No group data
+return // No group data
             }
 
             try {
@@ -115,8 +115,8 @@ export const Group = () => {
     const handleStreamUpdate = useCallback((updatedStream: {id: string}) => {
         const streamIndex = $s.streams.findIndex((s) => s.id === updatedStream.id)
         if (streamIndex !== -1) {
-            Object.assign($s.streams[streamIndex], updatedStream)
-        }
+Object.assign($s.streams[streamIndex], updatedStream)
+}
     }, [])
 
     // Setup and cleanup
@@ -126,8 +126,8 @@ export const Group = () => {
         viewRef.current.style.setProperty('--stream-margin', `${margin}px`)
 
         resizeObserverRef.current = new ResizeObserver(() => {
-            requestAnimationFrame(calcLayout)
-        })
+requestAnimationFrame(calcLayout)
+})
 
         requestAnimationFrame(calcLayout)
         resizeObserverRef.current.observe(viewRef.current)
@@ -136,21 +136,19 @@ export const Group = () => {
         $s.chat.channel = 'main'
 
         // Cleanup
-        return () => {
-            if (resizeObserverRef.current) {
-                resizeObserverRef.current.disconnect()
-            }
-        }
+        return () => {if (resizeObserverRef.current) {
+resizeObserverRef.current.disconnect()
+}}
     }, [calcLayout])
 
     return (
-        <div ref={viewRef} class="c-group">
+        <div ref={viewRef} class='c-group'>
             {sortedStreams.map((description, index) => (
                 <Stream key={description.id || index} modelValue={sortedStreams[index]} onUpdate={handleStreamUpdate} />
             ))}
 
             {!$s.streams.length && (
-                <svg class="icon logo-animated" viewBox="0 0 24 24" height="40" width="40">
+                <svg class='icon logo-animated' viewBox='0 0 24 24' height='40' width='40'>
                     <IconLogo />
                 </svg>
             )}

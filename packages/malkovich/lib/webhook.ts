@@ -101,7 +101,7 @@ function removeDatabases(): void {
             try {
                 unlinkSync(file)
                 console.log(`[deploy] Removed ${file}`)
-            } catch (error: unknown) {
+            } catch(error: unknown) {
                 const message = error instanceof Error ? error.message : String(error)
                 console.warn(`[deploy] Failed to remove ${file}: ${message}`)
             }
@@ -128,7 +128,7 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
         try {
             process.chdir(REPO_PATH)
             console.log(`[deploy] Changed to repository directory: ${process.cwd()}`)
-        } catch (error: unknown) {
+        } catch(error: unknown) {
             const message = error instanceof Error ? error.message : String(error)
             throw new Error(`Failed to change to repository directory: ${message}`, {cause: error})
         }
@@ -160,7 +160,7 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
             }
             const bunVersion = bunVersionResult.stdout?.toString().trim() || 'unknown'
             console.log(`[deploy] Bun version: ${bunVersion}`)
-        } catch (error: unknown) {
+        } catch(error: unknown) {
             const message = error instanceof Error ? error.message : String(error)
             throw new Error(`Failed to verify bun installation: ${message}`, {cause: error})
         }
@@ -242,7 +242,7 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
                     console.warn(`[deploy] ${packageName} restart stderr: ${stderr}`)
                     console.warn(`[deploy] ${packageName} restart stdout: ${stdout}`)
                 }
-            } catch (error: unknown) {
+            } catch(error: unknown) {
                 const message = error instanceof Error ? error.message : String(error)
                 console.warn(`[deploy] Error restarting ${packageName}: ${message}`)
             }
@@ -250,7 +250,7 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
 
         console.log('[deploy] Deployment completed successfully')
         return {message: 'Deployment completed successfully', success: true}
-    } catch (error: unknown) {
+    } catch(error: unknown) {
         const message = error instanceof Error ? error.message : String(error)
         const stack = error instanceof Error ? error.stack : undefined
         console.error(`[deploy] Deployment failed: ${message}`)
@@ -289,7 +289,13 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
 
     // Handle PR open/sync - deploy
     if (action === 'opened' || action === 'synchronize' || action === 'reopened') {
-        if (!pullRequest?.head?.ref || !pullRequest.head.sha || !pullRequest.head.repo?.full_name || typeof pullRequest.head.repo.fork !== 'boolean' || !pullRequest.user?.login) {
+        if (
+            !pullRequest?.head?.ref ||
+            !pullRequest.head.sha ||
+            !pullRequest.head.repo?.full_name ||
+            typeof pullRequest.head.repo.fork !== 'boolean' ||
+            !pullRequest.user?.login
+        ) {
             return new Response(JSON.stringify({error: 'Incomplete pull request payload'}), {
                 headers: {'Content-Type': 'application/json'},
                 status: 422,
@@ -426,8 +432,10 @@ export async function handleWebhook(req: Request): Promise<Response> {
         console.error(`[webhook] Deployment error: ${error.message}`)
     })
 
-    // Update all active PR deployments with main branch changes
-    // This runs asynchronously and doesn't block the response
+    /*
+     * Update all active PR deployments with main branch changes
+     * This runs asynchronously and doesn't block the response
+     */
     console.log('[webhook] Updating active PR deployments with main branch changes...')
     updateAllPRDeploymentsWithMain().then((result) => {
         console.log(`[webhook] PR deployments update: ${result.message}`)

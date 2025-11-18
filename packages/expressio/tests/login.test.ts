@@ -33,28 +33,20 @@ async function playwrightLogin(options: PlaywrightLoginOptions = {}) {
             const response = await fetch('/api/context')
             const json = await response.json()
             return !!json?.authenticated
-        } catch {
-            return false
-        }
+        } catch {return false}
     })
     if (!alreadyAuth) {
         await page.locator('.id-field input').waitFor({state: 'visible'})
         await page.locator('.id-field input').fill(username)
         await page.locator('.password-field input').fill(password)
         const loginButton = page.getByRole('button', {name: /login/i})
-        if (await loginButton.count()) {
-            await loginButton.first().click()
-        } else {
-            await page.locator('.login-container .c-button').first().click()
-        }
+        if (await loginButton.count()) {await loginButton.first().click()} else {await page.locator('.login-container .c-button').first().click()}
         await page.waitForFunction(async () => {
             try {
                 const response = await fetch('/api/context')
                 const json = await response.json()
                 return !!json?.authenticated
-            } catch {
-                return false
-            }
+            } catch {return false}
         }, null, {timeout: 5000})
     }
 

@@ -97,7 +97,7 @@ export const MarkdownPage = ({filePath}: MarkdownPageProps) => {
 
     // Load markdown when filePath changes
     useEffect(() => {
-        const loadMarkdown = async () => {
+        const loadMarkdown = async() => {
             state.loading = true
             state.error = null
             state.content = ''
@@ -120,7 +120,11 @@ export const MarkdownPage = ({filePath}: MarkdownPageProps) => {
             state.loading = false
         }
         loadMarkdown()
-        // Note: state is DeepSignal, accessed via ref - not needed in deps
+
+        /**
+         * Note: state is DeepSignal from useRef - stable reference
+         * state.content/error/loading are intentionally excluded - effect should only run on filePath change
+         */
     }, [filePath])
 
     // Render content and mermaid diagrams when content changes
@@ -164,8 +168,13 @@ export const MarkdownPage = ({filePath}: MarkdownPageProps) => {
         })
 
         return unsubscribe
+
+        /**
+         * Note: state is DeepSignal from useRef - stable reference
+         * state.content/error/loading are intentionally excluded - effect() from @preact/signals handles reactivity
+         */
     }, [])
 
     // Always render the container - effect handles content
-    return <div ref={containerRef} class="c-markdown-page" />
+    return <div class='c-markdown-page' ref={containerRef} />
 }

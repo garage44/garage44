@@ -9,12 +9,12 @@ export const ComponentDemo = ({children, component, title}: ComponentDemoProps) 
     const id = title.toLowerCase().replaceAll(/\s+/g, '-')
 
     return (
-        <section class="c-component-demo" id={id}>
-            <header class="header">
-                <h2 class="title">{title}</h2>
-                <code class="component-name">{component}</code>
+        <section class='c-component-demo' id={id}>
+            <header class='header'>
+                <h2 class='title'>{title}</h2>
+                <code class='component-name'>{component}</code>
             </header>
-            <div class="content">
+            <div class='content'>
                 {children}
             </div>
         </section>

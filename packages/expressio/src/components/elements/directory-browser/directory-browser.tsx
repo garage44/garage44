@@ -36,41 +36,46 @@ async function loadDirectory(path = null) {
 
 export function DirectoryBrowser({onSelect}) {
 
-    useEffect(() => {
-        loadDirectory()
-    }, [])
+    useEffect(() => {loadDirectory()}, [])
 
-    return <div class="c-directory-browser">
-        <div class="add-path">
+    return (
+<div class='c-directory-browser'>
+        <div class='add-path'>
             <Icon
-                name="arrow_left_circle_outline"
+                name='arrow_left_circle_outline'
                 onClick={() => onSelect(state.current)}
                 tip={() => {
                     if (state.current.workspace) {
-                        return 'Add directory to workspaces'
-                    }
+return 'Add directory to workspaces'
+}
                     return 'Create new workspace'
                 }}
-                type="info"
+                type='info'
             />
         </div>
-        <div class="wrapper">
-            <div class="current-path">{state.current.path}</div>
-            <div class="directory-list">
+        <div class='wrapper'>
+            <div class='current-path'>{state.current.path}</div>
+            <div class='directory-list'>
                 {state.parentPath && (
-                    <div class="directory-item">
-                        <div class="directory"
+                    <div class='directory-item'>
+                        <div
+                            class='directory'
                             onClick={() => loadDirectory(state.parentPath)}
-                        >..</div>
+                        >
+..
+                        </div>
                     </div>
                 )}
                 {state.directories.map((dir) => (
                     <div
                         class={classnames('directory', {'is-workspace': dir.is_workspace})}
                         onClick={() => loadDirectory(dir.path)}
-                    >{dir.name}</div>
+                    >
+{dir.name}
+                    </div>
                 ))}
             </div>
         </div>
-    </div>
+</div>
+    )
 }

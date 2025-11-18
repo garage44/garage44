@@ -17,8 +17,8 @@ const state = deepSignal({
 
 export default function TabWorkspaces() {
     if (!$s.workspace) {
-        return null
-    }
+return null
+}
 
     // Updated validator usage
     const {errors, isValid, validation} = createValidator({
@@ -63,7 +63,7 @@ export default function TabWorkspaces() {
     }, [$s.enola.languages.target, $s.workspace.config.languages.target])
 
     return (
-        <section class="c-settings-tab-workspaces tab-content active">
+        <section class='c-settings-tab-workspaces tab-content active'>
             <FieldSelect
                 help={$t(i18n.settings.help.source_language)}
                 label={$t(i18n.settings.label.source_language)}
@@ -73,23 +73,25 @@ export default function TabWorkspaces() {
                 validation={validation.value.source}
             />
 
-            <div class="c-settings-tab-workspaces__languages field">
-                <div class="label">
+            <div class='c-settings-tab-workspaces__languages field'>
+                <div class='label'>
                     {$t(i18n.settings.label.target_languages)}
                 </div>
-                <div class="options">
+                <div class='options'>
                     {state.target_languages.toSorted((a, b) => a.name.localeCompare(b.name)).map((language) => {
-                        return <div key={language.id} class={classnames('option', {
-                            'is-invalid': !validation.value[`target_${language.id}_engine`].isValid || !validation.value[`target_${language.id}_formality`].isValid,
-                            'is-touched': validation.value[`target_${language.id}_engine`].isTouched || validation.value[`target_${language.id}_formality`].isTouched,
-                        })}>
-                            <div class="field-wrapper">
+                        return (
+<div
+    key={language.id}
+    class={classnames('option', {
+        'is-invalid': !validation.value[`target_${language.id}_engine`].isValid || !validation.value[`target_${language.id}_formality`].isValid,
+        'is-touched': validation.value[`target_${language.id}_engine`].isTouched || validation.value[`target_${language.id}_formality`].isTouched,
+    })}
+>
+                            <div class='field-wrapper'>
                                 <FieldCheckbox
                                     onInput={(value) => {
-                                        if (!value) {
-                                            language.$engine.value = ''
-                                        }
-                                    }}
+if (!value) {language.$engine.value = ''}
+}}
                                     label={language.name}
                                     model={language.$selected}
                                 />
@@ -103,7 +105,8 @@ export default function TabWorkspaces() {
                                     placeholder={$t(i18n.settings.placeholder.translation)}
                                 />
                             </div>
-                            {language.formality_supported.includes(language.engine) && <div class="language-options">
+                            {language.formality_supported.includes(language.engine) && (
+<div class='language-options'>
                                 <FieldSelect
                                     disabled={!language.selected}
                                     label={$t(i18n.settings.label.formality)}
@@ -111,15 +114,17 @@ export default function TabWorkspaces() {
                                     options={state.formality}
                                     placeholder={$t(i18n.settings.placeholder.formality)}
                                 />
-                            </div>}
-                            <div class="validation">
+</div>
+                            )}
+                            <div class='validation'>
                                 {validation.value[`target_${language.id}_engine`].errors.join(', ')}
                                 {validation.value[`target_${language.id}_formality`].errors.join(', ')}
                             </div>
-                        </div>
+</div>
+                        )
                     })}
                 </div>
-                <div class="help">
+                <div class='help'>
                     {$t(i18n.settings.help.target_languages)}
                 </div>
             </div>
@@ -167,7 +172,7 @@ export default function TabWorkspaces() {
                 }}
                 disabled={!isValid.value}
                 tip={errors.value}
-                type="info"
+                type='info'
             />
         </section>
     )

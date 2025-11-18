@@ -20,17 +20,15 @@ export default function Settings({tabId}: SettingsProps) {
         const url = getCurrentUrl()
         // If URL is /settings/users/new or /settings/users/:userId, show users tab
         if (url.startsWith('/settings/users')) {
-            return 'users'
-        }
+return 'users'
+}
         return undefined
     }, [tabId])
-    const settingsRoute = useMemo(() => {
-        if ($s.sfu.channel.connected) {
-            return `/groups/${$s.sfu.channel.name}/settings`
-        } else {
-            return '/settings'
-        }
-    }, [$s.sfu.channel.connected, $s.sfu.channel.name])
+    const settingsRoute = useMemo(() => {if ($s.sfu.channel.connected) {
+return `/groups/${$s.sfu.channel.name}/settings`
+} else {
+return '/settings'
+}}, [$s.sfu.channel.connected, $s.sfu.channel.name])
 
     const saveSettings = async () => {
         logger.debug(`settings language to ${$s.language.id}`)
@@ -39,8 +37,8 @@ export default function Settings({tabId}: SettingsProps) {
     }
 
     const getRoute = (tabId: string) => {
-        return `${settingsRoute}/${tabId}`
-    }
+return `${settingsRoute}/${tabId}`
+}
 
     // Determine if user settings should be shown (admin only)
     const showUserSettings = $s.admin.authenticated && $s.admin.permission
@@ -88,10 +86,10 @@ export default function Settings({tabId}: SettingsProps) {
     return (
         <CommonSettings
             title={$t('ui.settings.name')}
-            icon="settings"
+            icon='settings'
             tabs={tabs}
             activeTabId={activeTabId}
-            defaultTab="profile"
+            defaultTab='profile'
             getRoute={getRoute}
             showSave={false}
         />

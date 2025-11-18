@@ -9,9 +9,7 @@ import {Icon} from '@garage44/common/components'
 import type {Channel} from '../../types.ts'
 
 // Helper function outside component to avoid recreation
-const channelLink = (channelSlug: string) => {
-    return `/channels/${channelSlug}`
-}
+const channelLink = (channelSlug: string) => {return `/channels/${channelSlug}`}
 
 export default function ChannelsContext() {
     const intervalRef = useRef<number | null>(null)
@@ -30,14 +28,10 @@ export default function ChannelsContext() {
                 // Load all users globally after channels are loaded
                 await loadGlobalUsers()
             }
-        } catch (error) {
-            logger.error('[ChannelsContext] Error polling channels:', error)
-        }
+        } catch (error) {logger.error('[ChannelsContext] Error polling channels:', error)}
     }
 
-    const setAutofocus = () => {
-        $s.login.autofocus = true
-    }
+    const setAutofocus = () => {$s.login.autofocus = true}
 
     const updateRoute = () => {
         $s.login.autofocus = false
@@ -47,9 +41,7 @@ export default function ChannelsContext() {
 
         // Don't redirect if we're on a protected route (settings, login, etc.)
         const protectedRoutes = ['/settings']
-        if (protectedRoutes.some((route) => currentPath.startsWith(route))) {
-            return
-        }
+        if (protectedRoutes.some((route) => currentPath.startsWith(route))) {return}
 
         if ($s.chat.activeChannelSlug) {
             // Update the channel route when the user sets the active channel
@@ -77,19 +69,17 @@ export default function ChannelsContext() {
         pollChannels()
 
         return () => {
-            if (intervalRef.current !== null) {
-                clearInterval(intervalRef.current)
-            }
-        }
+if (intervalRef.current !== null) {clearInterval(intervalRef.current)}
+}
     }, [])
 
     return (
         <section class={classnames('c-channels-context presence', {collapsed: $s.panels.context.collapsed})}>
-            <div class="channels-section">
-                <div class="channels-header">
-                    <span class="channels-title">Channels</span>
+            <div class='channels-section'>
+                <div class='channels-header'>
+                    <span class='channels-title'>Channels</span>
                 </div>
-                <div class="channels-list">
+                <div class='channels-list'>
                     {$s.channels.map((channel) => {
                         const channelKey = channel.slug
                         const channelData = $s.chat.channels[channelKey]
@@ -109,13 +99,14 @@ export default function ChannelsContext() {
                                     setAutofocus()
                                 }}
                             >
-                                <Icon name="chat" type="info" />
-                                <div class="flex-column">
-                                    <div class="name">
-                                        #{channel.name}
+                                <Icon name='chat' type='info' />
+                                <div class='flex-column'>
+                                    <div class='name'>
+                                        #
+{channel.name}
                                     </div>
                                     {channel.description && (
-                                        <div class="item-properties">
+                                        <div class='item-properties'>
                                             {channel.description}
                                         </div>
                                     )}
@@ -125,8 +116,8 @@ export default function ChannelsContext() {
                     })}
 
                     {!$s.channels.length && (
-                        <div class="channel item no-presence">
-                            <div class="name">
+                        <div class='channel item no-presence'>
+                            <div class='name'>
                                 {$t('channel.no_channels')}
                             </div>
                         </div>
@@ -135,11 +126,11 @@ export default function ChannelsContext() {
             </div>
 
             {/* People List Section */}
-            <div class="people-section">
-                <div class="people-header">
-                    <span class="people-title">People</span>
+            <div class='people-section'>
+                <div class='people-header'>
+                    <span class='people-title'>People</span>
                 </div>
-                <div class="people-list">
+                <div class='people-list'>
                     {(() => {
                         // Get all chat users from global users map and deduplicate by ID
                         const chatUsers = $s.chat.users ? Object.entries($s.chat.users) : []
@@ -148,17 +139,15 @@ export default function ChannelsContext() {
                         const seenIds = new Set<string>()
                         const uniqueUsers = chatUsers.filter(([userId, _userInfo]) => {
                             const idStr = String(userId)
-                            if (seenIds.has(idStr)) {
-                                return false
-                            }
+                            if (seenIds.has(idStr)) {return false}
                             seenIds.add(idStr)
                             return true
                         })
 
                         if (uniqueUsers.length === 0) {
                             return (
-                                <div class="person item no-presence">
-                                    <span class="person-name">No users found</span>
+                                <div class='person item no-presence'>
+                                    <span class='person-name'>No users found</span>
                                 </div>
                             )
                         }
@@ -169,16 +158,23 @@ export default function ChannelsContext() {
                             const status = userInfo.status || 'offline'
                             const statusClass = status === 'online' ? 'online' : status === 'busy' ? 'busy' : 'offline'
 
-                            return <div key={String(userId)} class="person item">
+                            return (
+<div key={String(userId)} class='person item'>
                                 <span class={`status-indicator ${statusClass}`} />
-                                <img src={avatarUrl} alt={userInfo.username} class="person-avatar" />
-                                <span class="person-name">
+                                <img src={avatarUrl} alt={userInfo.username} class='person-avatar' />
+                                <span class='person-name'>
                                     {userInfo.username || $t('user.anonymous')}
                                     {isCurrentUser && (
-                                        <span class="you-label"> ({$t('user.you')})</span>
+                                        <span class='you-label'>
+{' '}
+(
+{$t('user.you')}
+)
+                                        </span>
                                     )}
                                 </span>
-                            </div>
+</div>
+                            )
                         })
                     })()}
                 </div>

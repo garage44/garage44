@@ -17,7 +17,7 @@ export async function rules(): Promise<void> {
             console.error(`❌ ${malkovichRulesPath} is not a directory`)
             process.exit(1)
         }
-    } catch (_error) {
+    } catch(_error) {
         console.error(`❌ Malkovich rules directory not found: ${malkovichRulesPath}`)
         process.exit(1)
     }
@@ -26,13 +26,15 @@ export async function rules(): Promise<void> {
     const cursorDir = join(workspaceRoot, '.cursor')
     try {
         await mkdir(cursorDir, {recursive: true})
-    } catch (error) {
+    } catch(error) {
         console.error('❌ Failed to create .cursor directory:', error)
         process.exit(1)
     }
 
-    // Check if .cursor/rules already exists and remove it (file, directory, or symlink)
-    // Use lstat to detect symlinks (stat follows symlinks)
+    /*
+     * Check if .cursor/rules already exists and remove it (file, directory, or symlink)
+     * Use lstat to detect symlinks (stat follows symlinks)
+     */
     try {
         const stats = await lstat(cursorRulesPath)
         // Remove existing file, directory, or symlink
@@ -45,7 +47,7 @@ export async function rules(): Promise<void> {
             } else {
                 console.log('ℹ️  Removed existing file')
             }
-        } catch (error) {
+        } catch(error) {
             console.error('❌ Failed to remove existing file/directory/symlink:', error)
             process.exit(1)
         }
@@ -53,8 +55,10 @@ export async function rules(): Promise<void> {
         // Doesn't exist, we'll create it
     }
 
-    // Create symlink using relative path for portability
-    // Calculate relative path from .cursor/ directory to the target directory
+    /*
+     * Create symlink using relative path for portability
+     * Calculate relative path from .cursor/ directory to the target directory
+     */
     const relativePath = relative(cursorDir, malkovichRulesPath)
     try {
         await symlink(relativePath, cursorRulesPath, 'dir')
@@ -69,11 +73,11 @@ export async function rules(): Promise<void> {
             const target = await readlink(cursorRulesPath)
             console.log(`✅ Created symlink: ${cursorRulesPath} → ${target}`)
             console.log(`   (points to: ${malkovichRulesPath})`)
-        } catch (error) {
+        } catch(error) {
             console.error('❌ Failed to verify symlink:', error)
             process.exit(1)
         }
-    } catch (error) {
+    } catch(error) {
         console.error('❌ Failed to create symlink:', error)
         process.exit(1)
     }

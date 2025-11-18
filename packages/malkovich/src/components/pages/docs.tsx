@@ -18,8 +18,10 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
     const pathParts = window.location.pathname.split('/').filter(Boolean)
     const pkg = projectName || (pathParts[0] === 'projects' ? pathParts[1] : '')
 
-    // Extract the full path after /docs/ (handles nested directories like architecture/adr)
-    // Parse directly from URL to handle any nesting level
+    /*
+     * Extract the full path after /docs/ (handles nested directories like architecture/adr)
+     * Parse directly from URL to handle any nesting level
+     */
     let sec = section
     let file = filename
 
@@ -35,8 +37,10 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
                 file = lastPart
                 sec = docsPath.slice(0, -1).join('/')
             } else {
-                // No file extension - treat entire path as section (directory)
-                // Will try index.md/index.mdc/page.tsx first, then try as file if that fails
+                /*
+                 * No file extension - treat entire path as section (directory)
+                 * Will try index.md/index.mdc/page.tsx first, then try as file if that fails
+                 */
                 sec = docsPath.join('/')
                 file = undefined
             }
@@ -44,7 +48,7 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
     }
 
     useEffect(() => {
-        const tryLoad = async () => {
+        const tryLoad = async() => {
             setLoading(true)
             setNotFound(false)
 
@@ -88,8 +92,10 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
                 setNotFound(true)
                 setLoading(false)
             } else {
-                // No filename - section might be a directory, a markdown file, or a component file (without extension)
-                // Try component first (e.g., forms → forms.tsx), then markdown, then directory
+                /*
+                 * No filename - section might be a directory, a markdown file, or a component file (without extension)
+                 * Try component first (e.g., forms → forms.tsx), then markdown, then directory
+                 */
 
                 // First, try as component file (.tsx)
                 const componentPath = `packages/${pkg}/docs/${sec}.tsx`
@@ -100,8 +106,10 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
                     return
                 }
 
-                // For paths with multiple parts, try last part as file first
-                // e.g., architecture/adr/004-preact-ws → try 004-preact-ws.md in architecture/adr/
+                /*
+                 * For paths with multiple parts, try last part as file first
+                 * e.g., architecture/adr/004-preact-ws → try 004-preact-ws.md in architecture/adr/
+                 */
                 const secParts = sec.split('/')
                 if (secParts.length > 1) {
                     const lastPart = secParts[secParts.length - 1]
@@ -195,21 +203,46 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
     }, [pkg, sec, file])
 
     if (loading) {
-        return <div class="styleguide-page">Loading...</div>
+        return <div class='styleguide-page'>Loading...</div>
     }
 
     if (notFound) {
         return (
-            <div class="styleguide-page">
+            <div class='styleguide-page'>
                 <h1>Documentation Not Found</h1>
-                <p>No index file found for <code>{pkg}/docs/{sec}</code></p>
-                <p>Expected: <code>packages/{pkg}/docs/{sec}/index.md</code> or <code>packages/{pkg}/docs/{sec}/index.mdc</code></p>
+                <p>
+No index file found for
+<code>
+{pkg}
+/docs/
+{sec}
+</code>
+                </p>
+                <p>
+Expected:
+<code>
+packages/
+{pkg}
+/docs/
+{sec}
+/index.md
+</code>
+{' '}
+or
+<code>
+packages/
+{pkg}
+/docs/
+{sec}
+/index.mdc
+</code>
+                </p>
             </div>
         )
     }
 
     if (!filePath) {
-        return <div class="styleguide-page">Loading...</div>
+        return <div class='styleguide-page'>Loading...</div>
     }
 
     // Check if this is a component-based doc
@@ -220,9 +253,12 @@ export const Docs = ({filename, projectName, section}: DocsProps) => {
             return <Component />
         }
         return (
-            <div class="styleguide-page">
+            <div class='styleguide-page'>
                 <h1>Component Not Found</h1>
-                <p>Component not found for path: <code>{componentPath}</code></p>
+                <p>
+Component not found for path:
+<code>{componentPath}</code>
+                </p>
             </div>
         )
     }

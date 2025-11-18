@@ -32,9 +32,7 @@ export interface ChannelMember {
 export class ChannelManager {
     private db: Database
 
-    constructor(database: Database) {
-        this.db = database
-    }
+    constructor(database: Database) {this.db = database}
 
     /**
      * Create a new channel
@@ -267,16 +265,12 @@ export class ChannelManager {
     /**
      * Check if user can access channel (is member)
      */
-    canAccessChannel(channelId: number, userId: string): boolean {
-        return this.isMember(channelId, userId)
-    }
+    canAccessChannel(channelId: number, userId: string): boolean {return this.isMember(channelId, userId)}
 
     /**
      * Get channels that need Galene group sync
      */
-    async getChannelsForGaleneSync(): Promise<Channel[]> {
-        return await this.listChannels()
-    }
+    async getChannelsForGaleneSync(): Promise<Channel[]> {return await this.listChannels()}
 
     /**
      * Sync a single channel to Galene group file
@@ -304,9 +298,7 @@ export class ChannelManager {
                 logger.info(`[ChannelManager] Updating existing Galene group file for channel "${channel.name}" (slug: ${groupName})`)
                 groupData = existingGroup
                 // Ensure _name is set (required by saveGroup)
-                if (!groupData._name) {
-                    groupData._name = groupName
-                }
+                if (!groupData._name) {groupData._name = groupName}
                 groupData.displayName = channel.name
                 groupData.description = channel.description || ''
             } else {
@@ -346,11 +338,7 @@ export class ChannelManager {
 
             for (const channel of channels) {
                 const result = await this.syncChannelToGalene(channel)
-                if (result) {
-                    success++
-                } else {
-                    failed++
-                }
+                if (result) {success++} else {failed++}
             }
 
             logger.info(`[ChannelManager] Sync complete: ${success} succeeded, ${failed} failed`)
@@ -393,9 +381,7 @@ export class ChannelManager {
         }
 
         // Include users dictionary if it exists (required for Galene)
-        if (groupData.users && typeof groupData.users === 'object' && !Array.isArray(groupData.users)) {
-            nativeData.users = groupData.users
-        } else {
+        if (groupData.users && typeof groupData.users === 'object' && !Array.isArray(groupData.users)) {nativeData.users = groupData.users} else {
             // Ensure users dictionary exists (even if empty)
             nativeData.users = {}
         }

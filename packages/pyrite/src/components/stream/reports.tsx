@@ -13,15 +13,15 @@ export const Reports = ({description, onClick}: ReportsProps) => {
 
     const hasAudioStats = useMemo(() => {
         if (description.settings && description.settings.audio && Object.keys(description.settings.audio).length) {
-            return true
-        }
+return true
+}
         return false
     }, [description.settings])
 
     const hasVideoStats = useMemo(() => {
         if (description.settings && description.settings.video && Object.keys(description.settings.video).length) {
-            return true
-        }
+return true
+}
         return false
     }, [description.settings])
 
@@ -36,15 +36,13 @@ export const Reports = ({description, onClick}: ReportsProps) => {
                 for (const [categoryName, category] of Object.entries(streamStats)) {
                     filtered[categoryName] = {}
                     if (categoryName === 'track') {
-                        for (const [statName, stat] of Object.entries(category as Record<string, unknown>)) {
-                            if (statName === 'timestamp') {
-                                continue
-                            } else if (statName === 'totalAudioEnergy') {
-                                filtered[categoryName]['Total Audio Energy'] = Number(stat).toFixed(2)
-                            } else if (statName === 'audioEnergy') {
-                                filtered[categoryName]['Audio Energy'] = Number(stat).toFixed(2)
-                            }
-                        }
+                        for (const [statName, stat] of Object.entries(category as Record<string, unknown>)) {if (statName === 'timestamp') {
+continue
+} else if (statName === 'totalAudioEnergy') {
+filtered[categoryName]['Total Audio Energy'] = Number(stat).toFixed(2)
+} else if (statName === 'audioEnergy') {
+filtered[categoryName]['Audio Energy'] = Number(stat).toFixed(2)
+}}
                     }
                 }
                 setStats(filtered)
@@ -63,15 +61,13 @@ export const Reports = ({description, onClick}: ReportsProps) => {
                 for (const [categoryName, category] of Object.entries(streamStats)) {
                     filtered[categoryName] = {}
                     if (categoryName === 'outbound-rtp') {
-                        for (const [statName, stat] of Object.entries(category as Record<string, unknown>)) {
-                            if (statName === 'timestamp') {
-                                continue
-                            } else if (statName === 'rate') {
-                                filtered[categoryName]['Data Rate'] = `${Math.round((stat as number) / 1000)} Kbps`
-                            } else if (statName === 'bytesSent') {
-                                filtered[categoryName]['Streamed'] = `${Math.round((stat as number) / 1000 / 1024)} Mb`
-                            }
-                        }
+                        for (const [statName, stat] of Object.entries(category as Record<string, unknown>)) {if (statName === 'timestamp') {
+continue
+} else if (statName === 'rate') {
+filtered[categoryName]['Data Rate'] = `${Math.round((stat as number) / 1000)} Kbps`
+} else if (statName === 'bytesSent') {
+filtered[categoryName]['Streamed'] = `${Math.round((stat as number) / 1000 / 1024)} Mb`
+}}
                     }
                 }
 
@@ -95,32 +91,30 @@ export const Reports = ({description, onClick}: ReportsProps) => {
         setGlnStream(stream)
         stream?.setStatsInterval(250)
 
-        return () => {
-            if (stream) {
-                stream.onstats = null
-            }
-        }
+        return () => {if (stream) {
+stream.onstats = null
+}}
     }, [description.id])
 
     return (
-        <div class="c-stream-reports" onClick={onClick}>
+        <div class='c-stream-reports' onClick={onClick}>
             {!hasAudioStats && !hasVideoStats && (
-                <div class="no-stats-available">
+                <div class='no-stats-available'>
                     {$t('group.report.not_available')}
                 </div>
             )}
 
             {hasVideoStats && (
-                <div class="category">
-                    <div class="title">
+                <div class='category'>
+                    <div class='title'>
                         {$t('group.report.video')}
                     </div>
                     {Object.entries(description.settings.video).map(([statName, stat]) => (
-                        <div key={statName} class="stat">
-                            <div class="key">
+                        <div key={statName} class='stat'>
+                            <div class='key'>
                                 {statName}
                             </div>
-                            <div class="value">
+                            <div class='value'>
                                 {String(stat)}
                             </div>
                         </div>
@@ -129,16 +123,16 @@ export const Reports = ({description, onClick}: ReportsProps) => {
             )}
 
             {hasAudioStats && (
-                <div class="category">
-                    <div class="title">
+                <div class='category'>
+                    <div class='title'>
                         {$t('group.report.audio')}
                     </div>
                     {Object.entries(description.settings.audio).map(([statName, stat]) => (
-                        <div key={statName} class="stat">
-                            <div class="key">
+                        <div key={statName} class='stat'>
+                            <div class='key'>
                                 {statName}
                             </div>
-                            <div class="value">
+                            <div class='value'>
                                 {String(stat)}
                             </div>
                         </div>
@@ -147,16 +141,16 @@ export const Reports = ({description, onClick}: ReportsProps) => {
             )}
 
             {Object.entries(stats).map(([categoryName, category]) => (
-                <div key={categoryName} class="category">
-                    <div class="title">
+                <div key={categoryName} class='category'>
+                    <div class='title'>
                         {categoryName}
                     </div>
                     {Object.entries(category).map(([statName, stat]) => (
-                        <div key={statName} class="stat">
-                            <div class="key">
+                        <div key={statName} class='stat'>
+                            <div class='key'>
                                 {statName}
                             </div>
-                            <div class="value">
+                            <div class='value'>
                                 {String(stat)}
                             </div>
                         </div>

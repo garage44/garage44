@@ -61,8 +61,10 @@ const packageIcons: Record<string, string> = {
     pyrite: 'webcam',
 }
 
-// Local state for menu item collapsed states per package
-// Default to collapsed (true) - will be updated based on active route
+/*
+ * Local state for menu item collapsed states per package
+ * Default to collapsed (true) - will be updated based on active route
+ */
 const menuState = deepSignal<Record<string, boolean>>({})
 
 // Component state - defined outside component to prevent re-creation on each render
@@ -81,8 +83,10 @@ export const Main = () => {
     const isProjectPage = routeParts[0] === 'projects' && routeParts.length >= 2 && currentPackage !== null
     const isDocsRoute = routeParts[0] === 'projects' && routeParts.length >= 3 && routeParts[2] === 'docs'
 
-    // Update collapsed state based on active route
-    // Active items should be uncollapsed (false), inactive items should be collapsed (true)
+    /*
+     * Update collapsed state based on active route
+     * Active items should be uncollapsed (false), inactive items should be collapsed (true)
+     */
     useEffect(() => {
         if (state.docsStructure) {
             const packagesWithDocs = state.docsStructure.packages
@@ -92,7 +96,8 @@ export const Main = () => {
                 const isPackageActive = currentPackage === pkg.name && (isProjectPage || isDocsRoute)
                 // Initialize if not set, then update based on active state
                 if (menuState[pkg.name] === undefined) {
-                    menuState[pkg.name] = true // Default to collapsed
+                    // Default to collapsed
+                    menuState[pkg.name] = true
                 }
                 // If this package is active, uncollapse it; otherwise keep current state
                 if (isPackageActive) {
@@ -102,23 +107,25 @@ export const Main = () => {
         }
     }, [isProjectsRoute, isProjectPage, isDocsRoute, currentPackage, state.docsStructure])
 
-    // Extract current docs section path (e.g., "adr" or "adr/guide")
-    // If we're on a file route, extract just the directory path
-    const currentDocsSection = isDocsRoute && routeParts.length >= 4
-        ? (() => {
-            const pathParts = routeParts.slice(3)
-            // If last part is a file (has extension), remove it to get directory path
-            const lastPart = pathParts.at(-1)
-            if (lastPart && (lastPart.endsWith('.md') || lastPart.endsWith('.mdc'))) {
-                return pathParts.slice(0, -1).join('/')
-            }
-            return pathParts.join('/')
-        })()
-        : null
+    /*
+     * Extract current docs section path (e.g., "adr" or "adr/guide")
+     * If we're on a file route, extract just the directory path
+     */
+    const currentDocsSection = isDocsRoute && routeParts.length >= 4 ?
+            (() => {
+                const pathParts = routeParts.slice(3)
+                // If last part is a file (has extension), remove it to get directory path
+                const lastPart = pathParts.at(-1)
+                if (lastPart && (lastPart.endsWith('.md') || lastPart.endsWith('.mdc'))) {
+                    return pathParts.slice(0, -1).join('/')
+                }
+                return pathParts.join('/')
+            })() :
+        null
 
     // Fetch documentation structure on mount
     useEffect(() => {
-        const fetchDocs = async () => {
+        const fetchDocs = async() => {
             try {
                 // Add cache-busting query parameter to ensure fresh data
                 const response = await fetch(`/api/docs?t=${Date.now()}`)
@@ -126,7 +133,7 @@ export const Main = () => {
                     const data = await response.json()
                     state.docsStructure = data
                 }
-            } catch (error) {
+            } catch(error) {
                 console.error('Failed to fetch documentation structure:', error)
             }
         }
@@ -158,25 +165,28 @@ export const Main = () => {
 
             const fullPath = basePath ? `${basePath}/${node.name}` : node.name
             // For files, remove extension from route and label; for directories, keep as is
-            const fileNameWithoutExt = node.type === 'file'
-                ? node.name.replace(/\.(md|mdc|tsx)$/, '')
-                : node.name
+            const fileNameWithoutExt = node.type === 'file' ?
+                    node.name.replace(/\.(md|mdc|tsx)$/, '') :
+                node.name
             // Always remove extension from route (no .tsx in URLs)
-            const routePathWithoutExt = node.type === 'file'
-                ? `/projects/${packageName}/docs/${basePath ? `${basePath}/` : ''}${fileNameWithoutExt}`
-                : `/projects/${packageName}/docs/${fullPath}`
+            const routePathWithoutExt = node.type === 'file' ?
+                `/projects/${packageName}/docs/${basePath ? `${basePath}/` : ''}${fileNameWithoutExt}` :
+                `/projects/${packageName}/docs/${fullPath}`
             const routePath = `/projects/${packageName}/docs/${fullPath}`
             // Check active state against route without extension
             const isActive = $s.currentRoute === routePathWithoutExt || $s.currentRoute.startsWith(`${routePathWithoutExt}/`)
 
             if (node.type === 'directory') {
                 // Recursively build children for directories
-                const children = node.children && node.children.length > 0
-                    ? buildDocsSubmenu(node.children, packageName, fullPath)
-                    : undefined
+                const children = node.children && node.children.length > 0 ?
+                        buildDocsSubmenu(node.children, packageName, fullPath) :
+                    undefined
 
                 // Check if this directory or any of its children is active
-                const isDocsSectionActive = isDocsRoute && (currentDocsSection === node.name || (currentDocsSection && currentDocsSection.startsWith(node.name + '/')))
+                const isDocsSectionActive =
+                    isDocsRoute &&
+                    (currentDocsSection === node.name ||
+                        (currentDocsSection && currentDocsSection.startsWith(node.name + '/')))
 
                 items.push({
                     active: isActive || isDocsSectionActive,
@@ -187,7 +197,7 @@ export const Main = () => {
                         route(routePath)
                     },
                     // Only include children if this section is active (or any child is active)
-                    ...(isDocsSectionActive && children && children.length > 0 && {children}),
+                    ...isDocsSectionActive && children && children.length > 0 && {children},
                 })
             } else {
                 // For files, use name without extension for label and route (remove .tsx from route too)
@@ -210,7 +220,6 @@ export const Main = () => {
     }
 
 
-
     // Track active component on scroll
     useEffect(() => {
         if (!isComponentsRoute) return
@@ -228,7 +237,7 @@ export const Main = () => {
             // Find the section currently in view
             const scrollTop = viewElement.scrollTop
             const viewportHeight = viewElement.clientHeight
-            const viewportMiddle = scrollTop + viewportHeight / 3
+            const viewportMiddle = scrollTop + (viewportHeight / 3)
 
             for (const section of sections) {
                 const rect = section.element!.getBoundingClientRect()
@@ -244,51 +253,76 @@ export const Main = () => {
         }
 
         viewElement.addEventListener('scroll', handleScroll, {passive: true})
-        handleScroll() // Initial check
+        // Initial check
+        handleScroll()
 
         return () => viewElement.removeEventListener('scroll', handleScroll)
     }, [isComponentsRoute])
 
     return (
         <AppLayout
-            menu={
+            menu={(
                 <PanelMenu
+                    actions={
+                        <ThemeToggle />
+                    }
                     collapsed={$s.panels.menu.collapsed}
                     LinkComponent={Link}
-                    logoHref="/"
-                    onCollapseChange={(collapsed) => {
-                        $s.panels.menu.collapsed = collapsed
-                    }}
-                    logoSrc="/img/logo.png"
-                    logoText="Garage44"
+                    logoHref='/'
+                    logoSrc='/img/logo.png'
+                    logoText='Garage44'
                     navigation={
-                        state.docsStructure ? (() => {
-                            // Include all packages with docs, including malkovich
-                            const packagesWithDocs = state.docsStructure.packages
-                                .filter((pkg) => pkg.index)
-                                .toSorted((a, b) => a.name.localeCompare(b.name, undefined, {sensitivity: 'base'}))
-                            if (packagesWithDocs.length === 0) return null
+                        state.docsStructure ?
+                                (() => {
+                                // Include all packages with docs, including malkovich
+                                    const packagesWithDocs = state.docsStructure.packages
+                                        .filter((pkg) => pkg.index)
+                                        .toSorted((a, b) => a.name.localeCompare(b.name, undefined, {sensitivity: 'base'}))
+                                    if (packagesWithDocs.length === 0) return null
 
-                            return (
-                                <>
+                                    return (
+                                    <>
                                     {packagesWithDocs.map((pkg) => {
                                         const isActive = currentPackage === pkg.name && (isProjectPage || isDocsRoute)
                                         const packageDocs = state.docsStructure.packages.find((p) => p.name === pkg.name)
-                                        const isCollapsed = menuState[pkg.name] !== false // Default to collapsed if not set
+                                        // Default to collapsed if not set
+                                        const isCollapsed = menuState[pkg.name] !== false
                                         const iconName = packageIcons[pkg.name] || 'folder_plus_outline'
 
                                         // Build docs submenu items if this package has docs
                                         let docsSubmenuItems: SubmenuItem[] | undefined
                                         if (packageDocs && packageDocs.docs.length > 0) {
                                             docsSubmenuItems = buildDocsSubmenu(packageDocs.docs, pkg.name).map((item) => {
-                                                // Check if this section is active (exact match) or if any nested child is active (starts with)
-                                                const isDocsSectionActive = isDocsRoute && currentPackage === pkg.name && (currentDocsSection === item.id || (currentDocsSection && currentDocsSection.startsWith(item.id + '/')))
-                                                const sectionNode = packageDocs.docs.find((d) => d.name === item.id && d.type === 'directory')
+                                                /*
+                                                 * Check if this section is active (exact match) or if any nested child
+                                                 * is active (starts with)
+                                                 */
+                                                const isDocsSectionActive =
+                                                    isDocsRoute &&
+                                                    currentPackage === pkg.name &&
+                                                    (currentDocsSection === item.id ||
+                                                        (currentDocsSection &&
+                                                            currentDocsSection.startsWith(item.id + '/')))
+                                                const sectionNode = packageDocs.docs.find(
+                                                    (d) => d.name === item.id && d.type === 'directory',
+                                                )
                                                 const nestedItems: SubmenuItem[] = []
 
-                                                // If this is the active docs section (or any child is active) and has children, add them as nested items
-                                                if (isDocsSectionActive && sectionNode && sectionNode.children && sectionNode.children.length > 0) {
-                                                    const childrenItems = buildDocsSubmenu(sectionNode.children, pkg.name, item.id).map((childItem) => ({
+                                                /*
+                                                 * If this is the active docs section (or any child is active) and has children,
+                                                 * add them as nested items
+                                                 */
+                                                if (
+                                                    isDocsSectionActive &&
+                                                    sectionNode &&
+                                                    sectionNode.children &&
+                                                    sectionNode.children.length > 0
+                                                ) {
+                                                    const childrenItems = buildDocsSubmenu(
+                                                        sectionNode.children,
+                                                        pkg.name,
+                                                        item.id,
+                                                    ).map((childItem) => ({
                                                         ...childItem,
                                                         nested: true,
                                                     }))
@@ -299,7 +333,7 @@ export const Main = () => {
                                                     ...item,
                                                     nested: true,
                                                     // Add nested children if this section is active (or any child is active)
-                                                    ...(nestedItems.length > 0 && {children: nestedItems}),
+                                                    ...nestedItems.length > 0 && {children: nestedItems},
                                                 }
                                             })
                                         }
@@ -311,43 +345,43 @@ export const Main = () => {
                                                     collapsed={$s.panels.menu.collapsed}
                                                     href={`/projects/${pkg.name}`}
                                                     icon={iconName}
-                                                    iconType="info"
+                                                    iconType='info'
                                                     onClick={() => {
                                                         // Toggle collapsed state
                                                         menuState[pkg.name] = !isCollapsed
                                                     }}
                                                     text={pkg.name}
                                                 />
-                                                {!isCollapsed && docsSubmenuItems && docsSubmenuItems.length > 0 && (
+                                                {!isCollapsed && docsSubmenuItems && docsSubmenuItems.length > 0 &&
                                                     <Submenu
                                                         collapsed={$s.panels.menu.collapsed}
                                                         items={docsSubmenuItems}
-                                                    />
-                                                )}
+                                                    />}
                                             </div>
                                         )
                                     })}
-                                </>
-                            )
-                        })() : null
+                                    </>
+                                    )
+                                })() :
+                            null
                     }
-                    actions={
-                        <ThemeToggle />
-                    }
+                    onCollapseChange={(collapsed) => {
+                        $s.panels.menu.collapsed = collapsed
+                    }}
                 />
-            }
+              )}
         >
-            <div class="view">
+            <div class='view'>
                 <Router onChange={handleRouteChange}>
-                    <Route path="/" component={Projects} default />
-                    <Route path="/projects" component={Projects} />
-                    <Route path="/projects/:projectName/docs/:section/:subsection/:filename?" component={Docs} />
-                    <Route path="/projects/:projectName/docs/:section/:filename?" component={Docs} />
-                    <Route path="/projects/:projectName/docs/*" component={Docs} />
-                    <Route path="/projects/:projectName" component={Project} />
-                    <Route path="/frontend" component={Frontend} />
-                    <Route path="/backend" component={Backend} />
-                    <Route path="/:path+" component={Markdown} />
+                    <Route component={Projects} default path='/' />
+                    <Route component={Projects} path='/projects' />
+                    <Route component={Docs} path='/projects/:projectName/docs/:section/:subsection/:filename?' />
+                    <Route component={Docs} path='/projects/:projectName/docs/:section/:filename?' />
+                    <Route component={Docs} path='/projects/:projectName/docs/*' />
+                    <Route component={Project} path='/projects/:projectName' />
+                    <Route component={Frontend} path='/frontend' />
+                    <Route component={Backend} path='/backend' />
+                    <Route component={Markdown} path='/:path+' />
                 </Router>
             </div>
         </AppLayout>

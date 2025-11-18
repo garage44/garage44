@@ -39,8 +39,8 @@ export async function syncUsersToGalene() {
         // 2. Sync channel members to group files
         const groups = await loadGroupsFromDisk()
         for (const group of groups) {
-            await updateGroupWithChannelMembers(group.name, db)
-        }
+await updateGroupWithChannelMembers(group.name, db)
+}
 
         logger.info(`Synced ${users.length} users to global config and ${groups.length} groups`)
     } catch (error) {
@@ -87,13 +87,13 @@ async function syncUsersToGlobalConfig(users: unknown[], _db: Database) {
     // Load existing config or create new
     let galeneConfig: Record<string, unknown> = {}
     if (await fs.pathExists(configFile)) {
-        galeneConfig = JSON.parse(await fs.readFile(configFile, 'utf8'))
-    }
+galeneConfig = JSON.parse(await fs.readFile(configFile, 'utf8'))
+}
 
     // Initialize users dictionary
     if (!galeneConfig.users) {
-        galeneConfig.users = {}
-    }
+galeneConfig.users = {}
+}
 
     // Sync ALL users
     for (const user of users) {
@@ -117,11 +117,9 @@ async function syncUsersToGlobalConfig(users: unknown[], _db: Database) {
 
     // Remove users that no longer exist
     const existingUsernames = new Set(users.map((u) => u.username))
-    for (const username of Object.keys(galeneConfig.users)) {
-        if (!existingUsernames.has(username)) {
-            delete galeneConfig.users[username]
-        }
-    }
+    for (const username of Object.keys(galeneConfig.users)) {if (!existingUsernames.has(username)) {
+delete galeneConfig.users[username]
+}}
 
     // Preserve other config fields (canonicalHost, writableGroups, etc.)
     // Only update the users field
@@ -197,13 +195,13 @@ async function updateGroupWithChannelMembers(groupName: string, db: Database) {
         if (member.role === 'admin') {
             galenePermission = 'op'
             if (!groupData.op.includes(user.username)) {
-                groupData.op.push(user.username)
-            }
+groupData.op.push(user.username)
+}
         } else {
             galenePermission = 'present'
             if (!groupData.other.includes(user.username)) {
-                groupData.other.push(user.username)
-            }
+groupData.other.push(user.username)
+}
         }
 
         // Convert password to Galene format
@@ -262,8 +260,8 @@ async function saveGroupNativeGalene(groupName: string, groupData: Record<string
 
     // Include users dictionary if it exists (required for Galene)
     if (groupData.users && typeof groupData.users === 'object' && !Array.isArray(groupData.users)) {
-        nativeData.users = groupData.users
-    } else {
+nativeData.users = groupData.users
+} else {
     // Ensure users dictionary exists (even if empty)
         nativeData.users = {}
     }
@@ -280,7 +278,7 @@ async function saveGroupNativeGalene(groupName: string, groupData: Record<string
  * Legacy function for backward compatibility
  */
 export async function syncUsers() {
-    return await syncUsersToGalene()
+return await syncUsersToGalene()
 }
 
 // Export the GroupManager instance for direct access if needed

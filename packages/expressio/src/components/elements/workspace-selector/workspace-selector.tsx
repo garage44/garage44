@@ -10,35 +10,42 @@ interface WorkspaceSelectorProps {
 }
 
 export function WorkspaceSelector({workspaces}: WorkspaceSelectorProps) {
-    return <div class="c-workspace-selector">
-        <div class="field">
-            <div class="label">
-                <Icon name="workspace" type="info"/>{$t(i18n.settings.label.workspaces)}
+    return (
+<div class='c-workspace-selector'>
+        <div class='field'>
+            <div class='label'>
+                <Icon name='workspace' type='info' />
+{$t(i18n.settings.label.workspaces)}
             </div>
 
-            <div class="wrapper">
-                <div className="options">
-                    {workspaces.map((workspace:WorkspaceDescription) =>
+            <div class='wrapper'>
+                <div className='options'>
+                    {workspaces.map((workspace:WorkspaceDescription) => (
                         <div className={classnames('option', workspace.status)} key={workspace.workspace_id}>
                             <Icon
-                                name="close"
+                                name='close'
                                 onClick={() => {
-                                    workspaces.splice(0, workspaces.length, ...workspaces.filter((w) => w !== workspace))
-                                }}
+workspaces.splice(0, workspaces.length, ...workspaces.filter((w) => w !== workspace))
+}}
                                 tip={
                                     workspace.status === 'existing' ?
-                                        $t(i18n.settings.tip.workspace_existing, {source_file: workspace.source_file}) :
-                                        $t(i18n.settings.tip.workspace_new, {source_file: workspace.source_file})
+                                            $t(i18n.settings.tip.workspace_existing, {source_file: workspace.source_file}) :
+                                            $t(i18n.settings.tip.workspace_new, {source_file: workspace.source_file})
                                 }
-                                type="info"
+                                type='info'
                             />
-                            {workspace.status === 'new' ? <FieldText
-                                autofocus={true}
-                                model={workspace.$workspace_id}
-                            /> : <div className="label">
+                            {workspace.status === 'new' ? (
+<FieldText
+    autofocus={true}
+    model={workspace.$workspace_id}
+/>
+                            ) : (
+<div className='label'>
                                 {workspace.workspace_id}
-                            </div>}
-                        </div>)}
+</div>
+                            )}
+                        </div>
+                    ))}
                 </div>
                 <DirectoryBrowser
                     onSelect={({path, workspace}) => {
@@ -51,9 +58,10 @@ export function WorkspaceSelector({workspaces}: WorkspaceSelectorProps) {
                 />
             </div>
 
-            <div class="help">
+            <div class='help'>
                 {$t(i18n.settings.help.workspaces)}
             </div>
         </div>
-    </div>
+</div>
+    )
 }

@@ -16,21 +16,13 @@ type Session = Record<string, string> | undefined
 class Router {
     routes: {handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>; method: string; path: RegExp}[] = []
 
-    get(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
-        this.add('GET', path, handler)
-    }
+    get(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {this.add('GET', path, handler)}
 
-    post(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
-        this.add('POST', path, handler)
-    }
+    post(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {this.add('POST', path, handler)}
 
-    put(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
-        this.add('PUT', path, handler)
-    }
+    put(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {this.add('PUT', path, handler)}
 
-    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
-        this.add('DELETE', path, handler)
-    }
+    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {this.add('DELETE', path, handler)}
 
     private add(method: string, path: string, handler: (req: Request, params: Record<string, string>, session?: Session) => Promise<Response>) {
         // Convert path params (e.g. /api/workspaces/:id) to regex
@@ -50,9 +42,7 @@ class Router {
                 // Extract params
                 const paramValues = pathname.match(path)?.slice(1) || []
                 const params: Record<string, string> = {}
-                paramValues.forEach((val, idx) => {
-                    params[`param${idx}`] = val
-                })
+                paramValues.forEach((val, idx) => {params[`param${idx}`] = val})
                 return await handler(req, params, session)
             }
         }
@@ -63,9 +53,7 @@ class Router {
 
 // Auth middleware that can be reused across workspace routes
 const requireAdmin = async (ctx, next) => {
-    if (!ctx.session?.userid) {
-        throw new Error('Unauthorized')
-    }
+    if (!ctx.session?.userid) {throw new Error('Unauthorized')}
 
     // User lookup will be handled by middleware's UserManager
     // The authentication check is done by the middleware layer

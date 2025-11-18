@@ -5,8 +5,10 @@ interface MarkdownProps {
 }
 
 export const Markdown = ({path}: MarkdownProps) => {
-    // path prop from router contains the route path (e.g., "/packages/expressio/README.md")
-    // Convert to workspace-relative file path
+    /*
+     * path prop from router contains the route path (e.g., "/packages/expressio/README.md")
+     * Convert to workspace-relative file path
+     */
     const routePath = path || window.location.pathname.slice(1)
 
     // Don't handle root path - that should be handled by Home component
@@ -14,8 +16,8 @@ export const Markdown = ({path}: MarkdownProps) => {
         return null
     }
 
-    const markdownPath = routePath.endsWith('.md') || routePath.endsWith('.mdc')
-        ? routePath
-        : `${routePath}/README.md`
+    const markdownPath = routePath.endsWith('.md') || routePath.endsWith('.mdc') ?
+        routePath :
+        `${routePath}/README.md`
     return <MarkdownPage filePath={markdownPath} />
 }

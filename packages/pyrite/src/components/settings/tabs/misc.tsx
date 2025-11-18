@@ -18,19 +18,17 @@ export default function TabMisc() {
         const themeColor = getComputedStyle(document.querySelector('.app')!).getPropertyValue('--surface-3')
         logger.info(`setting theme color to ${themeColor} for theme ${currentTheme}`)
         const metaTheme = document.querySelector('meta[name="theme-color"]')
-        if (metaTheme) {
-            (metaTheme as HTMLMetaElement).content = themeColor
-        }
+        if (metaTheme) {(metaTheme as HTMLMetaElement).content = themeColor}
     }, [])
 
     return (
-        <section class="tab-content active">
+        <section class='tab-content active'>
             <AvatarUpload state={$s} />
 
-            <div class="theme-toggle-wrapper">
+            <div class='theme-toggle-wrapper'>
                 <label>{$t('ui.settings.misc.theme_label')}</label>
                 <ThemeToggle />
-                <p class="help-text">{$t('ui.settings.misc.theme_help')}</p>
+                <p class='help-text'>{$t('ui.settings.misc.theme_help')}</p>
             </div>
 
             <FieldSelect

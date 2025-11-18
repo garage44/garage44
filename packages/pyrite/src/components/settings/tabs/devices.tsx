@@ -40,11 +40,9 @@ export default function TabDevices() {
         }
     }
 
-    const testSoundAudio = () => {
-        if (soundAudio) {
-            soundAudio.play()
-        }
-    }
+    const testSoundAudio = () => {if (soundAudio) {
+soundAudio.play()
+}}
 
     // Initial mount
     useEffect(() => {
@@ -77,33 +75,31 @@ export default function TabDevices() {
 
         init()
 
-        return () => {
-            if (!$s.sfu.channel.connected) {
-                sfu.delLocalMedia()
-            }
-        }
+        return () => {if (!$s.sfu.channel.connected) {
+sfu.delLocalMedia()
+}}
     }, [])
 
     // Watch for device changes
     useEffect(() => {
-        remountStream()
-    }, [$s.devices.cam.resolution, $s.devices.cam.selected, $s.devices.mic.selected])
+remountStream()
+}, [$s.devices.cam.resolution, $s.devices.cam.selected, $s.devices.mic.selected])
 
     return (
-        <section class="c-tab-devices">
-            <div class="camera-field">
+        <section class='c-tab-devices'>
+            <div class='camera-field'>
                 <FieldSelect
                     model={$s.devices.cam.$selected}
                     help={$t('device.select_cam_help')}
                     label={$t('device.select_cam_label')}
-                    name="video"
+                    name='video'
                     options={$s.devices.cam.options}
                 />
 
                 {description && <Stream modelValue={description} controls={false} />}
                 {!description && (
-                    <div class="webcam-placeholder">
-                        <Icon name="webcam" />
+                    <div class='webcam-placeholder'>
+                        <Icon name='webcam' />
                     </div>
                 )}
             </div>
@@ -112,15 +108,15 @@ export default function TabDevices() {
                 model={$s.devices.mic.$selected}
                 help={$t('device.select_mic_verify_help')}
                 label={$t('device.select_mic_label')}
-                name="audio"
+                name='audio'
                 options={$s.devices.mic.options}
             />
 
-            <div class="soundmeter">
+            <div class='soundmeter'>
                 {streamId && stream && <Soundmeter stream={stream} streamId={streamId} />}
             </div>
 
-            <div class="output-config">
+            <div class='output-config'>
                 {/* https://bugzilla.mozilla.org/show_bug.cgi?id=1498512 */}
                 {/* https://bugzilla.mozilla.org/show_bug.cgi?id=1152401 */}
                 {$s.devices.audio.options.length && !$s.env.isFirefox && (
@@ -128,21 +124,21 @@ export default function TabDevices() {
                         model={$s.devices.audio.$selected}
                         help={$t('device.select_audio_verify_help')}
                         label={$t('device.select_audio_label')}
-                        name="audio"
+                        name='audio'
                         options={$s.devices.audio.options}
                     />
                 )}
 
                 {($s.env.isFirefox || !$s.devices.audio.options.length) && (
-                    <div class="field">
-                        <div class="label-container">
-                            <label class="field-label">{$t('device.select_audio_label')}</label>
-                            <button class="btn" disabled={playing} onClick={testSoundAudio}>
-                                <Icon class="icon-d" name="play" />
+                    <div class='field'>
+                        <div class='label-container'>
+                            <label class='field-label'>{$t('device.select_audio_label')}</label>
+                            <button class='btn' disabled={playing} onClick={testSoundAudio}>
+                                <Icon class='icon-d' name='play' />
                             </button>
                         </div>
 
-                        <div class="help">
+                        <div class='help'>
                             {$t('device.select_audio_verify_help')}
                         </div>
                     </div>

@@ -89,7 +89,10 @@ async function scanDirectory(dirPath: string, relativePath: string): Promise<Doc
 
             if (entry.isDirectory()) {
                 dirs.push(entry)
-            } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.mdc') || entry.name.endsWith('.tsx'))) {
+            } else if (
+                entry.isFile() &&
+                (entry.name.endsWith('.md') || entry.name.endsWith('.mdc') || entry.name.endsWith('.tsx'))
+            ) {
                 // Skip index files (they're served as directory index)
                 if (entry.name === 'index.md' || entry.name === 'index.mdc' || entry.name === 'page.tsx') {
                     continue
@@ -107,7 +110,7 @@ async function scanDirectory(dirPath: string, relativePath: string): Promise<Doc
             const dirFullPath = join(dirPath, dir.name)
             const dirRelativePath = `${relativePath}/${dir.name}`
             const children = await scanDirectory(dirFullPath, dirRelativePath)
-            
+
             // Check if directory has page.tsx (component-based doc)
             const pageTsx = join(dirFullPath, 'page.tsx')
             let contentType: 'markdown' | 'component' | undefined
@@ -115,7 +118,8 @@ async function scanDirectory(dirPath: string, relativePath: string): Promise<Doc
                 await stat(pageTsx)
                 contentType = 'component'
             } catch {
-                contentType = 'markdown' // Default to markdown if no page.tsx
+                // Default to markdown if no page.tsx
+                contentType = 'markdown'
             }
 
             nodes.push({
@@ -137,7 +141,7 @@ async function scanDirectory(dirPath: string, relativePath: string): Promise<Doc
                 type: 'file',
             })
         }
-    } catch (error) {
+    } catch(error) {
         // Directory doesn't exist or can't be read
         console.warn(`[docs] Failed to scan directory ${dirPath}:`, error)
     }

@@ -33,9 +33,7 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
         const {userId, username} = request.data
 
         // Add user to group
-        if (!state.groups.has(groupId)) {
-            state.groups.set(groupId, new Set())
-        }
+        if (!state.groups.has(groupId)) {state.groups.set(groupId, new Set())}
         state.groups.get(groupId)!.add(userId)
 
         // Update user state
@@ -77,16 +75,12 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
         const group = state.groups.get(groupId)
         if (group) {
             group.delete(userId)
-            if (group.size === 0) {
-                state.groups.delete(groupId)
-            }
+            if (group.size === 0) {state.groups.delete(groupId)}
         }
 
         // Update user state
         const user = state.users.get(userId)
-        if (user) {
-            user.groupId = null
-        }
+        if (user) {user.groupId = null}
 
         // Broadcast to all clients
         wsManager.broadcast(`/presence/${groupId}/leave`, {

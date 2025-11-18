@@ -80,9 +80,7 @@ export class Workspace {
             get: (target, prop) => {
                 const value = target[prop]
                 // Only proxy objects, not primitive values
-                if (value && typeof value === 'object' && !this.isHistoryOperation) {
-                    return this.createDeepProxy(value, onChange)
-                }
+                if (value && typeof value === 'object' && !this.isHistoryOperation) {return this.createDeepProxy(value, onChange)}
                 return value
             },
             set: (target, prop, value) => {
@@ -107,16 +105,12 @@ export class Workspace {
     // Track operations that happen close together as a single action
     private trackOperation(onChange: () => void): void {
         // If we're in a batch update, don't trigger onChange yet
-        if (this.batchUpdateInProgress) {
-            return
-        }
+        if (this.batchUpdateInProgress) {return}
 
         const now = Date.now()
 
         // Clear any pending operation timeout
-        if (this.operationTimeout) {
-            clearTimeout(this.operationTimeout)
-        }
+        if (this.operationTimeout) {clearTimeout(this.operationTimeout)}
 
         // If this is the first change or it's been a while since the last change
         if (this.operationTimestamp === 0 || (now - this.operationTimestamp) > this.OPERATION_GROUPING_TIME) {
@@ -124,9 +118,7 @@ export class Workspace {
             // or it's been long enough that this is a separate operation
 
             // If we had pending changes from a previous operation, commit those first
-            if (this.pendingChanges && this.operationTimestamp !== 0) {
-                onChange()
-            }
+            if (this.pendingChanges && this.operationTimestamp !== 0) {onChange()}
 
             // Start tracking a new operation
             this.operationTimestamp = now
@@ -144,15 +136,11 @@ export class Workspace {
     }
 
     // Public getter/setter for i18n that uses the proxy
-    get i18n(): I18n {
-        return this._i18n
-    }
+    get i18n(): I18n {return this._i18n}
 
     set i18n(newI18n: I18n) {
         // When setting directly, add to history if not from history operation
-        if (!this.isHistoryOperation && Object.keys(this._i18n).length > 0) {
-            this.addToHistory(copyObject(this._i18n))
-        }
+        if (!this.isHistoryOperation && Object.keys(this._i18n).length > 0) {this.addToHistory(copyObject(this._i18n))}
 
         // Attach path symbols to translation objects (needed when i18n is set via WebSocket)
         // This ensures paths are available even after serialization/deserialization
@@ -202,9 +190,7 @@ export class Workspace {
         // After loading the i18n data, broadcast it to any connected clients
         this.broadcastI18nState()
 
-        if (isService && this.config.sync.enabled) {
-            await this.watch()
-        }
+        if (isService && this.config.sync.enabled) {await this.watch()}
     }
 
     async load() {
@@ -255,9 +241,7 @@ export class Workspace {
                 // Strip all temporary state keys, before saving.
                 delete sourceRef._id
                 delete sourceRef._collapsed
-                if ('target' in sourceRef) {
-                    delete sourceRef.target._collapsed
-                }
+                if ('target' in sourceRef) {delete sourceRef.target._collapsed}
                 delete sourceRef._redundant
             }
         })
@@ -270,9 +254,7 @@ export class Workspace {
 
     async unwatch() {
         logger.info(`[workspace-${this.config.workspace_id}] unwatch workspace`)
-        for (const watcher of this.watchers) {
-            watcher.close()
-        }
+        for (const watcher of this.watchers) {watcher.close()}
         this.watchers = []
     }
 
@@ -299,9 +281,7 @@ export class Workspace {
                     await this.applyLinting('sync')
                 })
                 this.watchers.push(watcher)
-            } catch (error) {
-                logger.warn(`[workspace-${this.config.workspace_id}] failed to watch file ${file}: ${error}`)
-            }
+            } catch (error) {logger.warn(`[workspace-${this.config.workspace_id}] failed to watch file ${file}: ${error}`)}
         }
 
         await this.applyLinting('sync')
@@ -330,17 +310,13 @@ export class Workspace {
     // Update the addToHistory method to remove linting
     addToHistory(newI18n: I18n): void {
         // Cancel any pending history updates
-        if (this._addHistoryTimeout) {
-            clearTimeout(this._addHistoryTimeout)
-        }
+        if (this._addHistoryTimeout) {clearTimeout(this._addHistoryTimeout)}
 
         this._addHistoryTimeout = setTimeout(async() => {
             const fullStateCopy = copyObject(newI18n)
 
             // If we're not at the end of the history, remove everything after current point
-            if (this.i18nHistoryPointer < this.i18nHistory.length - 1) {
-                this.i18nHistory = this.i18nHistory.slice(0, this.i18nHistoryPointer + 1)
-            }
+            if (this.i18nHistoryPointer < this.i18nHistory.length - 1) {this.i18nHistory = this.i18nHistory.slice(0, this.i18nHistoryPointer + 1)}
 
             // Skip adding if the state hasn't actually changed
             const lastState = this.i18nHistory[this.i18nHistoryPointer]
@@ -353,11 +329,7 @@ export class Workspace {
             this.i18nHistory.push(fullStateCopy)
 
             // Limit history size
-            if (this.i18nHistory.length > this.maxHistoryLength) {
-                this.i18nHistory.shift()
-            } else {
-                this.i18nHistoryPointer++
-            }
+            if (this.i18nHistory.length > this.maxHistoryLength) {this.i18nHistory.shift()} else {this.i18nHistoryPointer++}
 
             // After adding to history, apply linting and broadcast the state
             await this.applyLinting('sync')

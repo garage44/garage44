@@ -46,7 +46,7 @@ async function fetchMainRepository(): Promise<string | null> {
             console.warn(`[pr-deploy] Git fetch failed (non-fatal): ${stderr || stdout || 'Unknown error'}`)
         }
         return mainRepoPath
-    } catch (error) {
+    } catch(error) {
         const message = error instanceof Error ? error.message : String(error)
         console.warn(`[pr-deploy] Git fetch error (non-fatal): ${message}`)
         return mainRepoPath
@@ -94,7 +94,7 @@ async function restartMalkovichService(): Promise<void> {
             const stdout = restartResult.stdout?.toString() || ''
             console.warn(`[pr-deploy] Failed to restart malkovich service (non-fatal): ${stderr || stdout || 'Unknown error'}`)
         }
-    } catch (error) {
+    } catch(error) {
         const message = error instanceof Error ? error.message : String(error)
         console.warn(`[pr-deploy] Error restarting malkovich service (non-fatal): ${message}`)
     }
@@ -253,8 +253,11 @@ export async function deployPR(pr: PRMetadata): Promise<{
             console.log('[pr-deploy] Repository directory already exists, skipping clone')
         } else {
             console.log('[pr-deploy] Cloning repository...')
-            // Use GitHub URL instead of local path for cloning
-            // Construct URL from repo_full_name (e.g., "owner/repo" -> "https://github.com/owner/repo.git")
+
+            /*
+             * Use GitHub URL instead of local path for cloning
+             * Construct URL from repo_full_name (e.g., "owner/repo" -> "https://github.com/owner/repo.git")
+             */
             const githubUrl = `https://github.com/${pr.repo_full_name}.git`
             console.log(`[pr-deploy] Source: ${githubUrl}`)
             console.log(`[pr-deploy] Target: ${repoDir}`)
@@ -331,7 +334,7 @@ export async function deployPR(pr: PRMetadata): Promise<{
                 throw new Error(`Build failed: ${errorOutput.slice(0, 1000)}`)
             }
             console.log('[pr-deploy] Build completed successfully')
-        } catch (error) {
+        } catch(error) {
             if (error instanceof Error && error.message.includes('Build failed')) {
                 throw error
             }
@@ -401,7 +404,7 @@ export async function deployPR(pr: PRMetadata): Promise<{
             message: `PR #${pr.number} deployed successfully`,
             success: true,
         }
-    } catch (error) {
+    } catch(error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-deploy] Deployment failed: ${message}`)
 
@@ -527,7 +530,11 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
                 // Log warning but continue - service might not be running
                 const stderr = stopResult.stderr?.toString() || ''
                 const stdout = stopResult.stdout?.toString() || ''
-                console.warn(`[pr-deploy] Warning: Failed to stop ${packageName} service via systemctl: ${stderr || stdout || 'Unknown error'}`)
+                console.warn(
+                    `[pr-deploy] Warning: Failed to stop ${packageName} service via systemctl: ${
+                        stderr || stdout || 'Unknown error'
+                    }`,
+                )
 
                 // Try to kill any processes holding the port as fallback
                 console.log(`[pr-deploy] Attempting to kill processes on port ${port}...`)
@@ -556,7 +563,11 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
                 // Check if service exists
                 const statusResult = await $`sudo systemctl status pr-${pr.number}-${packageName}.service --no-pager -l`.nothrow()
                 const statusOutput = statusResult.stdout?.toString() || ''
-                throw new Error(`Failed to start ${packageName} service: ${stderr || stdout || 'Unknown error'}\nService status: ${statusOutput}`)
+                throw new Error(
+                    `Failed to start ${packageName} service: ${
+                        stderr || stdout || 'Unknown error'
+                    }\nService status: ${statusOutput}`,
+                )
             }
         }
 
@@ -576,14 +587,14 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
             message: `PR #${pr.number} updated successfully`,
             success: true,
         }
-    } catch (error) {
+    } catch(error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-deploy] Update failed: ${message}`)
 
         // Update deployment status to failed
         try {
             await updatePRDeployment(pr.number, {status: 'failed'})
-        } catch (statusError) {
+        } catch(statusError) {
             console.error('[pr-deploy] Failed to update deployment status:', statusError)
         }
 
@@ -616,8 +627,11 @@ async function updatePRDeploymentWithMain(deployment: PRDeployment): Promise<boo
     try {
         process.chdir(repoDir)
 
-        // Get the repo name from the git remote (or use default)
-        let repoFullName = 'garage44/garage44' // Default fallback
+        /**
+         * Get the repo name from the git remote (or use default)
+         * Default fallback
+         */
+        let repoFullName = 'garage44/garage44'
         const remoteUrlResult = await $`git remote get-url origin`.nothrow()
         if (remoteUrlResult.exitCode === 0) {
             const remoteUrl = remoteUrlResult.stdout?.toString().trim() || ''
@@ -757,7 +771,7 @@ async function updatePRDeploymentWithMain(deployment: PRDeployment): Promise<boo
 
         console.log(`[pr-deploy] PR #${deployment.number} successfully updated with main branch changes`)
         return true
-    } catch (error) {
+    } catch(error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-deploy] Error updating PR #${deployment.number} with main: ${message}`)
         return false
@@ -810,8 +824,10 @@ export async function updateAllPRDeploymentsWithMain(): Promise<{
                 updated++
                 console.log(`[pr-deploy] ✅ PR #${deployment.number} updated successfully`)
             } else {
-                // Check if it was skipped due to conflicts or failed due to errors
-                // For now, we'll count merge conflicts as skipped and other errors as failed
+                /*
+                 * Check if it was skipped due to conflicts or failed due to errors
+                 * For now, we'll count merge conflicts as skipped and other errors as failed
+                 */
                 skipped++
                 console.log(`[pr-deploy] ⏭️  PR #${deployment.number} skipped (merge conflicts or errors)`)
             }
@@ -826,7 +842,7 @@ export async function updateAllPRDeploymentsWithMain(): Promise<{
             skipped,
             updated,
         }
-    } catch (error) {
+    } catch(error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-deploy] Error updating PR deployments with main: ${message}`)
         return {
@@ -844,7 +860,8 @@ export async function updateAllPRDeploymentsWithMain(): Promise<{
 function discoverPackagesToDeploy(repoDir: string): string[] {
     const allPackages = extractWorkspacePackages(repoDir)
     const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
-    return [...appPackages, 'malkovich'] // Always include malkovich
+    // Always include malkovich
+    return [...appPackages, 'malkovich']
 }
 
 /**
@@ -903,8 +920,10 @@ TasksMax=100
 WantedBy=multi-user.target
 `
 
-        // Write service file using sudo (required for /etc/systemd/system/)
-        // Use a temporary file and then move it with sudo to avoid shell escaping issues
+        /*
+         * Write service file using sudo (required for /etc/systemd/system/)
+         * Use a temporary file and then move it with sudo to avoid shell escaping issues
+         */
         const tempFile = `/tmp/pr-${deployment.number}-${packageName}.service`
         await Bun.write(tempFile, content)
         const writeResult = await $`sudo mv ${tempFile} ${serviceFile}`.nothrow()
@@ -965,11 +984,18 @@ async function generateNginxConfig(deployment: PRDeployment, packagesToDeploy: s
 
         // Validate port is in the expected range
         if (port < PR_PORT_BASE || port >= PR_PORT_BASE + PR_PORT_RANGE) {
-            console.warn(`[pr-deploy] WARNING: Port ${port} for ${packageName} is outside expected range [${PR_PORT_BASE}, ${PR_PORT_BASE + PR_PORT_RANGE})`)
+            console.warn(
+                `[pr-deploy] WARNING: Port ${port} for ${packageName} is outside expected range [${
+                    PR_PORT_BASE
+                }, ${PR_PORT_BASE + PR_PORT_RANGE})`,
+            )
         }
 
         // Log port mapping for debugging
-        console.log(`[pr-deploy] Generating nginx config for ${packageName}: port ${port} (subdomain: pr-${prNumber}-${packageName}.${baseDomain})`)
+        console.log(
+            `[pr-deploy] Generating nginx config for ${packageName}: port ${port} ` +
+            `(subdomain: pr-${prNumber}-${packageName}.${baseDomain})`,
+        )
 
         // Use single-level subdomain (pr-999-malkovich.garage44.org) to work with *.garage44.org wildcard cert
         const subdomain = `pr-${prNumber}-${packageName}.${baseDomain}`
@@ -1076,8 +1102,10 @@ server {
 }
 `
 
-        // Write nginx config file using sudo (required for /etc/nginx/)
-        // Use a temporary file and then move it with sudo to avoid shell escaping issues
+        /*
+         * Write nginx config file using sudo (required for /etc/nginx/)
+         * Use a temporary file and then move it with sudo to avoid shell escaping issues
+         */
         const tempNginxFile = `/tmp/pr-${prNumber}-${packageName}.nginx.conf`
         await Bun.write(tempNginxFile, content)
         const nginxWriteResult = await $`sudo mv ${tempNginxFile} ${configFile}`.nothrow()
@@ -1155,7 +1183,7 @@ export async function regeneratePRNginx(prNumber: number): Promise<{
             message: `Nginx configs regenerated successfully for PR #${prNumber}`,
             success: true,
         }
-    } catch (error) {
+    } catch(error) {
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-deploy] Failed to regenerate nginx configs: ${message}`)
         return {

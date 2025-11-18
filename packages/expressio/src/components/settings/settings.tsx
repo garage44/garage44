@@ -12,9 +12,7 @@ interface SettingsProps {
     tabId?: string
 }
 
-const getRoute = (tabId: string) => {
-    return `/settings?tab=${tabId}`
-}
+const getRoute = (tabId: string) => {return `/settings?tab=${tabId}`}
 
 export function Settings({tabId}: SettingsProps) {
     // Extract tab from query params if not provided as prop
@@ -61,10 +59,10 @@ export function Settings({tabId}: SettingsProps) {
     return (
         <CommonSettings
             title={$t(i18n.ui.settings.name)}
-            icon="settings"
+            icon='settings'
             tabs={tabs}
             activeTabId={activeTabId}
-            defaultTab="profile"
+            defaultTab='profile'
             getRoute={getRoute}
             onSave={saveSettings}
         />

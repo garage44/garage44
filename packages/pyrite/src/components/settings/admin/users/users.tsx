@@ -19,23 +19,21 @@ export const Users = ({children, userId}: UsersProps) => {
         logger.debug(`load user ${userId}`)
         const user = $s.admin.users.find((i) => i.id === parseInt(userId))
         if (user && (user._unsaved || user._delete)) {
-            $s.admin.user = user
-        } else {
-            $s.admin.user = await api.get(`/api/users/${encodeURIComponent(userId)}`)
-        }
+$s.admin.user = user
+} else {
+$s.admin.user = await api.get(`/api/users/${encodeURIComponent(userId)}`)
+}
     }
 
     const loadUsers = async () => {
-        $s.admin.users = await api.get('/api/users')
-    }
+$s.admin.users = await api.get('/api/users')
+}
 
     // Initial load
     useEffect(() => {
-        loadUsers().then(() => {
-            if (userId) {
-                loadUser(userId)
-            }
-        })
+        loadUsers().then(() => {if (userId) {
+loadUser(userId)
+}})
     }, [])
 
     // Watch userId changes
@@ -48,8 +46,8 @@ export const Users = ({children, userId}: UsersProps) => {
     }, [userId])
 
     if ($s.admin.user) {
-        return <>{children}</>
-    }
+return <>{children}</>
+}
 
     return <Splash instruction={$t('user.action.select')} />
 }

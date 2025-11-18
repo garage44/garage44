@@ -79,10 +79,12 @@ export const Login = () => {
         }
     }
 
-    return <CommonLogin
-        logo="/public/img/logo.svg"
-        title="Expressio"
-        animated={true}
-        onLogin={handleLogin}
-    />
+    return (
+<CommonLogin
+    logo='/public/img/logo.svg'
+    title='Expressio'
+    animated={true}
+    onLogin={handleLogin}
+/>
+    )
 }

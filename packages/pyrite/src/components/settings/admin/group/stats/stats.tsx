@@ -139,43 +139,43 @@ export default function Stats({groupId}: StatsProps) {
         const id = setInterval(loadStats, 250) as unknown as number
         setIntervalId(id)
 
-        return () => {
-            clearInterval(id)
-        }
+        return () => {clearInterval(id)}
     }, [groupId])
 
     const clientsArray = Object.values(stats.clients)
 
     if (clientsArray.length === 0) {
         return (
-            <section class="c-admin-dashboard tab-content no-results">
-                <Icon className="icon icon-l" name="stats" />
+            <section class='c-admin-dashboard tab-content no-results'>
+                <Icon className='icon icon-l' name='stats' />
                 <span>{$t('group.settings.statistic.no_connections')}</span>
             </section>
         )
     }
 
     return (
-        <section class="c-admin-groups-stats tab-content active">
+        <section class='c-admin-groups-stats tab-content active'>
             {clientsArray.map((client) => (
-                <div key={client.id} class="client">
+                <div key={client.id} class='client'>
                     <div
                         class={`client-header ${client.collapsed ? 'collapsed' : ''}`}
                         onClick={() => toggleCollapse(client.id)}
                         onKeyPress={(e) => e.key === 'Enter' && toggleCollapse(client.id)}
-                        role="button"
+                        role='button'
                         tabIndex={0}
                     >
-                        <Icon className="icon icon-d" name="stats" /> {client.id}
+                        <Icon className='icon icon-d' name='stats' /> 
+{' '}
+{client.id}
                     </div>
                     {!client.collapsed && client.up.map((stream, streamIdx) => (
-                        <div key={streamIdx} class="stream">
+                        <div key={streamIdx} class='stream'>
                             {stream.tracks.map((track, trackIdx) => (
-                                <div key={trackIdx} class="track">
-                                    {statProps.bitrate && <Chart data={track.bitrate} name="bitrate" />}
-                                    {statProps.jitter && <Chart data={track.jitter} name="jitter" />}
-                                    {statProps.loss && <Chart data={track.loss} name="loss" />}
-                                    {statProps.maxBitrate && <Chart data={track.maxBitrate} name="maxBitrate" />}
+                                <div key={trackIdx} class='track'>
+                                    {statProps.bitrate && <Chart data={track.bitrate} name='bitrate' />}
+                                    {statProps.jitter && <Chart data={track.jitter} name='jitter' />}
+                                    {statProps.loss && <Chart data={track.loss} name='loss' />}
+                                    {statProps.maxBitrate && <Chart data={track.maxBitrate} name='maxBitrate' />}
                                 </div>
                             ))}
                         </div>

@@ -4,7 +4,7 @@ import {$t} from '@garage44/common/app'
 
 export default function TabAccess() {
     return (
-        <section class="c-admin-group-tab-access tab-content active">
+        <section class='c-admin-group-tab-access tab-content active'>
             <FieldCheckbox
                 value={$s.admin.group.public}
                 onChange={(value) => $s.admin.group.public = value}
@@ -52,7 +52,7 @@ export default function TabAccess() {
                 onChange={(value) => $s.admin.group['max-clients'] = value}
                 help={$t('group.settings.access.maxclient_help')}
                 label={$t('group.settings.access.maxclient_label')}
-                placeholder="..."
+                placeholder='...'
             />
         </section>
     )

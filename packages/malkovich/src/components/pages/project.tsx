@@ -18,7 +18,7 @@ export const Project = ({projectName}: ProjectProps) => {
 
     // Try index.md first, then index.mdc
     useEffect(() => {
-        const tryLoad = async () => {
+        const tryLoad = async() => {
             if (!name) {
                 setError('Project name is required')
                 return
@@ -48,11 +48,11 @@ export const Project = ({projectName}: ProjectProps) => {
     }, [name])
 
     if (error) {
-        return <div class="styleguide-page error">{error}</div>
+        return <div class='styleguide-page error'>{error}</div>
     }
 
     if (!filePath) {
-        return <div class="styleguide-page">Loading...</div>
+        return <div class='styleguide-page'>Loading...</div>
     }
 
     return <MarkdownPage filePath={filePath} />

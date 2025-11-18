@@ -32,30 +32,26 @@ export const VideoStrip = ({streams}: VideoStripProps) => {
         if (streamIndex >= 0) {
             logger.debug(`[VideoStrip] updating stream ${updatedStream.id} at index ${streamIndex}`)
             Object.assign($s.streams[streamIndex], updatedStream)
-        } else {
-            logger.warn(`[VideoStrip] stream ${updatedStream.id} not found in $s.streams`)
-        }
+        } else {logger.warn(`[VideoStrip] stream ${updatedStream.id} not found in $s.streams`)}
     }, [])
 
     // Log when streams change
     useEffect(() => {
         logger.debug(`[VideoStrip] streams changed: ${$s.streams.length} streams`)
-        $s.streams.forEach((s) => {
-            logger.debug(`[VideoStrip] stream: ${s.id} (${s.direction}), hasAudio=${s.hasAudio}, hasVideo=${s.hasVideo}, playing=${s.playing}`)
-        })
+        $s.streams.forEach((s) => {logger.debug(`[VideoStrip] stream: ${s.id} (${s.direction}), hasAudio=${s.hasAudio}, hasVideo=${s.hasVideo}, playing=${s.playing}`)})
     }, [$s.streams])
 
     return (
-        <div class="c-video-strip">
+        <div class='c-video-strip'>
             {sortedStreams.length > 0 ? (
                 sortedStreams.map((description, index) => (
-                    <div key={description.id || index} class="video-strip-item">
+                    <div key={description.id || index} class='video-strip-item'>
                         <Stream modelValue={sortedStreams[index]} onUpdate={handleStreamUpdate} />
                     </div>
                 ))
             ) : (
-                <div class="video-strip-placeholder">
-                    <Icon class="icon icon-l" name="webcam" />
+                <div class='video-strip-placeholder'>
+                    <Icon class='icon icon-l' name='webcam' />
                     <p>No video streams</p>
                 </div>
             )}

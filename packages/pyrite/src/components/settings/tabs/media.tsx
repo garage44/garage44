@@ -32,12 +32,12 @@ export default function TabMedia() {
     ]
 
     return (
-        <section class="c-tab-media">
+        <section class='c-tab-media'>
             <FieldSelect
                 model={$s.media.$accept}
                 help={$t('ui.settings.media.accept_help')}
                 label={$t('ui.settings.media.accept_label')}
-                name="request"
+                name='request'
                 options={acceptOptions}
             />
 
@@ -45,7 +45,7 @@ export default function TabMedia() {
                 model={$s.devices.cam.$resolution}
                 help={$t('ui.settings.media.resolution_help')}
                 label={$t('ui.settings.media.resolution_label')}
-                name="resolution"
+                name='resolution'
                 options={resolutionOptions}
             />
 
@@ -53,7 +53,7 @@ export default function TabMedia() {
                 model={$s.media.$upstream}
                 help={$t('ui.settings.media.bandwidth_help')}
                 label={$t('ui.settings.media.bandwidth_label')}
-                name="send"
+                name='send'
                 options={bandwidthOptions}
             />
         </section>

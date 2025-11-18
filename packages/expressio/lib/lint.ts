@@ -89,25 +89,19 @@ export async function lintWorkspace(workspace, lintMode: 'sync' | 'lint') {
                     // A soft tag can directly be removed.
                     pathDelete(workspace.i18n, tagPath)
                     deleteTags.push({path: tagPath, value: ref})
-                } else {
-                    deleteTags.push({file: filePath, match, path: tagPath})
-                }
+                } else {deleteTags.push({file: filePath, match, path: tagPath})}
             } else if (lintMode === 'sync') {
                 // A persistant tag is marked as redundant instead.
                 ref._redundant = true
                 modifyTags.push({path: tagPath, value: ref})
-            } else if (lintMode === 'lint') {
-                deleteTags.push({path: tagPath})
-            }
+            } else if (lintMode === 'lint') {deleteTags.push({path: tagPath})}
         }
     }
 
     if (createTags.length || deleteTags.length || modifyTags.length) {
         const fileGroups = new Map()
         for (const tag of createTags) {
-            if (!fileGroups.has(tag.file)) {
-                fileGroups.set(tag.file, [])
-            }
+            if (!fileGroups.has(tag.file)) {fileGroups.set(tag.file, [])}
             fileGroups.get(tag.file).push(tag)
         }
 
@@ -120,19 +114,13 @@ export async function lintWorkspace(workspace, lintMode: 'sync' | 'lint') {
             // Try each level of the path to find existing groups
             for (let i = 1; i <= pathParts.length - 1; i++) {
                 const testPath = pathParts.slice(0, i).join('.')
-                if (acc[testPath]) {
-                    commonPath = testPath
-                }
+                if (acc[testPath]) {commonPath = testPath}
             }
 
             // If no common path found, create a new group with all but the last element
-            if (!commonPath) {
-                commonPath = pathParts.slice(0, -1).join('.')
-            }
+            if (!commonPath) {commonPath = pathParts.slice(0, -1).join('.')}
 
-            if (!acc[commonPath]) {
-                acc[commonPath] = []
-            }
+            if (!acc[commonPath]) {acc[commonPath] = []}
             acc[commonPath].push(tag)
             return acc
         }, {})

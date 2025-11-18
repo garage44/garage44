@@ -41,19 +41,13 @@ export const Main = () => {
                     enola: config.enola,
                     workspaces: config.workspaces,
                 }, {usage: {loading: false}})
-            } else {
-                route('/login')
-            }
+            } else {route('/login')}
         })()
     }, [])
 
-    if ($s.profile.authenticated === null) {
-        return null
-    }
+    if ($s.profile.authenticated === null) {return null}
 
-    if ($s.profile.authenticated === false) {
-        return <Login />
-    }
+    if ($s.profile.authenticated === false) {return <Login />}
     const handleRoute = async({url}: {url: string}) => {
         // Update URL in global state for reactive access
         $s.env.url = url
@@ -82,27 +76,25 @@ export const Main = () => {
         }
     }
 
-    return <>
+    return (
+<>
         <AppLayout
-            menu={
+            menu={(
                 <PanelMenu
                     collapsed={$s.panels.menu.collapsed}
                     LinkComponent={Link}
-                    logoHref="/"
-                    onCollapseChange={(collapsed) => {
-                        $s.panels.menu.collapsed = collapsed
-                    }}
-                    logoSrc="/public/img/logo.svg"
-                    logoText="Expressio"
-                    navigation={
-
+                    logoHref='/'
+                    onCollapseChange={(collapsed) => {$s.panels.menu.collapsed = collapsed}}
+                    logoSrc='/public/img/logo.svg'
+                    logoText='Expressio'
+                    navigation={(
                         <MenuGroup collapsed={$s.panels.menu.collapsed}>
                             <MenuItem
                                 active={$s.env.url === '/'}
                                 collapsed={$s.panels.menu.collapsed}
-                                href="/"
-                                icon="dashboard"
-                                iconType="info"
+                                href='/'
+                                icon='dashboard'
+                                iconType='info'
                                 text={$t(i18n.menu.settings)}
                             />
                             <FieldSelect
@@ -123,8 +115,8 @@ export const Main = () => {
                                         const routeSuffix = currentPath.endsWith('/settings') ? 'settings' : 'translations'
                                         newRoute = `/workspaces/${workspace_id}/${routeSuffix}`
                                     } else {
-                                        newRoute = `/workspaces/${workspace_id}/settings`
-                                    }
+newRoute = `/workspaces/${workspace_id}/settings`
+}
 
                                     route(newRoute)
                                 }}
@@ -137,8 +129,8 @@ export const Main = () => {
                                 collapsed={$s.panels.menu.collapsed}
                                 disabled={!$s.workspace}
                                 href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/settings` : ''}
-                                icon="workspace"
-                                iconType="info"
+                                icon='workspace'
+                                iconType='info'
                                 text={$t(i18n.menu.workspace.config)}
                             />
                             <MenuItem
@@ -146,13 +138,13 @@ export const Main = () => {
                                 collapsed={$s.panels.menu.collapsed}
                                 disabled={!$s.workspace}
                                 href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/translations` : ''}
-                                icon="translate"
-                                iconType="info"
+                                icon='translate'
+                                iconType='info'
                                 text={$t(i18n.menu.workspace.translations)}
                             />
                         </MenuGroup>
-                    }
-                    actions={
+                      )}
+                    actions={(
                         <UserMenu
                             collapsed={$s.panels.menu.collapsed}
                             onLogout={async() => {
@@ -161,7 +153,7 @@ export const Main = () => {
                                 $s.profile.admin = result.admin || false
                                 route('/')
                             }}
-                            settingsHref="/settings"
+                            settingsHref='/settings'
                             user={{
                                 id: $s.profile.id || null,
                                 profile: {
@@ -170,12 +162,12 @@ export const Main = () => {
                                 },
                             }}
                         />
-                    }
+                      )}
                     footer={
                         !!Object.values($s.enola.engines).length && (
-                            <div class="engines">
-                                {Object.values($s.enola.engines).filter((i) => i.active).map((engine) =>
-                                    <div class="usage" key={engine.name}>
+                            <div class='engines'>
+                                {Object.values($s.enola.engines).filter((i) => i.active).map((engine) => (
+                                    <div class='usage' key={engine.name}>
                                         {$t(i18n.menu.usage, {engine: engine.name})}
                                         <Progress
                                             boundaries={[engine.usage.count, engine.usage.limit]}
@@ -183,23 +175,24 @@ export const Main = () => {
                                             percentage={engine.usage.count / engine.usage.limit}
                                             iso6391={toIso6391($s.language_ui.selection)}
                                         />
-                                    </div>,
-                                )}
+                                    </div>
+                                ))}
                             </div>
                         )
                     }
                 />
-            }
+              )}
         >
-            <div class="view">
+            <div class='view'>
                 <Router onChange={handleRoute}>
-                    {$s.profile.admin && <Config path="/" />}
-                    <Settings path="/settings" />
-                    <WorkspaceSettings path="/workspaces/:workspace/settings" />
-                    <WorkspaceTranslations path="/workspaces/:workspace/translations" />
+                    {$s.profile.admin && <Config path='/' />}
+                    <Settings path='/settings' />
+                    <WorkspaceSettings path='/workspaces/:workspace/settings' />
+                    <WorkspaceTranslations path='/workspaces/:workspace/translations' />
                 </Router>
             </div>
         </AppLayout>
-        <Notifications notifications={$s.notifications}/>
-    </>
+        <Notifications notifications={$s.notifications} />
+</>
+    )
 }

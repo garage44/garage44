@@ -9,8 +9,8 @@ let channelManager: ChannelManager | null = null
 export default async function apiChannels(router: Router) {
     // Initialize channel manager
     if (!channelManager) {
-        channelManager = new ChannelManager(getDatabase())
-    }
+channelManager = new ChannelManager(getDatabase())
+}
 
     /**
      * List all channels the user has access to
@@ -23,8 +23,8 @@ export default async function apiChannels(router: Router) {
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-                    userId = user.id
-                }
+userId = user.id
+}
             }
 
             // If no authenticated user, return empty channels
@@ -40,11 +40,9 @@ export default async function apiChannels(router: Router) {
             const allChannels = await channelManager!.listChannels()
             const accessibleChannels = []
 
-            for (const channel of allChannels) {
-                if (channelManager!.canAccessChannel(channel.id, userId)) {
-                    accessibleChannels.push(channel)
-                }
-            }
+            for (const channel of allChannels) {if (channelManager!.canAccessChannel(channel.id, userId)) {
+accessibleChannels.push(channel)
+}}
 
             return new Response(JSON.stringify(accessibleChannels), {
                 headers: {'Content-Type': 'application/json'},
@@ -84,8 +82,8 @@ export default async function apiChannels(router: Router) {
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-                    userId = user.id
-                }
+userId = user.id
+}
             }
 
             if (!userId || !channelManager!.canAccessChannel(channelId, userId)) {
@@ -139,8 +137,8 @@ export default async function apiChannels(router: Router) {
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-                    userId = user.id
-                }
+userId = user.id
+}
             }
 
             if (!userId) {
@@ -154,7 +152,7 @@ export default async function apiChannels(router: Router) {
             }
 
             const body = await req.json()
-            const {name, slug, description} = body
+            const {description, name, slug} = body
 
             if (!name || !slug) {
                 return new Response(JSON.stringify({
@@ -227,8 +225,8 @@ export default async function apiChannels(router: Router) {
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-                    userId = user.id
-                }
+userId = user.id
+}
             }
 
             if (!userId) {
@@ -254,7 +252,7 @@ export default async function apiChannels(router: Router) {
             }
 
             const body = await req.json()
-            const updates: {name?: string; slug?: string; description?: string} = {}
+            const updates: {description?: string; name?: string; slug?: string;} = {}
 
             if (body.name !== undefined) updates.name = body.name
             if (body.slug !== undefined) updates.slug = body.slug
@@ -327,8 +325,8 @@ export default async function apiChannels(router: Router) {
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-                    userId = user.id
-                }
+userId = user.id
+}
             }
 
             if (!userId) {
@@ -408,8 +406,8 @@ export default async function apiChannels(router: Router) {
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-                    userId = user.id
-                }
+userId = user.id
+}
             }
 
             if (!userId) {

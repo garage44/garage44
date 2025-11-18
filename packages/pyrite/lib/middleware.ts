@@ -18,21 +18,13 @@ import path from 'node:path'
 class Router {
     routes: {handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>; method: string; path: RegExp}[] = []
 
-    get(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
-        this.add('GET', path, handler)
-    }
+    get(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {this.add('GET', path, handler)}
 
-    post(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
-        this.add('POST', path, handler)
-    }
+    post(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {this.add('POST', path, handler)}
 
-    put(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
-        this.add('PUT', path, handler)
-    }
+    put(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {this.add('PUT', path, handler)}
 
-    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
-        this.add('DELETE', path, handler)
-    }
+    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {this.add('DELETE', path, handler)}
 
     private add(method: string, path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
         // Convert path params (e.g. /api/groups/:id) to regex
@@ -52,9 +44,7 @@ class Router {
                 // Extract params
                 const paramValues = pathname.match(path)?.slice(1) || []
                 const params: Record<string, string> = {}
-                paramValues.forEach((val, idx) => {
-                    params[`param${idx}`] = val
-                })
+                paramValues.forEach((val, idx) => {params[`param${idx}`] = val})
                 return await handler(req, params, session)
             }
         }
@@ -97,15 +87,11 @@ async function proxySFUWebSocket(request: Request, server: unknown) {
             upstream.onerror = (error: Event) => {
                 clearTimeout(timeout)
                 logger.error(`[SFU Proxy] Upstream WebSocket error for ${targetUrl}:`, error)
-                if ('message' in error) {
-                    logger.error(`[SFU Proxy] Error message: ${(error as {message?: string}).message}`)
-                }
+                if ('message' in error) {logger.error(`[SFU Proxy] Error message: ${(error as {message?: string}).message}`)}
                 logger.error(`[SFU Proxy] Upstream connection state: ${upstream.readyState}`)
 
                 // Try to get more error details
-                if (upstream.readyState === WebSocket.CLOSED || upstream.readyState === WebSocket.CLOSING) {
-                    logger.error(`[SFU Proxy] Connection closed immediately, check if Galene is running on ${targetUrl}`)
-                }
+                if (upstream.readyState === WebSocket.CLOSED || upstream.readyState === WebSocket.CLOSING) {logger.error(`[SFU Proxy] Connection closed immediately, check if Galene is running on ${targetUrl}`)}
 
                 reject(new Error(`Failed to connect to ${targetUrl}. Check if Galene is running and accessible.`))
             }
@@ -113,13 +99,9 @@ async function proxySFUWebSocket(request: Request, server: unknown) {
             upstream.onclose = (event: CloseEvent) => {
                 clearTimeout(timeout)
                 logger.warn(`[SFU Proxy] Upstream connection closed before upgrade: ${event.code} ${event.reason || 'no reason'}`)
-                if (event.code !== 1000) {
-                    logger.error(`[SFU Proxy] Abnormal close: code=${event.code}, reason=${event.reason || 'none'}`)
-                }
+                if (event.code !== 1000) {logger.error(`[SFU Proxy] Abnormal close: code=${event.code}, reason=${event.reason || 'none'}`)}
                 // Only reject if not already resolved
-                if (upstream.readyState !== WebSocket.OPEN) {
-                    reject(new Error(`Connection closed: ${event.code} ${event.reason || 'no reason'}`))
-                }
+                if (upstream.readyState !== WebSocket.OPEN) {reject(new Error(`Connection closed: ${event.code} ${event.reason || 'no reason'}`))}
             }
         })
 
@@ -154,9 +136,7 @@ async function proxySFUWebSocket(request: Request, server: unknown) {
 
 // Auth middleware that can be reused across routes
 const requireAdmin = async (ctx, next) => {
-    if (!ctx.session?.userid) {
-        throw new Error('Unauthorized')
-    }
+    if (!ctx.session?.userid) {throw new Error('Unauthorized')}
 
     // User lookup will be handled by middleware's UserManager
     // The authentication check is done by the middleware layer

@@ -9,11 +9,9 @@ import fs from 'fs-extra'
 const loadUser = (userId: string) => userManager.getUser(userId)
 const loadUsers = () => userManager.listUsers()
 const saveUser = (userId: string, data: unknown) => userManager.updateUser(userId, data)
-const saveUsers = async (users: unknown[]) => {
-    for (const user of users) {
-        await userManager.updateUser((user as {id?: string; name?: string; username?: string}).id || (user as {id?: string; name?: string; username?: string}).username || (user as {id?: string; name?: string; username?: string}).name, user)
-    }
-}
+const saveUsers = async (users: unknown[]) => {for (const user of users) {
+await userManager.updateUser((user as {id?: string; name?: string; username?: string}).id || (user as {id?: string; name?: string; username?: string}).username || (user as {id?: string; name?: string; username?: string}).name, user)
+}}
 
 // User template function
 function userTemplate() {
@@ -115,8 +113,8 @@ export default function(router: unknown) {
                 const exactMatch = allUsers.find((u) => u.username === username)
                 logger.warn(`[Users API] /api/users/me - Exact match found: ${!!exactMatch}`)
                 if (exactMatch) {
-                    logger.warn('[Users API] /api/users/me - Exact match user:', {id: exactMatch.id, username: exactMatch.username})
-                }
+logger.warn('[Users API] /api/users/me - Exact match user:', {id: exactMatch.id, username: exactMatch.username})
+}
 
                 return new Response(JSON.stringify({error: 'user not found'}), {
                     headers: {'Content-Type': 'application/json'},
@@ -199,11 +197,9 @@ export default function(router: unknown) {
     routerTyped.get('/api/users/:userid/delete', async (_req: Request, params: Record<string, string>, _session: unknown) => {
         const userId = params.param0
         const users = await loadUsers()
-        for (let [index, user] of users.entries()) {
-            if (user.id === userId) {
-                users.splice(index, 1)
-            }
-        }
+        for (let [index, user] of users.entries()) {if (user.id === userId) {
+users.splice(index, 1)
+}}
 
         await saveUsers(users)
         await syncUsers()
@@ -320,10 +316,10 @@ export default function(router: unknown) {
             // Verify the update by fetching the user again
             const verifyUser = await userManager.getUser(userId)
             if (verifyUser) {
-                logger.info(`[Users API] Verified user avatar in DB: ${verifyUser.profile.avatar}`)
-            } else {
-                logger.warn('[Users API] Could not verify user update - getUser returned null')
-            }
+logger.info(`[Users API] Verified user avatar in DB: ${verifyUser.profile.avatar}`)
+} else {
+logger.warn('[Users API] Could not verify user update - getUser returned null')
+}
 
             // Return success with avatar URL
             return new Response(JSON.stringify({

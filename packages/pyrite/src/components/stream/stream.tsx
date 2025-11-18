@@ -25,8 +25,8 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
 
     // Computed values
     const audioEnabled = useMemo(() => {
-        return !!(modelValue.hasAudio && stream && stream.getAudioTracks().length)
-    }, [modelValue.hasAudio, stream])
+return !!(modelValue.hasAudio && stream && stream.getAudioTracks().length)
+}, [modelValue.hasAudio, stream])
 
 
     const hasSettings = useMemo(() => {
@@ -45,17 +45,17 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
 
         const audioTracks = stream.getAudioTracks()
         if (audioTracks.length) {
-            settings.audio = audioTracks[0].getSettings()
-        }
+settings.audio = audioTracks[0].getSettings()
+}
 
         const videoTracks = stream.getVideoTracks()
         if (videoTracks.length) {
-            settings.video = videoTracks[0].getSettings()
-        }
+settings.video = videoTracks[0].getSettings()
+}
 
         if (onUpdate) {
-            onUpdate({...modelValue, settings})
-        }
+onUpdate({...modelValue, settings})
+}
     }
 
     const mountDownstream = async () => {
@@ -88,8 +88,8 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
             if (glnStream.stream && !stream) {
                 setStream(glnStream.stream)
                 if (mediaRef.current && !mediaRef.current.srcObject) {
-                    mediaRef.current.srcObject = glnStream.stream
-                }
+mediaRef.current.srcObject = glnStream.stream
+}
             }
 
             // Update stream state based on track kind
@@ -129,8 +129,8 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
                         logger.debug(`[Stream] setting stream sink: ${$s.devices.audio.selected.id}`)
                         await ((mediaRef.current as HTMLVideoElement & {setSinkId: (id: string) => Promise<void>}).setSinkId($s.devices.audio.selected.id))
                     } catch (error) {
-                        logger.warn(`[Stream] failed to set stream sink: ${error}`)
-                    }
+logger.warn(`[Stream] failed to set stream sink: ${error}`)
+}
                 }
 
                 await playStream()
@@ -141,8 +141,8 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
     const mountUpstream = async () => {
         // Mute local streams, so people don't hear themselves talk.
         if (!muted) {
-            toggleMuteVolume()
-        }
+toggleMuteVolume()
+}
         logger.debug(`[Stream] mounting upstream stream ${modelValue.id}`)
 
         if (!modelValue.src) {
@@ -167,26 +167,26 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
                 mediaRef.current.srcObject = glnStream.stream
                 await playStream()
             } else {
-                logger.warn(`[Stream] upstream stream ${modelValue.id} - mediaRef.current is null`)
-            }
+logger.warn(`[Stream] upstream stream ${modelValue.id} - mediaRef.current is null`)
+}
         } else {
             // Local media stream playing from a file...
             if (modelValue.src instanceof File) {
                 const url = URL.createObjectURL(modelValue.src)
                 if (mediaRef.current) {
-                    mediaRef.current.src = url
-                }
+mediaRef.current.src = url
+}
 
                 let capturedStream: MediaStream | null = null
                 if ('captureStream' in (mediaRef.current as HTMLVideoElement)) {
-                    capturedStream = ((mediaRef.current as HTMLVideoElement & {captureStream: () => MediaStream}).captureStream())
-                } else if ('mozCaptureStream' in (mediaRef.current as HTMLVideoElement)) {
-                    capturedStream = ((mediaRef.current as HTMLVideoElement & {mozCaptureStream: () => MediaStream}).mozCaptureStream())
-                }
+capturedStream = ((mediaRef.current as HTMLVideoElement & {captureStream: () => MediaStream}).captureStream())
+} else if ('mozCaptureStream' in (mediaRef.current as HTMLVideoElement)) {
+capturedStream = ((mediaRef.current as HTMLVideoElement & {mozCaptureStream: () => MediaStream}).mozCaptureStream())
+}
 
                 if (capturedStream) {
-                    setStream(capturedStream)
-                }
+setStream(capturedStream)
+}
 
                 const glnStream = sfu.connection?.up[modelValue.id]
                 glnStreamRef.current = glnStream
@@ -198,10 +198,10 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
                             const track = e.track
 
                             if (track.kind === 'audio') {
-                                if (onUpdate) onUpdate({...modelValue, hasAudio: true})
-                            } else if (track.kind === 'video') {
-                                if (onUpdate) onUpdate({...modelValue, hasVideo: true})
-                            }
+if (onUpdate) onUpdate({...modelValue, hasAudio: true})
+} else if (track.kind === 'video') {
+if (onUpdate) onUpdate({...modelValue, hasVideo: true})
+}
 
                             glnStream.pc.addTrack(track, capturedStream)
                         }
@@ -214,22 +214,20 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
                         }
                     }
 
-                    glnStream.onstatus = async (status: string) => {
-                        if (status === 'connected') {
-                            await loadSettings()
-                        }
-                    }
+                    glnStream.onstatus = async (status: string) => {if (status === 'connected') {
+await loadSettings()
+}}
                 }
             } else if (modelValue.src instanceof MediaStream) {
                 // Local MediaStream (not part of Galene); e.g. Webcam test
                 setStream(modelValue.src)
                 if (mediaRef.current) {
-                    mediaRef.current.srcObject = modelValue.src
-                }
+mediaRef.current.srcObject = modelValue.src
+}
                 await playStream()
             } else {
-                throw new Error('invalid Stream source type')
-            }
+throw new Error('invalid Stream source type')
+}
         }
 
         // A local stream that's not networked (e.g. cam preview in settings)
@@ -253,70 +251,62 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
         } catch (error) {
             logger.error(`[Stream] stream ${modelValue.id} terminated unexpectedly: ${error}`)
             if (glnStreamRef.current) {
-                sfu.delMedia(glnStreamRef.current.id)
-            }
+sfu.delMedia(glnStreamRef.current.id)
+}
             setMediaFailed(true)
         }
     }
 
     const setFullscreen = () => {
-        mediaRef.current?.requestFullscreen()
-    }
+mediaRef.current?.requestFullscreen()
+}
 
-    const setPipMode = () => {
-        if (pip.active) {
-            document.exitPictureInPicture()
-        } else {
-            mediaRef.current?.requestPictureInPicture()
-        }
-    }
+    const setPipMode = () => {if (pip.active) {
+document.exitPictureInPicture()
+} else {
+mediaRef.current?.requestPictureInPicture()
+}}
 
     const toggleEnlarge = () => {
-        for (const stream of $s.streams) {
-            if (stream.id !== modelValue.id) {
-                stream.enlarged = false
-            }
-        }
+        for (const stream of $s.streams) {if (stream.id !== modelValue.id) {
+stream.enlarged = false
+}}
         if (onUpdate) onUpdate({...modelValue, enlarged: !modelValue.enlarged})
     }
 
     const toggleMuteVolume = () => {
         setMuted(!muted)
         if (mediaRef.current) {
-            mediaRef.current.muted = !muted
-        }
+mediaRef.current.muted = !muted
+}
     }
 
     const toggleStats = () => {
-        setStats({visible: !stats.visible})
-    }
+setStats({visible: !stats.visible})
+}
 
     const toggleStreamBar = (active: boolean) => () => {
-        setBar({active})
-    }
+setBar({active})
+}
 
-    const handleVolumeChange = (volume: number) => {
-        if (onUpdate) {
-            onUpdate({...modelValue, volume: {...modelValue.volume, value: volume}})
-        }
-    }
+    const handleVolumeChange = (volume: number) => {if (onUpdate) {
+onUpdate({...modelValue, volume: {...modelValue.volume, value: volume}})
+}}
 
     // Watch volume changes
-    useEffect(() => {
-        if (mediaRef.current && modelValue.volume?.value !== undefined) {
-            mediaRef.current.volume = modelValue.volume.value / 100
-        }
-    }, [modelValue.volume?.value])
+    useEffect(() => {if (mediaRef.current && modelValue.volume?.value !== undefined) {
+mediaRef.current.volume = modelValue.volume.value / 100
+}}, [modelValue.volume?.value])
 
     // Cleanup on unmount
     useEffect(() => {
         return () => {
             logger.debug(`unmounting ${modelValue.direction} stream ${modelValue.id}`)
             if (mediaRef.current?.src) {
-                URL.revokeObjectURL(mediaRef.current.src)
-            } else if (mediaRef.current) {
-                mediaRef.current.srcObject = null
-            }
+URL.revokeObjectURL(mediaRef.current.src)
+} else if (mediaRef.current) {
+mediaRef.current.srcObject = null
+}
         }
     }, [])
 
@@ -361,8 +351,8 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
         else mountDownstream()
 
         return () => {
-            mediaRef.current?.removeEventListener('loadedmetadata', handleLoadedMetadata)
-        }
+mediaRef.current?.removeEventListener('loadedmetadata', handleLoadedMetadata)
+}
     }, [modelValue.id, modelValue.direction])
 
     return (
@@ -389,14 +379,14 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
             />
 
             {!modelValue.playing && (
-                <div class="loading-container">
-                    <Icon class="spinner" name="spinner" />
+                <div class='loading-container'>
+                    <Icon class='spinner' name='spinner' />
                 </div>
             )}
 
             {modelValue.playing && !modelValue.hasVideo && (
-                <div class="media-container">
-                    <svg viewBox="0 0 24 24" height="40" width="40">
+                <div class='media-container'>
+                    <svg viewBox='0 0 24 24' height='40' width='40'>
                         <IconLogo />
                     </svg>
                 </div>
@@ -405,18 +395,18 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
             {stats.visible && <Reports description={modelValue} onClickStop={toggleStats} />}
 
             {controls && modelValue.playing && (
-                <div class="user-info">
+                <div class='user-info'>
                     {audioEnabled && (
                         <SoundMeter
-                            class="soundmeter"
-                            orientation="vertical"
+                            class='soundmeter'
+                            orientation='vertical'
                             stream={stream}
                             stream-id={stream?.id}
                         />
                     )}
 
                     {audioEnabled && modelValue.direction === 'down' && (
-                        <div class="volume-slider">
+                        <div class='volume-slider'>
                             <FieldSlider
                                 value={modelValue.volume?.value || 100}
                                 onChange={handleVolumeChange}
@@ -434,29 +424,29 @@ export const Stream = ({controls = true, modelValue, onUpdate}: StreamProps) => 
             <div class={classnames('stream-options', {active: bar.active})}>
                 {pip.enabled && (
                     <Button
-                        icon="Pip"
-                        size="s"
+                        icon='Pip'
+                        size='s'
                         tip={$t('stream.pip')}
-                        variant="menu"
+                        variant='menu'
                         onClickStop={setPipMode}
                     />
                 )}
 
                 <Button
-                    icon="Fullscreen"
-                    size="s"
+                    icon='Fullscreen'
+                    size='s'
                     tip={$t('stream.fullscreen')}
-                    variant="menu"
+                    variant='menu'
                     onClickStop={setFullscreen}
                 />
 
                 {hasSettings && (
                     <Button
                         active={stats.visible}
-                        icon="Info"
-                        size="s"
+                        icon='Info'
+                        size='s'
                         tip={$t('stream.info')}
-                        variant="menu"
+                        variant='menu'
                         onClickStop={toggleStats}
                     />
                 )}

@@ -35,13 +35,15 @@ export function Translation({group, path}) {
         }
     }
 
-    return <div class={classnames('c-translation', {
-        redundant: group._redundant,
-        soft: group._soft,
-        'tag-updated': $s.tags.updated === path_update})}>
-        <div class="source">
+    return (
+<div class={classnames('c-translation', {
+    redundant: group._redundant,
+    soft: group._soft,
+    'tag-updated': $s.tags.updated === path_update})}
+>
+        <div class='source'>
 
-            <div class="tag-actions">
+            <div class='tag-actions'>
                 <Icon
                     name={group._collapsed ? 'eye_off' : 'eye'}
                     onClick={() => {
@@ -51,30 +53,30 @@ export function Translation({group, path}) {
                             value: {_collapsed: !group._collapsed},
                         })
                     }}
-                    size="s"
+                    size='s'
                     tip={$t(i18n.translation.tip.translation_view)}
                     type={Object.keys(group.target).length === $s.workspace.config.languages.target.length ? 'success' : 'warning'}
                 />
                 <Icon
-                    name="translate"
+                    name='translate'
                     onClick={translate}
-                    size="s"
+                    size='s'
                     tip={$t(i18n.translation.tip.translate)}
-                    type="info"
+                    type='info'
                 />
                 <Icon
-                    name="trash"
+                    name='trash'
                     onClick={async() => {
-                        await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {path})
-                    }}
-                    size="s"
+await ws.delete(`/api/workspaces/${$s.workspace.config.workspace_id}/paths`, {path})
+}}
+                    size='s'
                     tip={$t(i18n.translation.tip.remove)}
-                    type="info"
+                    type='info'
                 />
             </div>
 
             <FieldText
-                className="id-field"
+                className='id-field'
                 model={group.$_id}
                 onBlur={async() => {
                     const oldPath = [...path]
@@ -92,7 +94,7 @@ export function Translation({group, path}) {
                 }}
             />
             <FieldText
-                className="src-field"
+                className='src-field'
                 model={group.$source}
                 onBlur={async() => {
                     await ws.post(`/api/workspaces/${$s.workspace.config.workspace_id}/tags`, {
@@ -100,16 +102,15 @@ export function Translation({group, path}) {
                         source: group.source,
                     })
                 }}
-                onKeyDown={(event: KeyboardEvent) => {
-                    if (event.key === 'Enter' && event.ctrlKey) {
-                        translate()
-                    } else if (event.key === ' ' && event.ctrlKey) {
-                        group._collapsed = !group._collapsed
-                    }
-                }}
+                onKeyDown={(event: KeyboardEvent) => {if (event.key === 'Enter' && event.ctrlKey) {
+translate()
+} else if (event.key === ' ' && event.ctrlKey) {
+group._collapsed = !group._collapsed
+}}}
                 placeholder={$t(i18n.translation.placeholder.translate)}
             />
         </div>
         <TranslationResult group={group} />
-    </div>
+</div>
+    )
 }
