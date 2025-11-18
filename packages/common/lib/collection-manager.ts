@@ -1,6 +1,6 @@
 import {useRef} from 'preact/hooks'
 import {deepSignal} from 'deepsignal'
-import {api, notifier} from '@garage44/common/app'
+import {api, notifier} from '@/app'
 
 export interface CollectionManagerConfig<TItem, TFormData> {
     /**

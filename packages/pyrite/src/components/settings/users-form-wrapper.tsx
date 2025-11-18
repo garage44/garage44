@@ -1,4 +1,4 @@
-import {UsersForm} from '@garage44/common/components/ui/settings/tabs/users-form'
+import {UsersForm} from '@garage44/common/components'
 import {$t} from '@garage44/common/app'
 
 interface UsersFormWrapperProps {

@@ -1,8 +1,8 @@
 import {useEffect} from 'preact/hooks'
 import {route} from 'preact-router'
 import {FieldText, Button} from '@/components'
-import {useCollectionManager} from '@garage44/common/lib/collection-manager'
-import {api} from '@garage44/common/app'
+import {useCollectionManager} from '@/lib/collection-manager'
+import {api} from '@/app'
 
 export interface Channel {
     created_at: number

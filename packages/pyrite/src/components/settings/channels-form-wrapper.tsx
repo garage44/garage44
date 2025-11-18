@@ -1,4 +1,4 @@
-import {ChannelsForm} from '@garage44/common/components/ui/settings/tabs/channels-form'
+import {ChannelsForm} from '@garage44/common/components'
 import {$t} from '@garage44/common/app'
 
 interface ChannelsFormWrapperProps {

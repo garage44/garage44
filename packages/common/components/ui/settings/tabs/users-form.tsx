@@ -1,8 +1,8 @@
 import {useEffect} from 'preact/hooks'
 import {route} from 'preact-router'
 import {FieldText, FieldCheckbox, Button} from '@/components'
-import {useCollectionManager} from '@garage44/common/lib/collection-manager'
-import {api} from '@garage44/common/app'
+import {useCollectionManager} from '@/lib/collection-manager'
+import {api} from '@/app'
 import type {User} from './users-management'
 
 export interface UsersFormProps {
