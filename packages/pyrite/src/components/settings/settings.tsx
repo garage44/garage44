@@ -4,23 +4,27 @@ import {$s} from '@/app'
 import {$t} from '@garage44/common/app'
 import {Settings as CommonSettings} from '@garage44/common/components/ui/settings/settings'
 import {Profile} from '@garage44/common/components/ui/settings/tabs/profile'
-import {UsersManagement} from '@garage44/common/components'
+import {UsersList} from '@garage44/common/components/ui/settings/tabs/users-list'
+import {ChannelsList} from '@garage44/common/components/ui/settings/tabs/channels-list'
 import TabDevices from './tabs/devices'
 import TabMedia from './tabs/media'
-import TabChannels from './tabs/channels'
 
 interface SettingsProps {
     tabId?: string
 }
 
 export default function Settings({tabId}: SettingsProps) {
-    // Detect if we're on a users route and set active tab to 'users'
+    // Detect if we're on a users or channels route and set active tab
     const activeTabId = useMemo(() => {
         if (tabId) return tabId
         const url = getCurrentUrl()
         // If URL is /settings/users/new or /settings/users/:userId, show users tab
         if (url.startsWith('/settings/users')) {
             return 'users'
+        }
+        // If URL is /settings/channels/new or /settings/channels/:channelId, show channels tab
+        if (url.startsWith('/settings/channels')) {
+            return 'channels'
         }
         return undefined
     }, [tabId])
@@ -59,7 +63,7 @@ export default function Settings({tabId}: SettingsProps) {
         ...showUserSettings ?
                 [
                     {
-                        component: <UsersManagement $t={$t} />,
+                        component: <UsersList $t={$t} />,
                         icon: 'user',
                         id: 'users',
                         label: $t('ui.settings.users.name') || 'Users',
@@ -68,7 +72,7 @@ export default function Settings({tabId}: SettingsProps) {
                 ] :
                 [],
         {
-            component: <TabChannels />,
+            component: <ChannelsList $t={$t} />,
             icon: 'chat',
             id: 'channels',
             label: $t('ui.settings.channels.name') || 'Channels',

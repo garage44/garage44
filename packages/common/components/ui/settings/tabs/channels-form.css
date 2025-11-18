@@ -1,0 +1,26 @@
+.c-channels-form {
+    padding: var(--spacer-3);
+
+    .header {
+        margin-bottom: var(--spacer-3);
+
+        h2 {
+            margin: 0;
+            font-size: var(--font-b);
+            font-weight: 600;
+        }
+    }
+
+    .form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacer-2);
+        max-width: 600px;
+
+        .actions {
+            display: flex;
+            gap: var(--spacer-2);
+            margin-top: var(--spacer-2);
+        }
+    }
+}

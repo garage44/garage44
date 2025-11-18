@@ -1,0 +1,16 @@
+.c-channels-list {
+    padding: var(--spacer-3);
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacer-3);
+
+        h2 {
+            margin: 0;
+            font-size: var(--font-b);
+            font-weight: 600;
+        }
+    }
+}
