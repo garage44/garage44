@@ -711,7 +711,9 @@ const BadList = () => {
 
 ## Code Style and ESLint Compliance
 
-**CRITICAL: All code must pass ESLint checks before committing.**
+**🚨 CRITICAL: See `@linting.mdc` for complete linting requirements.**
+
+**All code must pass ESLint checks before committing.**
 
 ### Before Committing
 
@@ -734,6 +736,8 @@ bun run lint:css
 - Rules are defined in `eslint.config.js` at the workspace root
 - Follow ESLint error messages to fix code style issues
 - Do not commit code with linting errors
+
+**For detailed linting rules and workflow, see `@linting.mdc`.**
 
 ## Common Anti-patterns
 

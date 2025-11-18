@@ -1,0 +1,180 @@
+---
+description: "CRITICAL: Linting requirements and workflow - MUST READ before making any code changes"
+globs:
+  - "**/*.{ts,tsx,js,jsx,css}"
+alwaysApply: true
+priority: 1
+---
+
+# ⚠️ CRITICAL: Linting Requirements
+
+**THIS IS THE MOST IMPORTANT RULE - READ THIS FIRST**
+
+All code changes MUST pass linting checks before being committed. This rule applies to ALL files in the workspace.
+
+## 🚨 MANDATORY Workflow
+
+### Before Making ANY Code Changes
+
+1. **Understand the linting rules**: Read `eslint.config.js` at the workspace root
+2. **Check current lint status**: Run `bun run lint:ts` and `bun run lint:css` if modifying CSS
+3. **Fix existing errors first**: Don't add new code on top of broken code
+
+### After Making Code Changes
+
+**YOU MUST RUN THESE COMMANDS BEFORE CONSIDERING THE TASK COMPLETE:**
+
+```bash
+# For TypeScript/TSX files
+bun run lint:ts
+
+# For CSS files (if you modified any CSS)
+bun run lint:css
+```
+
+### Before Committing
+
+**NEVER commit code without running lint checks first.**
+
+The git hook (lefthook) will catch linting errors, but **agents should fix errors proactively**, not rely on the hook to fail.
+
+## 🔧 Auto-Fixing Linting Errors
+
+Many linting errors can be auto-fixed:
+
+```bash
+# Auto-fix TypeScript/TSX files
+bun run lint:ts --fix
+
+# Auto-fix CSS files
+bun run lint:css --fix
+```
+
+**After auto-fixing:**
+1. Always verify the fixes don't break functionality
+2. Run lint checks again to ensure all errors are resolved
+3. Manually fix any remaining errors according to ESLint output
+
+## 📋 Key Linting Rules (Summary)
+
+### TypeScript/TSX Files
+
+- **Indentation**: 4 spaces (not tabs)
+- **Quotes**: Single quotes (`'`) for strings
+- **Semicolons**: Never use semicolons
+- **Trailing commas**: Always use trailing commas in multiline structures
+- **Line length**: Maximum 130 characters
+- **JSX**: Self-closing tags, PascalCase components, single quotes for attributes
+- **Spacing**: No spaces inside object/array brackets, spaces around operators
+- **Sorting**: Objects, interfaces, and object types should be sorted alphabetically
+
+### CSS Files
+
+- **Indentation**: 4 spaces
+- **Modern nesting**: Use CSS nesting, NOT BEM naming convention
+- **No double underscores** (`__`) or **double dashes** (`--`) for modifiers
+- **Component root**: Use `.c-{component-name}` convention
+
+## 🎯 Common Linting Errors to Avoid
+
+### TypeScript/TSX
+
+❌ **Wrong:**
+```tsx
+const obj = { a: 1, b: 2 };
+const arr = [ 1, 2, 3 ];
+function foo() { return "bar"; }
+<div className="test" />
+```
+
+✅ **Correct:**
+```tsx
+const obj = {a: 1, b: 2}
+const arr = [1, 2, 3]
+function foo() {
+    return 'bar'
+}
+<div class="test" />
+```
+
+### CSS
+
+❌ **Wrong:**
+```css
+.c-button__icon { }  /* BEM naming */
+.c-button--disabled { }  /* BEM modifier */
+```
+
+✅ **Correct:**
+```css
+.c-button {
+    .icon { }  /* Use nesting */
+    
+    &.disabled { }  /* Use nesting for modifiers */
+}
+```
+
+## 🔍 How to Read ESLint Errors
+
+ESLint errors follow this format:
+```
+/path/to/file.ts:42:5: error message (@stylistic/rule-name)
+```
+
+- **Line 42, column 5**: The exact location of the error
+- **error message**: What's wrong
+- **@stylistic/rule-name**: The rule that was violated
+
+Fix errors by:
+1. Reading the error message
+2. Understanding what the rule expects
+3. Making the change
+4. Running lint again to verify
+
+## ⚡ Quick Reference Commands
+
+```bash
+# Check all TypeScript files
+bun run lint:ts
+
+# Auto-fix TypeScript files
+bun run lint:ts --fix
+
+# Check all CSS files
+bun run lint:css
+
+# Auto-fix CSS files
+bun run lint:css --fix
+
+# Check specific file (using npx/eslint directly)
+npx eslint path/to/file.ts --fix
+```
+
+## 🚫 What NOT to Do
+
+- ❌ Skip linting checks "because the git hook will catch it"
+- ❌ Commit code with linting errors
+- ❌ Ignore linting errors in favor of "getting it done"
+- ❌ Assume auto-fix will solve everything
+- ❌ Make changes without understanding the linting rules
+
+## ✅ What TO Do
+
+- ✅ Run lint checks after EVERY code change
+- ✅ Fix linting errors immediately
+- ✅ Verify auto-fixes don't break functionality
+- ✅ Read and understand ESLint error messages
+- ✅ Consult `eslint.config.js` for rule details
+- ✅ Test your changes after fixing lint errors
+
+## 📚 Additional Resources
+
+- **ESLint config**: `/workspace/eslint.config.js`
+- **Stylelint config**: Check individual package `package.json` files
+- **Git hooks**: `/workspace/lefthook.yml` (runs lint-staged on commit)
+
+## 🎓 Remember
+
+**Linting is not optional. It's a requirement.**
+
+Code that doesn't pass linting checks is considered incomplete and should not be committed. The git hook is a safety net, not a replacement for proactive linting.

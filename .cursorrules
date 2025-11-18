@@ -2,12 +2,19 @@
 
 Organized modular rules for the Garage44 monorepo AI assistant.
 
+## ⚠️ CRITICAL: Linting Requirements
+
+**BEFORE making any code changes, read `.cursor/rules/linting.mdc` - it contains mandatory linting requirements.**
+
+All code MUST pass linting checks (`bun run lint:ts` and `bun run lint:css`) before being committed. Agents should fix linting errors proactively, not rely on git hooks.
+
 ## Rule Organization
 
 Cursor rules are organized in the `.cursor/rules/` directory for better modularity and context-aware activation:
 
 ```
 .cursor/rules/
+├── linting.mdc      # 🚨 CRITICAL: Mandatory linting requirements (READ FIRST)
 ├── adr.mdc          # Architecture Decision Records consultation workflow
 ├── backend.mdc      # Backend development (Bun.serve, WebSocket server, CLI)
 ├── frontend.mdc     # Frontend development (Preact, DeepSignal, WebSocket client)
@@ -16,6 +23,7 @@ Cursor rules are organized in the `.cursor/rules/` directory for better modulari
 
 ## Quick Reference
 
+- **🚨 LINTING (READ FIRST)**: See `.cursor/rules/linting.mdc` - mandatory linting requirements
 - **Architecture & Decisions**: See `.cursor/rules/adr.mdc` and `adr/README.md`
 - **Backend Development**: See `.cursor/rules/backend.mdc`
 - **Frontend Development**: See `.cursor/rules/frontend.mdc`
