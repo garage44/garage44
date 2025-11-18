@@ -2,26 +2,30 @@
     display: flex;
     flex-direction: column;
     border: 1px solid var(--border-1);
-    border-radius: var(--radius-1);
+    border-radius: var(--radius-2);
     overflow: hidden;
     background: var(--surface-0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .c-collection-view .collection-header {
     display: flex;
     background: var(--surface-1);
-    border-bottom: 2px solid var(--border-2);
+    border-bottom: 1px solid var(--border-2);
     font-weight: 600;
     font-size: var(--font-d);
     color: var(--text-2);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.05em;
+    min-height: 44px;
 }
 
 .c-collection-view .collection-header-cell {
-    padding: var(--spacer-2);
+    padding: var(--spacer-2) var(--spacer-3);
     border-right: 1px solid var(--border-1);
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
 
     &:last-child {
         border-right: none;
@@ -32,8 +36,9 @@
     display: flex;
     align-items: center;
     border-bottom: 1px solid var(--border-1);
-    transition: all 0.2s ease;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
     position: relative;
+    min-height: 52px;
 
     &:last-child {
         border-bottom: none;
@@ -49,27 +54,51 @@
 
     &:hover {
         background: var(--surface-2);
+        box-shadow: inset 0 0 0 1px var(--border-2);
     }
 }
 
 .c-collection-view .collection-cell {
-    padding: var(--spacer-2);
+    padding: var(--spacer-2) var(--spacer-3);
     border-right: 1px solid var(--border-1);
     display: flex;
     align-items: center;
-    gap: var(--spacer-1);
+    gap: var(--spacer-2);
     flex-shrink: 0;
+    min-height: 52px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     &:last-child {
         border-right: none;
     }
+
+    &.collection-actions-column {
+        padding: var(--spacer-1) var(--spacer-2);
+        justify-content: flex-end;
+        min-width: 140px;
+        width: 140px;
+        flex-shrink: 0;
+    }
+
+    > * {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    strong {
+        color: var(--text-1);
+        font-weight: 600;
+    }
 }
 
 .c-collection-view .collection-empty-state {
-    padding: var(--spacer-4);
+    padding: var(--spacer-6);
     text-align: center;
     color: var(--text-2);
     font-size: var(--font-d);
+    line-height: 1.6;
 }
 
 .c-collection-view .collection-row-actions {
@@ -77,9 +106,16 @@
     gap: var(--spacer-1);
     align-items: center;
     justify-content: flex-end;
+    width: 100%;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease, visibility 0.2s ease;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+
+    .c-button {
+        flex-shrink: 0;
+    }
 }
 
 .c-collection-view .collection-row:hover .collection-row-actions {

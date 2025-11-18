@@ -79,11 +79,18 @@ export function UsersList({
             flex: true,
             minWidth: '200px',
             render: (user: User) => (
-                <div>
-                    <strong>{user.username}</strong>
+                <div style={{display: 'flex', alignItems: 'center', gap: 'var(--spacer-1)', minWidth: 0}}>
+                    <strong style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>
+                        {user.username}
+                    </strong>
                     {user.permissions?.admin && (
-                        <span style={{marginLeft: 'var(--spacer-1)', color: 'var(--text-2)', fontSize: 'var(--font-d)'}}>
-                            ({$t('user.management.field.admin') || 'Admin'})
+                        <span style={{
+                            color: 'var(--success)',
+                            fontSize: 'var(--font-d)',
+                            fontWeight: 600,
+                            flexShrink: 0,
+                        }}>
+                            ●
                         </span>
                     )}
                 </div>
@@ -94,11 +101,17 @@ export function UsersList({
             width: '100px',
             center: true,
             render: (user: User) => user.permissions?.admin ? (
-                <span style={{color: 'var(--success)', fontWeight: 600}}>
+                <span style={{
+                    color: 'var(--success)',
+                    fontWeight: 600,
+                    fontSize: 'var(--font-d)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                }}>
                     {$t('user.management.field.admin') || 'Admin'}
                 </span>
             ) : (
-                <span style={{color: 'var(--text-2)'}}>—</span>
+                <span style={{color: 'var(--text-3)'}}>—</span>
             ),
         },
     ]
@@ -130,6 +143,7 @@ export function UsersList({
                                 tip={$t('user.management.action.edit') || 'Edit'}
                                 type="info"
                                 variant="toggle"
+                                size="s"
                             />
                             <Button
                                 icon="trash"
@@ -137,6 +151,7 @@ export function UsersList({
                                 tip={$t('user.management.action.delete') || 'Delete'}
                                 type="danger"
                                 variant="toggle"
+                                size="s"
                             />
                         </>
                     )}

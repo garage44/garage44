@@ -72,8 +72,10 @@ export function ChannelsList({
             flex: true,
             minWidth: '200px',
             render: (channel: Channel) => (
-                <div>
-                    <strong>{channel.name}</strong>
+                <div style={{minWidth: 0}}>
+                    <strong style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block'}}>
+                        {channel.name}
+                    </strong>
                 </div>
             ),
         },
@@ -82,7 +84,15 @@ export function ChannelsList({
             flex: true,
             minWidth: '150px',
             render: (channel: Channel) => (
-                <span style={{color: 'var(--text-2)', fontFamily: 'monospace'}}>
+                <span style={{
+                    color: 'var(--text-2)',
+                    fontFamily: 'monospace',
+                    fontSize: 'var(--font-d)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    display: 'block',
+                }}>
                     {channel.slug}
                 </span>
             ),
@@ -92,7 +102,13 @@ export function ChannelsList({
             flex: 2,
             minWidth: '200px',
             render: (channel: Channel) => (
-                <span style={{color: 'var(--text-2)'}}>
+                <span style={{
+                    color: 'var(--text-2)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    display: 'block',
+                }}>
                     {channel.description || '—'}
                 </span>
             ),
@@ -126,6 +142,7 @@ export function ChannelsList({
                                 tip={$t('channel.management.action.edit') || 'Edit'}
                                 type="info"
                                 variant="toggle"
+                                size="s"
                             />
                             <Button
                                 icon="trash"
@@ -133,6 +150,7 @@ export function ChannelsList({
                                 tip={$t('channel.management.action.delete') || 'Delete'}
                                 type="danger"
                                 variant="toggle"
+                                size="s"
                             />
                         </>
                     )}
