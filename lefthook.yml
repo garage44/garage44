@@ -6,5 +6,4 @@ pre-commit:
 commit-msg:
   commands:
     commitlint:
-      run: bunx commitlint --edit {1} || echo "⚠️  Commit message doesn't follow Conventional Commits format."
-      exit_code: 0
+      run: bunx commitlint --edit {1}
