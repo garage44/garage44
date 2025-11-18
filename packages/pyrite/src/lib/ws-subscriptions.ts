@@ -7,6 +7,33 @@ import {$s} from '@/app'
 import {events, logger, ws} from '@garage44/common/app'
 
 /**
+ * Remove duplicate users from $s.users array based on normalized user ID
+ * Keeps the first occurrence of each user
+ */
+function deduplicateUsers() {
+    const seenIds = new Set<string>()
+    const uniqueUsers: typeof $s.users = []
+    
+    for (const user of $s.users) {
+        if (!user || !user.id) continue
+        
+        const normalizedId = String(user.id).trim()
+        if (!seenIds.has(normalizedId)) {
+            seenIds.add(normalizedId)
+            uniqueUsers.push(user)
+        } else {
+            logger.debug(`[deduplicateUsers] Removing duplicate user: ${normalizedId} (${user.username || 'unknown'})`)
+        }
+    }
+    
+    // Only update if we found duplicates
+    if (uniqueUsers.length !== $s.users.length) {
+        logger.info(`[deduplicateUsers] Removed ${$s.users.length - uniqueUsers.length} duplicate(s) from users list`)
+        $s.users = uniqueUsers
+    }
+}
+
+/**
  * Initialize all WebSocket subscriptions
  * Called after WebSocket connection is established
  */
@@ -203,6 +230,8 @@ const initPresenceSubscriptions = () => {
                     // User already exists, log and skip to prevent duplicate
                     logger.debug(`[Presence] User ${normalizedUserId} already exists in users list, skipping add`)
                 }
+                // Ensure no duplicates exist (safety net)
+                deduplicateUsers()
             }
         })
 
@@ -494,6 +523,8 @@ export const joinGroup = async (groupId: string) => {
                 logger.debug(`[joinGroup] User ${normalizedMemberId} already exists in users list, skipping add`)
             }
         }
+        // Ensure no duplicates exist (safety net)
+        deduplicateUsers()
     }
 }
 

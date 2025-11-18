@@ -28,6 +28,33 @@ import {formatBytes} from '@garage44/common/lib/utils'
 import {localStream, getUserMedia, removeLocalStream} from '@/models/media'
 import {currentGroup} from '@/models/group'
 
+/**
+ * Remove duplicate users from $s.users array based on normalized user ID
+ * Keeps the first occurrence of each user
+ */
+function deduplicateUsers() {
+    const seenIds = new Set<string>()
+    const uniqueUsers: typeof $s.users = []
+    
+    for (const user of $s.users) {
+        if (!user || !user.id) continue
+        
+        const normalizedId = String(user.id).trim()
+        if (!seenIds.has(normalizedId)) {
+            seenIds.add(normalizedId)
+            uniqueUsers.push(user)
+        } else {
+            logger.debug(`[deduplicateUsers] Removing duplicate user: ${normalizedId} (${user.username || 'unknown'})`)
+        }
+    }
+    
+    // Only update if we found duplicates
+    if (uniqueUsers.length !== $s.users.length) {
+        logger.info(`[deduplicateUsers] Removed ${$s.users.length - uniqueUsers.length} duplicate(s) from users list`)
+        $s.users = uniqueUsers
+    }
+}
+
 export const protocol = _protocol
 export const commands = _commands
 
@@ -708,6 +735,8 @@ function onUser(id, kind) {
             logger.debug(`[onUser] User ${normalizedId} already exists, updating instead of duplicating`)
             $s.users.splice(userIndex, 1, user)
         }
+        // Ensure no duplicates exist (safety net)
+        deduplicateUsers()
     } else if (kind === 'change') {
         if (id === $s.profile.id) {
             // Normalize user ID to string for consistent comparison
