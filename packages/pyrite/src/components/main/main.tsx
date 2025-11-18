@@ -9,6 +9,8 @@ import {emojiLookup} from '@/models/chat'
 import ChannelsContext from '../context/context-channels'
 import {Channel} from '../channel/channel'
 import Settings from '../settings/settings'
+import UsersFormWrapper from '../settings/users-form-wrapper'
+import ChannelsFormWrapper from '../settings/channels-form-wrapper'
 import {PanelContextSfu} from '../panel-context-sfu'
 
 export const Main = () => {
@@ -216,8 +218,10 @@ export const Main = () => {
                 <Router>
                     <Route component={Channel} path='/channels/:channelSlug/devices' />
                     <Route component={Channel} path='/channels/:channelSlug' />
-                    <Route component={Settings} path='/settings/users/new' />
-                    <Route component={Settings} path='/settings/users/:userId' />
+                    <Route component={UsersFormWrapper} path='/settings/users/new' />
+                    <Route component={UsersFormWrapper} path='/settings/users/:userId' />
+                    <Route component={ChannelsFormWrapper} path='/settings/channels/new' />
+                    <Route component={ChannelsFormWrapper} path='/settings/channels/:channelId' />
                     <Route component={Settings} path='/settings' />
                     <Route component={Settings} path='/settings/:tabId' />
                     <Route

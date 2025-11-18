@@ -119,7 +119,8 @@ export function CollectionView({
                 className: 'collection-actions-column',
                 label: '',
                 render: () => null, // Actions column doesn't render in cells
-                width: '100px',
+                width: '140px',
+                minWidth: '140px',
             },
         ]
         : columns
