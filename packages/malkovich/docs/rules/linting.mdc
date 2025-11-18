@@ -40,20 +40,39 @@ The git hook (lefthook) will catch linting errors, but **agents should fix error
 
 ## 🔧 Auto-Fixing Linting Errors
 
-Many linting errors can be auto-fixed:
+Many linting errors can be auto-fixed. The git hook (`lint-staged`) automatically fixes errors on commit, but you should fix them proactively:
 
+**Option 1: Use lint-staged (recommended for staged files)**
 ```bash
-# Auto-fix TypeScript/TSX files
-bun run lint:ts --fix
+# This runs automatically on commit, but you can run it manually:
+bunx lint-staged
+```
 
-# Auto-fix CSS files
-bun run lint:css --fix
+**Option 2: Run linters directly in package directories**
+```bash
+# Navigate to the package directory first, then:
+cd packages/expressio  # or packages/pyrite, packages/malkovich, etc.
+
+# Auto-fix TypeScript/TSX files
+eslint **/*.{ts,tsx} --config ../../eslint.config.js --fix
+
+# Auto-fix CSS files  
+stylelint src/**/*.css --fix
+```
+
+**Option 3: Use bun run lint:ts/lint:css to check, then fix manually**
+```bash
+# Check for errors
+bun run lint:ts
+bun run lint:css
+
+# Then fix errors manually based on the output
 ```
 
 **After auto-fixing:**
 1. Always verify the fixes don't break functionality
-2. Run lint checks again to ensure all errors are resolved
-3. Manually fix any remaining errors according to ESLint output
+2. Run `bun run lint:ts` and `bun run lint:css` again to ensure all errors are resolved
+3. Manually fix any remaining errors according to ESLint/Stylelint output
 
 ## 📋 Key Linting Rules (Summary)
 
@@ -134,20 +153,19 @@ Fix errors by:
 ## ⚡ Quick Reference Commands
 
 ```bash
-# Check all TypeScript files
+# Check all TypeScript files across all packages
 bun run lint:ts
 
-# Auto-fix TypeScript files
-bun run lint:ts --fix
-
-# Check all CSS files
+# Check all CSS files across all packages
 bun run lint:css
 
-# Auto-fix CSS files
-bun run lint:css --fix
+# Auto-fix staged files (runs automatically on commit via lint-staged)
+bunx lint-staged
 
-# Check specific file (using npx/eslint directly)
-npx eslint path/to/file.ts --fix
+# Auto-fix in a specific package (navigate to package directory first)
+cd packages/expressio
+eslint **/*.{ts,tsx} --config ../../eslint.config.js --fix
+stylelint src/**/*.css --fix
 ```
 
 ## 🚫 What NOT to Do
