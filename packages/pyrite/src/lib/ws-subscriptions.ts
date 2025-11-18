@@ -177,9 +177,14 @@ const initPresenceSubscriptions = () => {
             // If this is the current group, add user to users list
             if ($s.sfu.channel.name === groupId) {
                 // Normalize userId to string for consistent comparison
-                const normalizedUserId = String(userId)
-                const existingUser = $s.users.find((u) => String(u.id) === normalizedUserId)
-                if (!existingUser) {
+                if (!userId) {
+                    logger.warn(`[Presence] Skipping user add: invalid userId`)
+                    return
+                }
+                const normalizedUserId = String(userId).trim()
+                const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedUserId)
+                if (userIndex === -1) {
+                    // User doesn't exist, add it
                     $s.users.push({
                         data: {
                             availability: {id: 'available'},
@@ -194,6 +199,9 @@ const initPresenceSubscriptions = () => {
                         },
                         username,
                     })
+                } else {
+                    // User already exists, log and skip to prevent duplicate
+                    logger.debug(`[Presence] User ${normalizedUserId} already exists in users list, skipping add`)
                 }
             }
         })
@@ -219,8 +227,8 @@ const initPresenceSubscriptions = () => {
             // If this is the current group, remove user from users list
             if ($s.sfu.channel.name === groupId) {
                 // Normalize userId to string for consistent comparison
-                const normalizedUserId = String(userId)
-                const userIndex = $s.users.findIndex((u) => String(u.id) === normalizedUserId)
+                const normalizedUserId = String(userId).trim()
+                const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedUserId)
                 if (userIndex !== -1) {
                     $s.users.splice(userIndex, 1)
                 }
@@ -243,8 +251,8 @@ const initPresenceSubscriptions = () => {
             }
 
             // Normalize userId to string for consistent comparison
-            const normalizedUserId = String(userId)
-            const user = $s.users.find((u) => String(u.id) === normalizedUserId)
+            const normalizedUserId = String(userId).trim()
+            const user = $s.users.find((u) => u && u.id && String(u.id).trim() === normalizedUserId)
             if (user) {
                 Object.assign(user.data, status)
             }
@@ -358,8 +366,8 @@ const initGroupSubscriptions = () => {
             logger.debug(`Operator action in group ${groupId}: ${action}`)
 
             // Normalize targetUserId to string for consistent comparison
-            const normalizedTargetUserId = String(targetUserId)
-            const targetUser = $s.users.find((u) => String(u.id) === normalizedTargetUserId)
+            const normalizedTargetUserId = String(targetUserId).trim()
+            const targetUser = $s.users.find((u) => u && u.id && String(u.id).trim() === normalizedTargetUserId)
 
             switch (action) {
                 case 'kick':
@@ -376,7 +384,7 @@ const initGroupSubscriptions = () => {
                         }
                     } else if (targetUser) {
                         // Another user was kicked
-                        const userIndex = $s.users.findIndex((u) => String(u.id) === normalizedTargetUserId)
+                        const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedTargetUserId)
                         if (userIndex !== -1) {
                             $s.users.splice(userIndex, 1)
                         }
@@ -459,9 +467,14 @@ export const joinGroup = async (groupId: string) => {
         // Update users list with current members
         for (const member of response.members) {
             // Normalize member.id to string for consistent comparison
-            const normalizedMemberId = String(member.id)
-            const existingUser = $s.users.find((u) => String(u.id) === normalizedMemberId)
-            if (!existingUser) {
+            if (!member || !member.id) {
+                logger.warn(`[joinGroup] Skipping member: invalid member data`)
+                continue
+            }
+            const normalizedMemberId = String(member.id).trim()
+            const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedMemberId)
+            if (userIndex === -1) {
+                // User doesn't exist, add it
                 $s.users.push({
                     data: {
                         availability: {id: 'available'},
@@ -476,6 +489,9 @@ export const joinGroup = async (groupId: string) => {
                     },
                     username: member.username,
                 })
+            } else {
+                // User already exists, log and skip to prevent duplicate
+                logger.debug(`[joinGroup] User ${normalizedMemberId} already exists in users list, skipping add`)
             }
         }
     }

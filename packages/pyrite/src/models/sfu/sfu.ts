@@ -691,11 +691,28 @@ function onUser(id, kind) {
             connection.userAction('setdata', connection.id, $s.sfu.profile)
         }
 
-        $s.users.push(user)
-        events.emit('user', {action: 'add', user})
+        // Normalize user ID to string for consistent comparison
+        // Check if user already exists (may have been added by presence system)
+        if (!id) {
+            logger.warn(`[onUser] Skipping user add: invalid ID`)
+            return
+        }
+        const normalizedId = String(id).trim()
+        const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedId)
+        if (userIndex === -1) {
+            // User doesn't exist, add it
+            $s.users.push(user)
+            events.emit('user', {action: 'add', user})
+        } else {
+            // User already exists, update it instead of duplicating
+            logger.debug(`[onUser] User ${normalizedId} already exists, updating instead of duplicating`)
+            $s.users.splice(userIndex, 1, user)
+        }
     } else if (kind === 'change') {
         if (id === $s.profile.id) {
-            const $user = $s.users.find((i) => i.id === user.id)
+            // Normalize user ID to string for consistent comparison
+            const normalizedId = String(user.id).trim()
+            const $user = $s.users.find((i) => i && i.id && String(i.id).trim() === normalizedId)
             // Shutdown the local stream when the Present permission is taken away.
             if ($user && $user.permissions.present && !user.permissions.present) {
                 delUpMedia(localGlnStream)
@@ -716,7 +733,9 @@ function onUser(id, kind) {
             store.save()
         }
 
-        const userIndex = $s.users.findIndex((i) => i.id === user.id)
+        // Normalize user ID to string for consistent comparison
+        const normalizedId = String(user.id).trim()
+        const userIndex = $s.users.findIndex((i) => i && i.id && String(i.id).trim() === normalizedId)
         if (userIndex !== -1) {
             $s.users.splice(userIndex, 1, user)
         }
@@ -726,7 +745,9 @@ function onUser(id, kind) {
             notifier.notify({message: `Recording stopped in ${$s.sfu.channel.name}`, type: 'info'})
         }
 
-        const userIndex = $s.users.findIndex((u) => u.id === id)
+        // Normalize user ID to string for consistent comparison
+        const normalizedId = String(id).trim()
+        const userIndex = $s.users.findIndex((u) => u && u.id && String(u.id).trim() === normalizedId)
         if (userIndex !== -1) {
             $s.users.splice(userIndex, 1)
         }
