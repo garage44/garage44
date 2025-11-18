@@ -139,9 +139,11 @@ export const Main = () => {
 
                     }
                     LinkComponent={Link}
+                    logoCommitHash={process.env.APP_COMMIT_HASH || ''}
                     logoHref='/'
                     logoSrc='/public/img/logo.svg'
                     logoText='Expressio'
+                    logoVersion={process.env.APP_VERSION || ''}
                     navigation={(
                         <MenuGroup collapsed={$s.panels.menu.collapsed}>
                             <MenuItem

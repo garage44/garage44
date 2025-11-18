@@ -1,7 +1,7 @@
 import {broadcast, settings} from './index.ts'
 import {Task} from './task.ts'
 import fs from 'fs-extra'
-import {Glob} from 'bun'
+import {Glob, $} from 'bun'
 import path from 'path'
 import template from 'lodash.template'
 import {throttle} from '@garage44/common/lib/utils'
@@ -213,9 +213,36 @@ tasks.clean = new Task('clean', async function taskClean() {
 
 tasks.code_frontend = new Task('code:frontend', async function taskCodeFrontend({minify = false, sourcemap = false} = {}) {
     try {
+        // Get git commit hash
+        let commitHash = process.env.APP_COMMIT_HASH || ''
+        if (!commitHash) {
+            try {
+                const result = await $`git rev-parse --short HEAD`.cwd(settings.dir.workspace).quiet().nothrow()
+                if (result.exitCode === 0) {
+                    commitHash = result.stdout.toString().trim()
+                }
+            } catch {
+                // If git command fails, leave empty
+                commitHash = ''
+            }
+        }
+
+        // Get version from package.json if not set via env
+        let version = process.env.APP_VERSION || ''
+        if (!version) {
+            try {
+                const packageJsonPath = path.join(settings.dir.workspace, 'package.json')
+                const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'))
+                version = packageJson.version || '0.0.0'
+            } catch {
+                version = '0.0.0'
+            }
+        }
+
         const result = await Bun.build({
             define: {
-                'process.env.APP_VERSION': `'${process.env.APP_VERSION || '2.0.0'}'`,
+                'process.env.APP_VERSION': `'${version}'`,
+                'process.env.APP_COMMIT_HASH': `'${commitHash}'`,
                 'process.env.NODE_ENV': `'${process.env.NODE_ENV}'`,
             },
             entrypoints: ['src/app.ts'],

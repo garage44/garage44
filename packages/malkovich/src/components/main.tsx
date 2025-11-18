@@ -266,9 +266,11 @@ export const Main = () => {
                     }
                     collapsed={$s.panels.menu.collapsed}
                     LinkComponent={Link}
+                    logoCommitHash={process.env.APP_COMMIT_HASH || ''}
                     logoHref='/'
                     logoSrc='/img/logo.png'
                     logoText='Garage44'
+                    logoVersion={process.env.APP_VERSION || ''}
                     navigation={
                         state.docsStructure ?
                                 (() => {

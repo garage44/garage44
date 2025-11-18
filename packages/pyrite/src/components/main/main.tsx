@@ -203,6 +203,7 @@ export const Main = () => {
                         logoHref='/settings/groups'
                         LogoIcon={IconLogo}
                         logoText='PYRITE'
+                        logoCommitHash={process.env.APP_COMMIT_HASH || ''}
                         logoVersion={process.env.APP_VERSION || '2.0.0'}
                         navigation={<ChannelsContext />}
                         onCollapseChange={(collapsed) => {

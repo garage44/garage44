@@ -1,12 +1,14 @@
 import classnames from 'classnames'
-import {ComponentChildren} from 'preact/hooks'
+import {ComponentChildren, useRef, useEffect} from 'preact/hooks'
 import {Button} from '../button/button'
+import tippy, {type Instance as TippyInstance} from 'tippy.js'
 
 interface PanelMenuProps {
     actions?: ComponentChildren
     collapsed: boolean
     footer?: ComponentChildren
     LinkComponent?: any
+    logoCommitHash?: string
     logoHref?: string
     LogoIcon?: () => JSX.Element
     logoSrc?: string
@@ -37,6 +39,7 @@ export const PanelMenu = ({
     collapsed,
     footer,
     LinkComponent,
+    logoCommitHash = '',
     logoHref,
     LogoIcon,
     logoSrc,
@@ -45,6 +48,25 @@ export const PanelMenu = ({
     navigation,
     onCollapseChange,
 }: PanelMenuProps) => {
+    const versionRef = useRef<HTMLSpanElement>(null)
+    const tippyInstanceRef = useRef<TippyInstance | null>(null)
+
+    useEffect(() => {
+        if (versionRef.current && logoCommitHash) {
+            tippyInstanceRef.current = tippy(versionRef.current, {
+                content: logoCommitHash,
+                placement: 'bottom',
+                theme: 'default',
+            })
+
+            return () => {
+                if (tippyInstanceRef.current) {
+                    tippyInstanceRef.current.destroy()
+                    tippyInstanceRef.current = null
+                }
+            }
+        }
+    }, [logoCommitHash])
 
     const renderLogo = () => {
         const logoContent = (
@@ -58,7 +80,11 @@ export const PanelMenu = ({
                 {logoText && (
                     <div class="l-name">
                         <span class="name logo-text">{logoText}</span>
-                        {logoVersion && <span class="version">{logoVersion}</span>}
+                        {logoVersion && (
+                            <span ref={versionRef} class="version">
+                                {logoVersion}
+                            </span>
+                        )}
                     </div>
                 )}
             </>
