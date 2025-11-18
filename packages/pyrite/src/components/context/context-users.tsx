@@ -66,10 +66,6 @@ export default function UsersContext() {
                             <div class='username'>
                                 {$t('user.anonymous')}
                             </div>}
-                        {$s.profile.id && String($s.profile.id).trim() === String(user.id).trim() &&
-                            <div class='username'>
-                                ({$t('user.you')})
-                            </div>}
 
                         <div class='status'>
                             {user.data.mic ?
