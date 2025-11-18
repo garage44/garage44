@@ -9,22 +9,22 @@ let channelManager: ChannelManager | null = null
 export default async function apiChannels(router: Router) {
     // Initialize channel manager
     if (!channelManager) {
-channelManager = new ChannelManager(getDatabase())
-}
+        channelManager = new ChannelManager(getDatabase())
+    }
 
     /**
      * List all channels the user has access to
      * GET /api/channels
      */
-    router.get('/api/channels', async (req, params, session) => {
+    router.get('/api/channels', async(req, params, session) => {
         try {
             // Get user ID from session (session.userid contains username)
             let userId: string | null = null
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-userId = user.id
-}
+                    userId = user.id
+                }
             }
 
             // If no authenticated user, return empty channels
@@ -40,14 +40,16 @@ userId = user.id
             const allChannels = await channelManager!.listChannels()
             const accessibleChannels = []
 
-            for (const channel of allChannels) {if (channelManager!.canAccessChannel(channel.id, userId)) {
-accessibleChannels.push(channel)
-}}
+            for (const channel of allChannels) {
+                if (channelManager!.canAccessChannel(channel.id, userId)) {
+                    accessibleChannels.push(channel)
+                }
+            }
 
             return new Response(JSON.stringify(accessibleChannels), {
                 headers: {'Content-Type': 'application/json'},
             })
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error listing channels:', error)
             return new Response(JSON.stringify({
                 error: error.message,
@@ -63,7 +65,7 @@ accessibleChannels.push(channel)
      * Get a specific channel
      * GET /api/channels/:channelId
      */
-    router.get('/api/channels/:channelId', async (req, params, session) => {
+    router.get('/api/channels/:channelId', async(req, params, session) => {
         try {
             const channelId = parseInt(params.param0, 10)
 
@@ -82,8 +84,8 @@ accessibleChannels.push(channel)
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-userId = user.id
-}
+                    userId = user.id
+                }
             }
 
             if (!userId || !channelManager!.canAccessChannel(channelId, userId)) {
@@ -114,7 +116,7 @@ userId = user.id
             }), {
                 headers: {'Content-Type': 'application/json'},
             })
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error getting channel:', error)
             return new Response(JSON.stringify({
                 error: error.message,
@@ -130,15 +132,15 @@ userId = user.id
      * Create a new channel
      * POST /api/channels
      */
-    router.post('/api/channels', async (req, params, session) => {
+    router.post('/api/channels', async(req, params, session) => {
         try {
             // Get user ID from session (session.userid contains username)
             let userId: string | null = null
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-userId = user.id
-}
+                    userId = user.id
+                }
             }
 
             if (!userId) {
@@ -190,7 +192,7 @@ userId = user.id
             return new Response(JSON.stringify(channel), {
                 headers: {'Content-Type': 'application/json'},
             })
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error creating channel:', error)
             return new Response(JSON.stringify({
                 error: error instanceof Error ? error.message : 'Failed to create channel',
@@ -206,7 +208,7 @@ userId = user.id
      * Update a channel
      * PUT /api/channels/:channelId
      */
-    router.put('/api/channels/:channelId', async (req, params, session) => {
+    router.put('/api/channels/:channelId', async(req, params, session) => {
         try {
             const channelId = parseInt(params.param0, 10)
 
@@ -225,8 +227,8 @@ userId = user.id
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-userId = user.id
-}
+                    userId = user.id
+                }
             }
 
             if (!userId) {
@@ -252,7 +254,7 @@ userId = user.id
             }
 
             const body = await req.json()
-            const updates: {description?: string; name?: string; slug?: string;} = {}
+            const updates: {description?: string; name?: string; slug?: string} = {}
 
             if (body.name !== undefined) updates.name = body.name
             if (body.slug !== undefined) updates.slug = body.slug
@@ -290,7 +292,7 @@ userId = user.id
             return new Response(JSON.stringify(updatedChannel), {
                 headers: {'Content-Type': 'application/json'},
             })
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error updating channel:', error)
             return new Response(JSON.stringify({
                 error: error instanceof Error ? error.message : 'Failed to update channel',
@@ -306,7 +308,7 @@ userId = user.id
      * Delete a channel
      * DELETE /api/channels/:channelId
      */
-    router.delete('/api/channels/:channelId', async (req, params, session) => {
+    router.delete('/api/channels/:channelId', async(req, params, session) => {
         try {
             const channelId = parseInt(params.param0, 10)
 
@@ -325,8 +327,8 @@ userId = user.id
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-userId = user.id
-}
+                    userId = user.id
+                }
             }
 
             if (!userId) {
@@ -383,7 +385,7 @@ userId = user.id
             }), {
                 headers: {'Content-Type': 'application/json'},
             })
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error deleting channel:', error)
             return new Response(JSON.stringify({
                 error: error instanceof Error ? error.message : 'Failed to delete channel',
@@ -399,15 +401,15 @@ userId = user.id
      * Sync all channels to Galene groups
      * POST /api/channels/sync
      */
-    router.post('/api/channels/sync', async (req, params, session) => {
+    router.post('/api/channels/sync', async(req, params, session) => {
         try {
             // Get user ID from session
             let userId: string | null = null
             if (session?.userid) {
                 const user = await userManager.getUserByUsername(session.userid)
                 if (user) {
-userId = user.id
-}
+                    userId = user.id
+                }
             }
 
             if (!userId) {
@@ -429,7 +431,7 @@ userId = user.id
             }), {
                 headers: {'Content-Type': 'application/json'},
             })
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error syncing channels:', error)
             return new Response(JSON.stringify({
                 error: error instanceof Error ? error.message : 'Failed to sync channels',

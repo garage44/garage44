@@ -15,8 +15,13 @@ export function registerI18nWebSocketApiRoutes(_wsManager: WebSocketServerManage
 }
 
 export default async function(router: unknown) {
-    const routerTyped = router as {get: (path: string, handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>) => void}
-    routerTyped.get('/api/i18n/:language', async (_req: Request, params: Record<string, string>, _session: unknown) => {
+    const routerTyped = router as {
+        get: (
+            path: string,
+            handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
+        ) => void
+    }
+    routerTyped.get('/api/i18n/:language', async(_req: Request, params: Record<string, string>, _session: unknown) => {
         const language = params.param0
         if (acceptedLanguages.includes(language)) {
             const i18nTags = await fs.readFile(path.join(runtime.service_dir, 'i18n', `${language}.json`), 'utf8')
@@ -28,6 +33,5 @@ export default async function(router: unknown) {
             headers: {'Content-Type': 'application/json'},
             status: 404,
         })
-
     })
 }

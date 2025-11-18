@@ -9,9 +9,14 @@ import fs from 'fs-extra'
 const loadUser = (userId: string) => userManager.getUser(userId)
 const loadUsers = () => userManager.listUsers()
 const saveUser = (userId: string, data: unknown) => userManager.updateUser(userId, data)
-const saveUsers = async (users: unknown[]) => {for (const user of users) {
-await userManager.updateUser((user as {id?: string; name?: string; username?: string}).id || (user as {id?: string; name?: string; username?: string}).username || (user as {id?: string; name?: string; username?: string}).name, user)
-}}
+const saveUsers = async(users: unknown[]) => {
+    for (const user of users) {
+        const userId = (user as {id?: string; name?: string; username?: string}).id ||
+            (user as {id?: string; name?: string; username?: string}).username ||
+            (user as {id?: string; name?: string; username?: string}).name
+        await userManager.updateUser(userId, user)
+    }
+}
 
 // User template function
 function userTemplate() {
@@ -36,7 +41,7 @@ export function registerUsersWebSocketApiRoutes(wsManager: WebSocketServerManage
     const apiWs = wsManager.api
 
     // WebSocket API for user presence updates
-    apiWs.post('/api/users/presence', async (context, request) => {
+    apiWs.post('/api/users/presence', async(context, request) => {
         const {status, userid} = request.data
 
         // Broadcast user presence changes
@@ -52,8 +57,14 @@ export function registerUsersWebSocketApiRoutes(wsManager: WebSocketServerManage
 
 export default function(router: unknown) {
     const routerTyped = router as {
-        get: (path: string, handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>) => void
-        post: (path: string, handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>) => void
+        get: (
+            path: string,
+            handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
+        ) => void
+        post: (
+            path: string,
+            handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
+        ) => void
     }
     // Register common avatar routes (placeholder images and uploaded avatars)
     const avatarRoutes = createAvatarRoutes({
@@ -64,14 +75,14 @@ export default function(router: unknown) {
     avatarRoutes.registerPlaceholderRoute(router)
     avatarRoutes.registerAvatarRoute(router)
 
-    routerTyped.get('/api/users', async (_req: Request, _params: Record<string, string>, _session: unknown) => {
+    routerTyped.get('/api/users', async(_req: Request, _params: Record<string, string>, _session: unknown) => {
         const users = await loadUsers()
         return new Response(JSON.stringify(users), {
             headers: {'Content-Type': 'application/json'},
         })
     })
 
-    routerTyped.get('/api/users/template', async (_req: Request, _params: Record<string, string>, _session: unknown) => {
+    routerTyped.get('/api/users/template', async(_req: Request, _params: Record<string, string>, _session: unknown) => {
         return new Response(JSON.stringify(userTemplate()), {
             headers: {'Content-Type': 'application/json'},
         })
@@ -82,7 +93,7 @@ export default function(router: unknown) {
      * GET /api/users/me
      * IMPORTANT: This must be registered BEFORE /api/users/:userid to avoid route matching issues
      */
-    routerTyped.get('/api/users/me', async (_req: Request, _params: Record<string, string>, session: unknown) => {
+    routerTyped.get('/api/users/me', async(_req: Request, _params: Record<string, string>, session: unknown) => {
         logger.info('[Users API] /api/users/me - HANDLER CALLED')
         logger.info(`[Users API] /api/users/me - session exists: ${!!session}, type: ${typeof session}`)
         logger.info(`[Users API] /api/users/me - session.userid: ${session?.userid || 'undefined/null'}`)
@@ -113,8 +124,11 @@ export default function(router: unknown) {
                 const exactMatch = allUsers.find((u) => u.username === username)
                 logger.warn(`[Users API] /api/users/me - Exact match found: ${!!exactMatch}`)
                 if (exactMatch) {
-logger.warn('[Users API] /api/users/me - Exact match user:', {id: exactMatch.id, username: exactMatch.username})
-}
+                    logger.warn('[Users API] /api/users/me - Exact match user:', {
+                        id: exactMatch.id,
+                        username: exactMatch.username,
+                    })
+                }
 
                 return new Response(JSON.stringify({error: 'user not found'}), {
                     headers: {'Content-Type': 'application/json'},
@@ -126,7 +140,7 @@ logger.warn('[Users API] /api/users/me - Exact match user:', {id: exactMatch.id,
             return new Response(JSON.stringify(user), {
                 headers: {'Content-Type': 'application/json'},
             })
-        } catch (error) {
+        } catch(error) {
             logger.error('[Users API] Error getting current user:', error)
             return new Response(JSON.stringify({error: 'failed to get user'}), {
                 headers: {'Content-Type': 'application/json'},
@@ -135,7 +149,7 @@ logger.warn('[Users API] /api/users/me - Exact match user:', {id: exactMatch.id,
         }
     })
 
-    routerTyped.get('/api/users/:userid', async (_req: Request, params: Record<string, string>, _session: unknown) => {
+    routerTyped.get('/api/users/:userid', async(_req: Request, params: Record<string, string>, _session: unknown) => {
         const userId = params.param0
         // Basic path traversal protection
         if (userId.match(/\.\.\//g) !== null) {
@@ -159,7 +173,7 @@ logger.warn('[Users API] /api/users/me - Exact match user:', {id: exactMatch.id,
         })
     })
 
-    routerTyped.post('/api/users/:userid', async (req: Request, params: Record<string, string>, _session: unknown) => {
+    routerTyped.post('/api/users/:userid', async(req: Request, params: Record<string, string>, _session: unknown) => {
         const userId = params.param0
         const userData = await req.json()
 
@@ -194,12 +208,14 @@ logger.warn('[Users API] /api/users/me - Exact match user:', {id: exactMatch.id,
         })
     })
 
-    routerTyped.get('/api/users/:userid/delete', async (_req: Request, params: Record<string, string>, _session: unknown) => {
+    routerTyped.get('/api/users/:userid/delete', async(_req: Request, params: Record<string, string>, _session: unknown) => {
         const userId = params.param0
         const users = await loadUsers()
-        for (let [index, user] of users.entries()) {if (user.id === userId) {
-users.splice(index, 1)
-}}
+        for (let [index, user] of users.entries()) {
+            if (user.id === userId) {
+                users.splice(index, 1)
+            }
+        }
 
         await saveUsers(users)
         await syncUsers()
@@ -209,7 +225,7 @@ users.splice(index, 1)
         })
     })
 
-    routerTyped.post('/api/users/:userid/avatar', async (req: Request, params: Record<string, string>, _session: unknown) => {
+    routerTyped.post('/api/users/:userid/avatar', async(req: Request, params: Record<string, string>, _session: unknown) => {
         const userId = params.param0
 
         logger.info(`[Users API] POST /api/users/:userid/avatar - userId from params: ${userId}`)
@@ -259,8 +275,11 @@ users.splice(index, 1)
                 })
             }
 
-            // Validate file size (max 2MB)
-            const maxSize = 2 * 1024 * 1024 // 2MB
+            /*
+             * Validate file size (max 2MB)
+             * 2MB
+             */
+            const maxSize = 2 * 1024 * 1024
             if (file.size > maxSize) {
                 return new Response(JSON.stringify({error: 'file too large. max size: 2MB'}), {
                     headers: {'Content-Type': 'application/json'},
@@ -316,10 +335,10 @@ users.splice(index, 1)
             // Verify the update by fetching the user again
             const verifyUser = await userManager.getUser(userId)
             if (verifyUser) {
-logger.info(`[Users API] Verified user avatar in DB: ${verifyUser.profile.avatar}`)
-} else {
-logger.warn('[Users API] Could not verify user update - getUser returned null')
-}
+                logger.info(`[Users API] Verified user avatar in DB: ${verifyUser.profile.avatar}`)
+            } else {
+                logger.warn('[Users API] Could not verify user update - getUser returned null')
+            }
 
             // Return success with avatar URL
             return new Response(JSON.stringify({
@@ -329,7 +348,7 @@ logger.warn('[Users API] Could not verify user update - getUser returned null')
             }), {
                 headers: {'Content-Type': 'application/json'},
             })
-        } catch (error) {
+        } catch(error) {
             logger.error(`[Users API] Error uploading avatar for user ${userId}:`, error)
             return new Response(JSON.stringify({error: 'failed to upload avatar'}), {
                 headers: {'Content-Type': 'application/json'},

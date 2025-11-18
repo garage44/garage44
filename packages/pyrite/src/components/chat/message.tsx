@@ -28,8 +28,10 @@ export default function Message({channelSlug, message}: MessageProps) {
         let messageData: MessageBlock[] = []
         let textBlock: MessageBlock = {type: 'text', value: ''}
 
-        // Spread takes care of properly separating most special symbols
-        // with multiple characters(e.g. emoji characters)
+        /*
+         * Spread takes care of properly separating most special symbols
+         * with multiple characters(e.g. emoji characters)
+         */
         let _message = [...message.message]
         for (const char of _message) {
             if (emojiLookup.has(char.codePointAt(0)!)) {
@@ -39,18 +41,26 @@ export default function Message({channelSlug, message}: MessageProps) {
                 }
 
                 messageData.push({type: 'emoji', value: char})
-            } else {textBlock.value = textBlock.value + char}
+            } else {
+                textBlock.value = textBlock.value + char
+            }
         }
         // Flush blocks.
-        if (textBlock.value.length) {messageData.push(textBlock)}
+        if (textBlock.value.length) {
+            messageData.push(textBlock)
+        }
 
         for (const [index, block] of messageData.entries()) {
             if (block.type !== 'text') continue
-            const nodes = block.value.split(urlRegex).filter((i) => (!['http', 'https'].includes(i)))
+            const nodes = block.value.split(urlRegex).filter((i) => !['http', 'https'].includes(i))
             const replaceBlocks: MessageBlock[] = []
             for (const node of nodes) {
-if (node.match(urlRegex)) {replaceBlocks.push({type: 'url', value: node})} else {replaceBlocks.push({type: 'text', value: node})}
-}
+                if (node.match(urlRegex)) {
+                    replaceBlocks.push({type: 'url', value: node})
+                } else {
+                    replaceBlocks.push({type: 'text', value: node})
+                }
+            }
             messageData.splice(index, 1, ...replaceBlocks)
         }
 
@@ -66,11 +76,15 @@ if (node.match(urlRegex)) {replaceBlocks.push({type: 'url', value: node})} else 
     let avatarUrl: string | null = null
     if (message.user_id) {
         // Try global users first (available across all channels)
-        if ($s.chat.users?.[message.user_id]) {avatarUrl = getAvatarUrl($s.chat.users[message.user_id].avatar, message.user_id)} else if (channelSlug) {
+        if ($s.chat.users?.[message.user_id]) {
+            avatarUrl = getAvatarUrl($s.chat.users[message.user_id].avatar, message.user_id)
+        } else if (channelSlug) {
             // Fallback to channel members for backward compatibility
             const channelKey = channelSlug
             const channel = $s.chat.channels[channelKey]
-            if (channel?.members?.[message.user_id]) {avatarUrl = getAvatarUrl(channel.members[message.user_id].avatar, message.user_id)}
+            if (channel?.members?.[message.user_id]) {
+                avatarUrl = getAvatarUrl(channel.members[message.user_id].avatar, message.user_id)
+            }
         }
     }
 
@@ -86,10 +100,10 @@ if (node.match(urlRegex)) {replaceBlocks.push({type: 'url', value: node})} else 
 
     return (
         <div class={classnames('message', {command: !message.nick, [message.kind]: true})}>
-            {message.kind === 'me' && (
+            {message.kind === 'me' &&
                 <div>
                     <div class='text'>
-                        {message.nick} 
+                        {message.nick}
 {' '}
 {$t(message.message)}
 ...
@@ -97,41 +111,33 @@ if (node.match(urlRegex)) {replaceBlocks.push({type: 'url', value: node})} else 
                     <div class='time'>
                         {formatTime(message.time)}
                     </div>
-                </div>
-            )}
+                </div>}
 
-            {message.kind !== 'me' && (
+            {message.kind !== 'me' &&
                 <>
-                    {message.nick && (
+                    {message.nick &&
                         <header>
                             <div class='author'>
-                                {avatarUrl ? (
-                                    <img src={avatarUrl} alt={message.nick} class='avatar' />
-                                ) : (
-                                    <div class='avatar-initials'>{getInitials(message.nick)}</div>
-                                )}
+                                {avatarUrl ?
+                                    <img alt={message.nick} class='avatar' src={avatarUrl} /> :
+                                    <div class='avatar-initials'>{getInitials(message.nick)}</div>}
                                 <span class='username'>{message.nick}</span>
                             </div>
                             <div class='time'>
                                 {formatTime(message.time)}
                             </div>
-                        </header>
-                    )}
+                        </header>}
                     <section>
-                        {messageModel.map((msgModel, index) => (
-                            <span key={index}>
+                        {messageModel.map((msgModel, index) => <span key={index}>
                                 {msgModel.type === 'text' && <span class='text'>{msgModel.value}</span>}
                                 {msgModel.type === 'emoji' && <span class='emoji'>{msgModel.value}</span>}
-                                {msgModel.type === 'url' && (
-                                    <a href={msgModel.value} target='_blank' rel='noopener noreferrer' class='url'>
+                                {msgModel.type === 'url' &&
+                                    <a class='url' href={msgModel.value} rel='noopener noreferrer' target='_blank'>
                                         {msgModel.value}
-                                    </a>
-                                )}
-                            </span>
-                        ))}
+                                    </a>}
+                        </span>)}
                     </section>
-                </>
-            )}
+                </>}
         </div>
     )
 }

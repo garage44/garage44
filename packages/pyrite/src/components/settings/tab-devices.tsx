@@ -14,7 +14,7 @@ export default function TabDevices() {
     const [soundAudio, setSoundAudio] = useState<Sound | null>(null)
     const [playing] = useState(false)
 
-    const remountStream = async () => {
+    const remountStream = async() => {
         const newStream = await getUserMedia()
         if (newStream) {
             setStream(newStream)
@@ -40,19 +40,23 @@ export default function TabDevices() {
         }
     }
 
-    const testSoundAudio = () => {if (soundAudio) {
-soundAudio.play()
-}}
+    const testSoundAudio = () => {
+        if (soundAudio) {
+            soundAudio.play()
+        }
+    }
 
     // Initial mount
     useEffect(() => {
-        const init = async () => {
+        const init = async() => {
             await queryDevices()
             setSoundAudio(new Sound({file: '/audio/power-on.ogg', playing: false}))
 
-            // Only use existing stream if available - don't auto-start media
-            // Media should only start when user explicitly clicks camera/mic buttons
-            // This prevents unwanted getUserMedia calls and permission prompts on page load
+            /*
+             * Only use existing stream if available - don't auto-start media
+             * Media should only start when user explicitly clicks camera/mic buttons
+             * This prevents unwanted getUserMedia calls and permission prompts on page load
+             */
             const currentStream = localStream
             if (currentStream && !$s.sfu.channel.connected) {
                 setStream(currentStream)
@@ -75,43 +79,44 @@ soundAudio.play()
 
         init()
 
-        return () => {if (!$s.sfu.channel.connected) {
-sfu.delLocalMedia()
-}}
+        return () => {
+            if (!$s.sfu.channel.connected) {
+                sfu.delLocalMedia()
+            }
+        }
     }, [])
 
     // Watch for device changes
     useEffect(() => {
-remountStream()
-}, [$s.devices.cam.resolution, $s.devices.cam.selected, $s.devices.mic.selected])
+        remountStream()
+    }, [$s.devices.cam.resolution, $s.devices.cam.selected, $s.devices.mic.selected])
 
     return (
         <section class='c-tab-devices tab-content active'>
             <div class='camera-field'>
                 <FieldSelect
-                    value={$s.devices.cam.selected}
-                    onChange={(value) => $s.devices.cam.selected = value}
                     help={$t('device.select_cam_help')}
                     label={$t('device.select_cam_label')}
                     name='video'
+                    onChange={(value) => $s.devices.cam.selected = value}
                     options={$s.devices.cam.options}
+                    value={$s.devices.cam.selected}
                 />
 
-                {description && <Stream modelValue={description} controls={false} />}
-                {!description && (
+                {description && <Stream controls={false} modelValue={description} />}
+                {!description &&
                     <div class='webcam-placeholder'>
                         <Icon name='webcam' />
-                    </div>
-                )}
+                    </div>}
             </div>
 
             <FieldSelect
-                value={$s.devices.mic.selected}
-                onChange={(value) => $s.devices.mic.selected = value}
                 help={$t('device.select_mic_verify_help')}
                 label={$t('device.select_mic_label')}
                 name='audio'
+                onChange={(value) => $s.devices.mic.selected = value}
                 options={$s.devices.mic.options}
+                value={$s.devices.mic.selected}
             />
 
             <div class='soundmeter'>
@@ -121,18 +126,17 @@ remountStream()
             <div class='output-config'>
                 {/* https://bugzilla.mozilla.org/show_bug.cgi?id=1498512 */}
                 {/* https://bugzilla.mozilla.org/show_bug.cgi?id=1152401 */}
-                {$s.devices.audio.options.length && !$s.env.isFirefox && (
+                {$s.devices.audio.options.length && !$s.env.isFirefox &&
                     <FieldSelect
-                        value={$s.devices.audio.selected}
-                        onChange={(value) => $s.devices.audio.selected = value}
                         help={$t('device.select_audio_verify_help')}
                         label={$t('device.select_audio_label')}
                         name='audio'
+                        onChange={(value) => $s.devices.audio.selected = value}
                         options={$s.devices.audio.options}
-                    />
-                )}
+                        value={$s.devices.audio.selected}
+                    />}
 
-                {($s.env.isFirefox || !$s.devices.audio.options.length) && (
+                {($s.env.isFirefox || !$s.devices.audio.options.length) &&
                     <div class='field'>
                         <div class='label-container'>
                             <label class='field-label'>{$t('device.select_audio_label')}</label>
@@ -144,8 +148,7 @@ remountStream()
                         <div class='help'>
                             {$t('device.select_audio_verify_help')}
                         </div>
-                    </div>
-                )}
+                    </div>}
             </div>
         </section>
     )

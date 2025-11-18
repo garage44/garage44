@@ -16,13 +16,15 @@ export default function GroupsContext() {
         return groupName ? !!$s.sfu.channels[groupName] : false
     }, [$s.sfu.channel.name, $s.sfu.channels])
 
-    const groupLink = (groupId: string) => {if ($s.sfu.channel && $s.sfu.channel.name === groupId) {
-return '/'
-} else {
-return `/groups/${groupId}`
-}}
+    const groupLink = (groupId: string) => {
+        if ($s.sfu.channel && $s.sfu.channel.name === groupId) {
+            return '/'
+        } else {
+            return `/groups/${groupId}`
+        }
+    }
 
-    const pollGroups = async () => {
+    const pollGroups = async() => {
         const groups = await api.get('/api/groups/public')
 
         // Store groups in sfu.channels (channel slug = group name)
@@ -48,21 +50,23 @@ return `/groups/${groupId}`
 
                 // Update current group data if this is the active group
                 if (group.name === $s.sfu.channel.name && currentGroupData) {
-currentGroupData.locked = group.locked
-}
+                    currentGroupData.locked = group.locked
+                }
             }
         }
     }
 
     const setAutofocus = () => {
-$s.login.autofocus = true
-}
+        $s.login.autofocus = true
+    }
 
-    const toggleUnlisted = () => {if (!$s.sfu.channel.name || isListedGroup) {
-$s.sfu.channel.name = $t('group.unlisted')
-} else if (!isListedGroup) {
-$s.sfu.channel.name = ''
-}}
+    const toggleUnlisted = () => {
+        if (!$s.sfu.channel.name || isListedGroup) {
+            $s.sfu.channel.name = $t('group.unlisted')
+        } else if (!isListedGroup) {
+            $s.sfu.channel.name = ''
+        }
+    }
 
     const updateRoute = () => {
         $s.login.autofocus = false
@@ -91,9 +95,11 @@ $s.sfu.channel.name = ''
         intervalRef.current = setInterval(pollGroups, 3000) as unknown as number
         pollGroups()
 
-        return () => {if (intervalRef.current !== null) {
-clearInterval(intervalRef.current)
-}}
+        return () => {
+            if (intervalRef.current !== null) {
+                clearInterval(intervalRef.current)
+            }
+        }
     }, [])
 
     return (
@@ -107,31 +113,31 @@ clearInterval(intervalRef.current)
                 >
                     <Icon class='icon item-icon icon-d' name='incognito' />
                     <div class='flex-column'>
-                        {(isListedGroup || !$s.sfu.channel.name) ? (
-                            <div class='name'>...</div>
-                        ) : (
-                            <div class='name'>{$s.sfu.channel.name}</div>
-                        )}
+                        {isListedGroup || !$s.sfu.channel.name ?
+                            <div class='name'>...</div> :
+                            <div class='name'>{$s.sfu.channel.name}</div>}
                     </div>
                 </div>
             </div>
             {Object.entries($s.sfu.channels).map(([channelSlug, channelData]) => {
-                // Only show channels that have group metadata (from public groups API)
-                // A channel with group metadata has at least one of: description, comment, clientCount defined
+                /*
+                 * Only show channels that have group metadata (from public groups API)
+                 * A channel with group metadata has at least one of: description, comment, clientCount defined
+                 */
                 const hasGroupMetadata =
                     channelData.description !== undefined ||
                     channelData.comment !== undefined ||
                     channelData.clientCount !== undefined
 
                 if (!hasGroupMetadata) {
-return null
-}
+                    return null
+                }
 
                 return (
                     <Link
-                        key={channelSlug}
                         class={classnames('group item', {active: currentGroupData.name === channelSlug})}
                         href={groupLink(channelSlug)}
+                        key={channelSlug}
                         onClick={setAutofocus}
                     >
                         <Icon
@@ -143,11 +149,10 @@ return null
                             <div class='name'>
                                 {channelSlug}
                             </div>
-                            {channelData.description && (
+                            {channelData.description &&
                                 <div class='item-properties'>
                                     {channelData.description}
-                                </div>
-                            )}
+                                </div>}
                         </div>
 
                         <div class={classnames('stats', {active: (channelData.clientCount || 0) > 0})}>
@@ -158,14 +163,13 @@ return null
                 )
             })}
 
-            {Object.keys($s.sfu.channels).length === 0 && (
+            {Object.keys($s.sfu.channels).length === 0 &&
                 <div class='group item no-presence'>
                     <Icon class='item-icon icon-d' name='group' />
                     <div class='name'>
                         {$t('group.no_groups_public')}
                     </div>
-                </div>
-            )}
+                </div>}
         </section>
     )
 }

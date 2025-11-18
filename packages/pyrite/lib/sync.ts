@@ -7,8 +7,10 @@ import path from 'node:path'
 import {getDatabase} from './database.ts'
 import {Database} from 'bun:sqlite'
 
-// Initialize GroupManager for Pyrite
-// Note: userManager is the shared instance from common/service, already initialized with database
+/*
+ * Initialize GroupManager for Pyrite
+ * Note: userManager is the shared instance from common/service, already initialized with database
+ */
 const groupManager = new GroupManager({
     storagePath: config.sfu.path ? path.join(config.sfu.path, 'groups') : '',
     userManager,
@@ -39,11 +41,11 @@ export async function syncUsersToGalene() {
         // 2. Sync channel members to group files
         const groups = await loadGroupsFromDisk()
         for (const group of groups) {
-await updateGroupWithChannelMembers(group.name, db)
-}
+            await updateGroupWithChannelMembers(group.name, db)
+        }
 
         logger.info(`Synced ${users.length} users to global config and ${groups.length} groups`)
-    } catch (error) {
+    } catch(error) {
         logger.error('Failed to sync users to Galene:', error)
         throw error
     }
@@ -87,13 +89,13 @@ async function syncUsersToGlobalConfig(users: unknown[], _db: Database) {
     // Load existing config or create new
     let galeneConfig: Record<string, unknown> = {}
     if (await fs.pathExists(configFile)) {
-galeneConfig = JSON.parse(await fs.readFile(configFile, 'utf8'))
-}
+        galeneConfig = JSON.parse(await fs.readFile(configFile, 'utf8'))
+    }
 
     // Initialize users dictionary
     if (!galeneConfig.users) {
-galeneConfig.users = {}
-}
+        galeneConfig.users = {}
+    }
 
     // Sync ALL users
     for (const user of users) {
@@ -117,12 +119,16 @@ galeneConfig.users = {}
 
     // Remove users that no longer exist
     const existingUsernames = new Set(users.map((u) => u.username))
-    for (const username of Object.keys(galeneConfig.users)) {if (!existingUsernames.has(username)) {
-delete galeneConfig.users[username]
-}}
+    for (const username of Object.keys(galeneConfig.users)) {
+        if (!existingUsernames.has(username)) {
+            delete galeneConfig.users[username]
+        }
+    }
 
-    // Preserve other config fields (canonicalHost, writableGroups, etc.)
-    // Only update the users field
+    /*
+     * Preserve other config fields (canonicalHost, writableGroups, etc.)
+     * Only update the users field
+     */
 
     // Save the config file
     await fs.writeFile(configFile, JSON.stringify(galeneConfig, null, 2))
@@ -195,13 +201,13 @@ async function updateGroupWithChannelMembers(groupName: string, db: Database) {
         if (member.role === 'admin') {
             galenePermission = 'op'
             if (!groupData.op.includes(user.username)) {
-groupData.op.push(user.username)
-}
+                groupData.op.push(user.username)
+            }
         } else {
             galenePermission = 'present'
             if (!groupData.other.includes(user.username)) {
-groupData.other.push(user.username)
-}
+                groupData.other.push(user.username)
+            }
         }
 
         // Convert password to Galene format
@@ -260,14 +266,16 @@ async function saveGroupNativeGalene(groupName: string, groupData: Record<string
 
     // Include users dictionary if it exists (required for Galene)
     if (groupData.users && typeof groupData.users === 'object' && !Array.isArray(groupData.users)) {
-nativeData.users = groupData.users
-} else {
+        nativeData.users = groupData.users
+    } else {
     // Ensure users dictionary exists (even if empty)
         nativeData.users = {}
     }
 
-    // Remove any Pyrite-specific fields that shouldn't be in the file
-    // (op, other, presenter arrays are for Pyrite internal use only)
+    /*
+     * Remove any Pyrite-specific fields that shouldn't be in the file
+     * (op, other, presenter arrays are for Pyrite internal use only)
+     */
 
     // Write the native Galene format file
     const groupFile = path.join(config.sfu.path, 'groups', `${groupName}.json`)
@@ -278,7 +286,7 @@ nativeData.users = groupData.users
  * Legacy function for backward compatibility
  */
 export async function syncUsers() {
-return await syncUsersToGalene()
+    return await syncUsersToGalene()
 }
 
 // Export the GroupManager instance for direct access if needed

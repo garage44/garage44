@@ -1,7 +1,7 @@
 // Legacy stream controls template - may not be actively used
 export const StreamControls = () => {
     return (
-        <div id='videocontrols-template' class='invisible'>
+        <div class='invisible' id='videocontrols-template'>
             <div class='video-controls vc-overlay'>
                 <div class='controls-button controls-left'>
                     <span class='video-play' title='Play video'>

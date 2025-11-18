@@ -10,8 +10,10 @@ interface ChannelProps {
 }
 
 export const Channel = ({channelSlug}: ChannelProps) => {
-    // Set active channel synchronously during render for immediate route update
-    // This happens before child components render, eliminating delay
+    /*
+     * Set active channel synchronously during render for immediate route update
+     * This happens before child components render, eliminating delay
+     */
     if ($s.chat.activeChannelSlug !== channelSlug) {
         $s.chat.activeChannelSlug = channelSlug
         $s.chat.channel = channelSlug
@@ -24,17 +26,26 @@ export const Channel = ({channelSlug}: ChannelProps) => {
         // Load history immediately
         loadChannelHistory(channelSlug)
 
-        // Connect to SFU for video conferencing if not already connected
-        // Channel slug directly matches Galene group name (1:1 mapping)
-        // Wait for credentials to be available before connecting
+        /*
+         * Connect to SFU for video conferencing if not already connected
+         * Channel slug directly matches Galene group name (1:1 mapping)
+         * Wait for credentials to be available before connecting
+         */
         if (!$s.sfu.channel.connected && channelSlug) {
             logger.info(`[Channel] Preparing to connect to SFU for channel: ${channelSlug}`)
-            logger.info(`[Channel] Credentials check: username=${$s.profile.username ? '***' : '(empty)'}, password=${$s.profile.password ? '***' : '(empty)'}`)
+            logger.info(
+                `[Channel] Credentials check: username=${$s.profile.username ? '***' : '(empty)'}, ` +
+                `password=${$s.profile.password ? '***' : '(empty)'}`,
+            )
 
-            // connectSFU will read credentials from $s.profile
-            // It will use empty strings if not available, which may cause authentication to fail
-            // but that's expected if user hasn't logged in properly
-            connectSFU().catch((error) => {logger.error(`[Channel] Failed to connect to SFU for channel ${channelSlug}:`, error)})
+            /*
+             * connectSFU will read credentials from $s.profile
+             * It will use empty strings if not available, which may cause authentication to fail
+             * but that's expected if user hasn't logged in properly
+             */
+            connectSFU().catch((error) => {
+                logger.error(`[Channel] Failed to connect to SFU for channel ${channelSlug}:`, error)
+            })
         }
     }, [channelSlug])
 
@@ -43,7 +54,7 @@ export const Channel = ({channelSlug}: ChannelProps) => {
 
     return (
         <div class='c-channel'>
-            <ChannelChat channelSlug={channelSlug} channel={channel} />
+            <ChannelChat channel={channel} channelSlug={channelSlug} />
         </div>
     )
 }

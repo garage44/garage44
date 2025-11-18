@@ -23,65 +23,62 @@ export default function UsersContext() {
 
     const className = (user: {data?: {availability?: {id: string}; raisehand?: boolean}}) => {
         const classes: Record<string, boolean> = {}
-        if (user.data?.raisehand) {classes.hand = true}
+        if (user.data?.raisehand) {
+            classes.hand = true
+        }
         if (user.data?.availability) {
-if (user.data.availability.id === 'away') {classes.away = true} else if (user.data.availability.id === 'busy') {classes.busy = true}
-}
+            if (user.data.availability.id === 'away') {
+                classes.away = true
+            } else if (user.data.availability.id === 'busy') {
+                classes.busy = true
+            }
+        }
 
         return classes
     }
 
     return (
         <section class='c-users-context presence'>
-            {sortedUsers.map((user) => (
-                <div key={user.id} class='user item'>
+            {sortedUsers.map((user) => <div class='user item' key={user.id}>
                     <Icon
                         class={classnames('icon item-icon icon-d', className(user))}
                         name={user.data.raisehand ? 'Hand' : 'User'}
                     />
 
                     <div class='name'>
-                        {user.username ? (
+                        {user.username ?
                             <div class='username'>
                                 {user.username === 'RECORDING' ? $t('user.recorder') : user.username}
-                            </div>
-                        ) : (
+                            </div> :
                             <div class='username'>
                                 {$t('user.anonymous')}
-                            </div>
-                        )}
-                        {$s.users[0].id === user.id && (
+                            </div>}
+                        {$s.users[0].id === user.id &&
                             <div class='username'>
                                 (
 {$t('user.you')}
 )
-                            </div>
-                        )}
+                            </div>}
 
                         <div class='status'>
-                            {user.data.mic ? (
-                                <Icon class='icon icon-s' name='mic' />
-                            ) : (
-                                <Icon class='icon icon-s error' name='micmute' />
-                            )}
+                            {user.data.mic ?
+                                <Icon class='icon icon-s' name='mic' /> :
+                                <Icon class='icon icon-s error' name='micmute' />}
                         </div>
 
                         <div class='permissions'>
-                            {user.permissions.present && (
+                            {user.permissions.present &&
                                 <span>
                                     <Icon class='icon icon-s' name='present' />
-                                </span>
-                            )}
-                            {user.permissions.op && (
+                                </span>}
+                            {user.permissions.op &&
                                 <span>
                                     <Icon class='icon icon-s' name='operator' />
-                                </span>
-                            )}
+                                </span>}
                         </div>
                     </div>
                     {user.username !== 'RECORDING' && <ContextMenu user={user} />}
-                </div>
-            ))}
+            </div>)}
         </section>
     )
 }

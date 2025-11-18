@@ -18,23 +18,23 @@ export const AdminApp = () => {
     return (
         <div class='c-admin-app app'>
             <PanelContext
+                animate={animate}
                 collapsed={$s.panels.context.collapsed}
+                LinkComponent={Link}
                 logoHref='/settings/groups'
+                LogoIcon={IconLogo}
                 logoText='PYRITE'
                 logoVersion={process.env.APP_VERSION || '2.0.0'}
-                LogoIcon={IconLogo}
-                LinkComponent={Link}
-                animate={animate}
             >
                 <GroupsContext />
             </PanelContext>
             <Controls />
             <Router>
-                <Route path='/settings/groups' component={Groups} />
-                <Route path='/settings/groups/:groupId' component={Groups} />
-                <Route path='/settings/users' component={Users} />
-                <Route path='/settings/users/:userId' component={Users} />
-                <Route default component={Groups} />
+                <Route component={Groups} path='/settings/groups' />
+                <Route component={Groups} path='/settings/groups/:groupId' />
+                <Route component={Users} path='/settings/users' />
+                <Route component={Users} path='/settings/users/:userId' />
+                <Route component={Groups} default />
             </Router>
             <Notifications notifications={$s.notifications} />
         </div>

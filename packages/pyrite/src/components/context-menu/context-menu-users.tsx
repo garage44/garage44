@@ -49,8 +49,12 @@ export default function UsersContextMenu({user}: UsersContextMenuProps) {
     }
 
     const sendFile = (file: File | null) => {
-if (file) {connection?.sendFile(user.id, file)} else {$s.files.upload = []}
-}
+        if (file) {
+            connection?.sendFile(user.id, file)
+        } else {
+            $s.files.upload = []
+        }
+    }
 
     const sendNotification = (message: string) => {
         notifier.message('notification', {dir: 'source', message, target: user.username})
@@ -58,7 +62,9 @@ if (file) {connection?.sendFile(user.id, file)} else {$s.files.upload = []}
         toggleMenu()
     }
 
-    const setAvailability = (availability: string) => {connection?.userAction('setdata', connection.id, {availability})}
+    const setAvailability = (availability: string) => {
+        connection?.userAction('setdata', connection.id, {availability})
+    }
 
     const toggleMenu = (e?: MouseEvent, forceState?: boolean | MouseEvent) => {
         // The click-outside
@@ -93,78 +99,71 @@ if (file) {connection?.sendFile(user.id, file)} else {$s.files.upload = []}
     return (
         <div class={classnames('c-users-context-menu context-menu', {active: active})}>
             <Icon class='icon icon-d' name='menu' onClick={toggleMenu} />
-            {active && (
-<div class='context-actions'>
-                {user.id !== $s.profile.id && (
-<button class='action' onClick={activateUserChat}>
+            {active &&
+                <div class='context-actions'>
+                {user.id !== $s.profile.id &&
+                    <button class='action' onClick={activateUserChat}>
                     <Icon class='icon icon-s' name='chat' />
                     {`${$t('user.action.chat', {username: user.username})}`}
-</button>
-                )}
+                    </button>}
 
-                {user.id !== $s.profile.id && (
-<button class='action'>
+                {user.id !== $s.profile.id &&
+                    <button class='action'>
                     <FieldFile
-                        value={$s.files.upload}
                         accept='*'
                         icon='Upload'
                         label={$t('user.action.share_file.send')}
                         onFile={sendFile}
+                        value={$s.files.upload}
                     />
-</button>
-                )}
+                    </button>}
 
-                {($s.permissions.op && user.id !== $s.profile.id) && (
-<ContextInput
-    value={warning}
-    submit={sendNotification}
-    FieldTextComponent={FieldText}
-/>
-                )}
+                {($s.permissions.op && user.id !== $s.profile.id) &&
+                    <ContextInput
+                        FieldTextComponent={FieldText}
+                        submit={sendNotification}
+                        value={warning}
+                    />}
 
-                {($s.permissions.op && user.id !== $s.profile.id) && (
-<button class='action' onClick={muteUser}>
+                {($s.permissions.op && user.id !== $s.profile.id) &&
+                    <button class='action' onClick={muteUser}>
                     <Icon class='icon icon-s' name='mic' />
                     {$t('user.action.mute_mic')}
-</button>
-                )}
+                    </button>}
 
-                {($s.permissions.op && user.id !== $s.profile.id) && (
-<button class='action' onClick={toggleOperator}>
+                {($s.permissions.op && user.id !== $s.profile.id) &&
+                    <button class='action' onClick={toggleOperator}>
                     <Icon class='icon icon-s' name='operator' />
                     {user.permissions.op ? $t('user.action.set_role.op_retract') : $t('user.action.set_role.op_assign')}
-</button>
-                )}
+                    </button>}
 
-                {($s.permissions.op && user.id !== $s.profile.id) && (
-<button class='action' onClick={togglePresenter}>
+                {($s.permissions.op && user.id !== $s.profile.id) &&
+                    <button class='action' onClick={togglePresenter}>
                     <Icon class='icon icon-s' name='present' />
-                    {user.permissions.present ? $t('user.action.set_role.present_retract') : $t('user.action.set_role.present_assign')}
-</button>
-                )}
+                    {user.permissions.present ?
+                            $t('user.action.set_role.present_retract') :
+                            $t('user.action.set_role.present_assign')}
+                    </button>}
 
-                {user.id === $s.profile.id && (
-<ContextSelect
-    value={$s.sfu.profile.availability}
-    icon='User'
-    options={statusOptions}
-    submit={setAvailability}
-    title={$t(`user.action.set_availability.${$s.sfu.profile.availability.id}`)}
-    FieldSelectComponent={FieldSelect}
-/>
-                )}
+                {user.id === $s.profile.id &&
+                    <ContextSelect
+                        FieldSelectComponent={FieldSelect}
+                        icon='User'
+                        options={statusOptions}
+                        submit={setAvailability}
+                        title={$t(`user.action.set_availability.${$s.sfu.profile.availability.id}`)}
+                        value={$s.sfu.profile.availability}
+                    />}
 
-                {(user.id !== $s.profile.id && $s.permissions.op) && (
-<ContextInput
-    value={kick}
-    required={false}
-    submit={kickUser}
-    FieldTextComponent={FieldText}
-/>
-                )}
+                {(user.id !== $s.profile.id && $s.permissions.op) &&
+                    <ContextInput
+                        FieldTextComponent={FieldText}
+                        required={false}
+                        submit={kickUser}
+                        value={kick}
+                    />}
 
-</div>
-            )}
+                </div>}
         </div>
     )
 }

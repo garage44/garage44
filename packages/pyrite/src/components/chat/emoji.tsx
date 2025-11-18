@@ -7,15 +7,13 @@ interface EmojiProps {
 export default function Emoji({onselect}: EmojiProps) {
     return (
         <div class='c-emoji'>
-            {$s.chat.emoji.list.map((emoji, index) => (
-                <div
-                    key={index}
-                    class='emoji'
-                    onClick={(e) => onselect(e as MouseEvent, emoji)}
-                >
+            {$s.chat.emoji.list.map((emoji, index) => <div
+                class='emoji'
+                key={index}
+                onClick={(e) => onselect(e as MouseEvent, emoji)}
+            >
                     {emoji}
-                </div>
-            ))}
+            </div>)}
         </div>
     )
 }

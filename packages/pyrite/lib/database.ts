@@ -23,17 +23,21 @@ export interface Channel {
 export interface ChannelMember {
     channel_id: number
     joined_at: number
-    role: string // 'member' | 'admin'
-    user_id: string // TEXT to match users.id (UUID string from common database)
+    // 'member' | 'admin'
+    role: string
+    // TEXT to match users.id (UUID string from common database)
+    user_id: string
 }
 
 export interface Message {
     channel_id: number
     id: number
-    kind: string // 'message' | 'me' | 'system'
+    // 'message' | 'me' | 'system'
+    kind: string
     message: string
     timestamp: number
-    user_id: string // TEXT to match users.id (UUID string from common database)
+    // TEXT to match users.id (UUID string from common database)
+    user_id: string
     username: string
 }
 
@@ -42,7 +46,9 @@ export interface Message {
  * Uses common database initialization for users table
  */
 export function initDatabase(dbPath?: string): Database {
-    if (db) {return db}
+    if (db) {
+        return db
+    }
 
     // Check for environment variable first (for PR deployments and isolated instances)
     const envDbPath = process.env.DB_PATH
@@ -78,8 +84,10 @@ function createPyriteTables() {
     // Create index on slug for performance
     db.exec('CREATE INDEX IF NOT EXISTS idx_channels_slug ON channels(slug)')
 
-    // Channel members table
-    // Note: user_id is TEXT to match users.id (UUID string from common database)
+    /*
+     * Channel members table
+     * Note: user_id is TEXT to match users.id (UUID string from common database)
+     */
     db.exec(`
         CREATE TABLE IF NOT EXISTS channel_members (
             channel_id INTEGER NOT NULL,
@@ -92,8 +100,10 @@ function createPyriteTables() {
         )
     `)
 
-    // Messages table
-    // Note: user_id is TEXT to match users.id (UUID string from common database)
+    /*
+     * Messages table
+     * Note: user_id is TEXT to match users.id (UUID string from common database)
+     */
     db.exec(`
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -144,8 +154,10 @@ export async function initializeDefaultData() {
 
             const now = Date.now()
 
-            // Create default "general" channel
-            // slug directly matches Galene group name (1:1 mapping)
+            /*
+             * Create default "general" channel
+             * slug directly matches Galene group name (1:1 mapping)
+             */
             const channelInsert = db.prepare(`
                 INSERT INTO channels (name, slug, description, created_at)
                 VALUES (?, ?, ?, ?)
@@ -173,7 +185,9 @@ export async function initializeDefaultData() {
             const pyriteChannelResult = channelInsert.run('pyrite', 'pyrite', 'Pyrite discussion channel', now)
             const pyriteChannelId = pyriteChannelResult.lastInsertRowid as number
 
-            if (!pyriteChannelId || pyriteChannelId <= 0) {logger.error('[Database] Failed to create pyrite channel - no channel ID returned')} else {
+            if (!pyriteChannelId || pyriteChannelId <= 0) {
+                logger.error('[Database] Failed to create pyrite channel - no channel ID returned')
+            } else {
                 logger.info(`[Database] Created pyrite channel (id: ${pyriteChannelId})`)
 
                 // Add admin to pyrite channel
@@ -187,8 +201,10 @@ export async function initializeDefaultData() {
                 const channelManager = new ChannelManager(db)
                 const syncResult = await channelManager.syncAllChannelsToGalene()
                 logger.info(`[Database] Synced ${syncResult.success} default channel(s) to Galene groups`)
-                if (syncResult.failed > 0) {logger.warn(`[Database] Failed to sync ${syncResult.failed} channel(s) to Galene`)}
-            } catch (syncError) {
+                if (syncResult.failed > 0) {
+                    logger.warn(`[Database] Failed to sync ${syncResult.failed} channel(s) to Galene`)
+                }
+            } catch(syncError) {
                 logger.error('[Database] Failed to sync default channels to Galene (non-fatal):', syncError)
                 // Don't fail initialization if sync fails - channels are still created
             }
@@ -198,14 +214,16 @@ export async function initializeDefaultData() {
                 const {syncUsersToGalene} = await import('./sync.ts')
                 await syncUsersToGalene()
                 logger.info('[Database] Synced users to Galene (global config and group files)')
-            } catch (syncError) {
+            } catch(syncError) {
                 logger.error('[Database] Failed to sync users to Galene (non-fatal):', syncError)
                 // Don't fail initialization if sync fails - users can be synced later
             }
 
             logger.info('[Database] Pyrite default data initialization completed successfully')
-        } else {logger.info(`[Database] Channels already exist (${channelCount.count}), skipping default data initialization`)}
-    } catch (error) {
+        } else {
+            logger.info(`[Database] Channels already exist (${channelCount.count}), skipping default data initialization`)
+        }
+    } catch(error) {
         logger.error('[Database] Error initializing Pyrite default data:', error)
         throw error
     }
@@ -215,7 +233,9 @@ export async function initializeDefaultData() {
  * Get database instance
  */
 export function getDatabase(): Database {
-    if (!db) {throw new Error('Database not initialized. Call initDatabase() first.')}
+    if (!db) {
+        throw new Error('Database not initialized. Call initDatabase() first.')
+    }
     return db
 }
 

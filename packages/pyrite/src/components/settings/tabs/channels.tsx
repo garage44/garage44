@@ -18,17 +18,23 @@ export default function TabChannels() {
     }))
     const state = stateRef.current
 
-    const loadChannels = async () => {
+    const loadChannels = async() => {
         state.loading = true
         try {
             const data = await api.get('/api/channels')
             state.channels = Array.isArray(data) ? data : []
-        } catch {notifier.notify({level: 'error', message: 'Failed to load channels'})} finally {state.loading = false}
+        } catch {
+            notifier.notify({level: 'error', message: 'Failed to load channels'})
+        } finally {
+            state.loading = false
+        }
     }
 
-    useEffect(() => {loadChannels()}, [])
+    useEffect(() => {
+        loadChannels()
+    }, [])
 
-    const handleCreate = async () => {
+    const handleCreate = async() => {
         if (!state.formData.name || !state.formData.slug) {
             notifier.notify({level: 'error', message: 'Name and slug are required'})
             return
@@ -43,37 +49,39 @@ export default function TabChannels() {
             state.channels = [...state.channels, newChannel]
             state.formData = {description: '', name: '', slug: ''}
             notifier.notify({level: 'success', message: 'Channel created and synced with Galene'})
-        } catch (error) {
+        } catch(error) {
             const message = error instanceof Error ? error.message : 'Failed to create channel'
             notifier.notify({level: 'error', message})
         }
     }
 
-    const handleUpdate = async (channelId: number) => {
+    const handleUpdate = async(channelId: number) => {
         try {
             const updated = await api.put(`/api/channels/${channelId}`, {
                 description: state.formData.description,
                 name: state.formData.name,
                 slug: state.formData.slug,
             })
-            state.channels = state.channels.map((c) => c.id === channelId ? updated : c)
+            state.channels = state.channels.map((c) => {
+                return c.id === channelId ? updated : c
+            })
             state.editing = null
             state.formData = {description: '', name: '', slug: ''}
             notifier.notify({level: 'success', message: 'Channel updated and synced with Galene'})
-        } catch (error) {
+        } catch(error) {
             const message = error instanceof Error ? error.message : 'Failed to update channel'
             notifier.notify({level: 'error', message})
         }
     }
 
-    const handleDelete = async (channelId: number) => {
+    const handleDelete = async(channelId: number) => {
         if (!confirm('Are you sure you want to delete this channel? This will also delete the associated Galene group.')) return
 
         try {
             await api.delete(`/api/channels/${channelId}`)
             state.channels = state.channels.filter((c) => c.id !== channelId)
             notifier.notify({level: 'success', message: 'Channel deleted and Galene group removed'})
-        } catch (error) {
+        } catch(error) {
             const message = error instanceof Error ? error.message : 'Failed to delete channel'
             notifier.notify({level: 'error', message})
         }
@@ -100,28 +108,27 @@ export default function TabChannels() {
                 <h2>Channel Configuration</h2>
             </div>
 
-            {state.loading ? (
-                <div>Loading channels...</div>
-            ) : (
+            {state.loading ?
+                <div>Loading channels...</div> :
                 <>
-                    {state.editing === null && (
+                    {state.editing === null &&
                         <div class='create-form'>
                             <h3>Create New Channel</h3>
                             <div class='form'>
                                 <FieldText
-                                    model={state.formData.$name}
                                     label='Channel Name'
+                                    model={state.formData.$name}
                                     placeholder='Enter channel name'
                                 />
                                 <FieldText
-                                    model={state.formData.$slug}
-                                    label='Slug (Galene Group Name)'
-                                    placeholder='Enter slug (must match Galene group name)'
                                     help='This slug will be used as the Galene group name'
+                                    label='Slug (Galene Group Name)'
+                                    model={state.formData.$slug}
+                                    placeholder='Enter slug (must match Galene group name)'
                                 />
                                 <FieldText
-                                    model={state.formData.$description}
                                     label='Description'
+                                    model={state.formData.$description}
                                     placeholder='Enter channel description'
                                 />
                                 <div class='actions'>
@@ -133,26 +140,24 @@ export default function TabChannels() {
                                     />
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        </div>}
 
                     <div class='list'>
-                        {state.channels.map((channel) => (
-                            <div key={channel.id} class='item'>
-                                {state.editing === channel.id ? (
+                        {state.channels.map((channel) => <div class='item' key={channel.id}>
+                                {state.editing === channel.id ?
                                     <div class='form'>
                                         <FieldText
-                                            model={state.formData.$name}
                                             label='Channel Name'
+                                            model={state.formData.$name}
                                         />
                                         <FieldText
-                                            model={state.formData.$slug}
-                                            label='Slug (Galene Group Name)'
                                             help='This slug will be used as the Galene group name'
+                                            label='Slug (Galene Group Name)'
+                                            model={state.formData.$slug}
                                         />
                                         <FieldText
-                                            model={state.formData.$description}
                                             label='Description'
+                                            model={state.formData.$description}
                                         />
                                         <div class='actions'>
                                             <Button
@@ -168,8 +173,7 @@ export default function TabChannels() {
                                                 type='default'
                                             />
                                         </div>
-                                    </div>
-                                ) : (
+                                    </div> :
                                     <div class='content'>
                                         <div>
                                             <h3>{channel.name}</h3>
@@ -194,18 +198,14 @@ Slug:
                                                 variant='menu'
                                             />
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                        {state.channels.length === 0 && (
+                                    </div>}
+                        </div>)}
+                        {state.channels.length === 0 &&
                             <div class='empty'>
                                 <p>No channels yet. Create your first channel above.</p>
-                            </div>
-                        )}
+                            </div>}
                     </div>
-                </>
-            )}
+                </>}
         </section>
     )
 }

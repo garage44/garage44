@@ -13,7 +13,7 @@ export const registerGroupsWebSocket = (wsManager: WebSocketServerManager) => {
      * Set group lock status
      * POST /api/groups/:groupId/lock
      */
-    api.post('/api/groups/:groupId/lock', async (context, request) => {
+    api.post('/api/groups/:groupId/lock', async(context, request) => {
         const {groupId} = request.params
         const {locked, reason} = request.data
 
@@ -31,7 +31,7 @@ export const registerGroupsWebSocket = (wsManager: WebSocketServerManager) => {
      * Set recording status
      * POST /api/groups/:groupId/recording
      */
-    api.post('/api/groups/:groupId/recording', async (context, request) => {
+    api.post('/api/groups/:groupId/recording', async(context, request) => {
         const {groupId} = request.params
         const {recording, recordingId} = request.data
 
@@ -49,7 +49,7 @@ export const registerGroupsWebSocket = (wsManager: WebSocketServerManager) => {
      * Update group configuration
      * POST /api/groups/:groupId/config
      */
-    api.post('/api/groups/:groupId/config', async (context, request) => {
+    api.post('/api/groups/:groupId/config', async(context, request) => {
         const {groupId} = request.params
         const {config} = request.data
 
@@ -66,7 +66,7 @@ export const registerGroupsWebSocket = (wsManager: WebSocketServerManager) => {
      * Notify group created or deleted
      * POST /api/groups/update
      */
-    api.post('/api/groups/update', async (context, request) => {
+    api.post('/api/groups/update', async(context, request) => {
         const {action, group, groupId} = request.data
 
         // Broadcast group update to all clients
@@ -84,7 +84,7 @@ export const registerGroupsWebSocket = (wsManager: WebSocketServerManager) => {
      * Operator action (kick, mute, permissions)
      * POST /api/groups/:groupId/op-action
      */
-    api.post('/api/groups/:groupId/op-action', async (context, request) => {
+    api.post('/api/groups/:groupId/op-action', async(context, request) => {
         const {groupId} = request.params
         const {action, actionData, targetUserId} = request.data
 

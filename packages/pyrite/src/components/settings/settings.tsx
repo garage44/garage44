@@ -1,7 +1,7 @@
 import {useMemo} from 'preact/hooks'
 import {getCurrentUrl} from 'preact-router'
 import {$s} from '@/app'
-import {$t, logger, store, notifier} from '@garage44/common/app'
+import {$t} from '@garage44/common/app'
 import {Settings as CommonSettings} from '@garage44/common/components/ui/settings/settings'
 import {Profile} from '@garage44/common/components/ui/settings/tabs/profile'
 import {UsersManagement} from '@garage44/common/components'
@@ -20,25 +20,30 @@ export default function Settings({tabId}: SettingsProps) {
         const url = getCurrentUrl()
         // If URL is /settings/users/new or /settings/users/:userId, show users tab
         if (url.startsWith('/settings/users')) {
-return 'users'
-}
+            return 'users'
+        }
         return undefined
     }, [tabId])
-    const settingsRoute = useMemo(() => {if ($s.sfu.channel.connected) {
-return `/groups/${$s.sfu.channel.name}/settings`
-} else {
-return '/settings'
-}}, [$s.sfu.channel.connected, $s.sfu.channel.name])
+    const settingsRoute = useMemo(() => {
+        if ($s.sfu.channel.connected) {
+            return `/groups/${$s.sfu.channel.name}/settings`
+        } else {
+            return '/settings'
+        }
+    }, [$s.sfu.channel.connected, $s.sfu.channel.name])
 
-    const saveSettings = async () => {
-        logger.debug(`settings language to ${$s.language.id}`)
-        store.save()
-        notifier.notify({icon: 'Settings', level: 'info', message: $t('ui.settings.action.saved')})
-    }
+    /*
+     * saveSettings is kept for potential future use
+     * const saveSettings = async() => {
+     *     logger.debug(`settings language to ${$s.language.id}`)
+     *     store.save()
+     *     notifier.notify({icon: 'Settings', level: 'info', message: $t('ui.settings.action.saved')})
+     * }
+     */
 
     const getRoute = (tabId: string) => {
-return `${settingsRoute}/${tabId}`
-}
+        return `${settingsRoute}/${tabId}`
+    }
 
     // Determine if user settings should be shown (admin only)
     const showUserSettings = $s.admin.authenticated && $s.admin.permission
@@ -51,15 +56,17 @@ return `${settingsRoute}/${tabId}`
             label: $t('ui.settings.profile.name') || 'Profile',
             tip: $t('ui.settings.profile.name') || 'Profile',
         },
-        ...(showUserSettings ? [
-            {
-                component: <UsersManagement $t={$t} />,
-                icon: 'user',
-                id: 'users',
-                label: $t('ui.settings.users.name') || 'Users',
-                tip: $t('ui.settings.users.name') || 'Users',
-            },
-        ] : []),
+        ...showUserSettings ?
+                [
+                    {
+                        component: <UsersManagement $t={$t} />,
+                        icon: 'user',
+                        id: 'users',
+                        label: $t('ui.settings.users.name') || 'Users',
+                        tip: $t('ui.settings.users.name') || 'Users',
+                    },
+                ] :
+                [],
         {
             component: <TabChannels />,
             icon: 'chat',
@@ -85,13 +92,13 @@ return `${settingsRoute}/${tabId}`
 
     return (
         <CommonSettings
-            title={$t('ui.settings.name')}
-            icon='settings'
-            tabs={tabs}
             activeTabId={activeTabId}
             defaultTab='profile'
             getRoute={getRoute}
+            icon='settings'
             showSave={false}
+            tabs={tabs}
+            title={$t('ui.settings.name')}
         />
     )
 }

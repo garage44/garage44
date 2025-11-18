@@ -17,13 +17,13 @@ interface Recording {
 export default function Recordings({groupId}: RecordingsProps) {
     const [recordings, setRecordings] = useState<Recording[]>([])
 
-    const loadRecordings = async (group: string) => {
+    const loadRecordings = async(group: string) => {
         if (!group) return
         const data = await api.get(`/api/recordings/${group}`)
         setRecordings(data || [])
     }
 
-    const deleteRecording = async (rec: Recording) => {
+    const deleteRecording = async(rec: Recording) => {
         if (!groupId) return
         await api.get(`/api/recordings/${groupId}/${rec.filename}.${rec.extension}/delete`)
         notifier.notify({
@@ -34,9 +34,11 @@ export default function Recordings({groupId}: RecordingsProps) {
         loadRecordings(groupId)
     }
 
-    useEffect(() => {if (groupId) {
-loadRecordings(groupId)
-}}, [groupId])
+    useEffect(() => {
+        if (groupId) {
+            loadRecordings(groupId)
+        }
+    }, [groupId])
 
     if (!recordings.length) {
         return (
@@ -49,8 +51,7 @@ loadRecordings(groupId)
 
     return (
         <section class='c-admin-recordings tab-content active'>
-            {recordings.map((rec) => (
-                <div key={`${rec.filename}.${rec.extension}`} class='recording'>
+            {recordings.map((rec) => <div class='recording' key={`${rec.filename}.${rec.extension}`}>
                     <div class='actions'>
                         <button
                             class='btn btn-menu btn-small'
@@ -110,8 +111,7 @@ MB
                             </div>
                         </div>
                     </div>
-                </div>
-            ))}
+            </div>)}
         </section>
     )
 }

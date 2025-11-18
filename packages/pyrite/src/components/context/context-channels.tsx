@@ -9,7 +9,9 @@ import {Icon} from '@garage44/common/components'
 import type {Channel} from '../../types.ts'
 
 // Helper function outside component to avoid recreation
-const channelLink = (channelSlug: string) => {return `/channels/${channelSlug}`}
+const channelLink = (channelSlug: string) => {
+    return `/channels/${channelSlug}`
+}
 
 export default function ChannelsContext() {
     const intervalRef = useRef<number | null>(null)
@@ -20,7 +22,7 @@ export default function ChannelsContext() {
         return $s.channels.find((c) => c.slug === $s.chat.activeChannelSlug)
     }, [])
 
-    const pollChannels = async () => {
+    const pollChannels = async() => {
         try {
             const response = await ws.get('/channels')
             if (response.success) {
@@ -28,10 +30,14 @@ export default function ChannelsContext() {
                 // Load all users globally after channels are loaded
                 await loadGlobalUsers()
             }
-        } catch (error) {logger.error('[ChannelsContext] Error polling channels:', error)}
+        } catch(error) {
+            logger.error('[ChannelsContext] Error polling channels:', error)
+        }
     }
 
-    const setAutofocus = () => {$s.login.autofocus = true}
+    const setAutofocus = () => {
+        $s.login.autofocus = true
+    }
 
     const updateRoute = () => {
         $s.login.autofocus = false
@@ -41,22 +47,28 @@ export default function ChannelsContext() {
 
         // Don't redirect if we're on a protected route (settings, login, etc.)
         const protectedRoutes = ['/settings']
-        if (protectedRoutes.some((route) => currentPath.startsWith(route))) {return}
+        if (protectedRoutes.some((route) => currentPath.startsWith(route))) {
+            return
+        }
 
         if ($s.chat.activeChannelSlug) {
             // Update the channel route when the user sets the active channel
             route(`/channels/${$s.chat.activeChannelSlug}`, true)
         } else if (currentPath === '/' || currentPath.startsWith('/channels/')) {
-            // Only redirect to home if we're already on home or a channel route
-            // This prevents redirecting away from /settings or other routes
+            /*
+             * Only redirect to home if we're already on home or a channel route
+             * This prevents redirecting away from /settings or other routes
+             */
             route('/', true)
         }
     }
 
     // Watch active channel changes - but only update route when channel changes, not on initial mount
     useEffect(() => {
-        // Don't call updateRoute on mount - let the router handle the current URL
-        // Only update route when activeChannelSlug actually changes
+        /*
+         * Don't call updateRoute on mount - let the router handle the current URL
+         * Only update route when activeChannelSlug actually changes
+         */
         if ($s.chat.activeChannelSlug !== null && $s.chat.activeChannelSlug !== undefined) {
             logger.debug(`updating channel route: ${$s.chat.activeChannelSlug}`)
             updateRoute()
@@ -69,8 +81,10 @@ export default function ChannelsContext() {
         pollChannels()
 
         return () => {
-if (intervalRef.current !== null) {clearInterval(intervalRef.current)}
-}
+            if (intervalRef.current !== null) {
+                clearInterval(intervalRef.current)
+            }
+        }
     }, [])
 
     return (
@@ -88,12 +102,12 @@ if (intervalRef.current !== null) {clearInterval(intervalRef.current)}
 
                         return (
                             <Link
-                                key={channel.id}
                                 class={classnames('channel item', {
                                     active: currentChannel?.slug === channel.slug,
                                     'has-unread': hasUnread,
                                 })}
                                 href={channelLink(channel.slug)}
+                                key={channel.id}
                                 onClick={() => {
                                     $s.chat.activeChannelSlug = channel.slug
                                     setAutofocus()
@@ -105,23 +119,21 @@ if (intervalRef.current !== null) {clearInterval(intervalRef.current)}
                                         #
 {channel.name}
                                     </div>
-                                    {channel.description && (
+                                    {channel.description &&
                                         <div class='item-properties'>
                                             {channel.description}
-                                        </div>
-                                    )}
+                                        </div>}
                                 </div>
                             </Link>
                         )
                     })}
 
-                    {!$s.channels.length && (
+                    {!$s.channels.length &&
                         <div class='channel item no-presence'>
                             <div class='name'>
                                 {$t('channel.no_channels')}
                             </div>
-                        </div>
-                    )}
+                        </div>}
                 </div>
             </div>
 
@@ -139,7 +151,9 @@ if (intervalRef.current !== null) {clearInterval(intervalRef.current)}
                         const seenIds = new Set<string>()
                         const uniqueUsers = chatUsers.filter(([userId, _userInfo]) => {
                             const idStr = String(userId)
-                            if (seenIds.has(idStr)) {return false}
+                            if (seenIds.has(idStr)) {
+                                return false
+                            }
                             seenIds.add(idStr)
                             return true
                         })
@@ -159,19 +173,18 @@ if (intervalRef.current !== null) {clearInterval(intervalRef.current)}
                             const statusClass = status === 'online' ? 'online' : status === 'busy' ? 'busy' : 'offline'
 
                             return (
-<div key={String(userId)} class='person item'>
+<div class='person item' key={String(userId)}>
                                 <span class={`status-indicator ${statusClass}`} />
-                                <img src={avatarUrl} alt={userInfo.username} class='person-avatar' />
+                                <img alt={userInfo.username} class='person-avatar' src={avatarUrl} />
                                 <span class='person-name'>
                                     {userInfo.username || $t('user.anonymous')}
-                                    {isCurrentUser && (
+                                    {isCurrentUser &&
                                         <span class='you-label'>
 {' '}
 (
 {$t('user.you')}
 )
-                                        </span>
-                                    )}
+                                        </span>}
                                 </span>
 </div>
                             )

@@ -9,7 +9,7 @@ export function registerGroupsWebSocketApiRoutes(wsManager: WebSocketServerManag
     const apiWs = wsManager.api
 
     // WebSocket API for group state synchronization
-    apiWs.post('/api/groups/:groupid/sync', async (context, request) => {
+    apiWs.post('/api/groups/:groupid/sync', async(context, request) => {
         const {groupid} = request.params
         const {state} = request.data
 
@@ -24,29 +24,34 @@ export function registerGroupsWebSocketApiRoutes(wsManager: WebSocketServerManag
 }
 
 export default function(router: unknown) {
-    const routerTyped = router as {get: (path: string, handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>) => void}
+    const routerTyped = router as {
+        get: (
+            path: string,
+            handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
+        ) => void
+    }
 
-    routerTyped.get('/api/groups', async (_req: Request, _params: Record<string, string>, _session: unknown) => {
+    routerTyped.get('/api/groups', async(_req: Request, _params: Record<string, string>, _session: unknown) => {
         const {groupsData} = await loadGroups()
         return new Response(JSON.stringify(groupsData), {
             headers: {'Content-Type': 'application/json'},
         })
     })
 
-    routerTyped.get('/api/groups/public', async (_req: Request, _params: Record<string, string>, _session: unknown) => {
+    routerTyped.get('/api/groups/public', async(_req: Request, _params: Record<string, string>, _session: unknown) => {
         const {groupsData} = await loadGroups(true)
         return new Response(JSON.stringify(groupsData), {
             headers: {'Content-Type': 'application/json'},
         })
     })
 
-    routerTyped.get('/api/groups/template', async (_req: Request, _params: Record<string, string>, _session: unknown) => {
+    routerTyped.get('/api/groups/template', async(_req: Request, _params: Record<string, string>, _session: unknown) => {
         return new Response(JSON.stringify(groupTemplate()), {
             headers: {'Content-Type': 'application/json'},
         })
     })
 
-    routerTyped.get('/api/groups/:groupid', async (_req: Request, params: Record<string, string>, _session: unknown) => {
+    routerTyped.get('/api/groups/:groupid', async(_req: Request, params: Record<string, string>, _session: unknown) => {
         const groupId = params.param0
         // Basic path traversal protection
         if (groupId.match(/\.\.\//g) !== null) {
@@ -68,7 +73,7 @@ export default function(router: unknown) {
         })
     })
 
-    routerTyped.post('/api/groups/:groupid', async (req: Request, params: Record<string, string>, _session: unknown) => {
+    routerTyped.post('/api/groups/:groupid', async(req: Request, params: Record<string, string>, _session: unknown) => {
         const body = await req.json()
         const {data, groupId} = await saveGroup(params.param0, body)
         await syncGroup(groupId, data)
@@ -82,7 +87,7 @@ export default function(router: unknown) {
         })
     })
 
-    routerTyped.get('/api/groups/:groupid/delete', async (_req: Request, params: Record<string, string>, _session: unknown) => {
+    routerTyped.get('/api/groups/:groupid/delete', async(_req: Request, params: Record<string, string>, _session: unknown) => {
         const groupId = params.param0
         const groupFile = path.join(config.sfu.path, 'groups', `${groupId}.json`)
         await fs.remove(groupFile)

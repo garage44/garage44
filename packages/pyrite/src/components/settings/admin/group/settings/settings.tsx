@@ -16,9 +16,11 @@ interface SettingsProps {
 }
 
 export default function Settings({groupId, path, tabId = 'misc'}: SettingsProps) {
-    const routeSettings = (tab: string) => {return `/settings/groups/${groupId}?tab=${tab}`}
+    const routeSettings = (tab: string) => {
+        return `/settings/groups/${groupId}?tab=${tab}`
+    }
 
-    const saveGroupAction = async () => {
+    const saveGroupAction = async() => {
         if (groupId) {
             const group = await saveGroup(groupId, $s.admin.group)
             route(`/settings/groups/${group._name}?tab=${tabId}`)
@@ -79,13 +81,12 @@ export default function Settings({groupId, path, tabId = 'misc'}: SettingsProps)
                 {tabId === 'stats' && <Stats groupId={groupId} />}
                 {tabId === 'recordings' && <Recordings groupId={groupId} />}
 
-                {path?.includes('/settings/groups') && (
+                {path?.includes('/settings/groups') &&
                     <div class='actions'>
                         <button class='btn btn-menu btn-save' onClick={saveGroupAction}>
                             <Icon class='icon-d' name='save' />
                         </button>
-                    </div>
-                )}
+                    </div>}
             </div>
         </div>
     )

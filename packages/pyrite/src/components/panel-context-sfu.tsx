@@ -10,7 +10,6 @@ export function PanelContextSfu() {
 <PanelContext
     className='c-panel-context-conference'
     collapsed={$s.panels.context.collapsed}
-    width={$s.panels.context.width}
     defaultWidth={200}
     minWidth={64}
     onCollapseChange={(collapsed) => {
@@ -25,6 +24,7 @@ export function PanelContextSfu() {
             store.save()
         }
     }}
+    width={$s.panels.context.width}
 >
         <ControlsMain key='controls' />
         {$s.env.url.includes('/devices') ? <DeviceSettings key='devices' /> : <VideoStrip key='video' />}

@@ -18,7 +18,9 @@ export default function TabMisc() {
         const themeColor = getComputedStyle(document.querySelector('.app')!).getPropertyValue('--surface-3')
         logger.info(`setting theme color to ${themeColor} for theme ${currentTheme}`)
         const metaTheme = document.querySelector('meta[name="theme-color"]')
-        if (metaTheme) {(metaTheme as HTMLMetaElement).content = themeColor}
+        if (metaTheme) {
+            (metaTheme as HTMLMetaElement).content = themeColor
+        }
     }, [])
 
     return (
@@ -32,9 +34,9 @@ export default function TabMisc() {
             </div>
 
             <FieldSelect
-                model={$s.language.$id}
                 help={$t('ui.settings.misc.language_help')}
                 label={$t('ui.settings.misc.language_label')}
+                model={$s.language.$id}
                 options={languages}
             />
         </section>

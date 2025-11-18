@@ -6,9 +6,9 @@ import {$s} from '@/app'
 export default function TabPermissions() {
     const categories = ['op', 'presenter', 'other']
 
-    const loadGroups = async () => {
-$s.admin.groups = await api.get('/api/groups')
-}
+    const loadGroups = async() => {
+        $s.admin.groups = await api.get('/api/groups')
+    }
 
     const toggleCategory = (category: string) => {
         const allSelected = !$s.admin.groups.some((i) => !$s.admin.user._permissions?.[category]?.includes(i.name))
@@ -30,40 +30,44 @@ $s.admin.groups = await api.get('/api/groups')
                 if (!$s.admin.user._permissions[category]) $s.admin.user._permissions[category] = []
                 const groupIndex = $s.admin.user._permissions[category].indexOf(groupname)
                 if (groupIndex > -1) {
-$s.admin.user._permissions[category].splice(groupIndex, 1)
-}
+                    $s.admin.user._permissions[category].splice(groupIndex, 1)
+                }
             }
         } else {
             for (const category of categories) {
                 if (!$s.admin.user._permissions[category]) $s.admin.user._permissions[category] = []
                 if (!$s.admin.user._permissions[category].includes(groupname)) {
-$s.admin.user._permissions[category].push(groupname)
-}
+                    $s.admin.user._permissions[category].push(groupname)
+                }
             }
         }
     }
 
     const isChecked = (category: string, groupname: string) => {
-return $s.admin.user._permissions?.[category]?.includes(groupname) || false
-}
+        return $s.admin.user._permissions?.[category]?.includes(groupname) || false
+    }
 
     const handleCheckboxChange = (category: string, groupname: string, checked: boolean) => {
         if (!$s.admin.user._permissions) $s.admin.user._permissions = {}
         if (!$s.admin.user._permissions[category]) $s.admin.user._permissions[category] = []
 
-        if (checked) {if (!$s.admin.user._permissions[category].includes(groupname)) {
-$s.admin.user._permissions[category].push(groupname)
-}} else {
+        if (checked) {
+            if (!$s.admin.user._permissions[category].includes(groupname)) {
+                $s.admin.user._permissions[category].push(groupname)
+            }
+        } else {
             const index = $s.admin.user._permissions[category].indexOf(groupname)
             if (index > -1) {
-$s.admin.user._permissions[category].splice(index, 1)
-}
+                $s.admin.user._permissions[category].splice(index, 1)
+            }
         }
     }
 
-    useEffect(() => {if ($s.admin.authenticated && $s.admin.permission) {
-loadGroups()
-}}, [])
+    useEffect(() => {
+        if ($s.admin.authenticated && $s.admin.permission) {
+            loadGroups()
+        }
+    }, [])
 
     return (
         <section class='c-users-settings-permissions tab-content permissions active'>
@@ -100,8 +104,7 @@ loadGroups()
                 </div>
             </div>
 
-            {$s.admin.groups.map((group) => (
-                <div key={group.name} class='permission-group item'>
+            {$s.admin.groups.map((group) => <div class='permission-group item' key={group.name}>
                     <div
                         class='group-name'
                         onClick={() => toggleGroup(group.name)}
@@ -113,18 +116,19 @@ loadGroups()
                     </div>
 
                     <div class='categories'>
-                        {categories.map((category) => (
-                            <div key={category} class='category'>
+                        {categories.map((category) => <div class='category' key={category}>
                                 <input
-                                    type='checkbox'
                                     checked={isChecked(category, group.name)}
-                                    onChange={(e) => handleCheckboxChange(category, group.name, (e.target as HTMLInputElement).checked)}
+                                    onChange={(e) => handleCheckboxChange(
+                                        category,
+                                        group.name,
+                                        (e.target as HTMLInputElement).checked,
+                                    )}
+                                    type='checkbox'
                                 />
-                            </div>
-                        ))}
+                        </div>)}
                     </div>
-                </div>
-            ))}
+            </div>)}
         </section>
     )
 }

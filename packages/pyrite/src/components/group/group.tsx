@@ -26,8 +26,8 @@ export const Group = () => {
     // Computed: streamsCount and streamsPlayingCount
     const streamsCount = $s.streams.length
     const streamsPlayingCount = useMemo(() => {
-return $s.streams.filter((s) => s.playing).length
-}, [$s.streams])
+        return $s.streams.filter((s) => s.playing).length
+    }, [$s.streams])
 
     /**
      * Optimal space algorithm from Anton Dosov:
@@ -40,7 +40,8 @@ return $s.streams.filter((s) => s.playing).length
         const containerWidth = viewRef.current.offsetWidth
         const containerHeight = viewRef.current.offsetHeight
         let layout = {area: 0, cols: 0, height: 0, rows: 0, width: 0}
-        let height, width
+        let height,
+            width
 
         for (let cols = 1; cols <= $s.streams.length; cols++) {
             const rows = Math.ceil($s.streams.length / cols)
@@ -58,8 +59,8 @@ return $s.streams.filter((s) => s.playing).length
 
             const area = width * height
             if (area > layout.area) {
-layout = {area, cols, height, rows, width}
-}
+                layout = {area, cols, height, rows, width}
+            }
         }
 
         viewRef.current.style.setProperty('--stream-width', `${layout.width}px`)
@@ -67,19 +68,21 @@ layout = {area, cols, height, rows, width}
 
     // Watch streamsCount and streamsPlayingCount
     useEffect(() => {
-requestAnimationFrame(calcLayout)
-}, [streamsCount, streamsPlayingCount, calcLayout])
+        requestAnimationFrame(calcLayout)
+    }, [streamsCount, streamsPlayingCount, calcLayout])
 
     // Auto-connect logic
     useEffect(() => {
-        const attemptAutoConnect = async () => {
+        const attemptAutoConnect = async() => {
             if ($s.sfu.channel.connected) {
-return // Already connected
+                // Already connected
+                return
             }
 
             const group = currentGroup()
             if (!group) {
-return // No group data
+                // No group data
+                return
             }
 
             try {
@@ -98,7 +101,7 @@ return // No group data
                     })
                     return
                 }
-            } catch (err) {
+            } catch(err) {
                 // Connection failed - could be auth error or network error
                 notifier.notify({
                     level: 'error',
@@ -115,8 +118,8 @@ return // No group data
     const handleStreamUpdate = useCallback((updatedStream: {id: string}) => {
         const streamIndex = $s.streams.findIndex((s) => s.id === updatedStream.id)
         if (streamIndex !== -1) {
-Object.assign($s.streams[streamIndex], updatedStream)
-}
+            Object.assign($s.streams[streamIndex], updatedStream)
+        }
     }, [])
 
     // Setup and cleanup
@@ -126,8 +129,8 @@ Object.assign($s.streams[streamIndex], updatedStream)
         viewRef.current.style.setProperty('--stream-margin', `${margin}px`)
 
         resizeObserverRef.current = new ResizeObserver(() => {
-requestAnimationFrame(calcLayout)
-})
+            requestAnimationFrame(calcLayout)
+        })
 
         requestAnimationFrame(calcLayout)
         resizeObserverRef.current.observe(viewRef.current)
@@ -136,22 +139,25 @@ requestAnimationFrame(calcLayout)
         $s.chat.channel = 'main'
 
         // Cleanup
-        return () => {if (resizeObserverRef.current) {
-resizeObserverRef.current.disconnect()
-}}
+        return () => {
+            if (resizeObserverRef.current) {
+                resizeObserverRef.current.disconnect()
+            }
+        }
     }, [calcLayout])
 
     return (
-        <div ref={viewRef} class='c-group'>
-            {sortedStreams.map((description, index) => (
-                <Stream key={description.id || index} modelValue={sortedStreams[index]} onUpdate={handleStreamUpdate} />
-            ))}
+        <div class='c-group' ref={viewRef}>
+            {sortedStreams.map((description, index) => <Stream
+                key={description.id || index}
+                modelValue={sortedStreams[index]}
+                onUpdate={handleStreamUpdate}
+            />)}
 
-            {!$s.streams.length && (
-                <svg class='icon logo-animated' viewBox='0 0 24 24' height='40' width='40'>
+            {!$s.streams.length &&
+                <svg class='icon logo-animated' height='40' viewBox='0 0 24 24' width='40'>
                     <IconLogo />
-                </svg>
-            )}
+                </svg>}
         </div>
     )
 }

@@ -17,51 +17,51 @@ export default function TabMisc() {
     return (
         <section class='c-admin-group-tab-misc tab-content active'>
             <FieldText
-                value={$s.admin.group._newName}
-                onChange={(value) => $s.admin.group._newName = value}
                 help={$t('group.settings.misc.name_help')}
                 label={$t('group.settings.misc.name_label')}
+                onChange={(value) => $s.admin.group._newName = value}
                 placeholder='...'
+                value={$s.admin.group._newName}
             />
             <FieldText
-                value={$s.admin.group.description}
-                onChange={(value) => $s.admin.group.description = value}
                 help={$t('group.settings.misc.description_help')}
                 label={$t('group.settings.misc.description_label')}
+                onChange={(value) => $s.admin.group.description = value}
                 placeholder='...'
+                value={$s.admin.group.description}
             />
             <FieldText
-                value={$s.admin.group.contact}
-                onChange={(value) => $s.admin.group.contact = value}
                 help={$t('group.settings.misc.contact_help')}
                 label={$t('group.settings.misc.contact_label')}
+                onChange={(value) => $s.admin.group.contact = value}
                 placeholder='...'
+                value={$s.admin.group.contact}
             />
             <FieldText
-                value={$s.admin.group.comment}
-                onChange={(value) => $s.admin.group.comment = value}
                 help={$t('group.settings.misc.comment_help')}
                 label={$t('group.settings.misc.comment_label')}
+                onChange={(value) => $s.admin.group.comment = value}
                 placeholder='...'
+                value={$s.admin.group.comment}
             />
             <FieldCheckbox
-                value={$s.admin.group['allow-recording']}
-                onChange={(value) => $s.admin.group['allow-recording'] = value}
                 help={$t('group.settings.misc.recording_help')}
                 label={$t('group.settings.misc.recording_label')}
+                onChange={(value) => $s.admin.group['allow-recording'] = value}
+                value={$s.admin.group['allow-recording']}
             />
             <FieldMultiSelect
-                value={$s.admin.group.codecs}
-                onChange={(value) => $s.admin.group.codecs = value}
                 help={$t('group.settings.misc.codec_help')}
                 label={$t('group.settings.misc.codec_label')}
+                onChange={(value) => $s.admin.group.codecs = value}
                 options={codecs}
+                value={$s.admin.group.codecs}
             />
             <FieldNumber
-                value={$s.admin.group['max-history-age']}
-                onChange={(value) => $s.admin.group['max-history-age'] = value}
                 help={$t('group.settings.misc.chat_history_help')}
                 label={$t('group.settings.misc.chat_history_label')}
+                onChange={(value) => $s.admin.group['max-history-age'] = value}
+                value={$s.admin.group['max-history-age']}
             />
         </section>
     )

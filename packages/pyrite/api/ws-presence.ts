@@ -6,8 +6,9 @@
 
 import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 
+// groupId -> Set of userIds
 interface PresenceState {
-    groups: Map<string, Set<string>> // groupId -> Set of userIds
+    groups: Map<string, Set<string>>
     users: Map<string, {
         connected: Date
         groupId: string | null
@@ -28,12 +29,14 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
      * User joins a group
      * POST /api/presence/:groupId/join
      */
-    api.post('/api/presence/:groupId/join', async (context, request) => {
+    api.post('/api/presence/:groupId/join', async(context, request) => {
         const {groupId} = request.params
         const {userId, username} = request.data
 
         // Add user to group
-        if (!state.groups.has(groupId)) {state.groups.set(groupId, new Set())}
+        if (!state.groups.has(groupId)) {
+            state.groups.set(groupId, new Set())
+        }
         state.groups.get(groupId)!.add(userId)
 
         // Update user state
@@ -67,7 +70,7 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
      * User leaves a group
      * POST /api/presence/:groupId/leave
      */
-    api.post('/api/presence/:groupId/leave', async (context, request) => {
+    api.post('/api/presence/:groupId/leave', async(context, request) => {
         const {groupId} = request.params
         const {userId} = request.data
 
@@ -75,12 +78,16 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
         const group = state.groups.get(groupId)
         if (group) {
             group.delete(userId)
-            if (group.size === 0) {state.groups.delete(groupId)}
+            if (group.size === 0) {
+                state.groups.delete(groupId)
+            }
         }
 
         // Update user state
         const user = state.users.get(userId)
-        if (user) {user.groupId = null}
+        if (user) {
+            user.groupId = null
+        }
 
         // Broadcast to all clients
         wsManager.broadcast(`/presence/${groupId}/leave`, {
@@ -96,7 +103,7 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
      * Get current presence for a group
      * GET /api/presence/:groupId/members
      */
-    api.get('/api/presence/:groupId/members', async (context, request) => {
+    api.get('/api/presence/:groupId/members', async(context, request) => {
         const {groupId} = request.params
 
         const members = Array.from(state.groups.get(groupId) || [])
@@ -113,8 +120,8 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
      * Get all online users (presence status)
      * GET /api/presence/users
      */
-    api.get('/api/presence/users', async (_context, _request) => {
-        // Return all users with their presence status
+    // Return all users with their presence status
+    api.get('/api/presence/users', async(_context, _request) => {
         const onlineUsers: Record<string, 'online' | 'offline' | 'busy'> = {}
 
         // All users in presence state are online
@@ -133,7 +140,7 @@ export const registerPresenceWebSocket = (wsManager: WebSocketServerManager) => 
      * Update user status (availability, mic state, etc.)
      * POST /api/presence/:groupId/status
      */
-    api.post('/api/presence/:groupId/status', async (context, request) => {
+    api.post('/api/presence/:groupId/status', async(context, request) => {
         const {groupId} = request.params
         const {status, userId} = request.data
 

@@ -16,11 +16,19 @@ store.load(persistantState, volatileState)
 initWebSocketSubscriptions()
 
 const app = new App()
-app.init(Main, render, h, i18nFormat(workspace.i18n, workspace.config.languages.target), {enableBunchy: process.env.NODE_ENV !== 'production'})
+app.init(
+    Main,
+    render,
+    h,
+    i18nFormat(workspace.i18n, workspace.config.languages.target),
+    {enableBunchy: process.env.NODE_ENV !== 'production'},
+)
 
-// Export typed i18n object for type-safe translation references
-// The type is inferred from the workspace JSON structure
-// This is the i18n for the Pyrite UI itself
+/*
+ * Export typed i18n object for type-safe translation references
+ * The type is inferred from the workspace JSON structure
+ * This is the i18n for the Pyrite UI itself
+ */
 const i18n = createTypedI18n(workspace)
 
 export {$s, app, i18n, store}

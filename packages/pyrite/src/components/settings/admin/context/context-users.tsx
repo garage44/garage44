@@ -14,8 +14,8 @@ interface ContextUsersProps {
 
 export default function ContextUsers({path: _path, userId}: ContextUsersProps) {
     const deletionUsers = useMemo(() => {
-return $s.admin.users.filter((i) => i._delete)
-}, [$s.admin.users])
+        return $s.admin.users.filter((i) => i._delete)
+    }, [$s.admin.users])
 
     const orderedUsers = useMemo(() => {
         const users = $s.admin.users
@@ -27,20 +27,20 @@ return $s.admin.users.filter((i) => i._delete)
         })
     }, [$s.admin.users])
 
-    const addUser = async () => {
+    const addUser = async() => {
         const user = await api.get('/api/users/template')
         $s.admin.users.push(user)
         toggleSelection(user.id)
     }
 
-    const deleteUsers = async () => {
+    const deleteUsers = async() => {
         notifier.notify({level: 'info', message: `deleting ${deletionUsers.length} users`})
         const deleteRequests = []
         for (const user of deletionUsers) {
             $s.admin.users.splice($s.admin.users.findIndex((i) => i.id === user.id), 1)
             if (!user._unsaved) {
-deleteRequests.push(fetch(`/api/users/${user.id}/delete`))
-}
+                deleteRequests.push(fetch(`/api/users/${user.id}/delete`))
+            }
         }
 
         await Promise.all(deleteRequests)
@@ -51,53 +51,61 @@ deleteRequests.push(fetch(`/api/users/${user.id}/delete`))
         }
     }
 
-    const loadUsers = async () => {
-$s.admin.users = await api.get('/api/users')
-}
+    const loadUsers = async() => {
+        $s.admin.users = await api.get('/api/users')
+    }
 
-    const saveUserAction = async () => {
+    const saveUserAction = async() => {
         if (!$s.admin.user) return
         await saveUser($s.admin.user.id, $s.admin.user)
         // Select the next unsaved user, when this user was unsaved to allow rapid user creation.
         if ($s.admin.user._unsaved) {
             const nextUnsavedUserIndex = orderedUsers.findIndex((i) => i._unsaved)
             if (nextUnsavedUserIndex >= 0) {
-toggleSelection(orderedUsers[nextUnsavedUserIndex].id)
-}
+                toggleSelection(orderedUsers[nextUnsavedUserIndex].id)
+            }
         }
     }
 
-    const toggleMarkDelete = async () => {
+    const toggleMarkDelete = async() => {
         if (!$s.admin.user) return
         $s.admin.user._delete = !$s.admin.user._delete
-        for (let user of $s.admin.users) {if (user.name == $s.admin.user.name) {
-user._delete = $s.admin.user._delete
-}}
+        for (let user of $s.admin.users) {
+            if (user.name == $s.admin.user.name) {
+                user._delete = $s.admin.user._delete
+            }
+        }
 
         const similarStateUsers = orderedUsers.filter((i) => i._delete !== $s.admin.user?._delete)
         if (similarStateUsers.length) {
-toggleSelection(similarStateUsers[0].id)
-}
+            toggleSelection(similarStateUsers[0].id)
+        }
     }
 
     const toggleSelection = (userId: number) => {
-route(`/admin/users/${userId}/misc`)
-}
+        route(`/admin/users/${userId}/misc`)
+    }
 
-    const userLink = (userId: number) => {if ($s.admin.user && $s.admin.user.id == userId) {
-return '/settings/users'
-} else {
-return `/settings/users/${userId}/misc`
-}}
+    const userLink = (userId: number) => {
+        if ($s.admin.user && $s.admin.user.id == userId) {
+            return '/settings/users'
+        } else {
+            return `/settings/users/${userId}/misc`
+        }
+    }
 
-    useEffect(() => {if ($s.admin.authenticated && $s.admin.permission) {
-loadUsers()
-}}, [])
+    useEffect(() => {
+        if ($s.admin.authenticated && $s.admin.permission) {
+            loadUsers()
+        }
+    }, [])
 
     // Watch for admin authentication changes
-    useEffect(() => {if ($s.admin.authenticated && $s.admin.permission) {
-loadUsers()
-}}, [$s.admin.authenticated])
+    useEffect(() => {
+        if ($s.admin.authenticated && $s.admin.permission) {
+            loadUsers()
+        }
+    }, [$s.admin.authenticated])
 
     return (
         <section class={classnames('c-admin-users-context presence', {
@@ -128,14 +136,13 @@ loadUsers()
                     <Icon class='icon-d' name='save' />
                 </button>
             </div>
-            {orderedUsers.map((user) => (
-                <Link
-                    key={user.id}
-                    class={classnames('user item', {
-                        active: parseInt(userId || '0') === user.id,
-                    })}
-                    href={userLink(user.id)}
-                >
+            {orderedUsers.map((user) => <Link
+                class={classnames('user item', {
+                    active: parseInt(userId || '0') === user.id,
+                })}
+                href={userLink(user.id)}
+                key={user.id}
+            >
                     <Icon
                         class={classnames('item-icon icon-d', {delete: user._delete, unsaved: user._unsaved})}
                         name={user._delete ? 'Trash' : 'User'}
@@ -144,8 +151,7 @@ loadUsers()
                     <div class='name'>
                         {user.name}
                     </div>
-                </Link>
-            ))}
+            </Link>)}
         </section>
     )
 }

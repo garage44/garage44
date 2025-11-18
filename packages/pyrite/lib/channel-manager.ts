@@ -32,7 +32,9 @@ export interface ChannelMember {
 export class ChannelManager {
     private db: Database
 
-    constructor(database: Database) {this.db = database}
+    constructor(database: Database) {
+        this.db = database
+    }
 
     /**
      * Create a new channel
@@ -265,12 +267,16 @@ export class ChannelManager {
     /**
      * Check if user can access channel (is member)
      */
-    canAccessChannel(channelId: number, userId: string): boolean {return this.isMember(channelId, userId)}
+    canAccessChannel(channelId: number, userId: string): boolean {
+        return this.isMember(channelId, userId)
+    }
 
     /**
      * Get channels that need Galene group sync
      */
-    async getChannelsForGaleneSync(): Promise<Channel[]> {return await this.listChannels()}
+    async getChannelsForGaleneSync(): Promise<Channel[]> {
+        return await this.listChannels()
+    }
 
     /**
      * Sync a single channel to Galene group file
@@ -278,7 +284,8 @@ export class ChannelManager {
      */
     async syncChannelToGalene(channel: Channel): Promise<boolean> {
         try {
-            const groupName = channel.slug // Channel slug directly matches Galene group name (1:1 mapping)
+            // Channel slug directly matches Galene group name (1:1 mapping)
+            const groupName = channel.slug
 
             // Check if SFU path is configured
             if (!config.sfu.path) {
@@ -295,10 +302,14 @@ export class ChannelManager {
             let groupData
             if (existingGroup) {
                 // Group file exists - update it with channel info
-                logger.info(`[ChannelManager] Updating existing Galene group file for channel "${channel.name}" (slug: ${groupName})`)
+                logger.info(
+                    `[ChannelManager] Updating existing Galene group file for channel "${channel.name}" (slug: ${groupName})`,
+                )
                 groupData = existingGroup
                 // Ensure _name is set (required by saveGroup)
-                if (!groupData._name) {groupData._name = groupName}
+                if (!groupData._name) {
+                    groupData._name = groupName
+                }
                 groupData.displayName = channel.name
                 groupData.description = channel.description || ''
             } else {
@@ -313,7 +324,7 @@ export class ChannelManager {
             await this.saveGroupNativeGalene(groupName, groupData)
             logger.info(`[ChannelManager] Successfully synced channel "${channel.name}" to Galene group "${groupName}"`)
             return true
-        } catch (error) {
+        } catch(error) {
             logger.error(`[ChannelManager] Failed to sync channel "${channel.name}" to Galene:`, error)
             // Log the actual error message for debugging
             if (error instanceof Error) {
@@ -338,12 +349,16 @@ export class ChannelManager {
 
             for (const channel of channels) {
                 const result = await this.syncChannelToGalene(channel)
-                if (result) {success++} else {failed++}
+                if (result) {
+                    success++
+                } else {
+                    failed++
+                }
             }
 
             logger.info(`[ChannelManager] Sync complete: ${success} succeeded, ${failed} failed`)
             return {failed, success}
-        } catch (error) {
+        } catch(error) {
             logger.error('[ChannelManager] Failed to sync channels to Galene:', error)
             return {failed: 0, success: 0}
         }
@@ -381,13 +396,17 @@ export class ChannelManager {
         }
 
         // Include users dictionary if it exists (required for Galene)
-        if (groupData.users && typeof groupData.users === 'object' && !Array.isArray(groupData.users)) {nativeData.users = groupData.users} else {
+        if (groupData.users && typeof groupData.users === 'object' && !Array.isArray(groupData.users)) {
+            nativeData.users = groupData.users
+        } else {
             // Ensure users dictionary exists (even if empty)
             nativeData.users = {}
         }
 
-        // Remove any Pyrite-specific fields that shouldn't be in the file
-        // (op, other, presenter arrays are for Pyrite internal use only)
+        /*
+         * Remove any Pyrite-specific fields that shouldn't be in the file
+         * (op, other, presenter arrays are for Pyrite internal use only)
+         */
 
         // Write the native Galene format file
         const groupsPath = path.join(config.sfu.path, 'groups')
@@ -408,8 +427,7 @@ export class ChannelManager {
             }
             logger.warn(`[ChannelManager] Galene group file not found: ${groupFile}`)
             return false
-
-        } catch (error) {
+        } catch(error) {
             logger.error(`[ChannelManager] Failed to delete Galene group file for slug "${slug}":`, error)
             return false
         }

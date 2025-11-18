@@ -9,19 +9,24 @@ interface ReportsProps {
 
 export const Reports = ({description, onClick}: ReportsProps) => {
     const [stats, setStats] = useState<Record<string, Record<string, string>>>({})
-    const [glnStream, setGlnStream] = useState<{onstats: (() => void) | null; pc: RTCPeerConnection; setStatsInterval: (interval: number) => void; stats?: Record<string, Record<string, unknown>>} | null>(null)
+    const [glnStream, setGlnStream] = useState<{
+        onstats: (() => void) | null
+        pc: RTCPeerConnection
+        setStatsInterval: (interval: number) => void
+        stats?: Record<string, Record<string, unknown>>
+    } | null>(null)
 
     const hasAudioStats = useMemo(() => {
         if (description.settings && description.settings.audio && Object.keys(description.settings.audio).length) {
-return true
-}
+            return true
+        }
         return false
     }, [description.settings])
 
     const hasVideoStats = useMemo(() => {
         if (description.settings && description.settings.video && Object.keys(description.settings.video).length) {
-return true
-}
+            return true
+        }
         return false
     }, [description.settings])
 
@@ -36,13 +41,15 @@ return true
                 for (const [categoryName, category] of Object.entries(streamStats)) {
                     filtered[categoryName] = {}
                     if (categoryName === 'track') {
-                        for (const [statName, stat] of Object.entries(category as Record<string, unknown>)) {if (statName === 'timestamp') {
-continue
-} else if (statName === 'totalAudioEnergy') {
-filtered[categoryName]['Total Audio Energy'] = Number(stat).toFixed(2)
-} else if (statName === 'audioEnergy') {
-filtered[categoryName]['Audio Energy'] = Number(stat).toFixed(2)
-}}
+                        for (const [statName, stat] of Object.entries(category as Record<string, unknown>)) {
+                            if (statName === 'timestamp') {
+                                continue
+                            } else if (statName === 'totalAudioEnergy') {
+                                filtered[categoryName]['Total Audio Energy'] = Number(stat).toFixed(2)
+                            } else if (statName === 'audioEnergy') {
+                                filtered[categoryName]['Audio Energy'] = Number(stat).toFixed(2)
+                            }
+                        }
                     }
                 }
                 setStats(filtered)
@@ -61,13 +68,15 @@ filtered[categoryName]['Audio Energy'] = Number(stat).toFixed(2)
                 for (const [categoryName, category] of Object.entries(streamStats)) {
                     filtered[categoryName] = {}
                     if (categoryName === 'outbound-rtp') {
-                        for (const [statName, stat] of Object.entries(category as Record<string, unknown>)) {if (statName === 'timestamp') {
-continue
-} else if (statName === 'rate') {
-filtered[categoryName]['Data Rate'] = `${Math.round((stat as number) / 1000)} Kbps`
-} else if (statName === 'bytesSent') {
-filtered[categoryName]['Streamed'] = `${Math.round((stat as number) / 1000 / 1024)} Mb`
-}}
+                        for (const [statName, stat] of Object.entries(category as Record<string, unknown>)) {
+                            if (statName === 'timestamp') {
+                                continue
+                            } else if (statName === 'rate') {
+                                filtered[categoryName]['Data Rate'] = `${Math.round((stat as number) / 1000)} Kbps`
+                            } else if (statName === 'bytesSent') {
+                                filtered[categoryName]['Streamed'] = `${Math.round((stat as number) / 1000 / 1024)} Mb`
+                            }
+                        }
                     }
                 }
 
@@ -91,72 +100,63 @@ filtered[categoryName]['Streamed'] = `${Math.round((stat as number) / 1000 / 102
         setGlnStream(stream)
         stream?.setStatsInterval(250)
 
-        return () => {if (stream) {
-stream.onstats = null
-}}
+        return () => {
+            if (stream) {
+                stream.onstats = null
+            }
+        }
     }, [description.id])
 
     return (
         <div class='c-stream-reports' onClick={onClick}>
-            {!hasAudioStats && !hasVideoStats && (
+            {!hasAudioStats && !hasVideoStats &&
                 <div class='no-stats-available'>
                     {$t('group.report.not_available')}
-                </div>
-            )}
+                </div>}
 
-            {hasVideoStats && (
+            {hasVideoStats &&
                 <div class='category'>
                     <div class='title'>
                         {$t('group.report.video')}
                     </div>
-                    {Object.entries(description.settings.video).map(([statName, stat]) => (
-                        <div key={statName} class='stat'>
+                    {Object.entries(description.settings.video).map(([statName, stat]) => <div class='stat' key={statName}>
                             <div class='key'>
                                 {statName}
                             </div>
                             <div class='value'>
                                 {String(stat)}
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                    </div>)}
+                </div>}
 
-            {hasAudioStats && (
+            {hasAudioStats &&
                 <div class='category'>
                     <div class='title'>
                         {$t('group.report.audio')}
                     </div>
-                    {Object.entries(description.settings.audio).map(([statName, stat]) => (
-                        <div key={statName} class='stat'>
+                    {Object.entries(description.settings.audio).map(([statName, stat]) => <div class='stat' key={statName}>
                             <div class='key'>
                                 {statName}
                             </div>
                             <div class='value'>
                                 {String(stat)}
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                    </div>)}
+                </div>}
 
-            {Object.entries(stats).map(([categoryName, category]) => (
-                <div key={categoryName} class='category'>
+            {Object.entries(stats).map(([categoryName, category]) => <div class='category' key={categoryName}>
                     <div class='title'>
                         {categoryName}
                     </div>
-                    {Object.entries(category).map(([statName, stat]) => (
-                        <div key={statName} class='stat'>
+                    {Object.entries(category).map(([statName, stat]) => <div class='stat' key={statName}>
                             <div class='key'>
                                 {statName}
                             </div>
                             <div class='value'>
                                 {String(stat)}
                             </div>
-                        </div>
-                    ))}
-                </div>
-            ))}
+                    </div>)}
+            </div>)}
         </div>
     )
 }

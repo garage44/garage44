@@ -11,8 +11,8 @@ export const GroupControls = () => {
 
     const fileMediaAccept = useMemo(() => {
         if ($s.env.isFirefox) {
-return '.mp4'
-} else {
+            return '.mp4'
+        } else {
             // Chromium supports at least these 3 formats:
             return '.mp4,.mkv,.webm'
         }
@@ -20,14 +20,14 @@ return '.mp4'
 
     const filePlayTooltip = useMemo(() => {
         if ($s.files.playing.length) {
-return $t('file.streaming')
-}
+            return $t('file.streaming')
+        }
         let formats = []
         if ($s.env.isFirefox) {
-formats.push('.mp4')
-} else {
-formats.push('.mp4', 'webm', 'mkv')
-}
+            formats.push('.mp4')
+        } else {
+            formats.push('.mp4', 'webm', 'mkv')
+        }
         return $t('file.stream', {formats: formats.join(',')})
     }, [$s.files.playing.length, $s.env.isFirefox])
 
@@ -50,9 +50,11 @@ formats.push('.mp4', 'webm', 'mkv')
         }
     }
 
-    const toggleChat = async () => {
-        // Don't do a collapse animation while emoji is active; this is
-        // too heavy due to the 1800+ items grid layout.
+    const toggleChat = async() => {
+        /*
+         * Don't do a collapse animation while emoji is active; this is
+         * too heavy due to the 1800+ items grid layout.
+         */
         $s.chat.emoji.active = false
         // Wait a tick for state to update
         await new Promise((resolve) => setTimeout(resolve, 0))
@@ -70,20 +72,22 @@ formats.push('.mp4', 'webm', 'mkv')
         sfu.muteMicrophone(currentMicState)
 
         if (shouldRestartStream) {
-            // When both the camera is off, toggling the microphone should also restart the stream.
-            // Otherwise, we would either continue to stream empty data (when both camera and mic are
-            // off), or we would not send our audio stream altogether.
+            /*
+             * When both the camera is off, toggling the microphone should also restart the stream.
+             * Otherwise, we would either continue to stream empty data (when both camera and mic are
+             * off), or we would not send our audio stream altogether.
+             */
             logger.debug('[GroupControls] camera is off, restarting stream for mic toggle')
             media.getUserMedia($s.devices)
         } else {
-logger.debug('[GroupControls] camera is on, mic toggle handled by muteMicrophone')
-}
+            logger.debug('[GroupControls] camera is on, mic toggle handled by muteMicrophone')
+        }
     }
 
     const togglePlayFile = (file: File | null) => {
         if (file) {
-sfu.addFileMedia(file)
-} else {
+            sfu.addFileMedia(file)
+        } else {
             $s.files.playing = []
             sfu.delUpMediaKind('video')
         }
@@ -92,11 +96,11 @@ sfu.addFileMedia(file)
     const toggleRaiseHand = () => {
         sfu.connection?.userAction('setdata', sfu.connection.id, {raisehand: !$s.sfu.profile.raisehand})
         if (!$s.sfu.profile.raisehand) {
-sfu.connection?.userMessage('raisehand')
-}
+            sfu.connection?.userMessage('raisehand')
+        }
     }
 
-    const toggleScreenshare = async () => {
+    const toggleScreenshare = async() => {
         if ($s.upMedia.screenshare.length) {
             logger.debug('turn screenshare stream off')
             sfu.delUpMedia(media.screenStream)
@@ -108,21 +112,25 @@ sfu.connection?.userMessage('raisehand')
     }
 
     // Watch mic enabled
-    useEffect(() => {if (sfu.connection) {
-sfu.connection.userAction('setdata', sfu.connection.id, {mic: $s.devices.mic.enabled})
-}}, [$s.devices.mic.enabled])
+    useEffect(() => {
+        if (sfu.connection) {
+            sfu.connection.userAction('setdata', sfu.connection.id, {mic: $s.devices.mic.enabled})
+        }
+    }, [$s.devices.mic.enabled])
 
-    // Note: Removed automatic getUserMedia call on permissions.present
-    // Media should only start when user explicitly clicks camera/mic buttons
-    // The default enabled=true in state doesn't mean user wants media - it's just default state
+    /*
+     * Note: Removed automatic getUserMedia call on permissions.present
+     * Media should only start when user explicitly clicks camera/mic buttons
+     * The default enabled=true in state doesn't mean user wants media - it's just default state
+     */
 
     // Watch volume changes
     useEffect(() => {
         for (const description of $s.streams) {
             // Only downstreams have volume control:
             if (description.direction === 'down' && !description.volume.locked) {
-description.volume = volume
-}
+                description.volume = volume
+            }
         }
     }, [volume])
 
@@ -132,36 +140,38 @@ description.volume = volume
                 active={!$s.panels.chat.collapsed}
                 icon='Chat'
                 icon-props={{unread: unreadCount}}
+                onClick={toggleChat}
                 tip={$s.panels.chat.collapsed ? $t('ui.panel_chat.expand') : $t('ui.panel_chat.collapse')}
                 variant='toggle'
-                onClick={toggleChat}
             />
 
-            {$s.permissions.present && (
+            {$s.permissions.present &&
                 <>
                     <Button
                         active={$s.devices.mic.enabled ? $s.devices.mic.enabled : null}
                         icon={$s.devices.mic.enabled ? 'Mic' : 'MicMute'}
+                        onClick={toggleMicrophone}
                         tip={$s.devices.mic.enabled ? $t('group.action.mic_off') : $t('group.action.mic_on')}
                         variant='toggle'
-                        onClick={toggleMicrophone}
                     />
 
                     <Button
                         active={$s.devices.cam.enabled}
                         disabled={!$s.mediaReady}
                         icon='Webcam'
+                        onClick={toggleCam}
                         tip={$s.devices.cam.enabled ? $t('group.action.cam_off') : $t('group.action.cam_on')}
                         variant='toggle'
-                        onClick={toggleCam}
                     />
 
                     <Button
                         active={!!$s.upMedia.screenshare.length}
                         icon='ScreenShare'
-                        tip={$s.upMedia.screenshare.length ? $t('group.action.screenshare_off') : $t('group.action.screenshare_on')}
-                        variant='toggle'
                         onClick={toggleScreenshare}
+                        tip={$s.upMedia.screenshare.length ?
+                                $t('group.action.screenshare_off') :
+                                $t('group.action.screenshare_on')}
+                        variant='toggle'
                     />
 
                     <Button
@@ -169,31 +179,29 @@ description.volume = volume
                         variant='toggle'
                     >
                         <FieldFile
-                            value={$s.files.playing}
                             accept={fileMediaAccept}
-                            tooltip={filePlayTooltip}
                             onFile={togglePlayFile}
+                            tooltip={filePlayTooltip}
+                            value={$s.files.playing}
                         />
                     </Button>
-                </>
-            )}
+                </>}
 
-            {$s.sfu.channel.connected && (
+            {$s.sfu.channel.connected &&
                 <Button
                     active={$s.sfu.profile.raisehand}
                     icon='Hand'
+                    onClick={toggleRaiseHand}
                     tip={$s.sfu.profile.raisehand ? $t('group.action.raisehand_active') : $t('group.action.raisehand')}
                     variant='toggle'
-                    onClick={toggleRaiseHand}
-                />
-            )}
+                />}
 
             <Button
                 class='no-feedback'
                 tip={`${volume.value}% ${$t('group.audio_volume')}`}
                 variant='unset'
             >
-                <FieldSlider value={volume} onChange={setVolume} IconComponent={Icon} />
+                <FieldSlider IconComponent={Icon} onChange={setVolume} value={volume} />
             </Button>
         </div>
     )

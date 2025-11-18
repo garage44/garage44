@@ -17,7 +17,9 @@ let channelManager: ChannelManager | null = null
  * Helper function to get user ID from WebSocket context
  */
 async function getUserIdFromContext(context: {session?: {userid?: string}}): Promise<string | null> {
-    if (!context.session?.userid) {return null}
+    if (!context.session?.userid) {
+        return null
+    }
     const user = await userManager.getUserByUsername(context.session.userid)
     return user?.id || null
 }
@@ -26,13 +28,15 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
     const api = wsManager.api
 
     // Initialize channel manager
-    if (!channelManager) {channelManager = new ChannelManager(getDatabase())}
+    if (!channelManager) {
+        channelManager = new ChannelManager(getDatabase())
+    }
 
     /**
      * List channels that the user has access to
      * GET /api/channels
      */
-    api.get('/channels', async (context, _request) => {
+    api.get('/channels', async(context, _request) => {
         try {
             // Get user ID from context (context.session.userid contains username)
             let userId: string | null = null
@@ -43,8 +47,12 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 if (user) {
                     userId = user.id
                     logger.debug(`[Channels API] Found user: ${user.username}, ID: ${userId}`)
-                } else {logger.warn(`[Channels API] User not found for username: ${context.session.userid}`)}
-            } else {logger.warn('[Channels API] No session.userid found in context')}
+                } else {
+                    logger.warn(`[Channels API] User not found for username: ${context.session.userid}`)
+                }
+            } else {
+                logger.warn('[Channels API] No session.userid found in context')
+            }
 
             // If no authenticated user, return empty channels
             if (!userId) {
@@ -62,7 +70,9 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
             for (const channel of allChannels) {
                 const canAccess = channelManager!.canAccessChannel(channel.id, userId)
                 logger.debug(`[Channels API] Channel ${channel.id} (${channel.name}): canAccess=${canAccess}`)
-                if (canAccess) {accessibleChannels.push(channel)}
+                if (canAccess) {
+                    accessibleChannels.push(channel)
+                }
             }
 
             logger.info(`[Channels API] Returning ${accessibleChannels.length} accessible channels for user ${userId}`)
@@ -70,7 +80,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 channels: accessibleChannels,
                 success: true,
             }
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error listing channels:', error)
             return {
                 error: error.message,
@@ -83,7 +93,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
      * Create a new channel
      * POST /api/channels
      */
-    api.post('/channels', async (context, request) => {
+    api.post('/channels', async(context, request) => {
         try {
             const {description, galeneGroup, name} = request.data
 
@@ -98,7 +108,9 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
             let creatorId: string | null = null
             if (context.session?.userid) {
                 const user = await userManager.getUserByUsername(context.session.userid)
-                if (user) {creatorId = user.id}
+                if (user) {
+                    creatorId = user.id
+                }
             }
 
             if (!creatorId) {
@@ -111,7 +123,9 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
             const channel = await channelManager!.createChannel(name, galeneGroup, description || '', creatorId)
 
             // Sync channel to Galene group file
-            try {await channelManager!.syncChannelToGalene(channel)} catch (syncError) {
+            try {
+                await channelManager!.syncChannelToGalene(channel)
+            } catch(syncError) {
                 logger.error('[Channels API] Failed to sync channel to Galene (channel still created):', syncError)
                 // Continue even if sync fails - channel is still created
             }
@@ -126,7 +140,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 channel,
                 success: true,
             }
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error creating channel:', error)
             return {
                 error: error.message,
@@ -139,7 +153,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
      * Get a specific channel
      * GET /api/channels/:channelId
      */
-    api.get('/channels/:channelId', async (context, request) => {
+    api.get('/channels/:channelId', async(context, request) => {
         try {
             const {channelId} = request.params
             const channelIdNum = parseInt(channelId, 10)
@@ -181,7 +195,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 channel,
                 success: true,
             }
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error getting channel:', error)
             return {
                 error: error.message,
@@ -194,7 +208,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
      * Update a channel
      * PUT /api/channels/:channelId
      */
-    api.put('/channels/:channelId', async (context, request) => {
+    api.put('/channels/:channelId', async(context, request) => {
         try {
             const {channelId} = request.params
             const channelIdNum = parseInt(channelId, 10)
@@ -236,14 +250,16 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                     // Delete old group file
                     await channelManager!.deleteGaleneGroup(oldSlug)
                     logger.info(`[Channels API] Deleted old Galene group file for renamed channel: ${oldSlug} -> ${channel.slug}`)
-                } catch (deleteError) {
+                } catch(deleteError) {
                     logger.warn(`[Channels API] Failed to delete old Galene group file "${oldSlug}":`, deleteError)
                     // Continue even if old file deletion fails
                 }
             }
 
             // Sync channel to Galene group file
-            try {await channelManager!.syncChannelToGalene(channel)} catch (syncError) {
+            try {
+                await channelManager!.syncChannelToGalene(channel)
+            } catch(syncError) {
                 logger.error('[Channels API] Failed to sync channel to Galene (channel still updated):', syncError)
                 // Continue even if sync fails - channel is still updated
             }
@@ -258,7 +274,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 channel,
                 success: true,
             }
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error updating channel:', error)
             return {
                 error: error.message,
@@ -271,7 +287,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
      * Delete a channel
      * DELETE /api/channels/:channelId
      */
-    api.delete('/channels/:channelId', async (context, request) => {
+    api.delete('/channels/:channelId', async(context, request) => {
         try {
             const {channelId} = request.params
             const channelIdNum = parseInt(channelId, 10)
@@ -308,7 +324,9 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
 
             // Delete corresponding Galene group file
             if (channelSlug) {
-                try {await channelManager!.deleteGaleneGroup(channelSlug)} catch (deleteError) {
+                try {
+                    await channelManager!.deleteGaleneGroup(channelSlug)
+                } catch(deleteError) {
                     logger.error(`[Channels API] Failed to delete Galene group file for channel "${channelSlug}":`, deleteError)
                     // Continue even if Galene file deletion fails - channel is still deleted
                 }
@@ -323,7 +341,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
             return {
                 success: true,
             }
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error deleting channel:', error)
             return {
                 error: error.message,
@@ -336,7 +354,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
      * Add a user to a channel
      * POST /api/channels/:channelId/members
      */
-    api.post('/channels/:channelId/members', async (context, request) => {
+    api.post('/channels/:channelId/members', async(context, request) => {
         try {
             const {channelId} = request.params
             const channelIdNum = parseInt(channelId, 10)
@@ -376,7 +394,9 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
             }
 
             // Sync users to Galene (group files need updated user list)
-            try {await syncUsersToGalene()} catch (syncError) {
+            try {
+                await syncUsersToGalene()
+            } catch(syncError) {
                 logger.error('[Channels API] Failed to sync users to Galene after adding member:', syncError)
                 // Continue even if sync fails - member is still added
             }
@@ -393,7 +413,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
             return {
                 success: true,
             }
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error adding member:', error)
             return {
                 error: error.message,
@@ -406,7 +426,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
      * Remove a user from a channel
      * DELETE /api/channels/:channelId/members/:userId
      */
-    api.delete('/channels/:channelId/members/:userId', async (context, request) => {
+    api.delete('/channels/:channelId/members/:userId', async(context, request) => {
         try {
             const {channelId, userId} = request.params
             const channelIdNum = parseInt(channelId, 10)
@@ -439,7 +459,9 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
             }
 
             // Sync users to Galene (group files need updated user list)
-            try {await syncUsersToGalene()} catch (syncError) {
+            try {
+                await syncUsersToGalene()
+            } catch(syncError) {
                 logger.error('[Channels API] Failed to sync users to Galene after removing member:', syncError)
                 // Continue even if sync fails - member is still removed
             }
@@ -455,7 +477,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
             return {
                 success: true,
             }
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error removing member:', error)
             return {
                 error: error.message,
@@ -469,7 +491,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
      * GET /api/channels/:channelSlug/members
      * Accepts channel slug (matches Galene group name 1:1)
      */
-    api.get('/channels/:channelSlug/members', async (context, request) => {
+    api.get('/channels/:channelSlug/members', async(context, request) => {
         try {
             const {channelSlug} = request.params
 
@@ -512,7 +534,7 @@ export const registerChannelsWebSocket = (wsManager: WebSocketServerManager) => 
                 members,
                 success: true,
             }
-        } catch (error) {
+        } catch(error) {
             logger.error('[Channels API] Error getting members:', error)
             return {
                 error: error.message,

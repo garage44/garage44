@@ -16,17 +16,33 @@ import path from 'node:path'
 
 // Simple HTTP router for Bun.serve that mimics Express pattern
 class Router {
-    routes: {handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>; method: string; path: RegExp}[] = []
+    routes: Array<{
+        handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>
+        method: string
+        path: RegExp
+    }> = []
 
-    get(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {this.add('GET', path, handler)}
+    get(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
+        this.add('GET', path, handler)
+    }
 
-    post(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {this.add('POST', path, handler)}
+    post(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
+        this.add('POST', path, handler)
+    }
 
-    put(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {this.add('PUT', path, handler)}
+    put(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
+        this.add('PUT', path, handler)
+    }
 
-    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {this.add('DELETE', path, handler)}
+    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
+        this.add('DELETE', path, handler)
+    }
 
-    private add(method: string, path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
+    private add(
+        method: string,
+        path: string,
+        handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>,
+    ) {
         // Convert path params (e.g. /api/groups/:id) to regex
         const regex = new RegExp('^' + path.replaceAll(/:[^/]+/g, '([^/]+)') + '$')
         this.routes.push({
@@ -44,7 +60,9 @@ class Router {
                 // Extract params
                 const paramValues = pathname.match(path)?.slice(1) || []
                 const params: Record<string, string> = {}
-                paramValues.forEach((val, idx) => {params[`param${idx}`] = val})
+                paramValues.forEach((val, idx) => {
+                    params[`param${idx}`] = val
+                })
                 return await handler(req, params, session)
             }
         }
@@ -52,14 +70,18 @@ class Router {
     }
 }
 
-// SFU Proxy - proxies WebSocket connections to Galène
-// This is a pass-through proxy that doesn't require WebSocket server management
+/*
+ * SFU Proxy - proxies WebSocket connections to Galène
+ * This is a pass-through proxy that doesn't require WebSocket server management
+ */
 async function proxySFUWebSocket(request: Request, server: unknown) {
     const sfuUrl = config.sfu.url.replace('http://', 'ws://').replace('https://', 'wss://')
     const url = new URL(request.url)
 
-    // Galene expects WebSocket connections at /ws, not /sfu
-    // Map client's /sfu path to Galene's /ws endpoint
+    /*
+     * Galene expects WebSocket connections at /ws, not /sfu
+     * Map client's /sfu path to Galene's /ws endpoint
+     */
     const targetUrl = `${sfuUrl}/ws${url.search}`
 
     logger.info(`[SFU Proxy] Connecting to upstream: ${targetUrl}`)
@@ -70,8 +92,10 @@ async function proxySFUWebSocket(request: Request, server: unknown) {
         // Create WebSocket connection to upstream server (Galène)
         const upstream = new WebSocket(targetUrl)
 
-        // Wait for upstream connection to open before upgrading client
-        // This ensures we can catch connection errors early
+        /*
+         * Wait for upstream connection to open before upgrading client
+         * This ensures we can catch connection errors early
+         */
         await new Promise<void>((resolve, reject) => {
             const timeout = setTimeout(() => {
                 logger.error(`[SFU Proxy] Connection timeout after 5s for ${targetUrl}`)
@@ -87,11 +111,15 @@ async function proxySFUWebSocket(request: Request, server: unknown) {
             upstream.onerror = (error: Event) => {
                 clearTimeout(timeout)
                 logger.error(`[SFU Proxy] Upstream WebSocket error for ${targetUrl}:`, error)
-                if ('message' in error) {logger.error(`[SFU Proxy] Error message: ${(error as {message?: string}).message}`)}
+                if ('message' in error) {
+                    logger.error(`[SFU Proxy] Error message: ${(error as {message?: string}).message}`)
+                }
                 logger.error(`[SFU Proxy] Upstream connection state: ${upstream.readyState}`)
 
                 // Try to get more error details
-                if (upstream.readyState === WebSocket.CLOSED || upstream.readyState === WebSocket.CLOSING) {logger.error(`[SFU Proxy] Connection closed immediately, check if Galene is running on ${targetUrl}`)}
+                if (upstream.readyState === WebSocket.CLOSED || upstream.readyState === WebSocket.CLOSING) {
+                    logger.error(`[SFU Proxy] Connection closed immediately, check if Galene is running on ${targetUrl}`)
+                }
 
                 reject(new Error(`Failed to connect to ${targetUrl}. Check if Galene is running and accessible.`))
             }
@@ -99,9 +127,13 @@ async function proxySFUWebSocket(request: Request, server: unknown) {
             upstream.onclose = (event: CloseEvent) => {
                 clearTimeout(timeout)
                 logger.warn(`[SFU Proxy] Upstream connection closed before upgrade: ${event.code} ${event.reason || 'no reason'}`)
-                if (event.code !== 1000) {logger.error(`[SFU Proxy] Abnormal close: code=${event.code}, reason=${event.reason || 'none'}`)}
+                if (event.code !== 1000) {
+                    logger.error(`[SFU Proxy] Abnormal close: code=${event.code}, reason=${event.reason || 'none'}`)
+                }
                 // Only reject if not already resolved
-                if (upstream.readyState !== WebSocket.OPEN) {reject(new Error(`Connection closed: ${event.code} ${event.reason || 'no reason'}`))}
+                if (upstream.readyState !== WebSocket.OPEN) {
+                    reject(new Error(`Connection closed: ${event.code} ${event.reason || 'no reason'}`))
+                }
             }
         })
 
@@ -109,8 +141,10 @@ async function proxySFUWebSocket(request: Request, server: unknown) {
         const upgraded = server.upgrade(request, {
             data: {
                 endpoint: '/sfu',
-                proxy: true, // Mark as proxy to skip manager lookup
-                upstream, // Store upstream connection for generic forwarding
+                // Mark as proxy to skip manager lookup
+                proxy: true,
+                // Store upstream connection for generic forwarding
+                upstream,
             },
         })
 
@@ -123,7 +157,7 @@ async function proxySFUWebSocket(request: Request, server: unknown) {
         logger.error('[SFU Proxy] Failed to upgrade client connection')
         upstream.close()
         return new Response('WebSocket upgrade failed', {status: 400})
-    } catch (error) {
+    } catch(error) {
         logger.error(`[SFU Proxy] Failed to connect to SFU: ${error}`)
         if (error instanceof Error) {
             logger.error(`[SFU Proxy] Error details: ${error.message}`)
@@ -135,11 +169,15 @@ async function proxySFUWebSocket(request: Request, server: unknown) {
 
 
 // Auth middleware that can be reused across routes
-const requireAdmin = async (ctx, next) => {
-    if (!ctx.session?.userid) {throw new Error('Unauthorized')}
+const requireAdmin = async(ctx, next) => {
+    if (!ctx.session?.userid) {
+        throw new Error('Unauthorized')
+    }
 
-    // User lookup will be handled by middleware's UserManager
-    // The authentication check is done by the middleware layer
+    /*
+     * User lookup will be handled by middleware's UserManager
+     * The authentication check is done by the middleware layer
+     */
     return next(ctx)
 }
 
@@ -163,8 +201,10 @@ async function initMiddleware(_bunchyConfig) {
         loadUsers: () => userManager.listUsers(),
     })
 
-    // Create unified final handler with built-in authentication API
-    // Use environment variable for config path if set (for PR deployments)
+    /*
+     * Create unified final handler with built-in authentication API
+     * Use environment variable for config path if set (for PR deployments)
+     */
     const configPath = process.env.CONFIG_PATH || '~/.pyriterc'
     const finalHandleRequest = createFinalHandler({
         configPath,
@@ -203,7 +243,8 @@ async function initMiddleware(_bunchyConfig) {
 
     return {
         handleRequest: finalHandleRequest,
-        handleWebSocket: () => {}, // WebSocket handling is done in common middleware
+        // WebSocket handling is done in common middleware
+        handleWebSocket: () => {},
     }
 }
 
