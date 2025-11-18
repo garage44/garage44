@@ -48,40 +48,40 @@ export default function Settings({tabId}: SettingsProps) {
     const tabs = [
         {
             component: <Profile />,
-            icon: 'Settings',
+            icon: 'settings',
             id: 'profile',
-            label: $t('ui.settings.profile.name'),
-            tip: $t('ui.settings.profile.name'),
+            label: $t('ui.settings.profile.name') || 'Profile',
+            tip: $t('ui.settings.profile.name') || 'Profile',
         },
         ...(showUserSettings ? [
             {
                 component: <UsersManagement $t={$t} />,
-                icon: 'account',
+                icon: 'user',
                 id: 'users',
-                label: $t('ui.settings.users.name'),
-                tip: $t('ui.settings.users.name'),
+                label: $t('ui.settings.users.name') || 'Users',
+                tip: $t('ui.settings.users.name') || 'Users',
             },
         ] : []),
         {
             component: <TabChannels />,
-            icon: 'Channel',
+            icon: 'chat',
             id: 'channels',
-            label: $t('ui.settings.channels.name'),
-            tip: $t('ui.settings.channels.name'),
+            label: $t('ui.settings.channels.name') || 'Channels',
+            tip: $t('ui.settings.channels.name') || 'Channels',
         },
         {
             component: <TabDevices />,
-            icon: 'Webcam',
+            icon: 'webcam',
             id: 'devices',
-            label: $t('ui.settings.devices'),
-            tip: $t('ui.settings.devices'),
+            label: $t('ui.settings.devices') || 'Devices',
+            tip: $t('ui.settings.devices') || 'Devices',
         },
         {
             component: <TabMedia />,
-            icon: 'Media',
+            icon: 'media',
             id: 'media',
-            label: $t('ui.settings.media.name'),
-            tip: $t('ui.settings.media.name'),
+            label: $t('ui.settings.media.name') || 'Media',
+            tip: $t('ui.settings.media.name') || 'Media',
         },
     ]
 
@@ -93,7 +93,7 @@ export default function Settings({tabId}: SettingsProps) {
             activeTabId={activeTabId}
             defaultTab="profile"
             getRoute={getRoute}
-            onSave={saveSettings}
+            showSave={false}
         />
     )
 }

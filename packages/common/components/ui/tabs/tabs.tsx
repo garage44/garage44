@@ -115,6 +115,7 @@ export function Tabs({
                             active={isActive}
                             disabled={isDisabled}
                             icon={tab.icon}
+                            label={tab.label}
                             route={tab.route}
                             tip={tab.tip}
                             variant="menu"

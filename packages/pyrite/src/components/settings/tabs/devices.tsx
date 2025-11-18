@@ -90,11 +90,10 @@ export default function TabDevices() {
     }, [$s.devices.cam.resolution, $s.devices.cam.selected, $s.devices.mic.selected])
 
     return (
-        <section class="c-tab-devices tab-content active">
+        <section class="c-tab-devices">
             <div class="camera-field">
                 <FieldSelect
-                    value={$s.devices.cam.selected}
-                    onChange={(value) => $s.devices.cam.selected = value}
+                    model={$s.devices.cam.$selected}
                     help={$t('device.select_cam_help')}
                     label={$t('device.select_cam_label')}
                     name="video"
@@ -110,8 +109,7 @@ export default function TabDevices() {
             </div>
 
             <FieldSelect
-                value={$s.devices.mic.selected}
-                onChange={(value) => $s.devices.mic.selected = value}
+                model={$s.devices.mic.$selected}
                 help={$t('device.select_mic_verify_help')}
                 label={$t('device.select_mic_label')}
                 name="audio"
@@ -127,8 +125,7 @@ export default function TabDevices() {
                 {/* https://bugzilla.mozilla.org/show_bug.cgi?id=1152401 */}
                 {$s.devices.audio.options.length && !$s.env.isFirefox && (
                     <FieldSelect
-                        value={$s.devices.audio.selected}
-                        onChange={(value) => $s.devices.audio.selected = value}
+                        model={$s.devices.audio.$selected}
                         help={$t('device.select_audio_verify_help')}
                         label={$t('device.select_audio_label')}
                         name="audio"
