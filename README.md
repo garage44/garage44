@@ -5,8 +5,6 @@ Modern web applications built with Bun, Preact, and DeepSignal.
 [![License](https://img.shields.io/badge/License-Mixed-blue.svg)](#licenses)
 [![Bun](https://img.shields.io/badge/Powered%20by-Bun-black.svg)](https://bun.sh/)
 
-## The Automation Story
-
 Garage44 represents a complete approach to automated software development. From writing code to deploying production systems, every step of the development lifecycle is streamlined and automated.
 
 **Development** starts with **Bunchy**—instant hot module replacement and live reloading eliminate the traditional edit-compile-refresh cycle. Write code, see changes immediately.
@@ -36,6 +34,19 @@ bun run dev
 **License:** MIT
 **Documentation:** [packages/malkovich/docs/index.md](./packages/malkovich/docs/index.md)
 
+### Bunchy
+
+Blazingly fast frontend development tool for Bun. Provides hot module replacement (HMR), live reloading, build tasks, and development tooling with minimal setup.
+
+```bash
+cd packages/bunchy
+bun install
+```
+
+**License:** MIT
+**Documentation:** [packages/bunchy/README.md](./packages/bunchy/README.md)
+
+
 ### Expressio
 
 AI-powered i18n automation platform. Automates translation workflows using AI providers (DeepL, Claude) and exports translation runtime for frontend applications.
@@ -49,6 +60,7 @@ bunx @garage44/expressio start
 
 **License:** AGPLv3
 **Documentation:** [packages/expressio/docs/index.md](./packages/expressio/docs/index.md)
+
 
 ### Pyrite
 
@@ -65,17 +77,6 @@ bun run dev
 **License:** AGPLv3
 **Documentation:** [packages/pyrite/docs/index.md](./packages/pyrite/docs/index.md)
 
-### Bunchy
-
-Blazingly fast frontend development tool for Bun. Provides hot module replacement (HMR), live reloading, build tasks, and development tooling with minimal setup.
-
-```bash
-cd packages/bunchy
-bun install
-```
-
-**License:** MIT
-**Documentation:** [packages/bunchy/README.md](./packages/bunchy/README.md)
 
 ## Shared Stack
 

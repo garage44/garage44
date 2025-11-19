@@ -117,6 +117,8 @@ function removeDatabases(): void {
 
 /**
  * Deploy packages: pull code, remove databases, build, restart services
+ * Malkovich is always restarted asynchronously after the function returns
+ * to avoid killing active connections (e.g., webhook requests)
  */
 export async function deploy(): Promise<{message: string; success: boolean}> {
     try {
@@ -233,9 +235,12 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
         const packagesToDeploy = [...appPackages, 'malkovich']
         console.log(`[deploy] Packages to deploy: ${packagesToDeploy.join(', ')}`)
 
-        // Restart systemd services for all packages
-        console.log('[deploy] Restarting systemd services...')
-        for (const packageName of packagesToDeploy) {
+        const otherPackages = packagesToDeploy.filter((pkg) => pkg !== 'malkovich')
+        const malkovichPackage = packagesToDeploy.find((pkg) => pkg === 'malkovich')
+
+        // Restart systemd services for all packages except malkovich
+        console.log('[deploy] Restarting systemd services (excluding malkovich)...')
+        for (const packageName of otherPackages) {
             try {
                 console.log(`[deploy] Restarting ${packageName} service...`)
                 const restartResult = await $`sudo /usr/bin/systemctl restart ${packageName}.service`.nothrow()
@@ -255,6 +260,29 @@ export async function deploy(): Promise<{message: string; success: boolean}> {
         }
 
         console.log('[deploy] Deployment completed successfully')
+
+        if (malkovichPackage) {
+            console.log('[deploy] Scheduling malkovich service restart (after function returns)...')
+            queueMicrotask(async() => {
+                try {
+                    console.log('[deploy] Restarting malkovich service...')
+                    const restartResult = await $`sudo /usr/bin/systemctl restart ${malkovichPackage}.service`.nothrow()
+                    if (restartResult.exitCode === 0) {
+                        console.log(`[deploy] ✅ ${malkovichPackage} service restarted successfully`)
+                    } else {
+                        const stderr = restartResult.stderr?.toString() || ''
+                        const stdout = restartResult.stdout?.toString() || ''
+                        console.error(`[deploy] ❌ Failed to restart ${malkovichPackage} service (${restartResult.exitCode})`)
+                        console.error(`[deploy] ${malkovichPackage} restart stderr: ${stderr}`)
+                        console.error(`[deploy] ${malkovichPackage} restart stdout: ${stdout}`)
+                    }
+                } catch(error: unknown) {
+                    const errorMessage = error instanceof Error ? error.message : String(error)
+                    console.error(`[deploy] ❌ Error restarting ${malkovichPackage}: ${errorMessage}`)
+                }
+            })
+        }
+
         return {message: 'Deployment completed successfully', success: true}
     } catch(error: unknown) {
         const message = error instanceof Error ? error.message : String(error)
@@ -569,7 +597,10 @@ export async function handleWebhook(req: Request): Promise<Response> {
         })
     }
 
-    // Process deployment synchronously
+    /*
+     * Process deployment synchronously
+     * Malkovich restart is handled asynchronously inside deploy() to avoid killing the connection
+     */
     console.log('[webhook] Received push event to main branch, starting deployment...')
     const deploymentResult = await deploy()
 
@@ -591,7 +622,7 @@ export async function handleWebhook(req: Request): Promise<Response> {
         console.error(`[webhook] Error updating PR deployments: ${errorMessage}`)
     })
 
-    // Return deployment result
+    // Return deployment result immediately (before malkovich restart)
     return new Response(JSON.stringify({
         message: deploymentResult.message,
         success: deploymentResult.success,
