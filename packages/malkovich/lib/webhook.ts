@@ -5,7 +5,13 @@ import {join as pathJoin} from 'path'
 import {findWorkspaceRoot, extractWorkspacePackages, isApplicationPackage} from './workspace'
 import {cleanupPRDeployment} from './pr-cleanup'
 import {deployPR, type PRMetadata, updateAllPRDeploymentsWithMain} from './pr-deploy'
-import {updatePRDeployment} from './pr-registry'
+import {updatePRDeployment, getPRDeployment} from './pr-registry'
+import {
+    waitForService,
+    waitForPort,
+    waitForHttpEndpoint,
+    type HealthCheckResult,
+} from './health-check'
 
 interface PullRequestWebhookEvent {
     action?: string
@@ -311,35 +317,178 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
             repo_full_name: pullRequest.head.repo.full_name,
         }
 
-        // Deploy asynchronously (but log errors properly)
-        deployPR(pr).then((result) => {
-            if (result.success) {
-                console.log(`[webhook] PR #${prNumber} deployment successful: ${result.message}`)
-            } else {
-                console.error(`[webhook] PR #${prNumber} deployment failed: ${result.message}`)
-                // Update deployment status to failed if it exists
-                if (result.deployment) {
-                    updatePRDeployment(prNumber, {status: 'failed'}).catch((err) => {
+        // Deploy synchronously and wait for completion
+        try {
+            console.log(`[webhook] Starting deployment for PR #${prNumber}...`)
+            const deployResult = await deployPR(pr)
+
+            if (!deployResult.success) {
+                console.error(`[webhook] PR #${prNumber} deployment failed: ${deployResult.message}`)
+                if (deployResult.deployment) {
+                    await updatePRDeployment(prNumber, {status: 'failed'}).catch((err) => {
                         console.error('[webhook] Failed to update deployment status:', err)
                     })
                 }
+
+                return new Response(JSON.stringify({
+                    success: false,
+                    message: `Deployment failed: ${deployResult.message}`,
+                    prNumber,
+                    timestamp: new Date().toISOString(),
+                }), {
+                    headers: {'Content-Type': 'application/json'},
+                    status: 500,
+                })
             }
-        }).catch((error) => {
+
+            if (!deployResult.deployment) {
+                return new Response(JSON.stringify({
+                    success: false,
+                    message: 'Deployment completed but no deployment record was created',
+                    prNumber,
+                    timestamp: new Date().toISOString(),
+                }), {
+                    headers: {'Content-Type': 'application/json'},
+                    status: 500,
+                })
+            }
+
+            console.log(`[webhook] PR #${prNumber} deployment completed, verifying health...`)
+
+            // Get the deployment record to check packages
+            const deployment = await getPRDeployment(prNumber)
+            if (!deployment) {
+                return new Response(JSON.stringify({
+                    success: false,
+                    message: 'Deployment completed but deployment record not found',
+                    prNumber,
+                    timestamp: new Date().toISOString(),
+                }), {
+                    headers: {'Content-Type': 'application/json'},
+                    status: 500,
+                })
+            }
+
+            // Discover packages to verify
+            const repoDir = pathJoin(deployment.directory, 'repo')
+            const allPackages = extractWorkspacePackages(repoDir)
+            const appPackages = allPackages.filter((pkg) => isApplicationPackage(pkg))
+            const packagesToDeploy = [...appPackages, 'malkovich']
+
+            // Wait for services to start (with timeout)
+            console.log(`[webhook] Waiting for services to start for PR #${prNumber}...`)
+            const serviceChecks: Array<{name: string; result: HealthCheckResult}> = []
+            const portMap: Record<string, number> = {
+                expressio: deployment.ports.expressio,
+                malkovich: deployment.ports.malkovich,
+                pyrite: deployment.ports.pyrite,
+            }
+
+            for (const packageName of packagesToDeploy) {
+                const serviceName = `pr-${prNumber}-${packageName}.service`
+                const port = portMap[packageName] || deployment.ports.malkovich
+
+                console.log(`[webhook] Waiting for ${serviceName} to become active...`)
+                const serviceCheck = await waitForService(serviceName, 60000, 2000)
+                serviceChecks.push({name: serviceName, result: serviceCheck})
+
+                if (serviceCheck.healthy) {
+                    console.log(`[webhook] Waiting for port ${port} to become listening...`)
+                    const portCheck = await waitForPort(port, 60000, 2000)
+                    serviceChecks.push({name: `port-${port}`, result: portCheck})
+                }
+            }
+
+            // Wait for HTTP endpoints to become accessible
+            console.log(`[webhook] Waiting for HTTP endpoints to become accessible for PR #${prNumber}...`)
+            const baseDomain = 'garage44.org'
+            const httpChecks: Array<{name: string; result: HealthCheckResult}> = []
+
+            for (const packageName of packagesToDeploy) {
+                const subdomain = `pr-${prNumber}-${packageName}.${baseDomain}`
+                const httpsUrl = `https://${subdomain}`
+
+                console.log(`[webhook] Checking HTTP endpoint: ${httpsUrl}`)
+                const httpCheck = await waitForHttpEndpoint(httpsUrl, 120000, 3000, 10000)
+                httpChecks.push({name: httpsUrl, result: httpCheck})
+            }
+
+            // Combine all checks
+            const allChecks = [...serviceChecks, ...httpChecks]
+            const allHealthy = allChecks.every((check) => check.result.healthy)
+            const failedChecks = allChecks.filter((check) => !check.result.healthy)
+
+            if (!allHealthy) {
+                console.error(`[webhook] PR #${prNumber} health checks failed:`, failedChecks.map((c) => c.name))
+                await updatePRDeployment(prNumber, {status: 'failed'}).catch((err) => {
+                    console.error('[webhook] Failed to update deployment status:', err)
+                })
+
+                return new Response(JSON.stringify({
+                    success: false,
+                    message: `Deployment completed but health checks failed`,
+                    prNumber,
+                    failedChecks: failedChecks.map((c) => ({
+                        name: c.name,
+                        message: c.result.message,
+                        details: c.result.details,
+                    })),
+                    allChecks: allChecks.map((c) => ({
+                        name: c.name,
+                        healthy: c.result.healthy,
+                        message: c.result.message,
+                    })),
+                    timestamp: new Date().toISOString(),
+                }), {
+                    headers: {'Content-Type': 'application/json'},
+                    status: 500,
+                })
+            }
+
+            console.log(`[webhook] PR #${prNumber} deployment successful and healthy`)
+            return new Response(JSON.stringify({
+                success: true,
+                message: `PR #${prNumber} deployed successfully and verified`,
+                prNumber,
+                deployment: {
+                    url: `https://pr-${prNumber}-malkovich.${baseDomain}`,
+                    ports: deployment.ports,
+                    packages: packagesToDeploy,
+                },
+                healthChecks: allChecks.map((c) => ({
+                    name: c.name,
+                    healthy: c.result.healthy,
+                    message: c.result.message,
+                })),
+                timestamp: new Date().toISOString(),
+            }), {
+                headers: {'Content-Type': 'application/json'},
+                status: 200,
+            })
+        } catch(error) {
             const errorMessage = error instanceof Error ? error.message : String(error)
+            const errorStack = error instanceof Error ? error.stack : undefined
             console.error(`[webhook] PR #${prNumber} deployment error:`, errorMessage)
+            if (errorStack) {
+                console.error(`[webhook] Stack trace:`, errorStack)
+            }
+
             // Update deployment status to failed
-            updatePRDeployment(prNumber, {status: 'failed'}).catch((err) => {
+            await updatePRDeployment(prNumber, {status: 'failed'}).catch((err) => {
                 console.error('[webhook] Failed to update deployment status:', err)
             })
-        })
 
-        return new Response(JSON.stringify({
-            message: `PR #${prNumber} deployment triggered`,
-            timestamp: new Date().toISOString(),
-        }), {
-            headers: {'Content-Type': 'application/json'},
-            status: 202,
-        })
+            return new Response(JSON.stringify({
+                success: false,
+                message: `Deployment error: ${errorMessage}`,
+                prNumber,
+                error: errorMessage,
+                timestamp: new Date().toISOString(),
+            }), {
+                headers: {'Content-Type': 'application/json'},
+                status: 500,
+            })
+        }
     }
 
     // Ignore other actions
