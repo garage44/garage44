@@ -1,10 +1,8 @@
 # Garage44
 
-Modern web applications built with Bun, Preact, and DeepSignal.
+[![License](https://img.shields.io/badge/License-Mixed-blue.svg)](#licenses) [![Bun](https://img.shields.io/badge/Powered%20by-Bun-black.svg)](https://bun.sh/)
 
-[![License](https://img.shields.io/badge/License-Mixed-blue.svg)](#licenses)
-[![Bun](https://img.shields.io/badge/Powered%20by-Bun-black.svg)](https://bun.sh/)
-
+> Modern web applications built with Bun, Preact, and DeepSignal.
 
 Garage44 represents a complete approach to automated software development. From writing code to deploying production systems, every step of the development lifecycle is streamlined and automated.
 

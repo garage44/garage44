@@ -183,17 +183,15 @@
     padding: 0;
 }
 
-/* Blockquotes */
-
 .c-markdown-page blockquote {
     background-color: var(--surface-1);
     border-left: 4px solid var(--primary-4);
     border-radius: var(--border-radius-s);
-    color: var(--surface-6);
+    color: var(--surface-4);
     font-style: italic;
     margin: var(--spacer-3) 0;
     overflow-wrap: break-word;
-    padding: var(--spacer-2) var(--spacer-3);
+    padding: var(--spacer-05) var(--spacer-2);
     word-wrap: break-word;
 
     /* Mobile-friendly blockquote padding */
@@ -271,6 +269,31 @@
     height: auto;
     margin: var(--spacer-3) 0;
     max-width: 100%;
+}
+
+/* Badges (images inside links) - typically used for shields.io badges */
+
+.c-markdown-page a img {
+    display: inline-block;
+    margin: 0;
+    vertical-align: middle;
+}
+
+.c-markdown-page a:hover img {
+    opacity: 0.9;
+}
+
+/* Paragraphs containing only badge links should display inline */
+
+.c-markdown-page p:has(> a:only-child > img),
+.c-markdown-page p:has(> a:only-child img) {
+    display: inline;
+    margin: 0;
+}
+
+.c-markdown-page p:has(> a:only-child > img) + p:has(> a:only-child > img),
+.c-markdown-page p:has(> a:only-child img) + p:has(> a:only-child img) {
+    margin-left: var(--spacer-1);
 }
 
 /* Strong and emphasis */

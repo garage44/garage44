@@ -21,9 +21,9 @@
         background: var(--surface-1);
         display: flex;
         font-weight: 500;
+        min-height: var(--spacer-5);
         padding: var(--spacer-05) var(--spacer-1);
         position: relative;
-        min-height: var(--spacer-5);
 
         a.logo {
             cursor: pointer;
@@ -84,6 +84,7 @@
 
     /* Hide collapse toggle on mobile - mobile controls handle this */
     @media (max-width: 768px) {
+
         .c-button.variant-toggle {
             display: none;
         }
@@ -104,13 +105,14 @@
             display: flex;
             flex: 1;
             flex-direction: column;
-            min-height: 0;
-            overflow-y: auto;
-            overflow-x: hidden;
-            width: 100%;
             gap: 0;
+            min-height: 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+            width: 100%;
 
             /* Custom scrollbar styling */
+
             &::-webkit-scrollbar {
                 width: 6px;
             }
@@ -222,25 +224,43 @@
         .logo {
             justify-content: center;
 
-            .l-name,
+            .l-name {
+                display: none;
+            }
+
+            /* Hide images when collapsed, unless there's no SVG icon */
+
             img {
                 display: none;
             }
+
+            /* Show SVG icon when collapsed */
 
             svg.icon {
                 height: 36px;
                 margin-inline-end: 0;
                 width: 36px;
             }
+
+            /* Fallback: show image scaled down if no SVG icon is present */
+
+            &:not(:has(svg.icon)) img {
+                display: block;
+                height: 36px;
+                margin-inline-end: 0;
+                width: auto;
+            }
         }
 
         .content {
             /* Show navigation when collapsed, but hide footer */
+
             .footer {
                 display: none;
             }
 
             /* Navigation items with icons will be visible when collapsed */
+
             .navigation {
                 /* Ensure proper spacing for icon-only items */
                 padding: var(--spacer-05) 0;
@@ -250,12 +270,14 @@
                 }
 
                 /* Hide headers when collapsed */
+
                 .channels-header,
                 .people-header {
                     display: none;
                 }
 
                 /* Show all channel items as icons when collapsed */
+
                 .channel.item {
                     justify-content: center;
                     padding: var(--spacer-05);
@@ -269,28 +291,27 @@
                     }
                 }
 
-                /* Show people section when collapsed */
-                .people-section {
-                    .people-list {
-                        .person.item {
-                            justify-content: center;
-                            padding: var(--spacer-05);
+                .people-list {
 
-                            .status-indicator {
-                                display: none;
-                            }
+                    .person.item {
+                        justify-content: center;
+                        padding: var(--spacer-05);
 
-                            .person-name {
-                                display: none;
-                            }
+                        .status-indicator {
+                            display: none;
+                        }
 
-                            .person-avatar {
-                                height: 24px;
-                                width: 24px;
-                            }
+                        .person-name {
+                            display: none;
+                        }
+
+                        .person-avatar {
+                            height: 24px;
+                            width: 24px;
                         }
                     }
                 }
+
             }
 
             .actions {
@@ -310,22 +331,23 @@
 
     /* Mobile styles - overlay menu */
     @media (max-width: 768px) {
+        left: 0;
+        max-width: 85vw;
         position: fixed;
         top: 0;
-        left: 0;
-        z-index: 1000;
-        width: 280px;
-        max-width: 85vw;
-        transition: transform 0.3s ease-in-out;
 
         /* Always hide menu by default on mobile */
         transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
         visibility: hidden;
+        width: 280px;
+        z-index: 1000;
     }
 }
 
 /* Show menu when not collapsed on mobile - explicit selector outside nesting for production */
 @media (max-width: 768px) {
+
     .c-panel-menu:not(.collapsed) {
         transform: translateX(0);
         visibility: visible;
@@ -334,6 +356,7 @@
 
 /* Ensure collapsed menu is always hidden on mobile - explicit selector outside nesting for production */
 @media (max-width: 768px) {
+
     .c-panel-menu.collapsed {
         transform: translateX(-100%);
         visibility: hidden;
