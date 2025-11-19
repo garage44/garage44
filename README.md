@@ -5,6 +5,7 @@ Modern web applications built with Bun, Preact, and DeepSignal.
 [![License](https://img.shields.io/badge/License-Mixed-blue.svg)](#licenses)
 [![Bun](https://img.shields.io/badge/Powered%20by-Bun-black.svg)](https://bun.sh/)
 
+
 Garage44 represents a complete approach to automated software development. From writing code to deploying production systems, every step of the development lifecycle is streamlined and automated.
 
 **Development** starts with **Bunchy**—instant hot module replacement and live reloading eliminate the traditional edit-compile-refresh cycle. Write code, see changes immediately.
@@ -13,9 +14,7 @@ Garage44 represents a complete approach to automated software development. From 
 
 **Deployment** happens automatically. Push to a pull request? Malkovich spins up an isolated preview environment. Merge to main? Production deploys automatically via webhooks. Systemd services, nginx configurations, SSL certificates—all generated and managed automatically.
 
-**Collaboration** is seamless. WebSocket-based real-time synchronization keeps teams in sync. Component styleguides ensure visual consistency. Architecture Decision Records guide both human developers and AI assistants.
-
-The result: a development environment where you focus on building features, not configuring tooling. Where AI agents can understand and contribute to your codebase. Where deployment is a push away, not a multi-step manual process.
+**Collaboration** is seamless. WebSocket-based real-time synchronization keeps teams in sync. Component styleguides ensure visual consistency. Architecture Decision Records guide both human developers and AI assistants. The result: a development environment where you focus on building features, not configuring tooling. Where AI agents can understand and contribute to your codebase. Where deployment is a push away, not a multi-step manual process.
 
 ## Projects
 
