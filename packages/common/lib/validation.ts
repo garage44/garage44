@@ -45,7 +45,7 @@ interface ValidationResult {
 // Add this helper function to aggregate validation errors
 function getValidationErrors(validation: Record<string, ValidationResult>) {
     const errors: string[] = []
-    for (const [field, result] of Object.entries(validation)) {
+    for (const [_field, result] of Object.entries(validation)) {
         const fieldErrors = result.errors
         if (fieldErrors.length > 0) {
             errors.push(...fieldErrors)

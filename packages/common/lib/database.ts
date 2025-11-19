@@ -44,12 +44,14 @@ export function createUsersTable(db: Database, logger?: Logger): boolean {
                 updated_at INTEGER NOT NULL
             )
         `)
-        return true // Table was created
+        // Table was created
+        return true
     }
     if (logger) {
         logger.info('[Database] Users table already exists')
     }
-    return false // Table already existed
+    // Table already existed
+    return false
 }
 
 /**

@@ -1,5 +1,3 @@
-import {h} from 'preact'
-
 const colors = [
     {id: 'surface', name: 'Surface (Neutral)'},
     {id: 'primary', name: 'Primary'},
@@ -139,4 +137,3 @@ export const Tokens = () => <div class='c-tokens styleguide-page'>
             </div>
         </section>
 </div>
-

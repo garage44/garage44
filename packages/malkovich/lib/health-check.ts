@@ -34,7 +34,8 @@ export async function checkServiceStatus(serviceName: string): Promise<HealthChe
         return {
             details: {
                 exitCode: statusResult.exitCode,
-                statusOutput: statusOutput.slice(0, 1000), // Limit output size
+                // Limit output size
+                statusOutput: statusOutput.slice(0, 1000),
             },
             healthy: false,
             message: `Service ${serviceName} check failed`,

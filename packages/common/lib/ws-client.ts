@@ -25,7 +25,8 @@ class WebSocketClient extends EventEmitter {
 
     private authFailure = false
 
-    private baseReconnectDelay = 100 // 1 second
+    // 1 second
+    private baseReconnectDelay = 100
 
     private eventHandlers: Record<string, ((data: MessageData) => void)[]> = {}
 
@@ -33,7 +34,8 @@ class WebSocketClient extends EventEmitter {
 
     private maxReconnectAttempts = 10
 
-    private maxReconnectDelay = 30_000 // 30 seconds
+    // 30 seconds
+    private maxReconnectDelay = 30_000
 
     private messageListeners: EventListener[] = []
 
@@ -47,7 +49,8 @@ class WebSocketClient extends EventEmitter {
 
     private reconnectTimeout: ReturnType<typeof setTimeout> | null = null
 
-    private requestTimeout = 30_000 // 30 seconds
+    // 30 seconds
+    private requestTimeout = 30_000
 
     private url: string
 
@@ -184,7 +187,8 @@ class WebSocketClient extends EventEmitter {
                 logger.debug('[WS] authentication failed; not reconnecting')
                 this.authFailure = true
                 this.emit('unauthorized', event)
-                return // Don't reconnect - authentication required
+                // Don't reconnect - authentication required
+                return
             }
 
             // Don't reconnect if this was an intentional close

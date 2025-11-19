@@ -18,7 +18,8 @@ interface WebSocketContext {
     subscribe?: (topic: string) => void
     unsubscribe?: (topic: string) => void
     url: string
-    ws: any // Bun WebSocket or standard WebSocket
+    // Bun WebSocket or standard WebSocket
+    ws: WebSocket | {close: (code?: number, reason?: string) => void; readyState: number; send: (data: string) => void}
 }
 
 interface ApiRequest {
@@ -47,26 +48,32 @@ interface WebSocketServerOptions {
     }
     endpoint: string
     globalMiddlewares?: Middleware[]
-    sessionMiddleware?: any
+    sessionMiddleware?: (request: Request) => {session: {userid?: string}; sessionId: string}
 }
 
 /**
  * WebSocket Server Manager - handles a single WebSocket endpoint
  */
+type WebSocketConnection = WebSocket | {
+    close: (code?: number, reason?: string) => void
+    readyState: number
+    send: (data: string) => void
+}
+
 class WebSocketServerManager extends EventEmitter {
-    connections = new Set<any>()
+    connections = new Set<WebSocketConnection>()
 
     routeHandlers: RouteHandler[] = []
 
-    subscriptions: Record<string, Set<any>> = {}
+    subscriptions: Record<string, Set<WebSocketConnection>> = {}
 
-    clientSubscriptions = new WeakMap<any, Set<string>>()
+    clientSubscriptions = new WeakMap<WebSocketConnection, Set<string>>()
 
     endpoint: string
 
     authOptions?: WebSocketServerOptions['authOptions']
 
-    sessionMiddleware?: any
+    sessionMiddleware?: (request: Request) => {session: {userid?: string}; sessionId: string}
 
     // Global middlewares that will be applied to all routes
     globalMiddlewares: Middleware[] = [
@@ -85,10 +92,18 @@ class WebSocketServerManager extends EventEmitter {
     ]
 
     api = {
-        delete: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => this.registerApi('DELETE', route, handler, middlewares),
-        get: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => this.registerApi('GET', route, handler, middlewares),
-        post: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => this.registerApi('POST', route, handler, middlewares),
-        put: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => this.registerApi('PUT', route, handler, middlewares),
+        delete: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => {
+            return this.registerApi('DELETE', route, handler, middlewares)
+        },
+        get: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => {
+            return this.registerApi('GET', route, handler, middlewares)
+        },
+        post: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => {
+            return this.registerApi('POST', route, handler, middlewares)
+        },
+        put: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => {
+            return this.registerApi('PUT', route, handler, middlewares)
+        },
     }
 
     constructor(options: WebSocketServerOptions) {
@@ -148,7 +163,7 @@ class WebSocketServerManager extends EventEmitter {
     }
 
     // Subscription management
-    subscribe(ws: any, topic: string) {
+    subscribe(ws: WebSocketConnection, topic: string) {
         if (!this.subscriptions[topic]) {
             this.subscriptions[topic] = new Set()
         }
@@ -160,13 +175,13 @@ class WebSocketServerManager extends EventEmitter {
         this.clientSubscriptions.get(ws)!.add(topic)
     }
 
-    unsubscribe(ws: any, topic: string) {
+    unsubscribe(ws: WebSocketConnection, topic: string) {
         this.subscriptions[topic]?.delete(ws)
         this.clientSubscriptions.get(ws)?.delete(topic)
     }
 
     // Clean up subscriptions when connection closes
-    cleanupSubscriptions(ws: any) {
+    cleanupSubscriptions(ws: WebSocketConnection) {
         const topics = this.clientSubscriptions.get(ws)
         if (topics) {
             for (const topic of topics) {
@@ -180,10 +195,18 @@ class WebSocketServerManager extends EventEmitter {
     broadcast(url: string, data: MessageData, method = 'POST') {
         const message = constructMessage(url, data, undefined, method)
         try {
-            devContext.addWs({dataPreview: JSON.stringify(message).slice(0, 200), endpoint: this.endpoint, ts: Date.now(), type: 'broadcast', url})
+            const dataPreview = JSON.stringify(message).slice(0, 200)
+            devContext.addWs({
+                dataPreview,
+                endpoint: this.endpoint,
+                ts: Date.now(),
+                type: 'broadcast',
+                url,
+            })
         } catch {}
         for (const ws of this.connections) {
-            if (ws.readyState === 1) { // OPEN state for Bun WebSocket
+            // OPEN state for Bun WebSocket
+            if (ws.readyState === 1) {
                 ws.send(JSON.stringify(message))
             }
         }
@@ -195,7 +218,8 @@ class WebSocketServerManager extends EventEmitter {
         const subscribers = this.subscriptions[topic]
         if (subscribers) {
             for (const ws of subscribers) {
-                if (ws.readyState === 1) { // OPEN state
+                // OPEN state
+                if (ws.readyState === 1) {
                     ws.send(JSON.stringify(message))
                 }
             }
@@ -203,7 +227,7 @@ class WebSocketServerManager extends EventEmitter {
     }
 
     // Check authentication for a request
-    private checkAuth(request: any): boolean {
+    private checkAuth(request: {session?: {userid?: string}}): boolean {
         if (!this.authOptions) {
             return true
         }
@@ -228,7 +252,7 @@ class WebSocketServerManager extends EventEmitter {
     }
 
     // Handle WebSocket connection open
-    open(ws: any, request?: any) {
+    open(ws: WebSocketConnection, request?: {session?: {userid?: string}}) {
         // Check authentication if required
         if (this.authOptions && !this.checkAuth(request)) {
             logger.warn(`[WS] connection denied (unauthorized) on ${this.endpoint}`)
@@ -244,7 +268,7 @@ class WebSocketServerManager extends EventEmitter {
     }
 
     // Handle WebSocket connection close
-    close(ws: any) {
+    close(ws: WebSocketConnection) {
         logger.debug(`[WS] connection closed: ${this.endpoint}`)
         try {
             devContext.addWs({endpoint: this.endpoint, ts: Date.now(), type: 'close'})
@@ -254,12 +278,19 @@ class WebSocketServerManager extends EventEmitter {
     }
 
     // Handle WebSocket message
-    async message(ws: any, message: string, request?: any) {
+    async message(ws: WebSocketConnection, message: string, request?: {session?: {userid?: string}}) {
         try {
             const parsedMessage = JSON.parse(message)
             const {data, id, method = 'GET', url} = parsedMessage
             try {
-                devContext.addWs({dataPreview: JSON.stringify({data, id, method, url}).slice(0, 200), endpoint: this.endpoint, ts: Date.now(), type: 'message', url})
+                const dataPreview = JSON.stringify({data, id, method, url}).slice(0, 200)
+                devContext.addWs({
+                    dataPreview,
+                    endpoint: this.endpoint,
+                    ts: Date.now(),
+                    type: 'message',
+                    url,
+                })
             } catch {}
             // Create context for this request
             const ctx: WebSocketContext = {
@@ -314,7 +345,7 @@ class WebSocketServerManager extends EventEmitter {
 // Create Bun.serve compatible WebSocket handlers that dispatch to multiple managers
 function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>) {
     return {
-        close: (ws: any) => {
+        close: (ws: WebSocketConnection & {data?: {endpoint?: string; proxy?: boolean; upstream?: WebSocket}}) => {
             // Handle proxy connections (forward close to upstream)
             if (ws.data?.proxy && ws.data?.upstream) {
                 try {
@@ -331,7 +362,10 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
                 manager.close(ws)
             }
         },
-        message: (ws: any, message: string) => {
+        message: (
+            ws: WebSocketConnection & {data?: {endpoint?: string; proxy?: boolean; upstream?: WebSocket}},
+            message: string,
+        ) => {
             // Handle proxy connections (forward message to upstream)
             if (ws.data?.proxy && ws.data?.upstream) {
                 try {
@@ -348,7 +382,7 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
                 manager.message(ws, message, ws.data)
             }
         },
-        open: (ws: any) => {
+        open: (ws: WebSocketConnection & {data?: {endpoint?: string; proxy?: boolean; upstream?: WebSocket}}) => {
             // Handle proxy connections (set up bidirectional forwarding)
             if (ws.data?.proxy && ws.data?.upstream) {
                 const upstream = ws.data.upstream
@@ -356,7 +390,8 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
                 // Forward messages from upstream to client
                 upstream.onmessage = (event: MessageEvent) => {
                     try {
-                        if (ws.readyState === 1) { // WebSocket.OPEN
+                        // WebSocket.OPEN
+                        if (ws.readyState === 1) {
                             ws.send(event.data)
                         }
                     } catch(error) {
@@ -369,7 +404,7 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
                     logger.error(`[WS Proxy] Upstream connection error: ${error}`)
                     try {
                         ws.close(1011, 'Upstream Error')
-                    } catch(e) {
+                    } catch(_e) {
                         // Connection may already be closed
                     }
                 }
@@ -378,7 +413,7 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
                     logger.debug(`[WS Proxy] Upstream connection closed: ${event.code} ${event.reason}`)
                     try {
                         ws.close(event.code || 1000, event.reason || 'Upstream Closed')
-                    } catch(e) {
+                    } catch(_e) {
                         // Connection may already be closed
                     }
                 }

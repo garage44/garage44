@@ -172,7 +172,9 @@ export function useCollectionManager<TItem, TFormData>(
             const updatedItem = method === 'POST' ?
                 await api.post(config.updateEndpoint(itemId), payload) as TItem :
                 await api.put(config.updateEndpoint(itemId), payload) as TItem
-            state.items = state.items.map((item) => config.getId(item) === itemId ? updatedItem : item,)
+            state.items = state.items.map((item) => {
+                return config.getId(item) === itemId ? updatedItem : item
+            })
             state.editing = null
             state.formData = config.initialFormData
             notifier.notify({

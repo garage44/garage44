@@ -11,7 +11,8 @@ function hashString(str: string): number {
     for (let i = 0; i < str.length; i++) {
         const char = str.codePointAt(i)
         hash = ((hash << 5) - hash) + char
-        hash = hash & hash // Convert to 32bit integer
+        // Convert to 32bit integer
+        hash = hash & hash
     }
     return Math.abs(hash)
 }
@@ -34,7 +35,7 @@ export function getPlaceholderAvatar(userId: string): string {
  * @param userId Optional user ID (used for uploaded avatars stored as {userId}.{ext})
  * @returns Resolved avatar URL path
  */
-export function getAvatarUrl(avatar: string, userId?: string): string {
+export function getAvatarUrl(avatar: string, _userId?: string): string {
     // If it's a placeholder, serve from /img/
     if (avatar.startsWith('placeholder-')) {
         return `/img/${avatar}`

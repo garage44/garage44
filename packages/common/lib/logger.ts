@@ -4,8 +4,8 @@
  */
 
 // oxlint-disable-next-line init-declarations
-let LoggerImpl: any,
-    loggerImpl: any
+let LoggerImpl: typeof import('./logger.node').Logger | typeof import('./logger.browser').Logger
+let loggerImpl: import('./logger.node').Logger | import('./logger.browser').Logger
 
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     // Node/Bun

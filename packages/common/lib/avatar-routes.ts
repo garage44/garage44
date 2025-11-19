@@ -27,8 +27,8 @@ export function createAvatarRoutes(options: AvatarRoutesOptions) {
         /**
          * Register route for serving uploaded avatars from ~/.{appName}/avatars/
          */
-        registerAvatarRoute: (router: any) => {
-            router.get('/avatars/:filename', async(req: Request, params: Record<string, string>, session: any) => {
+        registerAvatarRoute: (router: {get: (path: string, handler: unknown) => void}) => {
+            router.get('/avatars/:filename', async(_req: Request, params: Record<string, string>, _session: unknown) => {
                 const filename = params.param0
 
                 // Basic path traversal protection
@@ -77,8 +77,8 @@ export function createAvatarRoutes(options: AvatarRoutesOptions) {
         /**
          * Register route for serving placeholder images from /img/
          */
-        registerPlaceholderRoute: (router: any) => {
-            router.get('/img/:filename', async(req: Request, params: Record<string, string>, session: any) => {
+        registerPlaceholderRoute: (router: {get: (path: string, handler: unknown) => void}) => {
+            router.get('/img/:filename', async(_req: Request, params: Record<string, string>, _session: unknown) => {
                 const filename = params.param0
 
                 // Basic path traversal protection
@@ -132,4 +132,3 @@ export function createAvatarRoutes(options: AvatarRoutesOptions) {
 export function getAvatarStoragePath(appName: string): string {
     return path.join(homedir(), `.${appName}`, 'avatars')
 }
-

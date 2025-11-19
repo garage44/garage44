@@ -41,7 +41,7 @@ export class Store<StateType extends object = object> {
         }
     }
 
-    filterKeys(obj: any, blueprint: any) {
+    filterKeys(obj: Record<string, unknown>, blueprint: Record<string, unknown>) {
         const result = {}
         for (const key in blueprint) {
             if (Object.hasOwn(obj, key)) {

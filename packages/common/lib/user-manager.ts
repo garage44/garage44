@@ -119,10 +119,11 @@ export class UserManager {
                 continue
             }
 
+            // Password same as username for default users
             await this.createUser({
                 email: userData.email,
                 password: {
-                    key: userData.username, // Password same as username for default users
+                    key: userData.username,
                     type: 'plaintext',
                 },
                 permissions: {
@@ -240,13 +241,15 @@ export class UserManager {
 
         // If updates contained an id, log a warning
         if (id && id !== user.id) {
-            console.warn(`[UserManager] updateUser: Attempted to change user ID from ${user.id} to ${id}, ignoring`)
+            const msg = `[UserManager] updateUser: Attempted to change user ID from ${user.id} to ${id}, ignoring`
+            console.warn(msg)
         }
 
+        // Always use the original user ID - never allow ID changes
         const updatedUser = {
             ...user,
             ...safeUpdates,
-            id: user.id, // Always use the original user ID - never allow ID changes
+            id: user.id,
             profile: mergedProfile,
             updatedAt: new Date().toISOString(),
         }
@@ -260,9 +263,11 @@ export class UserManager {
         const avatarValue = updatedUser.profile.avatar
         const updatedAtValue = Date.now()
 
+        // Log update details
         console.log(`[UserManager] updateUser: Updating user ${userId}`)
         console.log(`[UserManager] updateUser: Avatar value: ${avatarValue}`)
-        console.log('[UserManager] updateUser: Profile object:', JSON.stringify(updatedUser.profile))
+        const profileJson = JSON.stringify(updatedUser.profile)
+        console.log('[UserManager] updateUser: Profile object:', profileJson)
         console.log(`[UserManager] updateUser: WHERE id = ${userId}`)
 
         const result = stmt.run(
@@ -408,8 +413,9 @@ export class UserManager {
         const user = await this.getUser(userId)
         if (!user) return false
 
+        // Note: bcrypt hashing can be added later if needed
         const passwordObj = this.useBcrypt ?
-                {key: newPassword, type: 'bcrypt' as const} : // Note: bcrypt hashing can be added later if needed
+                {key: newPassword, type: 'bcrypt' as const} :
                 {key: newPassword, type: 'plaintext' as const}
 
         await this.updateUser(userId, {password: passwordObj})

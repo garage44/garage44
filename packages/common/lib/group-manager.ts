@@ -116,7 +116,7 @@ export class GroupManager {
 
     private async updateGroupWithUsers(groupName: string, users: User[]): Promise<void> {
         const groupFile = path.join(this.storagePath, `${groupName}.json`)
-        let groupData: any = {}
+        let groupData: Record<string, unknown> = {}
 
         // Load existing group data if it exists
         if (await fs.pathExists(groupFile)) {
@@ -138,20 +138,23 @@ export class GroupManager {
 
             // Update Pyrite arrays
             for (const role of roles) {
-                if (role === 'op' && !groupData.op.includes(user.username)) {
-                    groupData.op.push(user.username)
-                } else if (role === 'presenter' && !groupData.presenter.includes(user.username)) {
-                    groupData.presenter.push(user.username)
-                } else if (role === 'other' && !groupData.other.includes(user.username)) {
-                    groupData.other.push(user.username)
+                if (role === 'op' && !(groupData.op as string[]).includes(user.username)) {
+                    (groupData.op as string[]).push(user.username)
+                } else if (role === 'presenter' && !(groupData.presenter as string[]).includes(user.username)) {
+                    (groupData.presenter as string[]).push(user.username)
+                } else if (role === 'other' && !(groupData.other as string[]).includes(user.username)) {
+                    (groupData.other as string[]).push(user.username)
                 }
             }
 
             // Update native Galene format
             if (roles.length > 0) {
-                groupData.users[user.username] = {
-                    password: user.password, // Already in Galene format
-                    permissions: roles[0], // Primary role
+                // Already in Galene format
+                const users = groupData.users as Record<string, {password: string; permissions: string}>
+                users[user.username] = {
+                    // Primary role
+                    password: user.password,
+                    permissions: roles[0],
                 }
             }
         }

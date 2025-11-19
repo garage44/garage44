@@ -96,7 +96,8 @@ function create$t(store) {
 
         // Strip 'i18n.' prefix for i18next (it expects paths like 'path.to.translation')
         if (path.startsWith('i18n.')) {
-            path = path.slice(5) // Remove 'i18n.' prefix
+            // Remove 'i18n.' prefix
+            path = path.slice(5)
         }
 
         if (!store.state.language_ui.i18n[store.state.language_ui.selection]) {

@@ -109,7 +109,8 @@ const authMiddleware = async(request: Request, session: unknown, userManager: Us
     }
 
     // Allow authentication endpoints to pass through to handlers
-    if (url.pathname === '/api/context' || url.pathname === '/api/login' || url.pathname === '/api/logout' || url.pathname === '/api/users/me') {
+    const authEndpoints = ['/api/context', '/api/login', '/api/logout', '/api/users/me']
+    if (authEndpoints.includes(url.pathname)) {
         return true
     }
 
@@ -166,7 +167,12 @@ const handleWebSocket = (_ws: unknown, _request: Request) => {
 // Create unified middleware with package-specific configuration
 export const createMiddleware = (config: MiddlewareConfig, userManager: UserManager) => {
     return {
-        handleRequest: async(request: Request, server?: unknown, _logger?: unknown, _bunchyConfig?: unknown): Promise<Response | undefined> => {
+        handleRequest: async(
+            request: Request,
+            server?: unknown,
+            _logger?: unknown,
+            _bunchyConfig?: unknown,
+        ): Promise<Response | undefined> => {
             const url = new URL(request.url)
 
             // Handle custom WebSocket handlers first
@@ -189,7 +195,8 @@ export const createMiddleware = (config: MiddlewareConfig, userManager: UserMana
                         await populateNoSecuritySession(session, userManager, request)
                     }
 
-                    const success = (server as {upgrade: (req: Request, data: unknown) => boolean}).upgrade(request, {
+                    const upgradeFn = (server as {upgrade: (req: Request, data: unknown) => boolean}).upgrade
+                    const success = upgradeFn(request, {
                         data: {
                             endpoint: url.pathname,
                             session,
@@ -215,7 +222,11 @@ export const createMiddleware = (config: MiddlewareConfig, userManager: UserMana
         },
         handleWebSocket,
         sessionMiddleware: (request: Request) => sessionMiddleware(request, config.sessionCookieName),
-        setSessionCookie: (response: Response, sessionId: string, request?: Request) => setSessionCookie(response, sessionId, config.sessionCookieName, request),
+        setSessionCookie: (
+            response: Response,
+            sessionId: string,
+            request?: Request,
+        ) => setSessionCookie(response, sessionId, config.sessionCookieName, request),
         userManager,
     }
 }
@@ -361,10 +372,11 @@ export const createFinalHandler = (config: {
                 }
 
                 if (targetUser) {
+                    // Include password for SFU auth (will encrypt later)
                     context = {
                         ...baseContext,
                         id: targetUser.id,
-                        password: targetUser.password.key, // Include password for SFU auth (will encrypt later)
+                        password: targetUser.password.key,
                         profile: {
                             avatar: targetUser.profile.avatar || 'placeholder-1.png',
                             displayName: targetUser.profile.displayName || targetUser.username,
@@ -389,11 +401,14 @@ export const createFinalHandler = (config: {
                             await Promise.resolve(config.contextFunctions.adminContext()) :
                             await Promise.resolve(config.contextFunctions.userContext())
 
-                    // Include full user profile in context
+                    /*
+                     * Include full user profile in context
+                     * Include password for SFU auth (will encrypt later)
+                     */
                     context = {
                         ...baseContext,
                         id: user.id,
-                        password: user.password.key, // Include password for SFU auth (will encrypt later)
+                        password: user.password.key,
                         profile: {
                             avatar: user.profile.avatar || 'placeholder-1.png',
                             displayName: user.profile.displayName || user.username,
@@ -474,11 +489,14 @@ export const createFinalHandler = (config: {
                         await Promise.resolve(config.contextFunctions.adminContext()) :
                         await Promise.resolve(config.contextFunctions.userContext())
 
-                // Include full user profile in context
+                /*
+                 * Include full user profile in context
+                 * Include password for SFU auth (will encrypt later)
+                 */
                 context = {
                     ...baseContext,
                     id: user.id,
-                    password: user.password.key, // Include password for SFU auth (will encrypt later)
+                    password: user.password.key,
                     profile: {
                         avatar: user.profile.avatar || 'placeholder-1.png',
                         displayName: user.profile.displayName || user.username,

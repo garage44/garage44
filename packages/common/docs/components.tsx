@@ -124,7 +124,12 @@ export const Components = () => <div class='c-components styleguide-page'>
         <ComponentDemo component='FieldText' title='Field Text'>
             <div class='demo-grid'>
                 <FieldText help='Enter help text...' label='Basic Input' model={data.model.$textInput} />
-                <FieldText help='Enter help text...' label='With Placeholder' model={data.model.$textInput} placeholder='Enter text...' />
+                <FieldText
+                    help='Enter help text...'
+                    label='With Placeholder'
+                    model={data.model.$textInput}
+                    placeholder='Enter text...'
+                />
                 <FieldText help='Enter help text...' label='Required Field' model={data.model.$textInput} />
                 <FieldText disabled help='Enter help text...' label='Disabled' model={data.model.$textInput} />
             </div>

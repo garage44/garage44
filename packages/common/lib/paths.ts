@@ -25,15 +25,19 @@ function collectSource(source, path, ignore_cache = false) {
         }
 
         if ('source' in current && typeof current.source === 'string') {
+            // Check if we should ignore cache
             if (ignore_cache) {
                 sourceValues.push([current, path])
             } else if (current.cache === hash(current.source)) {
+                // Use cached value
                 cachedValues.push(current)
             } else {
+                // Need to translate
                 sourceValues.push([current, path])
             }
         }
 
+        // Traverse nested objects
         for (const key in current) {
             if (Object.hasOwn(current, key)) {
                 traverse(current[key], [...path, key])
@@ -43,6 +47,7 @@ function collectSource(source, path, ignore_cache = false) {
 
     const {id, ref} = pathRef(source, path)
     traverse(ref[id], path)
+    // Return collected values
     return {
         cached: cachedValues,
         targets: sourceValues,
@@ -57,8 +62,15 @@ function collectSource(source, path, ignore_cache = false) {
  * @param targetLanguages
  * @returns
  */
-function pathCreate(sourceObject: Record<string, unknown>, tagPath: string[], value: Tag, targetLanguages: TargetLanguage[], translations?: Record<string, string>) {
-    const {id, ref} = pathRef(sourceObject, tagPath, true)
+function pathCreate(
+    sourceObject: Record<string, unknown>,
+    tagPath: string[],
+    value: Tag,
+    targetLanguages: TargetLanguage[],
+    translations?: Record<string, string>,
+) {
+    const pathRefResult = pathRef(sourceObject, tagPath, true)
+    const {id, ref} = pathRefResult
     ref[id] = value
 
     const tag = tagPath.join('.')
@@ -135,7 +147,7 @@ function pathHas(source, path, key) {
  * @param {Object} source - The source object to modify
  * @param {Array} path - Path to the target node
  * @param {Object} modifier - Modifications to apply (typically {_collapsed: boolean})
- * @param {string} mode - How to apply the change: 'self' (target only), 'groups' (target+nested groups), 'all' (target+all nested)
+ * @param {string} mode - How to apply: 'self' (target only), 'groups' (target+nested groups), 'all' (target+all nested)
  */
 function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'all' = 'groups') {
     function applyRecursively(obj) {
@@ -161,6 +173,7 @@ function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'all' = 'g
         }
     }
 
+    // Apply modifier to children recursively
     function applyToChildren(obj) {
         if (!obj || typeof obj !== 'object') {
             return
@@ -173,7 +186,8 @@ function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'all' = 'g
                     const isTag = 'source' in value
 
                     // Apply based on mode and node type
-                    if ((mode === 'all') || (!isTag && mode === 'groups')) {
+                    const shouldApply = (mode === 'all') || (!isTag && mode === 'groups')
+                    if (shouldApply) {
                         mergeDeep(value, modifier)
                     }
 
@@ -189,7 +203,8 @@ function pathToggle(source, path, modifier, mode: 'self' | 'groups' | 'all' = 'g
     }
 
     // Handle empty path (root level)
-    if (!path || path.length === 0) {
+    const isEmptyPath = !path || path.length === 0
+    if (isEmptyPath) {
         // Apply to root node
         mergeDeep(source, modifier)
 
@@ -228,7 +243,8 @@ function pathUpdate(source, path, value) {
     // Update ref[id] with new values
     Object.assign(ref[id], value)
 
-    logger.info(`update path: ${path}`)
+    const pathStr = Array.isArray(path) ? path.join('.') : String(path)
+    logger.info(`update path: ${pathStr}`)
 }
 
 /**
@@ -255,7 +271,8 @@ function pathMove(source, oldPath, newPath) {
      * Update path symbol for moved object
      * Path format: i18n.path.to.translation
      */
-    const newPathString = `i18n.${newPath.join('.')}`
+    const newPathParts = newPath.join('.')
+    const newPathString = `i18n.${newPathParts}`
     if (typeof newSourceRef[newId] === 'object' && 'source' in newSourceRef[newId]) {
         newSourceRef[newId][I18N_PATH_SYMBOL] = newPathString
     }

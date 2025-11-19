@@ -21,12 +21,17 @@ function flattenEnv(obj, parent, res = {}) {
 }
 
 function formatBytes(size) {
-    if (size > 1024 ** 3) {
-        return `${Math.round((size / 1024 ** 3) * 10) / 10}GiB`
-    } if (size > 1024 ** 2) {
-        return `${Math.round((size / 1024 ** 2) * 10) / 10}MiB`
-    } if (size > 1024) {
-        return `${Math.round((size / 1024) * 10) / 10}KiB`
+    if (size > (1024 ** 3)) {
+        const gb = Math.round((size / (1024 ** 3)) * 10) / 10
+        return `${gb}GiB`
+    }
+    if (size > (1024 ** 2)) {
+        const mb = Math.round((size / (1024 ** 2)) * 10) / 10
+        return `${mb}MiB`
+    }
+    if (size > 1024) {
+        const kb = Math.round((size / 1024) * 10) / 10
+        return `${kb}KiB`
     }
     return `${size}B`
 }
@@ -39,9 +44,13 @@ function formatBytes(size) {
  * @returns {string} A 64-bit hex string hash value
  */
 function hash(str: string): string {
-    // FNV-1a hash algorithm constants
-    let h1 = 0xDE_AD_BE_EF // First half
-    let h2 = 0x41_C6_CE_57 // Second half
+    /*
+     * FNV-1a hash algorithm constants
+     * First half
+     */
+    let h1 = 0xDE_AD_BE_EF
+    // Second half
+    let h2 = 0x41_C6_CE_57
 
     for (let index = 0; index < str.length; index++) {
         const char = str.codePointAt(index)
@@ -60,8 +69,10 @@ function hash(str: string): string {
  * Recursively applies a modification function to every key-value pair within an object.
  *
  * @param {Object} reference - The object to be traversed and modified.
- * @param {Function} apply - The modification function to apply. It's called with the reference object, the current key, and the current path.
- * @param {Array} [refPath=[]] - An array representing the current path within the object. Automatically populated during recursion.
+ * @param {Function} apply - The modification function to apply.
+ *   It's called with the reference object, the current key, and the current path.
+ * @param {Array} [refPath=[]] - An array representing the current path within the object.
+ *   Automatically populated during recursion.
  */
 function keyMod(reference, apply, refPath = [], nestingLevel = 0) {
     apply(reference, null, refPath, nestingLevel)
@@ -164,7 +175,8 @@ function randomId(size = 8) {
 /**
  * Sorts the keys of an object, and recursively sorts the keys of any nested objects.
  *
- * @param {Object|null} obj - The object whose keys are to be sorted. If the input is not an object or is null, it is returned as is.
+ * @param {Object|null} obj - The object whose keys are to be sorted.
+ *   If the input is not an object or is null, it is returned as is.
  * @returns {Object|null} The new object with sorted keys, or the original input if it was not an object.
  */
 function sortNestedObjectKeys(obj) {
