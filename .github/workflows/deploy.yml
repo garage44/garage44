@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: Trigger VPS Deployment
+    name: Deploy code
     runs-on: ubuntu-latest
 
     steps:
@@ -34,9 +34,34 @@ jobs:
 
           if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
             echo "✅ Deployment webhook triggered successfully (HTTP $HTTP_CODE)"
-            echo "Response: $BODY"
+            echo ""
+            echo "Response:"
+            echo "$BODY" | jq '.' 2>/dev/null || echo "$BODY"
+            echo ""
+
+            # Parse and display deployment status
+            SUCCESS=$(echo "$BODY" | jq -r '.success // empty' 2>/dev/null)
+            MESSAGE=$(echo "$BODY" | jq -r '.message // empty' 2>/dev/null)
+            TIMESTAMP=$(echo "$BODY" | jq -r '.timestamp // empty' 2>/dev/null)
+
+            if [ "$SUCCESS" = "true" ]; then
+              echo "✅ Deployment Status: SUCCESS"
+              echo "📝 Message: $MESSAGE"
+              if [ -n "$TIMESTAMP" ]; then
+                echo "🕐 Timestamp: $TIMESTAMP"
+              fi
+            elif [ "$SUCCESS" = "false" ]; then
+              echo "❌ Deployment Status: FAILED"
+              echo "📝 Message: $MESSAGE"
+              if [ -n "$TIMESTAMP" ]; then
+                echo "🕐 Timestamp: $TIMESTAMP"
+              fi
+              exit 1
+            fi
           else
             echo "❌ Deployment webhook failed (HTTP $HTTP_CODE)"
-            echo "Response: $BODY"
+            echo ""
+            echo "Response:"
+            echo "$BODY" | jq '.' 2>/dev/null || echo "$BODY"
             exit 1
           fi
