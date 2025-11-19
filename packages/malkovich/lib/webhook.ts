@@ -569,17 +569,15 @@ export async function handleWebhook(req: Request): Promise<Response> {
         })
     }
 
-    // Process deployment asynchronously
+    // Process deployment synchronously
     console.log('[webhook] Received push event to main branch, starting deployment...')
-    deploy().then((result) => {
-        if (result.success) {
-            console.log('[webhook] Deployment successful')
-        } else {
-            console.error(`[webhook] Deployment failed: ${result.message}`)
-        }
-    }).catch((error) => {
-        console.error(`[webhook] Deployment error: ${error.message}`)
-    })
+    const deploymentResult = await deploy()
+
+    if (deploymentResult.success) {
+        console.log('[webhook] Deployment successful')
+    } else {
+        console.error(`[webhook] Deployment failed: ${deploymentResult.message}`)
+    }
 
     /*
      * Update all active PR deployments with main branch changes
@@ -593,12 +591,13 @@ export async function handleWebhook(req: Request): Promise<Response> {
         console.error(`[webhook] Error updating PR deployments: ${errorMessage}`)
     })
 
-    // Return immediately (deployment runs in background)
+    // Return deployment result
     return new Response(JSON.stringify({
-        message: 'Deployment triggered',
+        message: deploymentResult.message,
+        success: deploymentResult.success,
         timestamp: new Date().toISOString(),
     }), {
         headers: {'Content-Type': 'application/json'},
-        status: 202,
+        status: deploymentResult.success ? 200 : 500,
     })
 }
