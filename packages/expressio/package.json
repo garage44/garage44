@@ -56,7 +56,7 @@
     "dev": "NODE_ENV=development BUN_ENV=development bun run --watch service.ts start",
     "server": "NODE_ENV=production BUN_ENV=production bun service.ts start",
     "lint:css": "stylelint src/**/*.css",
-    "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json;eslint **/*.{ts,tsx} --config ../../eslint.config.js",
+    "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json || exit 1; eslint **/*.{ts,tsx} --config ../../eslint.config.js || exit 1",
     "test": "bun test"
   },
   "type": "module"
