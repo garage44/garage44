@@ -1,5 +1,4 @@
 export class Api {
-
     async delete(endpoint, data) {
         const response = await fetch(endpoint, {
             body: JSON.stringify(data),
@@ -16,7 +15,9 @@ export class Api {
         const url = new URL(endpoint, globalThis.location.origin)
         if (params) {
             Object.entries(params).forEach(([key, value]) => {
-                if (!value) {value = ''}
+                if (!value) {
+                    value = ''
+                }
                 url.searchParams.append(key, String(value))
             })
         }
@@ -32,8 +33,7 @@ export class Api {
         if (res.status === 401) {
             return {status: 'unauthorized'}
         }
-            return await res.json()
-
+        return await res.json()
     }
 
     async post(endpoint, data) {

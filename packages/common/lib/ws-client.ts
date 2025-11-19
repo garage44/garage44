@@ -22,22 +22,35 @@ class WebSocketClient extends EventEmitter {
     private ws: WebSocket | null = null
 
     private activeSubscriptions = new Set<string>()
+
     private authFailure = false
+
     private baseReconnectDelay = 100 // 1 second
+
     private eventHandlers: Record<string, ((data: MessageData) => void)[]> = {}
+
     private intentionalClose = false
+
     private maxReconnectAttempts = 10
+
     private maxReconnectDelay = 30_000 // 30 seconds
+
     private messageListeners: EventListener[] = []
+
     private pendingRequests = new Map<string, {
         reject: (reason?: unknown) => void
         resolve: (value: MessageData | null) => void
         timeout: ReturnType<typeof setTimeout>
     }>()
+
     private reconnectAttempts = 0
+
     private reconnectTimeout: ReturnType<typeof setTimeout> | null = null
+
     private requestTimeout = 30_000 // 30 seconds
+
     private url: string
+
     private messageQueue: {data?: MessageData; id?: string; method?: string; url: string}[] = []
 
     constructor(baseUrl: string) {
@@ -157,7 +170,7 @@ class WebSocketClient extends EventEmitter {
 
                 // Pass to generic message listeners
                 this.messageListeners.forEach((listener) => listener(event))
-            } catch (error) {
+            } catch(error) {
                 logger.error('[WS] failed to parse message', error)
             }
         }

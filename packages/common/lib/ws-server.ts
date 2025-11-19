@@ -9,23 +9,23 @@ type MessageData = Record<string, unknown>
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
 interface WebSocketContext {
-    ws: any // Bun WebSocket or standard WebSocket
-    session?: {
-        userid: string
-        [key: string]: unknown
-    }
-    method: HttpMethod
-    url: string
     broadcast: (url: string, data: MessageData, method?: string) => void
+    method: HttpMethod
+    session?: {
+        [key: string]: unknown
+        userid: string
+    }
     subscribe?: (topic: string) => void
     unsubscribe?: (topic: string) => void
+    url: string
+    ws: any // Bun WebSocket or standard WebSocket
 }
 
 interface ApiRequest {
-    params: Record<string, string>
-    query?: Record<string, unknown>
     data?: MessageData
     id?: string
+    params: Record<string, string>
+    query?: Record<string, unknown>
 }
 
 type Next = (ctx: WebSocketContext) => Promise<unknown>
@@ -33,21 +33,21 @@ type Middleware = (ctx: WebSocketContext, next: Next) => Promise<unknown>
 type ApiHandler = (ctx: WebSocketContext, request: ApiRequest) => Promise<unknown>
 
 interface RouteHandler {
-    route: string
-    method: HttpMethod
-    matchFn: (path: string) => false | { params: Record<string, string> }
     handler: ApiHandler
+    matchFn: (path: string) => false | {params: Record<string, string>}
+    method: HttpMethod
     middlewares: Middleware[]
+    route: string
 }
 
 interface WebSocketServerOptions {
-    endpoint: string
-    sessionMiddleware?: any
     authOptions?: {
         noSecurityEnv?: string
-        users?: {name: string, [key: string]: unknown}[]
+        users?: {[key: string]: unknown; name: string}[]
     }
+    endpoint: string
     globalMiddlewares?: Middleware[]
+    sessionMiddleware?: any
 }
 
 /**
@@ -55,11 +55,17 @@ interface WebSocketServerOptions {
  */
 class WebSocketServerManager extends EventEmitter {
     connections = new Set<any>()
+
     routeHandlers: RouteHandler[] = []
+
     subscriptions: Record<string, Set<any>> = {}
+
     clientSubscriptions = new WeakMap<any, Set<string>>()
+
     endpoint: string
+
     authOptions?: WebSocketServerOptions['authOptions']
+
     sessionMiddleware?: any
 
     // Global middlewares that will be applied to all routes
@@ -71,7 +77,7 @@ class WebSocketServerManager extends EventEmitter {
                 const result = await next(ctx)
                 logger.debug(`${ctx.method} ${ctx.url} - ${Date.now() - startTime}ms`)
                 return result
-            } catch (error) {
+            } catch(error) {
                 logger.error(`${ctx.method} ${ctx.url} - Failed: ${error.message}`)
                 throw error
             }
@@ -79,14 +85,10 @@ class WebSocketServerManager extends EventEmitter {
     ]
 
     api = {
-        delete: (route: string, handler: ApiHandler, middlewares?: Middleware[]) =>
-            this.registerApi('DELETE', route, handler, middlewares),
-        get: (route: string, handler: ApiHandler, middlewares?: Middleware[]) =>
-            this.registerApi('GET', route, handler, middlewares),
-        post: (route: string, handler: ApiHandler, middlewares?: Middleware[]) =>
-            this.registerApi('POST', route, handler, middlewares),
-        put: (route: string, handler: ApiHandler, middlewares?: Middleware[]) =>
-            this.registerApi('PUT', route, handler, middlewares),
+        delete: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => this.registerApi('DELETE', route, handler, middlewares),
+        get: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => this.registerApi('GET', route, handler, middlewares),
+        post: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => this.registerApi('POST', route, handler, middlewares),
+        put: (route: string, handler: ApiHandler, middlewares?: Middleware[]) => this.registerApi('PUT', route, handler, middlewares),
     }
 
     constructor(options: WebSocketServerOptions) {
@@ -112,7 +114,7 @@ class WebSocketServerManager extends EventEmitter {
                 index = _index
 
                 const middleware = _index === middlewares.length ?
-                    ((ctx) => handler(ctx, request)) :
+                        (ctx) => handler(ctx, request) :
                     middlewares[_index]
 
                 return middleware(ctx, (_ctx) => dispatch(_index + 1))
@@ -137,7 +139,7 @@ class WebSocketServerManager extends EventEmitter {
                 for (const [key, value] of Object.entries(result.params)) {
                     params[key] = Array.isArray(value) ? value[0] : value
                 }
-                return { params }
+                return {params}
             },
             method,
             middlewares,
@@ -177,7 +179,9 @@ class WebSocketServerManager extends EventEmitter {
     // Broadcast a message to all connections
     broadcast(url: string, data: MessageData, method = 'POST') {
         const message = constructMessage(url, data, undefined, method)
-        try { devContext.addWs({ ts: Date.now(), endpoint: this.endpoint, type: 'broadcast', url, dataPreview: JSON.stringify(message).slice(0, 200) }) } catch {}
+        try {
+            devContext.addWs({dataPreview: JSON.stringify(message).slice(0, 200), endpoint: this.endpoint, ts: Date.now(), type: 'broadcast', url})
+        } catch {}
         for (const ws of this.connections) {
             if (ws.readyState === 1) { // OPEN state for Bun WebSocket
                 ws.send(JSON.stringify(message))
@@ -216,7 +220,7 @@ class WebSocketServerManager extends EventEmitter {
 
         // Verify user exists if users list is provided
         if (this.authOptions.users && this.authOptions.users.length > 0) {
-            const user = this.authOptions.users.find(u => u.name === request.session.userid)
+            const user = this.authOptions.users.find((u) => u.name === request.session.userid)
             return !!user
         }
 
@@ -233,14 +237,18 @@ class WebSocketServerManager extends EventEmitter {
         }
 
         logger.success(`[WS] connection established: ${this.endpoint}`)
-        try { devContext.addWs({ ts: Date.now(), endpoint: this.endpoint, type: 'open' }) } catch {}
+        try {
+            devContext.addWs({endpoint: this.endpoint, ts: Date.now(), type: 'open'})
+        } catch {}
         this.connections.add(ws)
     }
 
     // Handle WebSocket connection close
     close(ws: any) {
         logger.debug(`[WS] connection closed: ${this.endpoint}`)
-        try { devContext.addWs({ ts: Date.now(), endpoint: this.endpoint, type: 'close' }) } catch {}
+        try {
+            devContext.addWs({endpoint: this.endpoint, ts: Date.now(), type: 'close'})
+        } catch {}
         this.connections.delete(ws)
         this.cleanupSubscriptions(ws)
     }
@@ -249,8 +257,10 @@ class WebSocketServerManager extends EventEmitter {
     async message(ws: any, message: string, request?: any) {
         try {
             const parsedMessage = JSON.parse(message)
-            const {url, data, id, method = 'GET'} = parsedMessage
-            try { devContext.addWs({ ts: Date.now(), endpoint: this.endpoint, type: 'message', url, dataPreview: JSON.stringify({ url, data, id, method }).slice(0, 200) }) } catch {}
+            const {data, id, method = 'GET', url} = parsedMessage
+            try {
+                devContext.addWs({dataPreview: JSON.stringify({data, id, method, url}).slice(0, 200), endpoint: this.endpoint, ts: Date.now(), type: 'message', url})
+            } catch {}
             // Create context for this request
             const ctx: WebSocketContext = {
                 broadcast: this.broadcast.bind(this),
@@ -264,7 +274,7 @@ class WebSocketServerManager extends EventEmitter {
 
             // Find matching route handler
             let matched = false
-            for (const {matchFn, handler, method: handlerMethod} of this.routeHandlers) {
+            for (const {handler, matchFn, method: handlerMethod} of this.routeHandlers) {
                 const matchResult = matchFn(url)
 
                 // Check both URL pattern match AND matching HTTP method
@@ -283,7 +293,7 @@ class WebSocketServerManager extends EventEmitter {
                             const response = constructMessage(url, (result as MessageData) || null, id)
                             ws.send(JSON.stringify(response))
                         }
-                    } catch (error) {
+                    } catch(error) {
                         const errorResponse = constructMessage(url, {error: error.message}, id)
                         ws.send(JSON.stringify(errorResponse))
                         logger.error('handler error:', error)
@@ -295,7 +305,7 @@ class WebSocketServerManager extends EventEmitter {
             if (!matched) {
                 logger.debug(`[WS] No route matched for: ${method} ${url}`)
             }
-        } catch (error) {
+        } catch(error) {
             logger.error('Error processing WebSocket message:', error)
         }
     }
@@ -309,7 +319,7 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
             if (ws.data?.proxy && ws.data?.upstream) {
                 try {
                     ws.data.upstream.close()
-                } catch (error) {
+                } catch(error) {
                     logger.debug(`[WS Proxy] Error closing upstream connection: ${error}`)
                 }
                 return
@@ -326,7 +336,7 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
             if (ws.data?.proxy && ws.data?.upstream) {
                 try {
                     ws.data.upstream.send(message)
-                } catch (error) {
+                } catch(error) {
                     logger.error(`[WS Proxy] Error forwarding message: ${error}`)
                 }
                 return
@@ -349,7 +359,7 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
                         if (ws.readyState === 1) { // WebSocket.OPEN
                             ws.send(event.data)
                         }
-                    } catch (error) {
+                    } catch(error) {
                         logger.error(`[WS Proxy] Error forwarding message from upstream: ${error}`)
                     }
                 }
@@ -359,7 +369,7 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
                     logger.error(`[WS Proxy] Upstream connection error: ${error}`)
                     try {
                         ws.close(1011, 'Upstream Error')
-                    } catch (e) {
+                    } catch(e) {
                         // Connection may already be closed
                     }
                 }
@@ -368,7 +378,7 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
                     logger.debug(`[WS Proxy] Upstream connection closed: ${event.code} ${event.reason}`)
                     try {
                         ws.close(event.code || 1000, event.reason || 'Upstream Closed')
-                    } catch (e) {
+                    } catch(e) {
                         // Connection may already be closed
                     }
                 }
@@ -390,8 +400,10 @@ function createBunWebSocketHandler(managers: Map<string, WebSocketServerManager>
     }
 }
 
-// Note: broadcast, emitEvent, and connections are now managed per WebSocketServerManager instance
-// Each package should use their own manager instances directly
+/*
+ * Note: broadcast, emitEvent, and connections are now managed per WebSocketServerManager instance
+ * Each package should use their own manager instances directly
+ */
 
 // Legacy exports for backward compatibility
 type SubscriptionContext = WebSocketContext

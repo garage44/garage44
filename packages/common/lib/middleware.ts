@@ -48,9 +48,11 @@ const sessionMiddleware = (request: Request, sessionCookieName: string) => {
     return {session: sessions.get(sessionId), sessionId}
 }
 
-// Helper to populate session with user when GARAGE44_NO_SECURITY is enabled
-// Supports per-session override via GARAGE44_DEBUG_USER cookie or query parameter
-const populateNoSecuritySession = async (session: unknown, userManager: UserManager, request?: Request): Promise<void> => {
+/*
+ * Helper to populate session with user when GARAGE44_NO_SECURITY is enabled
+ * Supports per-session override via GARAGE44_DEBUG_USER cookie or query parameter
+ */
+const populateNoSecuritySession = async(session: unknown, userManager: UserManager, request?: Request): Promise<void> => {
     const noSecurityValue = process.env.GARAGE44_NO_SECURITY
     if (!noSecurityValue) return
 
@@ -99,7 +101,7 @@ const populateNoSecuritySession = async (session: unknown, userManager: UserMana
 }
 
 // Auth middleware for Bun.serve
-const authMiddleware = async (request: Request, session: unknown, userManager: UserManager) => {
+const authMiddleware = async(request: Request, session: unknown, userManager: UserManager) => {
     const url = new URL(request.url)
 
     if (!url.pathname.startsWith('/api')) {
@@ -130,16 +132,18 @@ const authMiddleware = async (request: Request, session: unknown, userManager: U
 // Helper to set session cookie in response
 const setSessionCookie = (response: Response, sessionId: string, sessionCookieName: string, request?: Request) => {
     const headers = new Headers(response.headers)
-    
-    // Check if request is over HTTPS (for PR deployments and production)
-    // Check X-Forwarded-Proto header (set by nginx) or request URL protocol
+
+    /*
+     * Check if request is over HTTPS (for PR deployments and production)
+     * Check X-Forwarded-Proto header (set by nginx) or request URL protocol
+     */
     let isSecure = false
     if (request) {
         const forwardedProto = request.headers.get('X-Forwarded-Proto')
         const url = new URL(request.url)
         isSecure = forwardedProto === 'https' || url.protocol === 'https:'
     }
-    
+
     // Add Secure flag when served over HTTPS (required for cookies on HTTPS sites)
     const secureFlag = isSecure ? '; Secure' : ''
     headers.set('Set-Cookie', `${sessionCookieName}=${sessionId}; Path=/; HttpOnly; SameSite=Strict${secureFlag}`)
@@ -152,15 +156,17 @@ const setSessionCookie = (response: Response, sessionId: string, sessionCookieNa
 
 // WebSocket handler for Bun.serve
 const handleWebSocket = (_ws: unknown, _request: Request) => {
-    // Handle WebSocket connections
-    // This will be enhanced by the WebSocket server implementation
+    /*
+     * Handle WebSocket connections
+     * This will be enhanced by the WebSocket server implementation
+     */
 }
 
 
 // Create unified middleware with package-specific configuration
 export const createMiddleware = (config: MiddlewareConfig, userManager: UserManager) => {
     return {
-        handleRequest: async (request: Request, server?: unknown, _logger?: unknown, _bunchyConfig?: unknown): Promise<Response | undefined> => {
+        handleRequest: async(request: Request, server?: unknown, _logger?: unknown, _bunchyConfig?: unknown): Promise<Response | undefined> => {
             const url = new URL(request.url)
 
             // Handle custom WebSocket handlers first
@@ -200,7 +206,7 @@ export const createMiddleware = (config: MiddlewareConfig, userManager: UserMana
             // Handle session and auth
             const {session} = sessionMiddleware(request, config.sessionCookieName)
 
-            if (!(await authMiddleware(request, session, userManager))) {
+            if (!await authMiddleware(request, session, userManager)) {
                 return new Response('Unauthorized', {status: 401})
             }
 
@@ -244,7 +250,6 @@ export const createFinalHandler = (config: {
     sessionCookieName: string
     userManager: UserManager
 }) => {
-
     const unifiedMiddleware = createMiddleware({
         configPath: config.configPath,
         customWebSocketHandlers: config.customWebSocketHandlers,
@@ -253,7 +258,7 @@ export const createFinalHandler = (config: {
         sessionCookieName: config.sessionCookieName,
     }, config.userManager)
 
-    return async (request: Request, server?: unknown): Promise<Response | undefined> => {
+    return async(request: Request, server?: unknown): Promise<Response | undefined> => {
         const url = new URL(request.url)
 
         config.devContext.addHttp({method: request.method, ts: Date.now(), url: url.pathname})
@@ -264,8 +269,11 @@ export const createFinalHandler = (config: {
         // Populate session with user if GARAGE44_NO_SECURITY is enabled
         if (process.env.GARAGE44_NO_SECURITY && !(session as {userid?: string}).userid) {
             await populateNoSecuritySession(session, config.userManager, request)
-            // Session is stored in Map, modifying it in place persists automatically
-            // But ensure it's set back in case of reference issues
+
+            /*
+             * Session is stored in Map, modifying it in place persists automatically
+             * But ensure it's set back in case of reference issues
+             */
             sessions.set(sessionId, session)
             const userId = (session as {userid?: string}).userid
             if (userId) {
@@ -284,16 +292,20 @@ export const createFinalHandler = (config: {
             }
         }
 
-        // Use unified middleware for session/auth and custom handlers
-        // Pass the populated session to unified middleware by ensuring it uses the same session
+        /*
+         * Use unified middleware for session/auth and custom handlers
+         * Pass the populated session to unified middleware by ensuring it uses the same session
+         */
         const unifiedResponse = await unifiedMiddleware.handleRequest(request, server, config.logger, null)
         if (unifiedResponse) {
             return unifiedResponse
         }
 
-        // Reuse the same session from the first call instead of creating a new one
-        // This ensures we don't create multiple sessions for the same request
-        // The session object is passed by reference, so modifications persist
+        /*
+         * Reuse the same session from the first call instead of creating a new one
+         * This ensures we don't create multiple sessions for the same request
+         * The session object is passed by reference, so modifications persist
+         */
         const finalSession = session
         const finalSessionId = sessionId
 
@@ -373,9 +385,9 @@ export const createFinalHandler = (config: {
             if ((finalSession as {userid?: string})?.userid) {
                 const user = await config.userManager.getUserByUsername((finalSession as {userid: string}).userid)
                 if (user) {
-                    const baseContext = user.permissions?.admin
-                        ? await Promise.resolve(config.contextFunctions.adminContext())
-                        : await Promise.resolve(config.contextFunctions.userContext())
+                    const baseContext = user.permissions?.admin ?
+                            await Promise.resolve(config.contextFunctions.adminContext()) :
+                            await Promise.resolve(config.contextFunctions.userContext())
 
                     // Include full user profile in context
                     context = {
@@ -445,17 +457,22 @@ export const createFinalHandler = (config: {
             const user = await config.userManager.authenticate(username, password)
 
             if (user) {
-                // Use finalSession and finalSessionId to ensure we're modifying the session that will be used
-                // Set the user in session
-                ;(finalSession as {userid: string}).userid = user.username
-                // Explicitly save the session to ensure it persists
-                // Since JavaScript objects are passed by reference, modifying finalSession updates the Map entry
-                // But we explicitly set it again to ensure it's stored with the correct sessionId
+                /*
+                 * Use finalSession and finalSessionId to ensure we're modifying the session that will be used
+                 * Set the user in session
+                 */
+                (finalSession as {userid: string}).userid = user.username
+
+                /*
+                 * Explicitly save the session to ensure it persists
+                 * Since JavaScript objects are passed by reference, modifying finalSession updates the Map entry
+                 * But we explicitly set it again to ensure it's stored with the correct sessionId
+                 */
                 sessions.set(finalSessionId, finalSession)
 
-                const baseContext = user.permissions?.admin
-                    ? await Promise.resolve(config.contextFunctions.adminContext())
-                    : await Promise.resolve(config.contextFunctions.userContext())
+                const baseContext = user.permissions?.admin ?
+                        await Promise.resolve(config.contextFunctions.adminContext()) :
+                        await Promise.resolve(config.contextFunctions.userContext())
 
                 // Include full user profile in context
                 context = {
@@ -475,8 +492,11 @@ export const createFinalHandler = (config: {
             const loginResponse = new Response(JSON.stringify(context), {
                 headers: {'Content-Type': 'application/json'},
             })
-            // Set session cookie after login (with Secure flag for HTTPS)
-            // Use finalSessionId to ensure consistency with the session we just modified
+
+            /*
+             * Set session cookie after login (with Secure flag for HTTPS)
+             * Use finalSessionId to ensure consistency with the session we just modified
+             */
             return unifiedMiddleware.setSessionCookie(loginResponse, finalSessionId, request)
         }
 
@@ -515,7 +535,7 @@ export const createFinalHandler = (config: {
 
                     return new Response(file)
                 }
-            } catch (error) {
+            } catch(error) {
                 // File doesn't exist, continue to next handler
                 config.logger.debug(`[HTTP] static file not found: ${filePath} (${error})`)
             }
@@ -540,7 +560,7 @@ export const createFinalHandler = (config: {
                 config.devContext.addHttp({method: request.method, status: 200, ts: Date.now(), url: url.pathname})
                 return unifiedMiddleware.setSessionCookie(response, sessionId, request)
             }
-        } catch (error) {
+        } catch(error) {
             // index.html doesn't exist
             config.logger.debug(`[HTTP] SPA fallback index.html not found: ${error}`)
         }

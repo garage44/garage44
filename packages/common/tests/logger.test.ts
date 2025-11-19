@@ -30,9 +30,9 @@ fileLogger.error('Error message with file output')
 
 // Test 3: Log Level Filtering
 console.log('\n=== Test 3: Log Level Filtering ===')
-const debugLogger = new Logger({ level: 'debug' })
-const infoLogger = new Logger({ level: 'info' })
-const warnLogger = new Logger({ level: 'warn' })
+const debugLogger = new Logger({level: 'debug'})
+const infoLogger = new Logger({level: 'info'})
+const warnLogger = new Logger({level: 'warn'})
 
 debugLogger.debug('Debug message (should show)')
 infoLogger.debug('Debug message (should NOT show)')
@@ -41,17 +41,17 @@ warnLogger.warn('Warn message (should show)')
 
 // Test 4: Object logging
 console.log('\n=== Test 4: Object Logging ===')
-const objLogger = new Logger({ level: 'debug' })
+const objLogger = new Logger({level: 'debug'})
 objLogger.info('Logging an object:', {
     name: 'test',
-    nested: { key: 'value' },
+    nested: {key: 'value'},
     value: 123,
 })
-objLogger.debug('Debug with multiple args:', 'string', 42, { obj: true })
+objLogger.debug('Debug with multiple args:', 'string', 42, {obj: true})
 
 // Test 5: Dynamic Configuration
 console.log('\n=== Test 5: Dynamic Configuration ===')
-const dynamicLogger = new Logger({ level: 'warn' })
+const dynamicLogger = new Logger({level: 'warn'})
 dynamicLogger.info('This should NOT show (warn level)')
 dynamicLogger.setLevel('info')
 dynamicLogger.info('This should show (changed to info level)')

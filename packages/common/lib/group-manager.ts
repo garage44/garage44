@@ -26,6 +26,7 @@ export interface GroupManagerConfig {
 
 export class GroupManager {
     private storagePath: string
+
     private userManager: UserManager
 
     constructor(config: GroupManagerConfig) {

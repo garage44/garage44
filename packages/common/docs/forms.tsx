@@ -16,7 +16,6 @@ import {
 import {deepSignal} from 'deepsignal'
 
 
-
 // Form data model
 const formData = deepSignal({
     age: 0,
@@ -47,7 +46,7 @@ const formData = deepSignal({
 })
 
 // Form submission handler
-const handleSubmit = async (e: Event) => {
+const handleSubmit = async(e: Event) => {
     e.preventDefault()
 
     // Basic validation
@@ -92,73 +91,72 @@ const handleReset = () => {
 }
 
 export const Forms = () => {
-
     return (
-        <div class="styleguide-page">
+        <div class='styleguide-page'>
             <h1>Forms</h1>
             <p>Comprehensive form showcase demonstrating all field components with best practices for form layout and user experience.</p>
 
-            <div class="form-demo">
-                <form onSubmit={handleSubmit} class="form">
+            <div class='form-demo'>
+                <form class='form' onSubmit={handleSubmit}>
                     {/* Personal Information Section */}
-                    <fieldset class="form-section">
-                        <legend class="header">Personal Information</legend>
-                        <div class="content">
-                            <div class="form-row">
+                    <fieldset class='form-section'>
+                        <legend class='header'>Personal Information</legend>
+                        <div class='content'>
+                            <div class='form-row'>
                                 <FieldText
-                                    help="Please enter your first name"
-                                    label="First Name"
+                                    help='Please enter your first name'
+                                    label='First Name'
                                     model={formData.$firstName}
-                                    placeholder="Enter your first name"
+                                    placeholder='Enter your first name'
                                 />
                                 <FieldText
-                                    help="Please enter your last name"
-                                    label="Last Name"
+                                    help='Please enter your last name'
+                                    label='Last Name'
                                     model={formData.$lastName}
-                                    placeholder="Enter your last name"
+                                    placeholder='Enter your last name'
                                 />
                             </div>
-                            <div class="form-row">
+                            <div class='form-row'>
                                 <FieldText
-                                    help="Please enter your email address"
-                                    label="Email Address"
+                                    help='Please enter your email address'
+                                    label='Email Address'
                                     model={formData.$email}
-                                    placeholder="Enter your email"
-                                    type="email"
+                                    placeholder='Enter your email'
+                                    type='email'
                                 />
                                 <FieldNumber
-                                    help="Please enter your age"
-                                    label="Age"
-                                    value={formData.age}
+                                    help='Please enter your age'
+                                    label='Age'
                                     onChange={(v) => formData.age = v}
+                                    value={formData.age}
                                 />
                             </div>
                         </div>
                     </fieldset>
 
                     {/* Account Settings Section */}
-                    <fieldset class="form-section">
-                        <legend class="header">Account Settings</legend>
-                        <div class="content">
-                            <div class="form-row">
+                    <fieldset class='form-section'>
+                        <legend class='header'>Account Settings</legend>
+                        <div class='content'>
+                            <div class='form-row'>
                                 <FieldText
-                                    help="Please enter your password"
-                                    label="Password"
+                                    help='Please enter your password'
+                                    label='Password'
                                     model={formData.$password}
-                                    placeholder="Enter your password"
-                                    type="password"
+                                    placeholder='Enter your password'
+                                    type='password'
                                 />
                                 <FieldText
-                                    label="Confirm Password"
-                                    help="Please confirm your password"
+                                    help='Please confirm your password'
+                                    label='Confirm Password'
                                     model={formData.$confirmPassword}
-                                    placeholder="Confirm your password"
-                                    type="password"
+                                    placeholder='Confirm your password'
+                                    type='password'
                                 />
                             </div>
-                            <div class="form-row">
+                            <div class='form-row'>
                                 <FieldCheckbox
-                                    label="I accept the terms and conditions"
+                                    label='I accept the terms and conditions'
                                     model={formData.$termsAccepted}
                                 />
                             </div>
@@ -166,23 +164,23 @@ export const Forms = () => {
                     </fieldset>
 
                     {/* Preferences Section */}
-                    <fieldset class="form-section">
-                        <legend class="header">Preferences</legend>
-                        <div class="content">
-                            <div class="form-row">
+                    <fieldset class='form-section'>
+                        <legend class='header'>Preferences</legend>
+                        <div class='content'>
+                            <div class='form-row'>
                                 <FieldRadioGroup
-                                    label="Theme Preference"
-                                    value={formData.themePreference}
+                                    label='Theme Preference'
                                     onChange={(v) => formData.themePreference = v}
                                     options={[
                                         ['light', 'Light'],
                                         ['dark', 'Dark'],
                                         ['auto', 'Auto (System)'],
                                     ]}
+                                    value={formData.themePreference}
                                 />
                                 <FieldCheckboxGroup
-                                    className=""
-                                    label="Notifications"
+                                    className=''
+                                    label='Notifications'
                                     model={[
                                         {label: 'Email notifications', value: formData.notifications.email},
                                         {label: 'Push notifications', value: formData.notifications.push},
@@ -192,10 +190,9 @@ export const Forms = () => {
                                     <div />
                                 </FieldCheckboxGroup>
                             </div>
-                            <div class="form-row">
+                            <div class='form-row'>
                                 <FieldMultiSelect
-                                    label="Interests"
-                                    value={formData.interests}
+                                    label='Interests'
                                     onChange={(v) => formData.interests = v}
                                     options={[
                                         {id: 'tech', name: 'Technology'},
@@ -205,24 +202,25 @@ export const Forms = () => {
                                         {id: 'sports', name: 'Sports'},
                                         {id: 'music', name: 'Music'},
                                     ]}
+                                    value={formData.interests}
                                 />
                             </div>
                         </div>
                     </fieldset>
 
                     {/* Additional Info Section */}
-                    <fieldset class="form-section">
-                        <legend class="header">Additional Information</legend>
-                        <div class="content">
-                            <div class="form-row">
+                    <fieldset class='form-section'>
+                        <legend class='header'>Additional Information</legend>
+                        <div class='content'>
+                            <div class='form-row'>
                                 <FieldTextarea
-                                    label="Bio"
-                                    value={formData.bio}
+                                    label='Bio'
                                     onChange={(v) => formData.bio = v}
-                                    placeholder="Tell us about yourself..."
+                                    placeholder='Tell us about yourself...'
+                                    value={formData.bio}
                                 />
                                 <FieldSelect
-                                    label="Country"
+                                    label='Country'
                                     model={formData.$country}
                                     options={[
                                         {id: '', name: 'Select a country'},
@@ -235,17 +233,17 @@ export const Forms = () => {
                                     ]}
                                 />
                             </div>
-                            <div class="form-row">
-                                <div class="form-slider-container field">
-                                    <div class="label">Experience Level</div>
+                            <div class='form-row'>
+                                <div class='form-slider-container field'>
+                                    <div class='label'>Experience Level</div>
                                     <FieldSlider
-                                        value={formData.experienceLevel}
-                                        onChange={(v) => formData.experienceLevel = v}
                                         IconComponent={Icon}
+                                        onChange={(v) => formData.experienceLevel = v}
+                                        value={formData.experienceLevel}
                                     />
                                 </div>
                                 <FieldUpload
-                                    label="Profile Picture"
+                                    label='Profile Picture'
                                     model={[formData, 'profilePicture']}
                                 />
                             </div>
@@ -253,19 +251,19 @@ export const Forms = () => {
                     </fieldset>
 
                     {/* Form Actions */}
-                    <div class="form-actions">
+                    <div class='form-actions'>
                         <ButtonGroup active={false}>
                             <Button
-                                icon="save"
-                                label="Submit Form"
-                                type="success"
+                                icon='save'
+                                label='Submit Form'
                                 onClick={handleSubmit}
+                                type='success'
                             />
                             <Button
-                                icon="refresh"
-                                label="Reset Form"
-                                type="default"
+                                icon='refresh'
+                                label='Reset Form'
                                 onClick={handleReset}
+                                type='default'
                             />
                         </ButtonGroup>
                     </div>

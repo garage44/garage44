@@ -24,6 +24,7 @@ const COLORS = {
 
 export class Logger {
     private level: LogLevel
+
     private fileStream?: any
 
     constructor({file, level = 'info' }: {file?: string; level?: LogLevel} = {}) {
@@ -110,21 +111,27 @@ export class Logger {
     error(msg: string, ...args: any[]) {
         this.log('error', msg, ...args)
     }
+
     warn(msg: string, ...args: any[]) {
         this.log('warn', msg, ...args)
     }
+
     info(msg: string, ...args: any[]) {
         this.log('info', msg, ...args)
     }
+
     remote(msg: string, ...args: any[]) {
         this.log('remote', msg, ...args)
     }
+
     success(msg: string, ...args: any[]) {
         this.log('success', msg, ...args)
     }
+
     verbose(msg: string, ...args: any[]) {
         this.log('verbose', msg, ...args)
     }
+
     debug(msg: string, ...args: any[]) {
         this.log('debug', msg, ...args)
     }
@@ -132,6 +139,7 @@ export class Logger {
     setLevel(level: LogLevel) {
         this.level = level
     }
+
     close() {
         if (this.fileStream) {
             this.fileStream.end()

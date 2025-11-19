@@ -83,8 +83,10 @@ async function init(translations = null, api = null, store = null) {
  */
 function create$t(store) {
     return (key: Record<string, unknown>, context = null): string => {
-        // Extract path from object using Symbol
-        // Path format: i18n.path.to.translation
+        /*
+         * Extract path from object using Symbol
+         * Path format: i18n.path.to.translation
+         */
         let path = (key as {[I18N_PATH_SYMBOL]?: string})[I18N_PATH_SYMBOL]
 
         if (!path || typeof path !== 'string') {

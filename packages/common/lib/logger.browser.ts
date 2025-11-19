@@ -20,6 +20,7 @@ const COLORS = {
 
 class Logger {
     private level: LogLevel
+
     private logForwarder?: (level: LogLevel, msg: string, args: any[]) => void
 
     constructor({level = 'info' }: {level?: LogLevel} = {}) {
@@ -84,30 +85,39 @@ class Logger {
             }
         }
     }
+
     error(msg: string, ...args: any[]) {
-        this.log('error', msg, ...args) 
+        this.log('error', msg, ...args)
     }
+
     warn(msg: string, ...args: any[]) {
-        this.log('warn', msg, ...args) 
+        this.log('warn', msg, ...args)
     }
+
     info(msg: string, ...args: any[]) {
-        this.log('info', msg, ...args) 
+        this.log('info', msg, ...args)
     }
+
     remote(msg: string, ...args: any[]) {
-        this.log('remote', msg, ...args) 
+        this.log('remote', msg, ...args)
     }
+
     success(msg: string, ...args: any[]) {
-        this.log('success', msg, ...args) 
+        this.log('success', msg, ...args)
     }
+
     verbose(msg: string, ...args: any[]) {
-        this.log('verbose', msg, ...args) 
+        this.log('verbose', msg, ...args)
     }
+
     debug(msg: string, ...args: any[]) {
-        this.log('debug', msg, ...args) 
+        this.log('debug', msg, ...args)
     }
+
     setLevel(level: LogLevel) {
-        this.level = level 
+        this.level = level
     }
+
     close() {}
 }
 

@@ -13,12 +13,13 @@ export default function UsersContext() {
             if (!user || !user.id) return false
             const normalizedId = String(user.id).trim()
             if (seenIds.has(normalizedId)) {
-                return false // Duplicate, skip
+                // Duplicate, skip
+                return false
             }
             seenIds.add(normalizedId)
             return true
         })
-        
+
         // Sort deduplicated users
         const users = [...uniqueUsers]
         users.sort(function(a, b) {

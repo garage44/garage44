@@ -23,19 +23,23 @@ type LogEvent = {
 }
 
 
-
 class DevContext {
     http = new RingBuffer<HttpEvent>(500)
+
     ws = new RingBuffer<WsEvent>(500)
+
     logs = new RingBuffer<LogEvent>(500)
+
     errors = new RingBuffer<LogEvent>(200)
 
     addHttp(e: HttpEvent) {
         this.http.push(e)
     }
+
     addWs(e: WsEvent) {
         this.ws.push(e)
     }
+
     addLog(level: string, message: string) {
         const evt = {level, message, ts: Date.now()}
         if (level === 'error') {

@@ -4,8 +4,8 @@ import {copyObject, mergeDeep} from './utils'
 
 
 export class Store<StateType extends object = object> {
-
     state: DeepSignal<StateType>
+
     persistantState?: StateType
 
     constructor() {

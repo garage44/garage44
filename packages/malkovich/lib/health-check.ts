@@ -2,9 +2,9 @@ import {$} from 'bun'
 import type {PRDeployment} from './pr-registry'
 
 export interface HealthCheckResult {
+    details?: Record<string, unknown>
     healthy: boolean
     message: string
-    details?: Record<string, unknown>
 }
 
 /**
@@ -32,12 +32,12 @@ export async function checkServiceStatus(serviceName: string): Promise<HealthChe
         const statusOutput = detailedStatus.stdout?.toString() || detailedStatus.stderr?.toString() || 'Unknown error'
 
         return {
-            healthy: false,
-            message: `Service ${serviceName} check failed`,
             details: {
                 exitCode: statusResult.exitCode,
                 statusOutput: statusOutput.slice(0, 1000), // Limit output size
             },
+            healthy: false,
+            message: `Service ${serviceName} check failed`,
         }
     } catch(error) {
         const message = error instanceof Error ? error.message : String(error)
@@ -94,35 +94,37 @@ export async function checkHttpEndpoint(url: string, timeoutMs = 10000): Promise
 
         try {
             const response = await fetch(url, {
-                method: 'GET',
-                signal: controller.signal,
                 headers: {
                     'User-Agent': 'Malkovich-HealthCheck/1.0',
                 },
+                method: 'GET',
+                signal: controller.signal,
             })
 
             clearTimeout(timeoutId)
 
             if (response.ok || response.status < 500) {
-                // Accept 2xx, 3xx, and 4xx as "healthy" (service is responding)
-                // Only 5xx indicates service problems
+                /*
+                 * Accept 2xx, 3xx, and 4xx as "healthy" (service is responding)
+                 * Only 5xx indicates service problems
+                 */
                 return {
-                    healthy: true,
-                    message: `HTTP endpoint ${url} is accessible (status: ${response.status})`,
                     details: {
                         status: response.status,
                         statusText: response.statusText,
                     },
+                    healthy: true,
+                    message: `HTTP endpoint ${url} is accessible (status: ${response.status})`,
                 }
             }
 
             return {
-                healthy: false,
-                message: `HTTP endpoint ${url} returned error status: ${response.status}`,
                 details: {
                     status: response.status,
                     statusText: response.statusText,
                 },
+                healthy: false,
+                message: `HTTP endpoint ${url} returned error status: ${response.status}`,
             }
         } catch(fetchError) {
             clearTimeout(timeoutId)
@@ -175,9 +177,9 @@ export async function waitForService(
     }
 
     return {
+        details: finalCheck.details,
         healthy: false,
         message: `Service ${serviceName} did not become active within ${maxWaitMs}ms`,
-        details: finalCheck.details,
     }
 }
 
@@ -231,9 +233,9 @@ export async function waitForHttpEndpoint(
         const check = await checkHttpEndpoint(url, timeoutMs)
         if (check.healthy) {
             return {
+                details: check.details,
                 healthy: true,
                 message: `HTTP endpoint ${url} became accessible after ${Date.now() - startTime}ms`,
-                details: check.details,
             }
         }
 
@@ -248,9 +250,9 @@ export async function waitForHttpEndpoint(
     }
 
     return {
+        details: finalCheck.details,
         healthy: false,
         message: `HTTP endpoint ${url} did not become accessible within ${maxWaitMs}ms`,
-        details: finalCheck.details,
     }
 }
 
@@ -261,8 +263,8 @@ export async function checkPRDeploymentHealth(
     deployment: PRDeployment,
     packagesToDeploy: string[],
 ): Promise<{
-    healthy: boolean
     checks: Array<{name: string; result: HealthCheckResult}>
+    healthy: boolean
     message: string
 }> {
     const checks: Array<{name: string; result: HealthCheckResult}> = []
@@ -308,10 +310,10 @@ export async function checkPRDeploymentHealth(
     const failedChecks = checks.filter((check) => !check.result.healthy)
 
     return {
-        healthy: allHealthy,
         checks,
-        message: allHealthy
-            ? 'All health checks passed'
-            : `${failedChecks.length} health check(s) failed: ${failedChecks.map((c) => c.name).join(', ')}`,
+        healthy: allHealthy,
+        message: allHealthy ?
+            'All health checks passed' :
+            `${failedChecks.length} health check(s) failed: ${failedChecks.map((c) => c.name).join(', ')}`,
     }
 }

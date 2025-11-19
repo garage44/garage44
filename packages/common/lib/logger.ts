@@ -1,8 +1,11 @@
-// Universal logger entrypoint
-// This file conditionally exports the Node or browser logger implementation
+/*
+ * Universal logger entrypoint
+ * This file conditionally exports the Node or browser logger implementation
+ */
 
 // oxlint-disable-next-line init-declarations
-let LoggerImpl: any, loggerImpl: any
+let LoggerImpl: any,
+    loggerImpl: any
 
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     // Node/Bun

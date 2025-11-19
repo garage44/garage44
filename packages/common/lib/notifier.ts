@@ -1,12 +1,12 @@
 export interface Notification {
-    id?: number
     icon?: string
-    message: string
+    id?: number
     link?: {
-        url: string
         text: string
+        url: string
     }
     list?: string[]
+    message: string
     progress?: {
         boundaries: number[]
         percentage: number
@@ -15,8 +15,8 @@ export interface Notification {
 }
 
 export class Notifier {
-
     notificationId = 1
+
     notifications: Notification[]
 
     init(notifications: Notification[]) {
@@ -29,7 +29,7 @@ export class Notifier {
 
         if (timeout) {
             setTimeout(() => {
-                this.notifications.splice(this.notifications.findIndex(_notification => _notification.id === notification.id), 1)
+                this.notifications.splice(this.notifications.findIndex((_notification) => _notification.id === notification.id), 1)
             }, timeout)
         }
 

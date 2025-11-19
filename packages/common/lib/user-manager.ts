@@ -29,7 +29,9 @@ export interface UserManagerConfig {
 
 export class UserManager {
     private db: Database | null = null
+
     private appName: string
+
     private useBcrypt: boolean
 
     constructor() {
@@ -105,9 +107,9 @@ export class UserManager {
         if (!this.db) throw new Error('Database not initialized')
 
         const defaultUsers = [
-            {username: 'alice', displayName: 'Alice', email: 'alice@localhost'},
-            {username: 'bob', displayName: 'Bob', email: 'bob@localhost'},
-            {username: 'charlie', displayName: 'Charlie', email: 'charlie@localhost'},
+            {displayName: 'Alice', email: 'alice@localhost', username: 'alice'},
+            {displayName: 'Bob', email: 'bob@localhost', username: 'bob'},
+            {displayName: 'Charlie', email: 'charlie@localhost', username: 'charlie'},
         ]
 
         for (const userData of defaultUsers) {
@@ -118,18 +120,18 @@ export class UserManager {
             }
 
             await this.createUser({
-                username: userData.username,
                 email: userData.email,
-                profile: {
-                    displayName: userData.displayName,
-                },
-                permissions: {
-                    admin: false,
-                },
                 password: {
                     key: userData.username, // Password same as username for default users
                     type: 'plaintext',
                 },
+                permissions: {
+                    admin: false,
+                },
+                profile: {
+                    displayName: userData.displayName,
+                },
+                username: userData.username,
             })
         }
     }
@@ -406,9 +408,9 @@ export class UserManager {
         const user = await this.getUser(userId)
         if (!user) return false
 
-        const passwordObj = this.useBcrypt
-            ? {key: newPassword, type: 'bcrypt' as const} // Note: bcrypt hashing can be added later if needed
-            : {key: newPassword, type: 'plaintext' as const}
+        const passwordObj = this.useBcrypt ?
+                {key: newPassword, type: 'bcrypt' as const} : // Note: bcrypt hashing can be added later if needed
+                {key: newPassword, type: 'plaintext' as const}
 
         await this.updateUser(userId, {password: passwordObj})
         return true

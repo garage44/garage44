@@ -331,9 +331,9 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
                 }
 
                 return new Response(JSON.stringify({
-                    success: false,
                     message: `Deployment failed: ${deployResult.message}`,
                     prNumber,
+                    success: false,
                     timestamp: new Date().toISOString(),
                 }), {
                     headers: {'Content-Type': 'application/json'},
@@ -343,9 +343,9 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
 
             if (!deployResult.deployment) {
                 return new Response(JSON.stringify({
-                    success: false,
                     message: 'Deployment completed but no deployment record was created',
                     prNumber,
+                    success: false,
                     timestamp: new Date().toISOString(),
                 }), {
                     headers: {'Content-Type': 'application/json'},
@@ -359,9 +359,9 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
             const deployment = await getPRDeployment(prNumber)
             if (!deployment) {
                 return new Response(JSON.stringify({
-                    success: false,
                     message: 'Deployment completed but deployment record not found',
                     prNumber,
+                    success: false,
                     timestamp: new Date().toISOString(),
                 }), {
                     headers: {'Content-Type': 'application/json'},
@@ -425,19 +425,19 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
                 })
 
                 return new Response(JSON.stringify({
-                    success: false,
-                    message: `Deployment completed but health checks failed`,
-                    prNumber,
-                    failedChecks: failedChecks.map((c) => ({
-                        name: c.name,
-                        message: c.result.message,
-                        details: c.result.details,
-                    })),
                     allChecks: allChecks.map((c) => ({
-                        name: c.name,
                         healthy: c.result.healthy,
                         message: c.result.message,
+                        name: c.name,
                     })),
+                    failedChecks: failedChecks.map((c) => ({
+                        details: c.result.details,
+                        message: c.result.message,
+                        name: c.name,
+                    })),
+                    message: 'Deployment completed but health checks failed',
+                    prNumber,
+                    success: false,
                     timestamp: new Date().toISOString(),
                 }), {
                     headers: {'Content-Type': 'application/json'},
@@ -447,19 +447,19 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
 
             console.log(`[webhook] PR #${prNumber} deployment successful and healthy`)
             return new Response(JSON.stringify({
-                success: true,
-                message: `PR #${prNumber} deployed successfully and verified`,
-                prNumber,
                 deployment: {
-                    url: `https://pr-${prNumber}-malkovich.${baseDomain}`,
-                    ports: deployment.ports,
                     packages: packagesToDeploy,
+                    ports: deployment.ports,
+                    url: `https://pr-${prNumber}-malkovich.${baseDomain}`,
                 },
                 healthChecks: allChecks.map((c) => ({
-                    name: c.name,
                     healthy: c.result.healthy,
                     message: c.result.message,
+                    name: c.name,
                 })),
+                message: `PR #${prNumber} deployed successfully and verified`,
+                prNumber,
+                success: true,
                 timestamp: new Date().toISOString(),
             }), {
                 headers: {'Content-Type': 'application/json'},
@@ -470,7 +470,7 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
             const errorStack = error instanceof Error ? error.stack : undefined
             console.error(`[webhook] PR #${prNumber} deployment error:`, errorMessage)
             if (errorStack) {
-                console.error(`[webhook] Stack trace:`, errorStack)
+                console.error('[webhook] Stack trace:', errorStack)
             }
 
             // Update deployment status to failed
@@ -479,10 +479,10 @@ async function handlePullRequestEvent(event: PullRequestWebhookEvent): Promise<R
             })
 
             return new Response(JSON.stringify({
-                success: false,
+                error: errorMessage,
                 message: `Deployment error: ${errorMessage}`,
                 prNumber,
-                error: errorMessage,
+                success: false,
                 timestamp: new Date().toISOString(),
             }), {
                 headers: {'Content-Type': 'application/json'},

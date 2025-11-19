@@ -8,7 +8,8 @@
     "build": "NODE_ENV=production BUN_ENV=development bun service.ts build",
     "server": "NODE_ENV=production BUN_ENV=production bun service.ts start",
     "lint:css": "stylelint src/**/*.css",
-    "lint:ts": "oxlint **/*.ts --config ../../.oxlintrc.json || exit 1; eslint **/*.{ts,tsx} --config ../../eslint.config.js || exit 1"
+    "lint:ts": "oxlint **/*.ts --config ../../.oxlintrc.json",
+    "lint:ts-style": "eslint **/*.{ts,tsx} --config ../../eslint.config.js"
   },
   "type": "module",
   "dependencies": {

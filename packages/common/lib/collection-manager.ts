@@ -3,83 +3,95 @@ import {deepSignal} from 'deepsignal'
 import {api, notifier} from '@/app'
 
 export interface CollectionManagerConfig<TItem, TFormData> {
-    /**
-     * API endpoint for listing items (e.g., '/api/users')
-     */
-    listEndpoint: string
+
     /**
      * API endpoint for creating items (e.g., '/api/users' or a function that takes formData)
      */
     createEndpoint: string | ((formData: TFormData) => string)
-    /**
-     * Function to build the update endpoint URL (e.g., (id) => `/api/users/${id}`)
-     */
-    updateEndpoint: (id: string | number) => string
-    /**
-     * HTTP method for update (default: 'PUT', users API uses 'POST')
-     */
-    updateMethod?: 'PUT' | 'POST'
+
     /**
      * Function to build the delete endpoint URL (e.g., (id) => `/api/users/${id}/delete`)
      */
     deleteEndpoint: (id: string | number) => string
+
     /**
      * HTTP method for delete (default: 'DELETE', users API uses 'GET')
      */
     deleteMethod?: 'GET' | 'DELETE'
+
     /**
      * Function to get the ID from an item
      */
     getId: (item: TItem) => string | number
+
     /**
      * Initial form data
      */
     initialFormData: TFormData
+
     /**
-     * Function to transform form data to API payload for create
+     * API endpoint for listing items (e.g., '/api/users')
      */
-    transformCreateData: (formData: TFormData) => unknown
-    /**
-     * Function to transform form data to API payload for update
-     */
-    transformUpdateData: (formData: TFormData) => unknown
-    /**
-     * Function to populate form data from an item
-     */
-    populateFormData: (item: TItem) => TFormData
+    listEndpoint: string
+
     /**
      * Success messages
      */
     messages?: {
-        loadFailed?: string
-        createSuccess?: string
         createFailed?: string
-        updateSuccess?: string
-        updateFailed?: string
-        deleteSuccess?: string
-        deleteFailed?: string
+        createSuccess?: string
         deleteConfirm?: (item: TItem) => string
+        deleteFailed?: string
+        deleteSuccess?: string
+        loadFailed?: string
+        updateFailed?: string
+        updateSuccess?: string
     }
+
+    /**
+     * Function to populate form data from an item
+     */
+    populateFormData: (item: TItem) => TFormData
+
+    /**
+     * Function to transform form data to API payload for create
+     */
+    transformCreateData: (formData: TFormData) => unknown
+
+    /**
+     * Function to transform form data to API payload for update
+     */
+    transformUpdateData: (formData: TFormData) => unknown
+
+    /**
+     * Function to build the update endpoint URL (e.g., (id) => `/api/users/${id}`)
+     */
+    updateEndpoint: (id: string | number) => string
+
+    /**
+     * HTTP method for update (default: 'PUT', users API uses 'POST')
+     */
+    updateMethod?: 'PUT' | 'POST'
 }
 
 export interface CollectionManagerState<TItem, TFormData> {
+    editing: string | number | null
+    error: string | null
+    formData: TFormData
     items: TItem[]
     loading: boolean
-    editing: string | number | null
-    formData: TFormData
-    error: string | null
 }
 
 /**
  * Generic collection management hook for CRUD operations
- * 
+ *
  * Provides a reusable pattern for managing collections with:
  * - Loading items from API
  * - Creating new items
  * - Updating existing items
  * - Deleting items
  * - Form state management
- * 
+ *
  * @example
  * const manager = useCollectionManager({
  *   listEndpoint: '/api/users',
@@ -94,14 +106,14 @@ export interface CollectionManagerState<TItem, TFormData> {
  * })
  */
 export function useCollectionManager<TItem, TFormData>(
-    config: CollectionManagerConfig<TItem, TFormData>
+    config: CollectionManagerConfig<TItem, TFormData>,
 ) {
     const stateRef = useRef(deepSignal<CollectionManagerState<TItem, TFormData>>({
+        editing: null,
+        error: null,
+        formData: config.initialFormData,
         items: [],
         loading: false,
-        editing: null,
-        formData: config.initialFormData,
-        error: null,
     }))
     const state = stateRef.current
 
@@ -127,9 +139,9 @@ export function useCollectionManager<TItem, TFormData>(
             state.loading = true
             state.error = null
             const payload = config.transformCreateData(state.formData)
-            const endpoint = typeof config.createEndpoint === 'function' 
-                ? config.createEndpoint(state.formData)
-                : config.createEndpoint
+            const endpoint = typeof config.createEndpoint === 'function' ?
+                    config.createEndpoint(state.formData) :
+                config.createEndpoint
             const newItem = await api.post(endpoint, payload) as TItem
             state.items = [...state.items, newItem]
             state.formData = config.initialFormData
@@ -139,7 +151,7 @@ export function useCollectionManager<TItem, TFormData>(
             })
             return newItem
         } catch(error) {
-            const message = error instanceof Error ? error.message : (config.messages?.createFailed || 'Failed to create item')
+            const message = error instanceof Error ? error.message : config.messages?.createFailed || 'Failed to create item'
             state.error = message
             notifier.notify({
                 level: 'error',
@@ -157,12 +169,10 @@ export function useCollectionManager<TItem, TFormData>(
             state.error = null
             const payload = config.transformUpdateData(state.formData)
             const method = config.updateMethod || 'PUT'
-            const updatedItem = method === 'POST' 
-                ? await api.post(config.updateEndpoint(itemId), payload) as TItem
-                : await api.put(config.updateEndpoint(itemId), payload) as TItem
-            state.items = state.items.map((item) => 
-                config.getId(item) === itemId ? updatedItem : item
-            )
+            const updatedItem = method === 'POST' ?
+                await api.post(config.updateEndpoint(itemId), payload) as TItem :
+                await api.put(config.updateEndpoint(itemId), payload) as TItem
+            state.items = state.items.map((item) => config.getId(item) === itemId ? updatedItem : item,)
             state.editing = null
             state.formData = config.initialFormData
             notifier.notify({
@@ -171,7 +181,7 @@ export function useCollectionManager<TItem, TFormData>(
             })
             return updatedItem
         } catch(error) {
-            const message = error instanceof Error ? error.message : (config.messages?.updateFailed || 'Failed to update item')
+            const message = error instanceof Error ? error.message : config.messages?.updateFailed || 'Failed to update item'
             state.error = message
             notifier.notify({
                 level: 'error',
@@ -185,10 +195,10 @@ export function useCollectionManager<TItem, TFormData>(
 
     const deleteItem = async(item: TItem) => {
         const itemId = config.getId(item)
-        const confirmMessage = config.messages?.deleteConfirm 
-            ? config.messages.deleteConfirm(item)
-            : 'Are you sure you want to delete this item?'
-        
+        const confirmMessage = config.messages?.deleteConfirm ?
+                config.messages.deleteConfirm(item) :
+            'Are you sure you want to delete this item?'
+
         if (!confirm(confirmMessage)) {
             return
         }
@@ -212,7 +222,7 @@ export function useCollectionManager<TItem, TFormData>(
                 message: config.messages?.deleteSuccess || 'Item deleted successfully',
             })
         } catch(error) {
-            const message = error instanceof Error ? error.message : (config.messages?.deleteFailed || 'Failed to delete item')
+            const message = error instanceof Error ? error.message : config.messages?.deleteFailed || 'Failed to delete item'
             state.error = message
             notifier.notify({
                 level: 'error',
@@ -235,12 +245,12 @@ export function useCollectionManager<TItem, TFormData>(
     }
 
     return {
-        state,
-        loadItems,
-        createItem,
-        updateItem,
-        deleteItem,
-        startEdit,
         cancelEdit,
+        createItem,
+        deleteItem,
+        loadItems,
+        startEdit,
+        state,
+        updateItem,
     }
 }

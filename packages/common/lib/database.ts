@@ -80,16 +80,20 @@ export function initDatabase(dbPath?: string, appName?: string, logger?: Logger)
         logger.info(`[Database] Database file exists: ${dbExists}`)
     }
 
-    // WAL/SHM files are normal parts of SQLite's WAL mode operation
-    // They contain uncommitted changes that will be merged back into the main database
-    // Deleting them can cause data loss or make the database appear empty/corrupted
-    // Only clean up WAL/SHM files if database file doesn't exist (fresh install scenario)
+    /*
+     * WAL/SHM files are normal parts of SQLite's WAL mode operation
+     * They contain uncommitted changes that will be merged back into the main database
+     * Deleting them can cause data loss or make the database appear empty/corrupted
+     * Only clean up WAL/SHM files if database file doesn't exist (fresh install scenario)
+     */
     if (!dbExists) {
         const walPath = `${finalPath}-wal`
         const shmPath = `${finalPath}-shm`
 
-        // If database doesn't exist, clean up any orphaned WAL/SHM files
-        // (these would be from a previous installation that was deleted)
+        /*
+         * If database doesn't exist, clean up any orphaned WAL/SHM files
+         * (these would be from a previous installation that was deleted)
+         */
         try {
             if (fs.pathExistsSync(walPath)) {
                 fs.removeSync(walPath)
@@ -103,7 +107,7 @@ export function initDatabase(dbPath?: string, appName?: string, logger?: Logger)
                     logger.info(`[Database] Removed orphaned SHM file: ${shmPath}`)
                 }
             }
-        } catch (cleanupError) {
+        } catch(cleanupError) {
             if (logger) {
                 logger.warn?.(`[Database] Cleanup warning: ${cleanupError}`)
             }
@@ -113,8 +117,10 @@ export function initDatabase(dbPath?: string, appName?: string, logger?: Logger)
     // Create database (will create new file if it doesn't exist)
     const db = new Database(finalPath, {create: true})
 
-    // Enable WAL mode for better concurrent access (only if not already in WAL mode)
-    // Don't force WAL mode if database already exists - it might already have a different journal mode
+    /*
+     * Enable WAL mode for better concurrent access (only if not already in WAL mode)
+     * Don't force WAL mode if database already exists - it might already have a different journal mode
+     */
     if (dbExists) {
         // Check current journal mode
         const journalModeStmt = db.prepare('PRAGMA journal_mode')

@@ -60,8 +60,11 @@ function getFilePathFromStack(): string | null {
         if (!stack) return null
 
         const lines = stack.split('\n')
-        // Skip the first few lines (Error, getFilePathFromStack, deepSignal wrapper)
-        // Look for lines that contain file URLs or paths
+
+        /*
+         * Skip the first few lines (Error, getFilePathFromStack, deepSignal wrapper)
+         * Look for lines that contain file URLs or paths
+         */
         for (let i = 3; i < lines.length; i++) {
             const line = lines[i]
             // Match file:// URLs or http:// URLs pointing to source files
@@ -70,8 +73,11 @@ function getFilePathFromStack(): string | null {
                 let filePath = fileMatch[1]
                 // Remove query params and hash
                 filePath = filePath.split('?')[0].split('#')[0]
-                // Try to extract workspace-relative path
-                // Look for src/components/ pattern
+
+                /*
+                 * Try to extract workspace-relative path
+                 * Look for src/components/ pattern
+                 */
                 const srcMatch = filePath.match(/(?:.*\/)?(src\/components\/.+)$/)
                 if (srcMatch) {
                     return srcMatch[1]
@@ -124,7 +130,7 @@ function deepSignal<T extends object>(initialValue: T): DeepSignal<T> {
                     Object.assign(state, savedState)
                     // Clear the saved state after restoration
                     delete savedStates[filePath]
-                } catch (error) {
+                } catch(error) {
                     console.warn(`[Bunchy HMR] Could not restore state for ${filePath}:`, error)
                 }
             }

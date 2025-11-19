@@ -45,7 +45,9 @@ export function getAvatarUrl(avatar: string, userId?: string): string {
         return avatar
     }
 
-    // For uploaded avatars, avatar is stored as {userId}.{ext} in database
-    // So it's already the filename, just serve from /avatars/
+    /*
+     * For uploaded avatars, avatar is stored as {userId}.{ext} in database
+     * So it's already the filename, just serve from /avatars/
+     */
     return `/avatars/${avatar}`
 }

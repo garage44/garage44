@@ -1,6 +1,8 @@
-// Accepts multiple arguments and types ('', [], {})
-// See https://github.com/JedWatson/classnames
-// import classnames from 'classnames'
+/*
+ * Accepts multiple arguments and types ('', [], {})
+ * See https://github.com/JedWatson/classnames
+ * import classnames from 'classnames'
+ */
 
 // const classes = classnames
 
@@ -21,13 +23,12 @@ function flattenEnv(obj, parent, res = {}) {
 function formatBytes(size) {
     if (size > 1024 ** 3) {
         return `${Math.round((size / 1024 ** 3) * 10) / 10}GiB`
-    }if (size > 1024 ** 2) {
+    } if (size > 1024 ** 2) {
         return `${Math.round((size / 1024 ** 2) * 10) / 10}MiB`
-    }if (size > 1024) {
+    } if (size > 1024) {
         return `${Math.round((size / 1024) * 10) / 10}KiB`
     }
-        return `${size}B`
-
+    return `${size}B`
 }
 
 /**
@@ -49,8 +50,8 @@ function hash(str: string): string {
     }
 
     // Generate 16-char hex string from the two halves
-    const hash1 = (h1.toString(16)).padStart(8, '0')
-    const hash2 = (h2.toString(16)).padStart(8, '0')
+    const hash1 = h1.toString(16).padStart(8, '0')
+    const hash2 = h2.toString(16).padStart(8, '0')
 
     return hash1 + hash2
 }
@@ -113,7 +114,7 @@ function keyPath(obj, refPath, create = false) {
 }
 
 function isObject(argument) {
-    return (argument && typeof argument === 'object' && !Array.isArray(argument))
+    return argument && typeof argument === 'object' && !Array.isArray(argument)
 }
 
 function mergeDeep(target, ...sources) {

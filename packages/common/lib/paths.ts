@@ -57,7 +57,7 @@ function collectSource(source, path, ignore_cache = false) {
  * @param targetLanguages
  * @returns
  */
-function pathCreate(sourceObject:Record<string, unknown>, tagPath:string[], value:Tag, targetLanguages:TargetLanguage[], translations?:Record<string, string>) {
+function pathCreate(sourceObject: Record<string, unknown>, tagPath: string[], value: Tag, targetLanguages: TargetLanguage[], translations?: Record<string, string>) {
     const {id, ref} = pathRef(sourceObject, tagPath, true)
     ref[id] = value
 
@@ -89,8 +89,10 @@ function pathCreate(sourceObject:Record<string, unknown>, tagPath:string[], valu
             ref[id]._soft = value._soft
         }
 
-        // Attach path symbol for type-safe translation references
-        // Path format: i18n.path.to.translation
+        /*
+         * Attach path symbol for type-safe translation references
+         * Path format: i18n.path.to.translation
+         */
         ref[id][I18N_PATH_SYMBOL] = `i18n.${tag}`
 
         logger.info(`create path tag: ${tag} ${'_soft' in value ? '(soft create)' : ''}`)
@@ -249,8 +251,10 @@ function pathMove(source, oldPath, newPath) {
     newSourceRef[newId] = oldSourceRef[oldId]
     newSourceRef[newId]._id = newId
 
-    // Update path symbol for moved object
-    // Path format: i18n.path.to.translation
+    /*
+     * Update path symbol for moved object
+     * Path format: i18n.path.to.translation
+     */
     const newPathString = `i18n.${newPath.join('.')}`
     if (typeof newSourceRef[newId] === 'object' && 'source' in newSourceRef[newId]) {
         newSourceRef[newId][I18N_PATH_SYMBOL] = newPathString

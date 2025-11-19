@@ -110,14 +110,10 @@ function createValidator<TValidations extends Record<string, ValidationEntry>>(v
     })
 
     // Check if any field is marked as dirty
-    const isDirty = computed(() =>
-        Object.values(validationState.value).some((validator) => validator.isDirty),
-    )
+    const isDirty = computed(() => Object.values(validationState.value).some((validator) => validator.isDirty))
 
     // Check if any field has been touched
-    const isTouched = computed(() =>
-        Object.values(validationState.value).some((validator) => validator.isTouched),
-    )
+    const isTouched = computed(() => Object.values(validationState.value).some((validator) => validator.isTouched))
 
     // Function to reset the initial values and mark form as clean
     const resetDirty = () => {
