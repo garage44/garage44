@@ -173,7 +173,7 @@ export const Main = () => {
         return (
 <Login
     animated={true}
-    logo='/public/img/logo.svg'
+    LogoIcon={IconLogo}
     onLogin={handleLogin}
     title='Pyrite'
 />

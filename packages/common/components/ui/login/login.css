@@ -55,6 +55,10 @@
                 max-width: 100px;
             }
 
+            svg {
+                color: var(--primary-5);
+            }
+
             .logo-text {
                 color: var(--surface-8);
                 font-size: var(--font-xl);
