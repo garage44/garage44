@@ -66,6 +66,7 @@ interface AnimatedWord {
 interface LoginProps {
     animated?: boolean
     logo?: string
+    LogoIcon?: () => JSX.Element
     onLogin: (username: string, password: string) => Promise<string | null>
     title?: string
 }
@@ -80,7 +81,7 @@ const state = deepSignal({
     username: '',
 })
 
-export const Login = ({animated = true, logo, onLogin, title = 'Login'}: LoginProps) => {
+export const Login = ({animated = true, logo, LogoIcon, onLogin, title = 'Login'}: LoginProps) => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
@@ -225,7 +226,13 @@ export const Login = ({animated = true, logo, onLogin, title = 'Login'}: LoginPr
         <div class="login-container">
 
             <div class="logo">
-                {logo && <img src={logo} alt="Logo" />}
+                {LogoIcon ? (
+                    <svg class="icon logo-animated" height="48" viewBox="0 0 24 24" width="48">
+                        <LogoIcon />
+                    </svg>
+                ) : logo ? (
+                    <img src={logo} alt="Logo" />
+                ) : null}
                 <div class="logo-text">{title}</div>
             </div>
 
