@@ -5,6 +5,7 @@ export interface Channel {
     created_at: number
     description: string
     id: number
+    is_default: number
     member_count?: number
     name: string
     slug: string

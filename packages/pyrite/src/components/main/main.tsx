@@ -142,6 +142,23 @@ export const Main = () => {
             if (isAuthenticated && hasPermission) {
                 notifier.notify({message: 'Login successful', type: 'info'})
                 ws.connect()
+                
+                // Try to route to default channel
+                try {
+                    const defaultChannelResponse = await api.get('/api/channels/default')
+                    if (defaultChannelResponse?.channel?.slug) {
+                        // Set active channel in state and route to default channel
+                        $s.chat.activeChannelSlug = defaultChannelResponse.channel.slug
+                        // Route to default channel after a brief delay to ensure WebSocket is connected
+                        setTimeout(() => {
+                            route(`/channels/${defaultChannelResponse.channel.slug}`)
+                        }, 100)
+                    }
+                } catch(error) {
+                    // If getting default channel fails, just continue without redirecting
+                    logger.debug('[Login] Could not get default channel:', error)
+                }
+                
                 // Success
                 return null
             }
