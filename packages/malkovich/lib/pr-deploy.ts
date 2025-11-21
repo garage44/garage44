@@ -890,6 +890,8 @@ async function generateSystemdServices(deployment: PRDeployment, packagesToDeplo
         const prDataDir = path.join(deployment.directory, 'data')
         const dbPath = path.join(prDataDir, `${packageName}.db`)
         const configPath = path.join(prDataDir, `.${packageName}rc`)
+        // Use absolute path to service.ts to avoid path resolution issues
+        const serviceTsPath = path.join(workdir, 'service.ts')
 
         const content = `[Unit]
 Description=PR #${deployment.number} ${packageName} service
@@ -905,7 +907,7 @@ Environment="BUN_ENV=production"
 Environment="DB_PATH=${dbPath}"
 Environment="CONFIG_PATH=${configPath}"
 Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/garage44/.bun/bin/bun service.ts start --port ${port}
+ExecStart=/home/garage44/.bun/bin/bun ${serviceTsPath} start --port ${port}
 Restart=no
 StandardOutput=journal
 StandardError=journal
