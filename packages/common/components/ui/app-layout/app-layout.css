@@ -38,8 +38,13 @@
         > .content {
             grid-column: 1 / -1;
             /* Add padding-top to prevent content overlap with fixed buttons */
-            /* Base padding accounts for hamburger button (44px) + spacing */
-            padding-top: calc(44px + var(--spacer-2) + env(safe-area-inset-top, 0px));
+            /* Base padding accounts for hamburger/close button (44px) + minimal spacing */
+            padding-top: calc(44px + var(--spacer-1) + env(safe-area-inset-top, 0px));
+        }
+
+        /* When panel switcher is visible, add extra padding to account for its height */
+        > .content:has(.c-panel-switcher) {
+            padding-top: calc(44px + var(--spacer-1) + 44px + var(--spacer-1) + env(safe-area-inset-top, 0px));
         }
 
         &:has(.c-panel-context) {
@@ -146,7 +151,8 @@
 .c-panel-switcher {
     position: fixed;
     top: max(var(--spacer-2), env(safe-area-inset-top, 0px));
-    left: calc(44px + var(--spacer-2));
+    left: calc(44px + var(--spacer-1));
+    right: var(--spacer-2);
     z-index: 1001;
     display: none;
     gap: var(--spacer-05);
@@ -155,7 +161,9 @@
     border-radius: var(--border-radius-s);
     padding: var(--spacer-05);
     box-shadow: var(--shadow-d);
-    max-width: calc(100vw - 44px - var(--spacer-2) - var(--spacer-2));
+    /* Ensure tabs don't overflow - use flexbox to shrink if needed */
+    min-width: 0;
+    overflow: hidden;
 
     /* Show on mobile when both panels exist */
     @media (max-width: 768px) {
@@ -177,6 +185,11 @@
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     white-space: nowrap;
+    flex: 1 1 auto;
+    min-width: 0;
+    /* Ensure text doesn't overflow */
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     &:hover {
         background: var(--surface-3);
