@@ -34,19 +34,24 @@
     /* Responsive Design */
     @media (max-width: 768px) {
         grid-template-columns: [content] 1fr;
+        width: 100vw;
+        max-width: 100vw;
+        overflow-x: hidden;
 
         > .content {
             grid-column: 1 / -1;
+            width: 100%;
+            max-width: 100vw;
             /* Padding to prevent content from being covered by fixed buttons */
             padding-top: calc(44px + var(--spacer-2) + env(safe-area-inset-top, 0px));
-            padding-left: env(safe-area-inset-left, 0px);
-            padding-right: env(safe-area-inset-right, 0px);
+            padding-left: 0;
+            padding-right: 0;
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
-        /* When panel switcher is visible, add extra padding */
+        /* When panel switcher (accordion) is visible, add extra padding */
         > .content:has(.c-panel-switcher) {
-            padding-top: calc(44px + var(--spacer-2) + 44px + var(--spacer-1) + env(safe-area-inset-top, 0px));
+            padding-top: calc(44px + var(--spacer-2) + 44px + env(safe-area-inset-top, 0px));
         }
 
         &:has(.c-panel-context) {
@@ -193,40 +198,26 @@
     }
 }
 
-/* Panel switcher tabs - shown when both panels exist */
+/* Panel switcher - accordion style on mobile */
 .c-panel-switcher {
     position: fixed;
-    top: max(var(--spacer-2), env(safe-area-inset-top, 0px));
-    left: calc(44px + var(--spacer-2) + var(--spacer-1));
-    right: max(var(--spacer-2), env(safe-area-inset-right, 0px));
+    top: calc(44px + var(--spacer-2) + env(safe-area-inset-top, 0px));
+    left: 0;
+    right: 0;
     z-index: 1001;
     display: none;
-    gap: var(--spacer-05);
-    background: var(--surface-2);
-    border: 1px solid var(--surface-3);
-    border-radius: var(--border-radius-s);
-    padding: var(--spacer-05);
+    flex-direction: column;
+    gap: 0;
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--surface-3);
     box-shadow: var(--shadow-d);
-    /* Ensure tabs don't overflow */
-    min-width: 0;
+    width: 100%;
+    max-width: 100vw;
     overflow: hidden;
-    /* Smooth appearance */
-    animation: slide-in-right 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
 
     /* Show on mobile when both panels exist */
     @media (max-width: 768px) {
         display: flex;
-        /* Ensure it doesn't overflow on small screens */
-        max-width: calc(100vw - var(--spacer-2) - env(safe-area-inset-right, 0px));
-    }
-
-    /* Landscape orientation adjustments */
-    @media (max-width: 768px) and (orientation: landscape) {
-        top: max(var(--spacer-1), env(safe-area-inset-top, 0px));
-        padding: var(--spacer-025) var(--spacer-05);
-        left: calc(36px + var(--spacer-1) + var(--spacer-05));
-        max-width: calc(100vw - var(--spacer-1) - env(safe-area-inset-right, 0px));
     }
 }
 
@@ -242,51 +233,42 @@
 }
 
 .c-panel-switcher-tab {
-    background: transparent;
+    background: var(--surface-1);
     border: none;
-    border-radius: var(--border-radius-xs);
+    border-bottom: 1px solid var(--surface-3);
     color: var(--surface-6);
     cursor: pointer;
     font-size: var(--font-d);
     font-weight: 500;
-    padding: var(--spacer-1) var(--spacer-2);
+    padding: var(--spacer-2);
     min-height: 44px;
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    white-space: nowrap;
-    flex: 1 1 auto;
-    min-width: 0;
-    /* Ensure text doesn't overflow */
-    overflow: hidden;
-    text-overflow: ellipsis;
+    width: 100%;
+    text-align: left;
     position: relative;
-    /* Prevent text selection on mobile */
     user-select: none;
     -webkit-user-select: none;
 
+    &:last-child {
+        border-bottom: none;
+    }
+
     &:hover {
-        background: var(--surface-3);
+        background: var(--surface-2);
         color: var(--surface-8);
     }
 
     &.is-active {
-        background: var(--surface-4);
+        background: var(--surface-3);
         color: var(--surface-8);
         font-weight: 600;
     }
 
     &:active {
-        transform: scale(0.97);
         background: var(--surface-4);
         transition-duration: 0.1s;
-    }
-
-    /* Landscape orientation - reduce padding */
-    @media (max-width: 768px) and (orientation: landscape) {
-        padding: var(--spacer-05) var(--spacer-1);
-        min-height: 36px;
-        font-size: var(--font-s);
     }
 }
 
