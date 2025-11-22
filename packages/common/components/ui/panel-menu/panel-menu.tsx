@@ -73,7 +73,7 @@ export const PanelMenu = ({
             <>
                 {logoSrc && <img src={logoSrc} alt={`${logoText} Logo`} />}
                 {LogoIcon && (
-                    <svg class="icon" viewBox="0 0 24 24" height="40" width="40">
+                    <svg class="icon" viewBox="0 0 24 24">
                         <LogoIcon />
                     </svg>
                 )}

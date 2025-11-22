@@ -46,12 +46,15 @@
 
             svg {
                 color: var(--primary-5);
+                height: 100%;
                 margin-inline-end: var(--spacer-1);
+                width: auto;
             }
 
             .icon {
-                height: 40px;
-                width: 40px;
+                aspect-ratio: 1;
+                height: min(100%, 48px);
+                width: auto;
             }
         }
 
@@ -237,9 +240,9 @@
             /* Show SVG icon when collapsed */
 
             svg.icon {
-                height: 36px;
+                height: min(100%, 40px);
                 margin-inline-end: 0;
-                width: 36px;
+                width: auto;
             }
 
             /* Fallback: show image scaled down if no SVG icon is present */
