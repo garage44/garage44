@@ -102,14 +102,21 @@
         position: fixed;
         top: 0;
         left: 0;
+        bottom: 0;
         z-index: 1001;
-        width: 280px;
-        max-width: 85vw;
-        transition: transform 0.3s ease-in-out;
+        width: min(85vw, 320px);
+        max-width: min(85vw, 320px);
+        height: 100vh;
+        height: 100dvh; /* Dynamic viewport height for mobile browsers */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
         /* Always hide panel by default on mobile */
         transform: translateX(-100%);
         visibility: hidden;
+        /* Ensure panel respects safe areas */
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        padding-left: env(safe-area-inset-left, 0px);
     }
 }
 

@@ -11,6 +11,10 @@
     text-decoration: none;
     transition: all 0.3s ease;
     width: 100%;
+    /* Improve touch targets on mobile */
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 
     &.active {
         background: var(--surface-3);
@@ -27,6 +31,11 @@
         background: var(--surface-2);
     }
 
+    &:active:not(.disabled) {
+        background: var(--surface-3);
+        transform: scale(0.98);
+    }
+
     &.collapsed {
         justify-content: center;
         padding: var(--spacer-1);
@@ -39,5 +48,11 @@
     .c-icon {
         flex-shrink: 0;
         transition: transform 0.2s ease;
+    }
+
+    /* Mobile-specific improvements */
+    @media (max-width: 768px) {
+        padding: var(--spacer-2);
+        font-size: var(--font-d);
     }
 }
