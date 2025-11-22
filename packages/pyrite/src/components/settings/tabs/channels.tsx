@@ -1,4 +1,4 @@
-import {FieldText, Button} from '@garage44/common/components'
+import {FieldCheckbox, FieldText, Button} from '@garage44/common/components'
 import {useEffect, useRef} from 'preact/hooks'
 import {deepSignal} from 'deepsignal'
 import {api, notifier} from '@garage44/common/app'
@@ -11,6 +11,7 @@ export default function TabChannels() {
         editing: null as number | null,
         formData: {
             description: '',
+            is_default: false,
             name: '',
             slug: '',
         },
@@ -43,11 +44,12 @@ export default function TabChannels() {
         try {
             const newChannel = await api.post('/api/channels', {
                 description: state.formData.description,
+                is_default: state.formData.is_default,
                 name: state.formData.name,
                 slug: state.formData.slug,
             })
             state.channels = [...state.channels, newChannel]
-            state.formData = {description: '', name: '', slug: ''}
+            state.formData = {description: '', is_default: false, name: '', slug: ''}
             notifier.notify({level: 'success', message: 'Channel created and synced with Galene'})
         } catch(error) {
             const message = error instanceof Error ? error.message : 'Failed to create channel'
@@ -59,6 +61,7 @@ export default function TabChannels() {
         try {
             const updated = await api.put(`/api/channels/${channelId}`, {
                 description: state.formData.description,
+                is_default: state.formData.is_default,
                 name: state.formData.name,
                 slug: state.formData.slug,
             })
@@ -66,7 +69,7 @@ export default function TabChannels() {
                 return c.id === channelId ? updated : c
             })
             state.editing = null
-            state.formData = {description: '', name: '', slug: ''}
+            state.formData = {description: '', is_default: false, name: '', slug: ''}
             notifier.notify({level: 'success', message: 'Channel updated and synced with Galene'})
         } catch(error) {
             const message = error instanceof Error ? error.message : 'Failed to update channel'
@@ -92,6 +95,7 @@ export default function TabChannels() {
         state.editing = channel.id
         state.formData = {
             description: channel.description || '',
+            is_default: channel.is_default === 1,
             name: channel.name,
             slug: channel.slug,
         }
@@ -99,7 +103,7 @@ export default function TabChannels() {
 
     const cancelEdit = () => {
         state.editing = null
-        state.formData = {description: '', name: '', slug: ''}
+        state.formData = {description: '', is_default: false, name: '', slug: ''}
     }
 
     return (
@@ -131,6 +135,11 @@ export default function TabChannels() {
                                     model={state.formData.$description}
                                     placeholder='Enter channel description'
                                 />
+                                <FieldCheckbox
+                                    help='Only one channel can be set as default. Setting this will unset any other default channel.'
+                                    label='Set as default channel'
+                                    model={state.formData.$is_default}
+                                />
                                 <div class='actions'>
                                     <Button
                                         icon='plus'
@@ -158,6 +167,11 @@ export default function TabChannels() {
                                         <FieldText
                                             label='Description'
                                             model={state.formData.$description}
+                                        />
+                                        <FieldCheckbox
+                                            help='Only one channel can be set as default. Setting this will unset any other default channel.'
+                                            label='Set as default channel'
+                                            model={state.formData.$is_default}
                                         />
                                         <div class='actions'>
                                             <Button

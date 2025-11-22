@@ -154,7 +154,7 @@ export default async function apiChannels(router: Router) {
             }
 
             const body = await req.json()
-            const {description, name, slug} = body
+            const {description, name, slug, is_default} = body
 
             if (!name || !slug) {
                 return new Response(JSON.stringify({
@@ -184,6 +184,7 @@ export default async function apiChannels(router: Router) {
                 slug,
                 description || '',
                 userId,
+                is_default === true,
             )
 
             // Sync to Galene group
@@ -254,11 +255,12 @@ export default async function apiChannels(router: Router) {
             }
 
             const body = await req.json()
-            const updates: {description?: string; name?: string; slug?: string} = {}
+            const updates: {description?: string; is_default?: number; name?: string; slug?: string} = {}
 
             if (body.name !== undefined) updates.name = body.name
             if (body.slug !== undefined) updates.slug = body.slug
             if (body.description !== undefined) updates.description = body.description
+            if (body.is_default !== undefined) updates.is_default = body.is_default === true ? 1 : 0
 
             // If slug is being changed, check if new slug already exists
             if (updates.slug) {
@@ -389,6 +391,70 @@ export default async function apiChannels(router: Router) {
             logger.error('[Channels API] Error deleting channel:', error)
             return new Response(JSON.stringify({
                 error: error instanceof Error ? error.message : 'Failed to delete channel',
+                success: false,
+            }), {
+                headers: {'Content-Type': 'application/json'},
+                status: 500,
+            })
+        }
+    })
+
+    /**
+     * Get the default channel
+     * GET /api/channels/default
+     */
+    router.get('/api/channels/default', async(req, params, session) => {
+        try {
+            // Get user ID from session
+            let userId: string | null = null
+            if (session?.userid) {
+                const user = await userManager.getUserByUsername(session.userid)
+                if (user) {
+                    userId = user.id
+                }
+            }
+
+            if (!userId) {
+                return new Response(JSON.stringify({
+                    error: 'Unauthorized',
+                    success: false,
+                }), {
+                    headers: {'Content-Type': 'application/json'},
+                    status: 401,
+                })
+            }
+
+            const defaultChannel = channelManager!.getDefaultChannel()
+
+            if (!defaultChannel) {
+                return new Response(JSON.stringify({
+                    channel: null,
+                    success: true,
+                }), {
+                    headers: {'Content-Type': 'application/json'},
+                })
+            }
+
+            // Check if user can access the default channel
+            if (!channelManager!.canAccessChannel(defaultChannel.id, userId)) {
+                return new Response(JSON.stringify({
+                    channel: null,
+                    success: true,
+                }), {
+                    headers: {'Content-Type': 'application/json'},
+                })
+            }
+
+            return new Response(JSON.stringify({
+                channel: defaultChannel,
+                success: true,
+            }), {
+                headers: {'Content-Type': 'application/json'},
+            })
+        } catch(error) {
+            logger.error('[Channels API] Error getting default channel:', error)
+            return new Response(JSON.stringify({
+                error: error.message,
                 success: false,
             }), {
                 headers: {'Content-Type': 'application/json'},

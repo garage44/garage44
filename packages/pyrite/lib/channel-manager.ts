@@ -14,6 +14,7 @@ export interface Channel {
     created_at: number
     description: string
     id: number
+    is_default: number
     member_count?: number
     name: string
     slug: string
@@ -40,21 +41,26 @@ export class ChannelManager {
      * Create a new channel
      * slug directly matches Galene group name (1:1 mapping)
      */
-    async createChannel(name: string, slug: string, description: string, creatorId: string): Promise<Channel> {
+    async createChannel(name: string, slug: string, description: string, creatorId: string, isDefault: boolean = false): Promise<Channel> {
         const now = Date.now()
 
+        // If setting as default, unset all other defaults first
+        if (isDefault) {
+            await this.unsetAllDefaults()
+        }
+
         const insertChannel = this.db.prepare(`
-            INSERT INTO channels (name, slug, description, created_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO channels (name, slug, description, created_at, is_default)
+            VALUES (?, ?, ?, ?, ?)
         `)
 
-        const result = insertChannel.run(name, slug, description, now)
+        const result = insertChannel.run(name, slug, description, now, isDefault ? 1 : 0)
         const channelId = result.lastInsertRowid as number
 
         // Add creator as admin
         await this.addMember(channelId, creatorId, 'admin')
 
-        logger.info(`[ChannelManager] Created channel "${name}" (slug: ${slug}, id: ${channelId})`)
+        logger.info(`[ChannelManager] Created channel "${name}" (slug: ${slug}, id: ${channelId}, is_default: ${isDefault})`)
 
         return this.getChannel(channelId)!
     }
@@ -139,9 +145,14 @@ export class ChannelManager {
     /**
      * Update a channel
      */
-    async updateChannel(id: number, updates: Partial<Pick<Channel, 'name' | 'slug' | 'description'>>): Promise<Channel | null> {
+    async updateChannel(id: number, updates: Partial<Pick<Channel, 'name' | 'slug' | 'description' | 'is_default'>>): Promise<Channel | null> {
         const channel = this.getChannel(id)
         if (!channel) return null
+
+        // If setting as default, unset all other defaults first
+        if (updates.is_default !== undefined && updates.is_default === 1) {
+            await this.unsetAllDefaults(id)
+        }
 
         const fields = []
         const values = []
@@ -157,6 +168,10 @@ export class ChannelManager {
         if (updates.description !== undefined) {
             fields.push('description = ?')
             values.push(updates.description)
+        }
+        if (updates.is_default !== undefined) {
+            fields.push('is_default = ?')
+            values.push(updates.is_default)
         }
 
         if (fields.length === 0) return channel
@@ -412,6 +427,43 @@ export class ChannelManager {
         const groupsPath = path.join(config.sfu.path, 'groups')
         const groupFile = path.join(groupsPath, `${groupName}.json`)
         await fs.writeFile(groupFile, JSON.stringify(nativeData, null, 2))
+    }
+
+    /**
+     * Get the default channel
+     */
+    getDefaultChannel(): Channel | null {
+        const stmt = this.db.prepare(`
+            SELECT c.*, COUNT(cm.user_id) as member_count
+            FROM channels c
+            LEFT JOIN channel_members cm ON c.id = cm.channel_id
+            WHERE c.is_default = 1
+            GROUP BY c.id
+            LIMIT 1
+        `)
+
+        return stmt.get() as Channel | null
+    }
+
+    /**
+     * Unset all default channels (except optionally one channel ID)
+     */
+    private async unsetAllDefaults(exceptChannelId?: number): Promise<void> {
+        if (exceptChannelId) {
+            const stmt = this.db.prepare(`
+                UPDATE channels
+                SET is_default = 0
+                WHERE is_default = 1 AND id != ?
+            `)
+            stmt.run(exceptChannelId)
+        } else {
+            const stmt = this.db.prepare(`
+                UPDATE channels
+                SET is_default = 0
+                WHERE is_default = 1
+            `)
+            stmt.run()
+        }
     }
 
     /**
