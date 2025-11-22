@@ -77,9 +77,12 @@
     }
 
     .c-button.variant-toggle {
-        align-self: flex-end;
+        position: absolute;
+        bottom: max(var(--spacer-2), env(safe-area-inset-bottom, 0px));
+        right: max(var(--spacer-2), env(safe-area-inset-right, 0px));
+        z-index: 10;
         flex-shrink: 0;
-        margin: var(--spacer-05) var(--spacer-05) var(--spacer-05) auto;
+        margin: 0;
     }
 
     /* Hide collapse toggle on mobile - mobile controls handle this */
@@ -325,9 +328,12 @@
         }
 
         .c-button.variant-toggle {
-            align-self: center;
-            margin: var(--spacer-05) auto;
-            max-width: calc(100% - var(--spacer-1));
+            /* Keep bottom-right positioning when collapsed */
+            position: absolute;
+            bottom: max(var(--spacer-2), env(safe-area-inset-bottom, 0px));
+            right: max(var(--spacer-2), env(safe-area-inset-right, 0px));
+            margin: 0;
+            max-width: calc(100% - var(--spacer-2) * 2);
             width: auto;
         }
     }
