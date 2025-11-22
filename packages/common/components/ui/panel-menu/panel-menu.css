@@ -46,12 +46,10 @@
 
             svg {
                 color: var(--primary-5);
-                height: 100%;
                 margin-inline-end: var(--spacer-1);
-                width: auto;
             }
 
-            .icon {
+            svg.icon {
                 aspect-ratio: 1;
                 height: min(100%, 48px);
                 width: auto;
