@@ -227,7 +227,7 @@ export const Login = ({animated = true, logo, LogoIcon, onLogin, title = 'Login'
 
             <div class="logo">
                 {LogoIcon ? (
-                    <svg class="icon logo-animated" height="48" viewBox="0 0 24 24" width="48">
+                    <svg class="icon logo-animated" viewBox="0 0 24 24">
                         <LogoIcon />
                     </svg>
                 ) : logo ? (
