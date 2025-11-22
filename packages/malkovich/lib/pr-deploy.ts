@@ -79,27 +79,6 @@ async function getBranchSHA(branch: string): Promise<string | null> {
     }
 }
 
-/**
- * Restart the main malkovich service after deployment/cleanup completes
- * This ensures malkovich is running with the latest code
- */
-async function restartMalkovichService(): Promise<void> {
-    console.log('[pr-deploy] Restarting main malkovich service...')
-    try {
-        const restartResult = await $`sudo /usr/bin/systemctl restart malkovich.service`.nothrow()
-        if (restartResult.exitCode === 0) {
-            console.log('[pr-deploy] Malkovich service restarted successfully')
-        } else {
-            const stderr = restartResult.stderr?.toString() || ''
-            const stdout = restartResult.stdout?.toString() || ''
-            console.warn(`[pr-deploy] Failed to restart malkovich service (non-fatal): ${stderr || stdout || 'Unknown error'}`)
-        }
-    } catch(error) {
-        const message = error instanceof Error ? error.message : String(error)
-        console.warn(`[pr-deploy] Error restarting malkovich service (non-fatal): ${message}`)
-    }
-}
-
 export interface PRMetadata {
     author: string
     head_ref: string
@@ -393,8 +372,10 @@ export async function deployPR(pr: PRMetadata): Promise<{
             console.log(`[pr-deploy]   ${packageName}: https://${subdomain} (port ${port})`)
         }
 
-        // Restart main malkovich service after successful deployment
-        await restartMalkovichService()
+        // Note: We do NOT restart the main malkovich service here because:
+        // 1. PR deployments don't affect the main malkovich service
+        // 2. Restarting during a webhook request would kill the connection
+        // 3. The main service only needs restart on main branch deployments
 
         return {
             deployment: {
@@ -408,8 +389,10 @@ export async function deployPR(pr: PRMetadata): Promise<{
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-deploy] Deployment failed: ${message}`)
 
-        // Restart main malkovich service even on failure to ensure it's running
-        await restartMalkovichService()
+        // Note: We do NOT restart the main malkovich service here because:
+        // 1. PR deployments don't affect the main malkovich service
+        // 2. Restarting during a webhook request would kill the connection
+        // 3. The main service only needs restart on main branch deployments
 
         return {
             deployment: null,
@@ -579,8 +562,10 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
 
         console.log(`[pr-deploy] PR #${pr.number} updated successfully`)
 
-        // Restart main malkovich service after successful update
-        await restartMalkovichService()
+        // Note: We do NOT restart the main malkovich service here because:
+        // 1. PR deployments don't affect the main malkovich service
+        // 2. Restarting during a webhook request would kill the connection
+        // 3. The main service only needs restart on main branch deployments
 
         return {
             deployment: existing,
@@ -598,8 +583,10 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
             console.error('[pr-deploy] Failed to update deployment status:', statusError)
         }
 
-        // Restart main malkovich service even on failure to ensure it's running
-        await restartMalkovichService()
+        // Note: We do NOT restart the main malkovich service here because:
+        // 1. PR deployments don't affect the main malkovich service
+        // 2. Restarting during a webhook request would kill the connection
+        // 3. The main service only needs restart on main branch deployments
 
         return {
             deployment: null,
@@ -890,6 +877,8 @@ async function generateSystemdServices(deployment: PRDeployment, packagesToDeplo
         const prDataDir = path.join(deployment.directory, 'data')
         const dbPath = path.join(prDataDir, `${packageName}.db`)
         const configPath = path.join(prDataDir, `.${packageName}rc`)
+        // Use absolute path to service.ts to avoid path resolution issues
+        const serviceTsPath = path.join(workdir, 'service.ts')
 
         const content = `[Unit]
 Description=PR #${deployment.number} ${packageName} service
@@ -905,7 +894,7 @@ Environment="BUN_ENV=production"
 Environment="DB_PATH=${dbPath}"
 Environment="CONFIG_PATH=${configPath}"
 Environment="PATH=/home/garage44/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/garage44/.bun/bin/bun service.ts start --port ${port}
+ExecStart=/home/garage44/.bun/bin/bun ${serviceTsPath} start --port ${port}
 Restart=no
 StandardOutput=journal
 StandardError=journal
