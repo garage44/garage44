@@ -56,7 +56,10 @@
             }
 
             svg {
+                aspect-ratio: 1;
                 flex-shrink: 0;
+                height: 80px;
+                width: auto;
             }
 
             .logo-animated {

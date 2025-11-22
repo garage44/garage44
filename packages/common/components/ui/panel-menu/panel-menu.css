@@ -51,8 +51,7 @@
 
             svg.icon {
                 aspect-ratio: 1;
-                height: 100%;
-                min-height: 56px;
+                height: min(100%, 40px);
                 width: auto;
             }
         }
@@ -239,8 +238,7 @@
             /* Show SVG icon when collapsed */
 
             svg.icon {
-                height: 100%;
-                min-height: 36px;
+                height: min(100%, 36px);
                 margin-inline-end: 0;
                 width: auto;
             }
