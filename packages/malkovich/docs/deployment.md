@@ -228,7 +228,7 @@ sudo visudo
 Add this line (replace `<projectName>` with your actual package names):
 
 ```
-garage44 ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart <projectName>.service, /usr/bin/systemctl restart malkovich.service, /usr/bin/systemctl daemon-reload, /usr/bin/nginx -s reload, /usr/bin/nginx -t
+garage44 ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart expressio.service, /usr/bin/systemctl restart pyrite.service, /usr/bin/systemctl restart malkovich.service, /usr/bin/systemctl restart webhook.service, /usr/bin/systemctl daemon-reload, /usr/bin/nginx -s reload, /usr/bin/nginx -t
 ```
 
 ### 9. PR Deployment Setup (Optional)
@@ -256,10 +256,16 @@ limit_req_zone $binary_remote_addr zone=pr_public:10m rate=10r/s;
 
 #### Update Sudo Permissions for PR Deployments
 
-Add PR deployment commands to sudoers:
+Add PR deployment commands to sudoers. You can either add this as a separate line or combine it with the main sudoers line from section 8:
 
 ```
-garage44 ALL=(ALL) NOPASSWD: /usr/bin/systemctl start pr-*, /usr/bin/systemctl stop pr-*, /usr/bin/systemctl restart pr-*, /usr/bin/systemctl status pr-*, /usr/bin/rm -f /etc/systemd/system/pr-*.service, /usr/bin/rm -f /etc/nginx/sites-*/pr-*.garage44.org, /usr/bin/mv /tmp/pr-*.service /etc/systemd/system/pr-*.service, /usr/bin/mv /tmp/pr-*.nginx.conf /etc/nginx/sites-available/pr-*.garage44.org
+garage44 ALL=(ALL) NOPASSWD: /usr/bin/systemctl start pr-*, /usr/bin/systemctl stop pr-*, /usr/bin/systemctl restart pr-*, /usr/bin/systemctl disable pr-*, /usr/bin/systemctl status pr-*, /usr/bin/systemctl is-active pr-*, /usr/bin/systemctl daemon-reload, /usr/bin/nginx -s reload, /usr/bin/nginx -t, /usr/bin/rm -f /etc/systemd/system/pr-*.service, /usr/bin/rm -f /etc/nginx/sites-*/pr-*.garage44.org, /usr/bin/ln -s /etc/nginx/sites-available/pr-*.garage44.org /etc/nginx/sites-enabled/pr-*.garage44.org, /usr/bin/mv /tmp/pr-*.service /etc/systemd/system/pr-*.service, /usr/bin/mv /tmp/pr-*.nginx.conf /etc/nginx/sites-available/pr-*.garage44.org, /usr/bin/mv /tmp/pr-*-removed.nginx.conf /etc/nginx/sites-available/pr-*.garage44.org, /usr/bin/fuser -k [0-9]*/tcp
+```
+
+**Complete sudoers configuration** (combines main services and PR deployments):
+
+```
+garage44 ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart expressio.service, /usr/bin/systemctl restart pyrite.service, /usr/bin/systemctl restart malkovich.service, /usr/bin/systemctl restart webhook.service, /usr/bin/systemctl start pr-*, /usr/bin/systemctl stop pr-*, /usr/bin/systemctl restart pr-*, /usr/bin/systemctl disable pr-*, /usr/bin/systemctl status pr-*, /usr/bin/systemctl is-active pr-*, /usr/bin/systemctl daemon-reload, /usr/bin/nginx -s reload, /usr/bin/nginx -t, /usr/bin/rm -f /etc/systemd/system/pr-*.service, /usr/bin/rm -f /etc/nginx/sites-*/pr-*.garage44.org, /usr/bin/ln -s /etc/nginx/sites-available/pr-*.garage44.org /etc/nginx/sites-enabled/pr-*.garage44.org, /usr/bin/mv /tmp/pr-*.service /etc/systemd/system/pr-*.service, /usr/bin/mv /tmp/pr-*.nginx.conf /etc/nginx/sites-available/pr-*.garage44.org, /usr/bin/mv /tmp/pr-*-removed.nginx.conf /etc/nginx/sites-available/pr-*.garage44.org, /usr/bin/fuser -k [0-9]*/tcp
 ```
 
 ## Features

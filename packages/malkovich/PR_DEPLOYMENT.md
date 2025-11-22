@@ -156,7 +156,17 @@ See `packages/malkovich/docs/rules/pr-deployment.mdc` for complete setup and usa
 1. Get wildcard SSL cert: `sudo certbot certonly --standalone -d "*.garage44.org"`
 2. Configure nginx rate limiting (add to `/etc/nginx/nginx.conf`)
 3. Install cleanup timer: `sudo systemctl enable pr-cleanup.timer`
-4. Update sudo permissions for service management
+4. Update sudo permissions for service management:
+
+```bash
+sudo visudo
+```
+
+Add this line:
+
+```
+garage44 ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart expressio.service, /usr/bin/systemctl restart pyrite.service, /usr/bin/systemctl restart malkovich.service, /usr/bin/systemctl restart webhook.service, /usr/bin/systemctl start pr-*, /usr/bin/systemctl stop pr-*, /usr/bin/systemctl restart pr-*, /usr/bin/systemctl disable pr-*, /usr/bin/systemctl status pr-*, /usr/bin/systemctl is-active pr-*, /usr/bin/systemctl daemon-reload, /usr/bin/nginx -s reload, /usr/bin/nginx -t, /usr/bin/rm -f /etc/systemd/system/pr-*.service, /usr/bin/rm -f /etc/nginx/sites-*/pr-*.garage44.org, /usr/bin/ln -s /etc/nginx/sites-available/pr-*.garage44.org /etc/nginx/sites-enabled/pr-*.garage44.org, /usr/bin/mv /tmp/pr-*.service /etc/systemd/system/pr-*.service, /usr/bin/mv /tmp/pr-*.nginx.conf /etc/nginx/sites-available/pr-*.garage44.org, /usr/bin/mv /tmp/pr-*-removed.nginx.conf /etc/nginx/sites-available/pr-*.garage44.org, /usr/bin/fuser -k [0-9]*/tcp
+```
 
 ## Port Allocation
 
