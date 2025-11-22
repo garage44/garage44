@@ -40,11 +40,25 @@
             /* Add padding-top to prevent content overlap with fixed buttons */
             /* Base padding accounts for hamburger/close button (44px) + minimal spacing */
             padding-top: calc(44px + var(--spacer-1) + env(safe-area-inset-top, 0px));
+            padding-left: env(safe-area-inset-left, 0px);
+            padding-right: env(safe-area-inset-right, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         /* When panel switcher is visible, add extra padding to account for its height */
         > .content:has(.c-panel-switcher) {
             padding-top: calc(44px + var(--spacer-1) + 44px + var(--spacer-1) + env(safe-area-inset-top, 0px));
+        }
+
+        /* Landscape orientation - reduce top padding */
+        @media (orientation: landscape) {
+            > .content {
+                padding-top: calc(36px + var(--spacer-05) + env(safe-area-inset-top, 0px));
+            }
+
+            > .content:has(.c-panel-switcher) {
+                padding-top: calc(36px + var(--spacer-05) + 36px + var(--spacer-05) + env(safe-area-inset-top, 0px));
+            }
         }
 
         &:has(.c-panel-context) {
@@ -72,19 +86,24 @@
     height: 44px;
     min-width: 44px;
     min-height: 44px;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-d);
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    will-change: transform;
 
     &:hover {
         background: var(--surface-3);
         color: var(--surface-8);
+        box-shadow: var(--shadow-hard);
     }
 
     &:active {
         transform: scale(0.95);
         background: var(--surface-4);
+        transition-duration: 0.1s;
     }
 
     svg {
@@ -92,11 +111,27 @@
         width: 24px;
         height: 24px;
         flex-shrink: 0;
+        transition: transform 0.2s ease;
     }
 
     /* Show button on mobile */
     @media (max-width: 768px) {
         display: flex;
+    }
+
+    /* Landscape orientation - smaller button */
+    @media (max-width: 768px) and (orientation: landscape) {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        top: max(var(--spacer-1), env(safe-area-inset-top, 0px));
+        left: max(var(--spacer-1), env(safe-area-inset-left, 0px));
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
     }
 }
 
@@ -119,19 +154,26 @@
     height: 44px;
     min-width: 44px;
     min-height: 44px;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-d);
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    will-change: transform;
+    /* Smooth appearance */
+    animation: fade-in 0.15s ease-out;
 
     &:hover {
         background: var(--surface-3);
         color: var(--surface-8);
+        box-shadow: var(--shadow-hard);
     }
 
     &:active {
         transform: scale(0.95);
         background: var(--surface-4);
+        transition-duration: 0.1s;
     }
 
     svg {
@@ -139,11 +181,27 @@
         width: 24px;
         height: 24px;
         flex-shrink: 0;
+        transition: transform 0.2s ease;
     }
 
     /* Show button on mobile when panel is open */
     @media (max-width: 768px) {
         display: flex;
+    }
+
+    /* Landscape orientation - smaller button */
+    @media (max-width: 768px) and (orientation: landscape) {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        top: max(var(--spacer-1), env(safe-area-inset-top, 0px));
+        left: max(var(--spacer-1), env(safe-area-inset-left, 0px));
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
     }
 }
 
@@ -152,7 +210,7 @@
     position: fixed;
     top: max(var(--spacer-2), env(safe-area-inset-top, 0px));
     left: calc(44px + var(--spacer-1));
-    right: var(--spacer-2);
+    right: max(var(--spacer-2), env(safe-area-inset-right, 0px));
     z-index: 1001;
     display: none;
     gap: var(--spacer-05);
@@ -164,10 +222,30 @@
     /* Ensure tabs don't overflow - use flexbox to shrink if needed */
     min-width: 0;
     overflow: hidden;
+    /* Smooth appearance */
+    animation: slide-in-right 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
 
     /* Show on mobile when both panels exist */
     @media (max-width: 768px) {
         display: flex;
+    }
+
+    /* Landscape orientation adjustments */
+    @media (max-width: 768px) and (orientation: landscape) {
+        top: max(var(--spacer-1), env(safe-area-inset-top, 0px));
+        padding: var(--spacer-025) var(--spacer-05);
+    }
+}
+
+@keyframes slide-in-right {
+    from {
+        opacity: 0;
+        transform: translateX(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
 
@@ -181,7 +259,7 @@
     font-weight: 500;
     padding: var(--spacer-1) var(--spacer-2);
     min-height: 44px;
-    transition: all 0.2s ease;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     white-space: nowrap;
@@ -190,6 +268,10 @@
     /* Ensure text doesn't overflow */
     overflow: hidden;
     text-overflow: ellipsis;
+    position: relative;
+    /* Prevent text selection on mobile */
+    user-select: none;
+    -webkit-user-select: none;
 
     &:hover {
         background: var(--surface-3);
@@ -199,11 +281,20 @@
     &.is-active {
         background: var(--surface-4);
         color: var(--surface-8);
+        font-weight: 600;
     }
 
     &:active {
-        transform: scale(0.95);
+        transform: scale(0.97);
         background: var(--surface-4);
+        transition-duration: 0.1s;
+    }
+
+    /* Landscape orientation - reduce padding */
+    @media (max-width: 768px) and (orientation: landscape) {
+        padding: var(--spacer-05) var(--spacer-1);
+        min-height: 36px;
+        font-size: var(--font-s);
     }
 }
 
@@ -214,12 +305,20 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     z-index: 999;
-    animation: fade-in 0.3s ease-in-out;
+    animation: fade-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    will-change: opacity;
+    /* Ensure backdrop covers safe areas */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    margin: calc(env(safe-area-inset-top, 0px) * -1) calc(env(safe-area-inset-right, 0px) * -1) calc(env(safe-area-inset-bottom, 0px) * -1) calc(env(safe-area-inset-left, 0px) * -1);
 }
 
 @keyframes fade-in {

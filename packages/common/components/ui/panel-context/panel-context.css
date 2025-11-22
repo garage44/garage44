@@ -108,7 +108,7 @@
         max-width: min(85vw, 320px);
         height: 100vh;
         height: 100dvh; /* Dynamic viewport height for mobile browsers */
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s 0.3s;
 
         /* Always hide panel by default on mobile */
         transform: translateX(-100%);
@@ -117,6 +117,11 @@
         padding-top: env(safe-area-inset-top, 0px);
         padding-bottom: env(safe-area-inset-bottom, 0px);
         padding-left: env(safe-area-inset-left, 0px);
+        /* Smooth panel appearance */
+        will-change: transform;
+        /* Prevent content from being selectable during animation */
+        user-select: none;
+        -webkit-user-select: none;
     }
 }
 
@@ -125,6 +130,7 @@
     .c-panel-context:not(.collapsed) {
         transform: translateX(0);
         visibility: visible;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s;
     }
 }
 
