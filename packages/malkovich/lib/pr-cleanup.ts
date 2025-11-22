@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/max-len */
 import {$} from 'bun'
 import {existsSync} from 'fs'
 import {
@@ -145,6 +146,7 @@ export async function cleanupPRDeployment(prNumber: number): Promise<{
                 const enabledLink = `/etc/nginx/sites-enabled/${subdomain}`
 
                 // Create a "deployment removed" config instead of deleting
+
                 const removedContent = `# PR #${prNumber} - ${packageName} deployment removed
 # HTTP to HTTPS redirect
 server {
@@ -174,15 +176,7 @@ server {
     add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
 
     # Return 410 Gone (resource permanently removed) with HTML response
-    return 410 '<!DOCTYPE html><html><head><title>PR Deployment Removed</title>'
-        '<style>body{font-family:system-ui,sans-serif;text-align:center;padding:50px;background:#f5f5f5}'
-        '.container{max-width:600px;margin:0 auto;background:white;padding:40px;'
-        'border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}'
-        'h1{color:#333;margin-bottom:20px}p{color:#666;line-height:1.6}</style></head>'
-        '<body><div class="container"><h1>PR Deployment Removed</h1>'
-        '<p>This PR deployment (PR #${prNumber}) has been removed.</p>'
-        '<p>PR deployments are automatically cleaned up when the PR is closed or after 7 days.</p>'
-        '</div></body></html>';
+    return 410 '<!DOCTYPE html><html><head><title>PR Deployment Removed</title><style>body{font-family:system-ui,sans-serif;text-align:center;padding:50px;background:#f5f5f5}.container{max-width:600px;margin:0 auto;background:white;padding:40px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}h1{color:#333;margin-bottom:20px}p{color:#666;line-height:1.6}</style></head><body><div class="container"><h1>PR Deployment Removed</h1><p>This PR deployment (PR #${prNumber}) has been removed.</p><p>PR deployments are automatically cleaned up when the PR is closed or after 7 days.</p></div></body></html>';
     add_header Content-Type "text/html" always;
 }
 `
