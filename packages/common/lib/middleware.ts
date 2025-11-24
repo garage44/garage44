@@ -195,8 +195,7 @@ export const createMiddleware = (config: MiddlewareConfig, userManager: UserMana
                         await populateNoSecuritySession(session, userManager, request)
                     }
 
-                    const upgradeFn = (server as {upgrade: (req: Request, data: unknown) => boolean}).upgrade
-                    const success = upgradeFn(request, {
+                    const success = (server as {upgrade: (req: Request, data: unknown) => boolean}).upgrade(request, {
                         data: {
                             endpoint: url.pathname,
                             session,
