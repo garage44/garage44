@@ -8,4 +8,58 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacer-2);
+    margin-bottom: var(--spacer-1);
+    max-width: 500px;
+
+    .options {
+        background: var(--surface-0);
+        border: 1px solid var(--surface-3);
+        display: grid;
+        gap: var(--spacer-1);
+        max-height: calc(var(--spacer-4) * 10 + var(--spacer-1));
+        overflow-y: scroll;
+        padding: var(--spacer-1);
+
+        .field {
+            margin-bottom: 0;
+        }
+
+        .option {
+            align-items: flex-start;
+            background: var(--surface-1);
+            border: 1px solid var(--surface-3);
+            display: flex;
+            flex-direction: column;
+            padding: var(--spacer-05);
+
+            .field-wrapper {
+                align-items: center;
+                display: flex;
+                gap: var(--spacer-1);
+                width: 100%;
+            }
+
+            .language-options {
+                background: var(--surface-2);
+                color: var(--surface-5);
+                margin-top: var(--spacer-1);
+                overflow: auto;
+                padding: var(--spacer-1);
+                width: 100%;
+            }
+
+            .c-field-checkbox {
+                flex: 1;
+            }
+
+            &.is-invalid {
+                background: var(--danger-1);
+                border-color: var(--danger-4);
+            }
+        }
+    }
+
+    .help {
+        margin-top: var(--spacer-05);
+    }
 }

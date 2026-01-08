@@ -1,33 +1,70 @@
 .c-progress {
-    background: var(--surface-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-05);
     position: relative;
     width: 100%;
 
+    .track {
+        background: var(--surface-2);
+        border-radius: var(--border-radius-xs);
+        height: 6px;
+        overflow: hidden;
+        position: relative;
+        width: 100%;
+    }
+
     .bar {
-        background: var(--primary-5);
-        height: var(--spacer-3);
+        background: linear-gradient(90deg, var(--primary-4), var(--primary-5));
+        border-radius: var(--border-radius-xs);
+        height: 100%;
+        min-width: 2px;
+        transition: width 0.3s ease;
+    }
+
+    .info {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
 
         .percentage {
-            align-items: center;
-            color: var(--primary-1);
-            display: flex;
-            font-size: var(--font-s);
+            color: var(--surface-7);
+            font-size: var(--font-xs);
+            font-variant-numeric: tabular-nums;
             font-weight: 600;
-            height: var(--spacer-3);
-            justify-content: space-between;
-            padding: 0 var(--spacer-1);
-            position: absolute;
-            top: 0;
-            width: 100%;
+        }
+
+        .boundaries {
+            color: var(--surface-5);
+            font-size: var(--font-xxs);
+            font-variant-numeric: tabular-nums;
         }
     }
 
-    .boundaries {
-        background: var(--info-0);
-        color: var(--info-7);
-        display: flex;
-        font-size: var(--font-xxs);
-        padding: var(--spacer-025);
-        width: 100%;
+    /* Loading state */
+
+    &.loading {
+
+        .bar {
+            animation: shimmer 1.5s infinite;
+            background: linear-gradient(
+                90deg,
+                var(--surface-3) 0%,
+                var(--surface-4) 50%,
+                var(--surface-3) 100%
+            );
+            background-size: 200% 100%;
+        }
+    }
+}
+
+@keyframes shimmer {
+
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
     }
 }

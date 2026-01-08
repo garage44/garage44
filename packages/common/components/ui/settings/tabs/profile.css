@@ -1,19 +1,20 @@
 .c-profile-tab {
     display: flex;
     flex-direction: column;
-    gap: var(--spacer-4);
+    gap: var(--spacer-5);
 
     .section {
         display: flex;
         flex-direction: column;
-        gap: var(--spacer-2);
+        gap: var(--spacer-3);
     }
 
     .section-title {
-        color: var(--surface-7);
-        font-size: var(--font-l);
-        font-weight: var(--font-weight-semibold, 600);
-        margin: 0;
+        color: var(--surface-8);
+        font-size: var(--font-m);
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin: 0 0 var(--spacer-2) 0;
     }
 
     .theme-toggle {
@@ -24,7 +25,7 @@
         label {
             color: var(--surface-7);
             font-size: var(--font-d);
-            font-weight: var(--font-weight-semibold, 600);
+            font-weight: 500;
         }
     }
 

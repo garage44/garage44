@@ -1,5 +1,3 @@
-import {useMemo} from 'preact/hooks'
-import {getCurrentUrl} from 'preact-router'
 import {$s, i18n} from '@/app'
 import {store, notifier} from '@garage44/common/app'
 import {$t} from '@garage44/expressio'
@@ -17,13 +15,16 @@ const getRoute = (tabId: string) => {
 }
 
 export function Settings({tabId}: SettingsProps) {
-    // Extract tab from query params if not provided as prop
-    const activeTabId = useMemo(() => {
-        if (tabId) return tabId
-        const url = getCurrentUrl()
+    /*
+     * Extract tab from query params if not provided as prop
+     * Use $s.env.url which is reactive and updates when route changes
+     * Accessing $s.env.url directly makes this reactive to URL changes
+     */
+    const url = $s.env.url
+    const activeTabId = tabId || (() => {
         const match = url.match(/[?&]tab=([^&]+)/)
         return match ? match[1] : undefined
-    }, [tabId])
+    })()
     const saveSettings = async() => {
         store.save()
         notifier.notify({icon: 'Settings', message: $t(i18n.ui.settings.action.saved), type: 'info'})

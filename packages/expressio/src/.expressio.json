@@ -9,12 +9,8 @@
                 },
                 {
                     "engine": "deepl",
-                    "id": "zho-hans"
-                },
-                {
-                    "engine": "deepl",
                     "formality": "less",
-                    "id": "nld"
+                    "id": "deu"
                 },
                 {
                     "engine": "deepl",
@@ -29,7 +25,11 @@
                 {
                     "engine": "deepl",
                     "formality": "less",
-                    "id": "deu"
+                    "id": "nld"
+                },
+                {
+                    "engine": "deepl",
+                    "id": "zho-hans"
                 }
             ]
         },
@@ -48,24 +48,24 @@
                     "cache": "3c69d6c70e1ae53f",
                     "source": "Url to Anthropic's API",
                     "target": {
-                        "ara": "الرابط إلى واجهة برمجة تطبيقات أنثروبيك",
-                        "deu": "Url zur API von Anthropic",
+                        "ara": "رابط API Anthropic",
+                        "deu": "URL zur API von Anthropic",
                         "eng-gbr": "Url to Anthropic's API",
-                        "fra": "Url vers l'API d'Anthropic",
-                        "nld": "Url naar Anthropic's API",
-                        "zho-hans": "人类学应用程序接口链接"
+                        "fra": "Lien vers l'API d'Anthropic",
+                        "nld": "URL naar de API van Anthropic",
+                        "zho-hans": "Anthropic API 的网址"
                     }
                 },
                 "anthropic_key": {
                     "cache": "-4ec3efee-337a753e",
                     "source": "The API key for the Anthropic service",
                     "target": {
-                        "ara": "مفتاح API لخدمة أنثروبيك",
+                        "ara": "مفتاح API لخدمة Anthropic",
                         "deu": "Der API-Schlüssel für den Anthropic-Dienst",
                         "eng-gbr": "The API key for the Anthropic service",
                         "fra": "La clé API pour le service Anthropic",
                         "nld": "De API-sleutel voor de Anthropic-service",
-                        "zho-hans": "Anthropic 服务的 API 密钥"
+                        "zho-hans": "Anthropic服务的API密钥"
                     }
                 },
                 "deepl_base_url": {
@@ -731,10 +731,74 @@
         },
         "ui": {
             "settings": {
-                "action": {},
-                "profile": {},
-                "users": {},
-                "workspaces": {}
+                "action": {
+                    "saved": {
+                        "cache": "96d4dadd096605d5",
+                        "source": "Settings saved",
+                        "target": {
+                            "ara": "تم حفظ الإعدادات",
+                            "deu": "Einstellungen gespeichert",
+                            "eng-gbr": "Settings saved",
+                            "fra": "Paramètres enregistrés",
+                            "nld": "Instellingen opgeslagen",
+                            "zho-hans": "设置已保存"
+                        }
+                    }
+                },
+                "name": {
+                    "cache": "f4f70727dc34561d",
+                    "source": "Settings",
+                    "target": {
+                        "ara": "الإعدادات",
+                        "deu": "Einstellungen",
+                        "eng-gbr": "Settings",
+                        "fra": "Paramètres",
+                        "nld": "Instellingen",
+                        "zho-hans": "设置"
+                    }
+                },
+                "profile": {
+                    "name": {
+                        "cache": "0000000000000017",
+                        "source": "Profile",
+                        "target": {
+                            "ara": "الملف الشخصي",
+                            "deu": "Profil",
+                            "eng-gbr": "Profile",
+                            "fra": "Profil",
+                            "nld": "Profiel",
+                            "zho-hans": "个人资料"
+                        }
+                    }
+                },
+                "users": {
+                    "name": {
+                        "cache": "0000000000000018",
+                        "source": "Users",
+                        "target": {
+                            "ara": "المستخدمون",
+                            "deu": "Benutzer",
+                            "eng-gbr": "Users",
+                            "fra": "Utilisateurs",
+                            "nld": "Gebruikers",
+                            "zho-hans": "用户"
+                        }
+                    }
+                },
+                "workspaces": {
+                    "name": {
+                        "cache": "0000000000000019",
+                        "source": "Workspaces",
+                        "target": {
+                            "ara": "مساحات العمل",
+                            "deu": "Arbeitsbereiche",
+                            "eng-gbr": "Workspaces",
+                            "fra": "Espaces de travail",
+                            "nld": "Werkruimten",
+                            "zho-hans": "工作区"
+                        }
+                    }
+                }
             }
         },
         "users": {

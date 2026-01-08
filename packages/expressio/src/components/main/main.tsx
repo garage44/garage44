@@ -53,6 +53,20 @@ export const Main = () => {
                     enola: config.enola,
                     workspaces: config.workspaces,
                 }, {usage: {loading: false}})
+
+                // Auto-select first workspace if only one exists and no workspace is selected
+                if (config.workspaces && config.workspaces.length === 1 && !state.workspace_id) {
+                    const firstWorkspace = config.workspaces[0]
+                    state.workspace_id = firstWorkspace.workspace_id
+                    $s.workspace = await ws.get(`/api/workspaces/${firstWorkspace.workspace_id}`)
+                }
+
+                // Redirect from root to first workspace if we're on root path
+                const currentUrl = getCurrentUrl()
+                if (currentUrl === '/' && config.workspaces && config.workspaces.length > 0) {
+                    const firstWorkspace = config.workspaces[0]
+                    route(`/workspaces/${firstWorkspace.workspace_id}/translations`, true)
+                }
             } else {
                 route('/login')
             }
@@ -70,8 +84,13 @@ export const Main = () => {
         // Update URL in global state for reactive access
         $s.env.url = url
 
-        // Don't process if we're already on the root path
+        // Redirect root path to first available workspace translations
         if (url === '/') {
+            if ($s.workspaces && $s.workspaces.length > 0) {
+                const firstWorkspace = $s.workspaces[0]
+                route(`/workspaces/${firstWorkspace.workspace_id}/translations`, true)
+                return
+            }
             $s.workspace = null
             state.workspace_id = null
             return
@@ -85,8 +104,13 @@ export const Main = () => {
                 // Replace console.log with proper error handling
                 notifier.notify({message: $t(i18n.workspace.error.not_found), type: 'error'})
 
-                // Use route with replace option to avoid adding to history
-                route('/', true)
+                // Redirect to first workspace or root
+                if ($s.workspaces && $s.workspaces.length > 0) {
+                    const firstWorkspace = $s.workspaces[0]
+                    route(`/workspaces/${firstWorkspace.workspace_id}/translations`, true)
+                } else {
+                    route('/', true)
+                }
             } else {
                 state.workspace_id = match[1]
                 $s.workspace = result
@@ -124,15 +148,15 @@ export const Main = () => {
                         <div class='engines'>
                             {Object.values($s.enola.engines).filter((i) => i.active).map((engine) => {
                                 return (
-                                <div class='usage' key={engine.name}>
-                                        {$t(i18n.menu.usage, {engine: engine.name})}
+                                    <div class='usage' key={engine.name}>
+                                        <span>{$t(i18n.menu.usage, {engine: engine.name})}</span>
                                         <Progress
                                             boundaries={[engine.usage.count, engine.usage.limit]}
                                             iso6391={toIso6391($s.language_ui.selection)}
                                             loading={engine.usage.loading}
                                             percentage={engine.usage.count / engine.usage.limit}
                                         />
-                                </div>
+                                    </div>
                                 )
                             })}
                         </div>
@@ -146,41 +170,34 @@ export const Main = () => {
                     logoVersion={process.env.APP_VERSION || ''}
                     navigation={(
                         <MenuGroup collapsed={$s.panels.menu.collapsed}>
-                            <MenuItem
-                                active={$s.env.url === '/'}
-                                collapsed={$s.panels.menu.collapsed}
-                                href='/'
-                                icon='dashboard'
-                                iconType='info'
-                                text={$t(i18n.menu.settings)}
-                            />
-                            <FieldSelect
-                                disabled={!$s.workspaces.length}
-                                help={$t(i18n.menu.workspaces.help)}
-                                label={$t(i18n.menu.workspaces.label)}
-                                model={state.$workspace_id}
-                                onChange={async(workspace_id) => {
-                                    $s.workspace = (await ws.get(`/api/workspaces/${workspace_id}`))
-                                    // Check if current route is valid for the new workspace
-                                    const currentPath = getCurrentUrl()
-                                    const isValidRoute =
-                                        currentPath.endsWith('/settings') || currentPath.endsWith('/translations')
+                            {$s.workspaces && $s.workspaces.length > 1 &&
+                                <FieldSelect
+                                    disabled={!$s.workspaces.length}
+                                    help={$t(i18n.menu.workspaces.help)}
+                                    label={$t(i18n.menu.workspaces.label)}
+                                    model={state.$workspace_id}
+                                    onChange={async(workspace_id) => {
+                                        $s.workspace = (await ws.get(`/api/workspaces/${workspace_id}`))
+                                        // Check if current route is valid for the new workspace
+                                        const currentPath = getCurrentUrl()
+                                        const isValidRoute =
+                                            currentPath.endsWith('/settings') || currentPath.endsWith('/translations')
 
-                                    // If we're not on a valid workspace route, default to settings
-                                    let newRoute
-                                    if (isValidRoute) {
-                                        // Keep the same page type (settings/translations) but update workspace
-                                        const routeSuffix = currentPath.endsWith('/settings') ? 'settings' : 'translations'
-                                        newRoute = `/workspaces/${workspace_id}/${routeSuffix}`
-                                    } else {
-                                        newRoute = `/workspaces/${workspace_id}/settings`
-                                    }
+                                        // If we're not on a valid workspace route, default to translations
+                                        let newRoute
+                                        if (isValidRoute) {
+                                            // Keep the same page type (settings/translations) but update workspace
+                                            const routeSuffix = currentPath.endsWith('/settings') ? 'settings' : 'translations'
+                                            newRoute = `/workspaces/${workspace_id}/${routeSuffix}`
+                                        } else {
+                                            newRoute = `/workspaces/${workspace_id}/translations`
+                                        }
 
-                                    route(newRoute)
-                                }}
-                                options={$s.workspaces.map((i) => ({id: i.workspace_id, name: i.workspace_id}))}
-                                placeholder={$t(i18n.menu.workspaces.placeholder)}
-                            />
+                                        route(newRoute)
+                                    }}
+                                    options={$s.workspaces.map((i) => ({id: i.workspace_id, name: i.workspace_id}))}
+                                    placeholder={$t(i18n.menu.workspaces.placeholder)}
+                                />}
 
                             <MenuItem
                                 active={$s.env.url.endsWith('/settings')}
@@ -210,10 +227,10 @@ export const Main = () => {
         >
             <div class='view'>
                 <Router onChange={handleRoute}>
-                    {$s.profile.admin && <Config path='/' />}
                     <Settings path='/settings' />
                     <WorkspaceSettings path='/workspaces/:workspace/settings' />
                     <WorkspaceTranslations path='/workspaces/:workspace/translations' />
+                    {$s.profile.admin && <Config path='/' />}
                 </Router>
             </div>
         </AppLayout>

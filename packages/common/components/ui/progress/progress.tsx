@@ -1,6 +1,6 @@
-import {Icon} from '@/components'
+import classnames from 'classnames'
 
-export function Progress({boundaries, loading, percentage, iso6391}) {
+export function Progress({boundaries, iso6391, loading, percentage}) {
     if (!iso6391) {
         iso6391 = 'en-gb'
     }
@@ -11,14 +11,20 @@ export function Progress({boundaries, loading, percentage, iso6391}) {
         style: 'percent',
     })
 
-    return <div class="c-progress">
-        <div class="bar" style={{width: `${percentage * 100}%`}}>
-            <div className="percentage">
-                {loading ? <Icon name="loading" className="rotate" size="s" /> : `${intlPercentage.format(percentage)}`}
+    return (
+        <div class={classnames('c-progress', {loading})}>
+            <div class='track'>
+                <div class='bar' style={{width: `${Math.max(percentage * 100, 1)}%`}} />
+            </div>
+            <div class='info'>
+                <span class='percentage'>
+                    {loading ? '...' : intlPercentage.format(percentage)}
+                </span>
+                {boundaries.length > 0 &&
+                    <span class='boundaries'>
+                        {loading ? '...' : intlRange.formatRange(boundaries[0], boundaries[1])}
+                    </span>}
             </div>
         </div>
-        {boundaries.length && <div className="boundaries">
-            {loading ? <Icon name="loading" className="rotate" size="xs" /> : intlRange.formatRange(boundaries[0], boundaries[1])}
-        </div>}
-    </div>
+    )
 }

@@ -7,18 +7,21 @@
     --btn-active-hover: var(--btn-color-1, var(--info-1));
 
     align-items: center;
+    align-self: flex-start;
     background: var(--btn-bg);
     border: none;
-    border-radius: var(--spacer-3);
+    border-radius: var(--border-radius-d);
     color: var(--btn-text);
     cursor: pointer;
-    display: flex;
-    font-size: var(--font-s);
-    font-weight: 800;
+    display: inline-flex;
+    font-size: var(--font-d);
+    font-weight: 500;
     gap: var(--spacer-1);
+    justify-content: center;
     overflow: hidden;
     padding: var(--spacer-1) var(--spacer-2);
-    transition: all 0.1s ease;
+    transition: all 0.15s ease;
+    width: fit-content;
 
     .label {
         overflow: hidden;
@@ -184,8 +187,8 @@
 
         .c-icon {
             display: block;
-            width: calc(var(--spacer-1) * 4);
             height: calc(var(--spacer-1) * 4);
+            width: calc(var(--spacer-1) * 4);
         }
     }
 

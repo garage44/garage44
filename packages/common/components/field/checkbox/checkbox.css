@@ -1,7 +1,7 @@
 .c-field-checkbox {
     display: flex;
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
+    gap: var(--spacer-05);
 
     .wrapper {
         align-items: center;
@@ -17,6 +17,14 @@
             margin-bottom: 0;
             user-select: none;
         }
+    }
+
+    .help {
+        color: var(--surface-6);
+        font-size: var(--font-xs);
+        line-height: 1.4;
+        margin-left: calc(var(--spacer-2) + 20px);
+        margin-top: 0;
     }
 
     input[type="checkbox"] {

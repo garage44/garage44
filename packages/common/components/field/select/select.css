@@ -1,6 +1,6 @@
 .c-field-select {
     display: flex;
     flex-direction: column;
-    max-width: 250px;
+    max-width: 280px;
     min-width: 120px;
 }
