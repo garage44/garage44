@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
         "allowImportingTsExtensions": true,
-        "baseUrl": "./",
         "esModuleInterop": true,
         "lib": [
             "DOM",
@@ -15,6 +14,7 @@
         "noEmit": true,
         "resolveJsonModule": true,
         "paths": {
+            "*": ["./*"],
             "@/*": ["./src/*"],
             "@garage44/common/*": ["../common/*"]
         },

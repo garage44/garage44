@@ -34,8 +34,9 @@
   },
   "scripts": {
     "clean": "rm -rf dist;rm -rf node_modules",
-    "lint:ts": "oxlint **/*.ts --config ../../.oxlintrc.json",
+    "lint:ts-syntax": "oxlint **/*.ts --config ../../.oxlintrc.json",
     "lint:ts-style": "eslint **/*.ts --config ../../eslint.config.js",
+    "lint:ts-types": "bunx @typescript/native-preview --noEmit",
     "test": "bun test"
   }
 }

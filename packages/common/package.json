@@ -22,8 +22,9 @@
   "scripts": {
     "clean": "rm -rf dist;rm -rf node_modules",
     "lint:css": "stylelint components/**/*.css",
-    "lint:ts": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json",
+    "lint:ts-syntax": "oxlint **/*.{ts,tsx} --config ../../.oxlintrc.json",
     "lint:ts-style": "eslint **/*.{ts,tsx} --config ../../eslint.config.js",
+    "lint:ts-types": "bunx @typescript/native-preview --noEmit",
     "test": "bun test"
   },
   "type": "module",
