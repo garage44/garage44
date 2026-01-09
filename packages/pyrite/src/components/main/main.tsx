@@ -142,7 +142,7 @@ export const Main = () => {
             if (isAuthenticated && hasPermission) {
                 notifier.notify({message: 'Login successful', type: 'info'})
                 ws.connect()
-                
+
                 // Try to route to default channel
                 try {
                     const defaultChannelResponse = await api.get('/api/channels/default')
@@ -158,7 +158,7 @@ export const Main = () => {
                     // If getting default channel fails, just continue without redirecting
                     logger.debug('[Login] Could not get default channel:', error)
                 }
-                
+
                 // Success
                 return null
             }
@@ -187,14 +187,12 @@ export const Main = () => {
     }
 
     if (!$s.admin.authenticated) {
-        return (
-<Login
-    animated={true}
-    LogoIcon={IconLogo}
-    onLogin={handleLogin}
-    title='Pyrite'
-/>
-        )
+        return <Login
+            animated={true}
+            LogoIcon={IconLogo}
+            onLogin={handleLogin}
+            title='Pyrite'
+        />
     }
 
     return (

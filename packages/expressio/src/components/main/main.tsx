@@ -154,8 +154,7 @@ export const Main = () => {
         }
     }
 
-    return (
-<>
+    return <>
         <AppLayout
             menu={(
                 <PanelMenu
@@ -196,7 +195,6 @@ export const Main = () => {
                                 )
                             })}
                         </div>
-
                     }
                     LinkComponent={Link}
                     logoCommitHash={process.env.APP_COMMIT_HASH || ''}
@@ -277,6 +275,5 @@ export const Main = () => {
             </div>
         </AppLayout>
         <Notifications notifications={$s.notifications} />
-</>
-    )
+    </>
 }
