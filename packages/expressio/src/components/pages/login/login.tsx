@@ -23,13 +23,10 @@ export const Login = () => {
                 const config = await api.get('/api/config')
 
                 /*
+                 * Set profile data from result (but NOT authenticated yet)
                  * result from login already includes full profile from /api/context
-                 * Set user authentication/admin flags
                  */
                 $s.profile.admin = result.admin || false
-                // Always set to true if we have user data
-                $s.profile.authenticated = true
-                // Set profile data from result
                 if (result.id) $s.profile.id = result.id
                 if (result.username) $s.profile.username = result.username
                 if (result.password) $s.profile.password = result.password
@@ -37,10 +34,24 @@ export const Login = () => {
                     $s.profile.avatar = result.profile.avatar || 'placeholder-1.png'
                     $s.profile.displayName = result.profile.displayName || result.username || 'User'
                 }
+
+                // Load workspaces config
                 mergeDeep($s, {
                     enola: config.enola,
                     workspaces: config.workspaces,
                 }, {usage: {loading: false}})
+
+                // Connect WebSocket first so we can load workspace
+                ws.connect()
+
+                /*
+                 * Auto-select first workspace and load its data BEFORE setting authenticated
+                 * This ensures workspace is available when Main component renders
+                 */
+                if (config.workspaces && config.workspaces.length > 0) {
+                    const firstWorkspace = config.workspaces[0]
+                    $s.workspace = await ws.get(`/api/workspaces/${firstWorkspace.workspace_id}`)
+                }
 
                 // Now that workspace is loaded, we can safely access workspace.i18n
                 const loggedInMessage =
@@ -55,8 +66,16 @@ export const Login = () => {
                     type: 'info',
                 })
 
-                ws.connect()
-                // Success - no error message
+                /*
+                 * Set authenticated LAST - this triggers Main to re-render
+                 * At this point workspace is already loaded
+                 */
+                $s.profile.authenticated = true
+
+                /*
+                 * Success - no error message
+                 * Navigation is handled by the Router in Main component
+                 */
                 return null
             }
 

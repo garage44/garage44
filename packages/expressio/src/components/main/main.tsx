@@ -1,7 +1,7 @@
 import {$s, i18n} from '@/app'
 import {api, notifier, ws} from '@garage44/common/app'
 import {$t} from '@garage44/expressio'
-import {Config, WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
+import {WorkspaceSettings, WorkspaceTranslations} from '@/components/pages'
 import {Settings} from '@/components/settings/settings'
 import {
     AppLayout,
@@ -23,6 +23,31 @@ import {useEffect} from 'preact/hooks'
 const state = deepSignal({
     workspace_id: null,
 })
+
+// Helper to determine if we're in single workspace mode
+const isSingleWorkspace = () => $s.workspaces && $s.workspaces.length === 1
+
+// Helper to get the appropriate translations URL based on workspace count
+const getTranslationsUrl = () => {
+    if (isSingleWorkspace()) {
+        return '/translations'
+    }
+    if ($s.workspace) {
+        return `/workspaces/${$s.workspace.config.workspace_id}/translations`
+    }
+    return '/translations'
+}
+
+// Helper to get the appropriate config URL based on workspace count
+const getConfigUrl = () => {
+    if (isSingleWorkspace()) {
+        return '/config'
+    }
+    if ($s.workspace) {
+        return `/workspaces/${$s.workspace.config.workspace_id}/settings`
+    }
+    return '/config'
+}
 
 export const Main = () => {
     useEffect(() => {
@@ -54,18 +79,11 @@ export const Main = () => {
                     workspaces: config.workspaces,
                 }, {usage: {loading: false}})
 
-                // Auto-select first workspace if only one exists and no workspace is selected
-                if (config.workspaces && config.workspaces.length === 1 && !state.workspace_id) {
+                // Auto-select first workspace if available and no workspace is selected
+                if (config.workspaces && config.workspaces.length > 0 && !state.workspace_id) {
                     const firstWorkspace = config.workspaces[0]
                     state.workspace_id = firstWorkspace.workspace_id
                     $s.workspace = await ws.get(`/api/workspaces/${firstWorkspace.workspace_id}`)
-                }
-
-                // Redirect from root to first workspace if we're on root path
-                const currentUrl = getCurrentUrl()
-                if (currentUrl === '/' && config.workspaces && config.workspaces.length > 0) {
-                    const firstWorkspace = config.workspaces[0]
-                    route(`/workspaces/${firstWorkspace.workspace_id}/translations`, true)
                 }
             } else {
                 route('/login')
@@ -84,32 +102,50 @@ export const Main = () => {
         // Update URL in global state for reactive access
         $s.env.url = url
 
-        // Redirect root path to first available workspace translations
+        /*
+         * Redirect root to appropriate translations URL:
+         * - Single workspace: /translations
+         * - Multiple workspaces: /workspaces/:id/translations
+         */
         if (url === '/') {
             if ($s.workspaces && $s.workspaces.length > 0) {
-                const firstWorkspace = $s.workspaces[0]
-                route(`/workspaces/${firstWorkspace.workspace_id}/translations`, true)
-                return
+                if (isSingleWorkspace()) {
+                    route('/translations', true)
+                } else {
+                    const firstWorkspace = $s.workspaces[0]
+                    route(`/workspaces/${firstWorkspace.workspace_id}/translations`, true)
+                }
             }
-            $s.workspace = null
-            state.workspace_id = null
             return
         }
 
+        /*
+         * Handle simplified routes (/translations, /config):
+         * These automatically use the first/single workspace
+         */
+        if (url === '/translations' || url === '/config') {
+            // Ensure a workspace is loaded for these routes
+            if (!$s.workspace && $s.workspaces && $s.workspaces.length > 0) {
+                const firstWorkspace = $s.workspaces[0]
+                state.workspace_id = firstWorkspace.workspace_id
+                $s.workspace = await ws.get(`/api/workspaces/${firstWorkspace.workspace_id}`)
+            }
+            return
+        }
+
+        // Handle full workspace routes (multi-workspace mode)
         const match = url.match(/\/workspaces\/([^/]+)/)
         if (match && (!$s.workspace || match[1] !== $s.workspace.config.workspace_id)) {
             const result = await ws.get(`/api/workspaces/${match[1]}`)
 
             if (result.error) {
-                // Replace console.log with proper error handling
                 notifier.notify({message: $t(i18n.workspace.error.not_found), type: 'error'})
-
-                // Redirect to first workspace or root
-                if ($s.workspaces && $s.workspaces.length > 0) {
+                // On error, redirect to appropriate translations
+                if (isSingleWorkspace()) {
+                    route('/translations', true)
+                } else if ($s.workspaces && $s.workspaces.length > 0) {
                     const firstWorkspace = $s.workspaces[0]
                     route(`/workspaces/${firstWorkspace.workspace_id}/translations`, true)
-                } else {
-                    route('/', true)
                 }
             } else {
                 state.workspace_id = match[1]
@@ -170,6 +206,7 @@ export const Main = () => {
                     logoVersion={process.env.APP_VERSION || ''}
                     navigation={(
                         <MenuGroup collapsed={$s.panels.menu.collapsed}>
+                            {/* Only show workspace dropdown when multiple workspaces exist */}
                             {$s.workspaces && $s.workspaces.length > 1 &&
                                 <FieldSelect
                                     disabled={!$s.workspaces.length}
@@ -180,42 +217,41 @@ export const Main = () => {
                                         $s.workspace = (await ws.get(`/api/workspaces/${workspace_id}`))
                                         // Check if current route is valid for the new workspace
                                         const currentPath = getCurrentUrl()
-                                        const isValidRoute =
-                                            currentPath.endsWith('/settings') || currentPath.endsWith('/translations')
+                                        const isOnSettings = currentPath.endsWith('/settings') || currentPath === '/config'
+                                        const isOnTranslations = currentPath.endsWith('/translations')
 
-                                        // If we're not on a valid workspace route, default to translations
-                                        let newRoute
-                                        if (isValidRoute) {
-                                            // Keep the same page type (settings/translations) but update workspace
-                                            const routeSuffix = currentPath.endsWith('/settings') ? 'settings' : 'translations'
-                                            newRoute = `/workspaces/${workspace_id}/${routeSuffix}`
+                                        // Navigate to the appropriate route for the new workspace
+                                        if (isOnSettings) {
+                                            route(`/workspaces/${workspace_id}/settings`)
+                                        } else if (isOnTranslations) {
+                                            route(`/workspaces/${workspace_id}/translations`)
                                         } else {
-                                            newRoute = `/workspaces/${workspace_id}/translations`
+                                            route(`/workspaces/${workspace_id}/translations`)
                                         }
-
-                                        route(newRoute)
                                     }}
                                     options={$s.workspaces.map((i) => ({id: i.workspace_id, name: i.workspace_id}))}
                                     placeholder={$t(i18n.menu.workspaces.placeholder)}
                                 />}
 
-                            <MenuItem
-                                active={$s.env.url.endsWith('/settings')}
-                                collapsed={$s.panels.menu.collapsed}
-                                disabled={!$s.workspace}
-                                href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/settings` : ''}
-                                icon='workspace'
-                                iconType='info'
-                                text={$t(i18n.menu.workspace.config)}
-                            />
+                            {/* Translations menu item - first */}
                             <MenuItem
                                 active={$s.env.url.endsWith('/translations')}
                                 collapsed={$s.panels.menu.collapsed}
                                 disabled={!$s.workspace}
-                                href={$s.workspace ? `/workspaces/${$s.workspace.config.workspace_id}/translations` : ''}
+                                href={getTranslationsUrl()}
                                 icon='translate'
                                 iconType='info'
                                 text={$t(i18n.menu.workspace.translations)}
+                            />
+                            {/* Workspace config menu item - second */}
+                            <MenuItem
+                                active={$s.env.url.endsWith('/settings') || $s.env.url === '/config'}
+                                collapsed={$s.panels.menu.collapsed}
+                                disabled={!$s.workspace}
+                                href={getConfigUrl()}
+                                icon='workspace'
+                                iconType='info'
+                                text={$t(i18n.menu.workspace.config)}
                             />
                         </MenuGroup>
                       )}
@@ -227,10 +263,16 @@ export const Main = () => {
         >
             <div class='view'>
                 <Router onChange={handleRoute}>
+                    {/* User settings - always at /settings */}
                     <Settings path='/settings' />
+
+                    {/* Simplified routes for single workspace mode */}
+                    <WorkspaceTranslations path='/translations' />
+                    <WorkspaceSettings path='/config' />
+
+                    {/* Full workspace routes for multi-workspace mode */}
                     <WorkspaceSettings path='/workspaces/:workspace/settings' />
                     <WorkspaceTranslations path='/workspaces/:workspace/translations' />
-                    {$s.profile.admin && <Config path='/' />}
                 </Router>
             </div>
         </AppLayout>

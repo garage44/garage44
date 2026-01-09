@@ -4,7 +4,7 @@ import {$t} from '@garage44/expressio'
 import {Settings as CommonSettings} from '@garage44/common/components/ui/settings/settings'
 import {Profile} from '@garage44/common/components/ui/settings/tabs/profile'
 import {UsersManagement} from '@garage44/common/components'
-import TabWorkspaces from './tabs/workspaces'
+import {Config} from '@/components/pages/config/config'
 
 interface SettingsProps {
     tabId?: string
@@ -30,8 +30,8 @@ export function Settings({tabId}: SettingsProps) {
         notifier.notify({icon: 'Settings', message: $t(i18n.ui.settings.action.saved), type: 'info'})
     }
 
-    // Determine if user settings should be shown (admin only)
-    const showUserSettings = $s.profile?.admin
+    // Determine if admin settings should be shown
+    const isAdmin = $s.profile?.admin
 
     const tabs = [
         {
@@ -41,7 +41,13 @@ export function Settings({tabId}: SettingsProps) {
             label: $t(i18n.ui.settings.profile.name),
             tip: $t(i18n.ui.settings.profile.name),
         },
-        ...showUserSettings ?
+
+        /*
+         * Admin-only tabs:
+         * - Users: user management
+         * - Admin: translation engine config, UI language, workspace management
+         */
+        ...isAdmin ?
                 [
                     {
                         component: <UsersManagement $t={$t} />,
@@ -50,15 +56,15 @@ export function Settings({tabId}: SettingsProps) {
                         label: $t(i18n.ui.settings.users.name),
                         tip: $t(i18n.ui.settings.users.name),
                     },
+                    {
+                        component: <Config />,
+                        icon: 'Workspace',
+                        id: 'admin',
+                        label: $t(i18n.ui.settings.workspaces.name),
+                        tip: $t(i18n.ui.settings.workspaces.name),
+                    },
                 ] :
                 [],
-        {
-            component: <TabWorkspaces />,
-            icon: 'Workspace',
-            id: 'workspaces',
-            label: $t(i18n.ui.settings.workspaces.name),
-            tip: $t(i18n.ui.settings.workspaces.name),
-        },
     ]
 
     return (
