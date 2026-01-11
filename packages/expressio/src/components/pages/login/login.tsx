@@ -69,13 +69,13 @@ export const Login = () => {
                 /*
                  * Set authenticated LAST - this triggers Main to re-render
                  * At this point workspace is already loaded
+                 * The Router's handleRoute will redirect from '/' to the appropriate
+                 * translations page based on workspace count
                  */
                 $s.profile.authenticated = true
 
-                /*
-                 * Success - no error message
-                 * Navigation is handled by the Router in Main component
-                 */
+
+                // Success - no error message
                 return null
             }
 

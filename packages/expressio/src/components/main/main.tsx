@@ -19,6 +19,7 @@ import {Login} from '@/components/pages/login/login'
 import {deepSignal} from 'deepsignal'
 import {toIso6391} from '../../../lib/enola/iso-codes.ts'
 import {useEffect} from 'preact/hooks'
+import {effect} from '@preact/signals'
 
 const state = deepSignal({
     workspace_id: null,
@@ -47,6 +48,27 @@ const getConfigUrl = () => {
         return `/workspaces/${$s.workspace.config.workspace_id}/settings`
     }
     return '/config'
+}
+
+/*
+ * Component that redirects from root - ensures handleRoute is called
+ * This component renders when path='/' matches
+ * Uses effect to watch for workspace loading (handles both login and page refresh)
+ */
+const RootRedirect = () => {
+    useEffect(() => {
+        return effect(() => {
+            // Watch for workspace to be loaded, then redirect
+            if ($s.workspace && $s.workspaces && $s.workspaces.length > 0 && getCurrentUrl() === '/') {
+                if (isSingleWorkspace()) {
+                    route('/translations', true)
+                } else {
+                    route(`/workspaces/${$s.workspaces[0].workspace_id}/translations`, true)
+                }
+            }
+        })
+    }, [])
+    return null
 }
 
 export const Main = () => {
@@ -84,6 +106,7 @@ export const Main = () => {
                     const firstWorkspace = config.workspaces[0]
                     state.workspace_id = firstWorkspace.workspace_id
                     $s.workspace = await ws.get(`/api/workspaces/${firstWorkspace.workspace_id}`)
+                    // RootRedirect component will handle redirect from '/' if needed
                 }
             } else {
                 route('/login')
@@ -103,18 +126,15 @@ export const Main = () => {
         $s.env.url = url
 
         /*
-         * Redirect root to appropriate translations URL:
-         * - Single workspace: /translations
-         * - Multiple workspaces: /workspaces/:id/translations
+         * Handle root path - ensure workspace is loaded
+         * The RootRedirect component will handle the actual redirect
          */
         if (url === '/') {
-            if ($s.workspaces && $s.workspaces.length > 0) {
-                if (isSingleWorkspace()) {
-                    route('/translations', true)
-                } else {
-                    const firstWorkspace = $s.workspaces[0]
-                    route(`/workspaces/${firstWorkspace.workspace_id}/translations`, true)
-                }
+            // Ensure workspace is loaded for root redirect
+            if (!$s.workspace && $s.workspaces && $s.workspaces.length > 0) {
+                const firstWorkspace = $s.workspaces[0]
+                state.workspace_id = firstWorkspace.workspace_id
+                $s.workspace = await ws.get(`/api/workspaces/${firstWorkspace.workspace_id}`)
             }
             return
         }
@@ -261,6 +281,9 @@ export const Main = () => {
         >
             <div class='view'>
                 <Router onChange={handleRoute}>
+                    {/* Root redirect - must be first to catch / */}
+                    <RootRedirect path='/' />
+
                     {/* User settings - always at /settings */}
                     <Settings path='/settings' />
 
