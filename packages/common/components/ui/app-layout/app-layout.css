@@ -46,26 +46,27 @@
 }
 
 /* Unified mobile panel toggle button - positioned top-left */
+
 .c-mobile-panel-toggle {
-    position: fixed;
-    top: var(--spacer-1);
-    left: var(--spacer-1);
-    z-index: 1001;
+    align-items: center;
     background: var(--surface-2);
     border: 1px solid var(--surface-3);
     border-radius: var(--border-radius-s);
+    box-shadow: var(--shadow-d);
     color: var(--surface-7);
     cursor: pointer;
     display: none;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacer-1);
-    width: var(--spacer-6);
     height: var(--spacer-6);
-    min-width: var(--spacer-6);
+    justify-content: center;
+    left: var(--spacer-1);
     min-height: var(--spacer-6);
+    min-width: var(--spacer-6);
+    padding: var(--spacer-1);
+    position: fixed;
+    top: var(--spacer-1);
     transition: all 0.2s ease;
-    box-shadow: var(--shadow-d);
+    width: var(--spacer-6);
+    z-index: 1001;
 
     &:hover {
         background: var(--surface-3);
@@ -78,9 +79,9 @@
 
     svg {
         display: block;
-        width: 20px;
-        height: 20px;
         flex-shrink: 0;
+        height: 20px;
+        width: 20px;
     }
 
     /* Show button on mobile */
@@ -90,26 +91,27 @@
 }
 
 /* Unified mobile panel close button - positioned top-left */
+
 .c-mobile-panel-close {
-    position: fixed;
-    top: var(--spacer-1);
-    left: var(--spacer-1);
-    z-index: 1002;
+    align-items: center;
     background: var(--surface-2);
     border: 1px solid var(--surface-3);
     border-radius: var(--border-radius-s);
+    box-shadow: var(--shadow-d);
     color: var(--surface-7);
     cursor: pointer;
     display: none;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacer-1);
-    width: var(--spacer-6);
     height: var(--spacer-6);
-    min-width: var(--spacer-6);
+    justify-content: center;
+    left: var(--spacer-1);
     min-height: var(--spacer-6);
+    min-width: var(--spacer-6);
+    padding: var(--spacer-1);
+    position: fixed;
+    top: var(--spacer-1);
     transition: all 0.2s ease;
-    box-shadow: var(--shadow-d);
+    width: var(--spacer-6);
+    z-index: 1002;
 
     &:hover {
         background: var(--surface-3);
@@ -122,9 +124,9 @@
 
     svg {
         display: block;
-        width: 20px;
-        height: 20px;
         flex-shrink: 0;
+        height: 20px;
+        width: 20px;
     }
 
     /* Show button on mobile when panel is open */
@@ -134,18 +136,19 @@
 }
 
 /* Panel switcher tabs - shown when both panels exist */
+
 .c-panel-switcher {
-    position: fixed;
-    top: var(--spacer-1);
-    left: calc(var(--spacer-6) + var(--spacer-1) + var(--spacer-1));
-    z-index: 1001;
-    display: none;
-    gap: var(--spacer-05);
     background: var(--surface-2);
     border: 1px solid var(--surface-3);
     border-radius: var(--border-radius-s);
-    padding: var(--spacer-05);
     box-shadow: var(--shadow-d);
+    display: none;
+    gap: var(--spacer-05);
+    left: calc(var(--spacer-6) + var(--spacer-1) + var(--spacer-1));
+    padding: var(--spacer-05);
+    position: fixed;
+    top: var(--spacer-1);
+    z-index: 1001;
 
     /* Show on mobile when both panels exist */
     @media (max-width: 768px) {
@@ -180,22 +183,25 @@
 }
 
 /* Unified mobile backdrop overlay */
+
 .c-panel-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(2px);
-    z-index: 999;
     animation: fade-in 0.3s ease-in-out;
+    backdrop-filter: blur(2px);
+    background: rgba(0, 0, 0, 0.3);
+    bottom: 0;
+    left: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 999;
 }
 
 @keyframes fade-in {
+
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }

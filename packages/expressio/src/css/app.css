@@ -1,19 +1,6 @@
 /* Import unified theme from common package */
 @import "../../../common/css/theme.css";
 
-html, body {
-    background: var(--surface-1);
-    font-family: Inter, sans-serif;
-    font-size: var(--font-d);
-    height: 100vh;
-    margin: 0;
-    padding: 0;
-}
-
-* {
-    box-sizing: border-box;
-}
-
 ::selection {
     background: var(--primary-5);
     color: var(--primary-8);

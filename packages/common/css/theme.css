@@ -25,13 +25,16 @@
 @import "./patterns/_buttons.css";
 
 html, body {
-    background: var(--surface-1);
     font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     font-size: var(--font-d);
     height: 100vh;
     line-height: 1.6;
     margin: 0;
     padding: 0;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 /* Disable all animations and transitions during HMR to prevent blink */
@@ -71,11 +74,6 @@ body[data-hmr-updating="true"] .fade-in {
 html.hmr-complete .fade-in,
 body.hmr-complete .fade-in {
     opacity: 1;
-}
-
-
-* {
-    box-sizing: border-box;
 }
 
 /* Animations */
