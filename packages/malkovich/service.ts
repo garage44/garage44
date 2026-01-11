@@ -240,6 +240,13 @@ const _ = cli.usage('Usage: $0 [task]')
         const output = generateNginx(argv.domain)
         console.log(output)
     })
+    .command('init', 'Initialize Cursor rules and AGENTS.md', async () => {
+        const {init} = await import('./lib/init')
+        const {rules} = await import('./lib/rules')
+        await init()
+        await rules()
+        console.log('\n✅ Cursor setup complete!')
+    })
     .command('rules', 'Create symlink from .cursor/rules to malkovich/docs/rules', async () => {
         const {rules} = await import('./lib/rules')
         await rules()
