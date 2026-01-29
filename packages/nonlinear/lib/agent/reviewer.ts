@@ -1,0 +1,236 @@
+/**
+ * Review Agent
+ * Reviews merge requests and provides feedback
+ */
+
+import {BaseAgent, type AgentContext, type AgentResponse} from './base.ts'
+import {db} from '../database.ts'
+import {logger} from '../../service.ts'
+import {createGitPlatform} from '../git/index.ts'
+import {randomId} from '@garage44/common/lib/utils'
+
+export class ReviewerAgent extends BaseAgent {
+    constructor() {
+        super('Reviewer', 'reviewer')
+    }
+
+    async process(context: AgentContext): Promise<AgentResponse> {
+        try {
+            // Get a ticket in "review" status
+            const ticket = db.prepare(`
+                SELECT t.*, r.path, r.platform, r.remote_url, r.config
+                FROM tickets t
+                JOIN repositories r ON t.repository_id = r.id
+                WHERE t.status = 'review'
+                  AND t.merge_request_id IS NOT NULL
+                ORDER BY t.updated_at ASC
+                LIMIT 1
+            `).get() as {
+                id: string
+                repository_id: string
+                title: string
+                description: string | null
+                branch_name: string | null
+                merge_request_id: string | null
+                path: string
+                platform: 'github' | 'gitlab' | 'local'
+                remote_url: string | null
+                config: string
+            } | undefined
+
+            if (!ticket || !ticket.merge_request_id || !ticket.branch_name) {
+                this.log('No tickets in review status found')
+                return {
+                    success: true,
+                    message: 'No tickets to review',
+                }
+            }
+
+            this.log(`Reviewing ticket ${ticket.id}: ${ticket.title}`)
+
+            // Get git platform adapter
+            const repo = {
+                id: ticket.repository_id,
+                path: ticket.path,
+                platform: ticket.platform,
+                remote_url: ticket.remote_url,
+                config: ticket.config,
+            } as const
+
+            const gitPlatform = createGitPlatform(repo)
+
+            // Get MR status
+            const mrStatus = await gitPlatform.getStatus(repo, ticket.branch_name)
+
+            if (!mrStatus) {
+                this.log(`MR not found for ticket ${ticket.id}`, 'warn')
+                return {
+                    success: false,
+                    message: 'Merge request not found',
+                }
+            }
+
+            // Get ticket comments for context
+            const comments = db.prepare(`
+                SELECT * FROM comments
+                WHERE ticket_id = ?
+                ORDER BY created_at ASC
+            `).all(ticket.id) as Array<{
+                id: string
+                author_type: string
+                author_id: string
+                content: string
+                created_at: number
+            }>
+
+            // Review the MR using LLM
+            const systemPrompt = `You are a code review AI agent for a Bun/TypeScript project.
+
+Your task is to:
+1. Review the merge request changes
+2. Check code quality, style, and best practices
+3. Verify tests are included and passing
+4. Ensure the implementation matches the ticket requirements
+5. Provide constructive feedback
+
+Respond with a JSON object containing:
+- approved: boolean (true if MR is ready to merge)
+- feedback: Array of review comments
+- issues: Array of issues found (if any)
+- suggestions: Array of improvement suggestions`
+
+            const userMessage = `Review this merge request:
+
+Ticket: ${ticket.title}
+Description: ${ticket.description || 'No description'}
+MR Status: ${mrStatus.state}
+MR URL: ${mrStatus.url}
+
+Previous Comments:
+${comments.map(c => `- ${c.author_type} (${c.author_id}): ${c.content}`).join('\n')}
+
+Please review the changes and provide feedback.`
+
+            const response = await this.respond(systemPrompt, userMessage, 4096)
+
+            // Parse review response
+            let review: {
+                approved: boolean
+                feedback: Array<{type: string; message: string}>
+                issues?: Array<string>
+                suggestions?: Array<string>
+            }
+
+            try {
+                const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/) || response.match(/```\n([\s\S]*?)\n```/)
+                const jsonStr = jsonMatch ? jsonMatch[1] : response
+                review = JSON.parse(jsonStr)
+            } catch (error) {
+                this.log(`Failed to parse review response: ${error}`, 'error')
+                return {
+                    success: false,
+                    message: 'Failed to parse review response',
+                    error: String(error),
+                }
+            }
+
+            // Add review comment to MR
+            const reviewComment = this.formatReviewComment(review)
+            await gitPlatform.addComment(repo, ticket.merge_request_id, reviewComment)
+
+            // Add comment to ticket
+            await this.addComment(ticket.id, reviewComment)
+
+            // Update ticket status
+            if (review.approved) {
+                // Move to closed (pending human confirmation)
+                db.prepare(`
+                    UPDATE tickets
+                    SET status = 'closed',
+                        updated_at = ?
+                    WHERE id = ?
+                `).run(Date.now(), ticket.id)
+
+                this.log(`Ticket ${ticket.id} approved and moved to closed`)
+            } else {
+                // Move back to in_progress for fixes
+                db.prepare(`
+                    UPDATE tickets
+                    SET status = 'in_progress',
+                        assignee_type = NULL,
+                        assignee_id = NULL,
+                        updated_at = ?
+                    WHERE id = ?
+                `).run(Date.now(), ticket.id)
+
+                this.log(`Ticket ${ticket.id} needs fixes, moved back to in_progress`)
+            }
+
+            return {
+                success: true,
+                message: review.approved ? 'MR approved' : 'MR needs fixes',
+                data: {
+                    approved: review.approved,
+                    issues: review.issues?.length || 0,
+                },
+            }
+        } catch (error) {
+            this.log(`Error during review: ${error}`, 'error')
+            return {
+                success: false,
+                message: 'Review failed',
+                error: error instanceof Error ? error.message : String(error),
+            }
+        }
+    }
+
+    private formatReviewComment(review: {
+        approved: boolean
+        feedback: Array<{type: string; message: string}>
+        issues?: Array<string>
+        suggestions?: Array<string>
+    }): string {
+        const lines: string[] = []
+
+        if (review.approved) {
+            lines.push('✅ **Approved**')
+        } else {
+            lines.push('❌ **Changes Requested**')
+        }
+
+        lines.push('')
+
+        if (review.feedback && review.feedback.length > 0) {
+            lines.push('## Feedback')
+            for (const item of review.feedback) {
+                lines.push(`- **${item.type}**: ${item.message}`)
+            }
+            lines.push('')
+        }
+
+        if (review.issues && review.issues.length > 0) {
+            lines.push('## Issues Found')
+            for (const issue of review.issues) {
+                lines.push(`- ${issue}`)
+            }
+            lines.push('')
+        }
+
+        if (review.suggestions && review.suggestions.length > 0) {
+            lines.push('## Suggestions')
+            for (const suggestion of review.suggestions) {
+                lines.push(`- ${suggestion}`)
+            }
+        }
+
+        return lines.join('\n')
+    }
+
+    private async addComment(ticketId: string, content: string): Promise<void> {
+        const commentId = randomId()
+        db.prepare(`
+            INSERT INTO comments (id, ticket_id, author_type, author_id, content, created_at)
+            VALUES (?, ?, 'agent', ?, ?, ?)
+        `).run(commentId, ticketId, this.name, content, Date.now())
+    }
+}

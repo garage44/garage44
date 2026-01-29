@@ -1,0 +1,68 @@
+.c-ticket-card {
+    background: var(--surface-2);
+    border-radius: var(--radius-1);
+    padding: var(--spacer-2);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.c-ticket-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.c-ticket-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacer-1);
+}
+
+.c-ticket-card__title {
+    font-size: var(--font-c);
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
+}
+
+.c-ticket-card__priority {
+    font-size: var(--font-d);
+    font-weight: 600;
+    margin-left: var(--spacer-1);
+}
+
+.c-ticket-card__repo,
+.c-ticket-card__assignee,
+.c-ticket-card__branch {
+    display: flex;
+    align-items: center;
+    gap: var(--spacer-0);
+    font-size: var(--font-d);
+    color: var(--text-2);
+    margin-top: var(--spacer-0);
+}
+
+.c-ticket-card__description {
+    margin-top: var(--spacer-1);
+    padding-top: var(--spacer-1);
+    border-top: 1px solid var(--border-1);
+    font-size: var(--font-d);
+    color: var(--text-2);
+    line-height: 1.5;
+}
+
+.c-ticket-card__mr {
+    margin-top: var(--spacer-1);
+    padding-top: var(--spacer-1);
+    border-top: 1px solid var(--border-1);
+}
+
+.c-ticket-card__mr a {
+    color: var(--info);
+    text-decoration: none;
+    font-size: var(--font-d);
+}
+
+.c-ticket-card__mr a:hover {
+    text-decoration: underline;
+}

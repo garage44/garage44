@@ -1,0 +1,143 @@
+import {createFinalHandler, createMiddleware} from '@garage44/common/lib/middleware'
+import {devContext} from '@garage44/common/lib/dev-context'
+import {userManager} from '@garage44/common/service'
+import {logger, runtime} from '../service.ts'
+import {config} from '../lib/config.ts'
+import path from 'node:path'
+
+const BUN_ENV = process.env.BUN_ENV || 'production'
+
+// Simple HTTP router for Bun.serve that mimics Express pattern
+class Router {
+    routes: Array<{
+        handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>
+        method: string
+        path: RegExp
+    }> = []
+
+    get(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
+        this.add('GET', path, handler)
+    }
+
+    post(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
+        this.add('POST', path, handler)
+    }
+
+    put(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
+        this.add('PUT', path, handler)
+    }
+
+    delete(path: string, handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>) {
+        this.add('DELETE', path, handler)
+    }
+
+    private add(
+        method: string,
+        path: string,
+        handler: (req: Request, params: Record<string, string>, session?: unknown) => Promise<Response>,
+    ) {
+        // Convert path params (e.g. /api/tickets/:id) to regex
+        const regex = new RegExp('^' + path.replaceAll(/:[^/]+/g, '([^/]+)') + '$')
+        this.routes.push({
+            handler,
+            method,
+            path: regex,
+        })
+    }
+
+    async route(req: Request, session?: unknown): Promise<Response | null> {
+        const url = new URL(req.url)
+        const pathname = url.pathname
+        for (const {handler, method, path} of this.routes) {
+            if (req.method === method && path.test(pathname)) {
+                // Extract params
+                const paramValues = pathname.match(path)?.slice(1) || []
+                const params: Record<string, string> = {}
+                paramValues.forEach((val, idx) => {
+                    params[`param${idx}`] = val
+                })
+                return await handler(req, params, session)
+            }
+        }
+        return null
+    }
+}
+
+// Auth middleware that can be reused across routes
+const requireAdmin = async(ctx, next) => {
+    if (!ctx.session?.userid) {
+        throw new Error('Unauthorized')
+    }
+
+    return next(ctx)
+}
+
+async function initMiddleware(_bunchyConfig) {
+    const router = new Router()
+
+    // TODO: Register HTTP API endpoints
+    // await apiTickets(router)
+    // await apiAgents(router)
+    // await apiRepositories(router)
+    // await apiCI(router)
+
+    const publicPath = path.join(runtime.service_dir, 'public')
+
+    /*
+     * Create unified final handler with built-in authentication API
+     * Use environment variable for config path if set (for PR deployments)
+     */
+    const configPath = process.env.CONFIG_PATH || '~/.nonlinearrc'
+    const finalHandleRequest = createFinalHandler({
+        configPath,
+        contextFunctions: {
+            adminContext: async() => ({admin: true}),
+            deniedContext: async() => ({denied: true}),
+            userContext: async() => ({user: true}),
+        },
+        customWebSocketHandlers: [],
+        devContext,
+        endpointAllowList: ['/api/login'],
+        logger,
+        mimeTypes: {
+            '.css': 'text/css',
+            '.eot': 'application/vnd.ms-fontobject',
+            '.gif': 'image/gif',
+            '.jpeg': 'image/jpeg',
+            '.jpg': 'image/jpeg',
+            '.js': 'application/javascript',
+            '.json': 'application/json',
+            '.png': 'image/png',
+            '.svg': 'image/svg+xml',
+            '.ttf': 'font/ttf',
+            '.woff': 'font/woff',
+            '.woff2': 'font/woff2',
+        },
+        packageName: 'nonlinear',
+        publicPath,
+        router,
+        sessionCookieName: 'nonlinear-session',
+        userManager,
+    })
+
+    // Create middleware to get sessionMiddleware for WebSocket managers
+    const unifiedMiddleware = createMiddleware({
+        configPath,
+        customWebSocketHandlers: [],
+        endpointAllowList: ['/api/login'],
+        packageName: 'nonlinear',
+        sessionCookieName: 'nonlinear-session',
+    }, userManager)
+
+    return {
+        handleRequest: finalHandleRequest,
+        // WebSocket handling is done in common middleware
+        handleWebSocket: () => {},
+        sessionMiddleware: unifiedMiddleware.sessionMiddleware,
+    }
+}
+
+export {
+    initMiddleware,
+    requireAdmin,
+}

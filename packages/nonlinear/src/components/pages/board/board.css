@@ -1,0 +1,59 @@
+.c-board {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--spacer-2);
+}
+
+.c-board__header {
+    margin-bottom: var(--spacer-2);
+}
+
+.c-board__lanes {
+    display: flex;
+    gap: var(--spacer-2);
+    overflow-x: auto;
+    flex: 1;
+}
+
+.c-board__lane {
+    background: var(--surface-1);
+    border-radius: var(--radius-1);
+    display: flex;
+    flex-direction: column;
+    min-width: 300px;
+    max-width: 300px;
+    padding: var(--spacer-2);
+}
+
+.c-board__lane-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacer-2);
+    padding-bottom: var(--spacer-1);
+    border-bottom: 1px solid var(--border-1);
+}
+
+.c-board__lane-count {
+    background: var(--surface-2);
+    border-radius: var(--radius-1);
+    padding: var(--spacer-0) var(--spacer-1);
+    font-size: var(--font-d);
+}
+
+.c-board__lane-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-1);
+    flex: 1;
+    overflow-y: auto;
+}
+
+.c-board__lane-content > div {
+    cursor: grab;
+}
+
+.c-board__lane-content > div:active {
+    cursor: grabbing;
+}
