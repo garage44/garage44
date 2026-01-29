@@ -2,7 +2,14 @@
 import {URL, fileURLToPath} from 'node:url'
 import {createBunWebSocketHandler} from '@garage44/common/lib/ws-server'
 import {bunchyArgs, bunchyService} from '@garage44/bunchy'
-import {createRuntime, createWelcomeBanner, setupBunchyConfig, createWebSocketManagers, service, loggerTransports} from '@garage44/common/service'
+import {
+    createRuntime,
+    createWelcomeBanner,
+    setupBunchyConfig,
+    createWebSocketManagers,
+    service,
+    loggerTransports,
+} from '@garage44/common/service'
 import {hideBin} from 'yargs/helpers'
 import path from 'node:path'
 import yargs from 'yargs'
@@ -62,7 +69,10 @@ void cli.usage('Usage: $0 [task]')
         // Initialize database
         const database = initDatabase()
 
-        // Initialize common service (including UserManager) with database
+        /*
+         * Initialize common service (including UserManager) with database
+         * This will automatically create default admin user if database is empty
+         */
         const configPath = process.env.CONFIG_PATH || '~/.nonlinearrc'
         await service.init({appName: 'nonlinear', configPath, useBcrypt: false}, database)
 
