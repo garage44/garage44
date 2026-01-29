@@ -48,6 +48,7 @@ AI Decision Records (ADRs) are structured documents that capture important archi
 | [017](./017-galene.md) | Direct Galene Connection Revival for Video Conferencing | Architecture | Proposed | 2025-01-27 |
 | [019](./019-i18n.md) | Type-Safe i18n System with Object References | Architecture | Accepted | 2025-01-27 |
 | [020](./020-docs.md) | Malkovich Platform Documentation System | Architecture | Accepted | 2025-01-27 |
+| [021](./021-nonlinear.md) | Nonlinear - AI-Powered Automated Project Management | Architecture | Proposed | 2025-01-27 |
 
 ### ADRs by Decision Type
 
@@ -67,6 +68,7 @@ AI Decision Records (ADRs) are structured documents that capture important archi
 - [ADR-016](./016-layout.md): Three-Column Conference Layout
 - [ADR-017](./017-galene.md): Direct Galene Connection Revival
 - [ADR-019](./019-i18n.md): Type-Safe i18n System
+- [ADR-021](./021-nonlinear.md): Nonlinear - AI-Powered Automated Project Management
 - Pattern: [Architecture Pattern](./guide/PATTERNS.md#architecture-pattern)
 
 **Tool Adoption/Replacement** (Developer Tooling):
