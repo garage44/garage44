@@ -54,11 +54,22 @@ export const TicketCard = ({ticket}: TicketCardProps) => {
                 </div>}
             {ticket.labels && ticket.labels.length > 0 &&
                 <div class='labels'>
-                    {ticket.labels.slice(0, 3).map((label) => (
-                        <span key={label} class='label-badge'>
-                            {label}
-                        </span>
-                    ))}
+                    {ticket.labels.slice(0, 3).map((label) => {
+                        const labelDef = $s.labelDefinitions.find((def) => def.name === label)
+                        const labelColor = labelDef?.color || 'var(--info-6)'
+                        return (
+                            <span
+                                key={label}
+                                class='label-badge'
+                                style={{
+                                    backgroundColor: labelColor,
+                                    borderColor: labelColor,
+                                }}
+                            >
+                                {label}
+                            </span>
+                        )
+                    })}
                     {ticket.labels.length > 3 &&
                         <span class='label-more'>+{ticket.labels.length - 3}</span>}
                 </div>}

@@ -57,6 +57,13 @@ const volatileState = mergeDeep({
         currentTicketId: string | null
         lastActivity: number
     }>,
+    labelDefinitions: [] as Array<{
+        color: string
+        created_at: number
+        id: string
+        name: string
+        updated_at: number
+    }>,
     selectedRepository: null as string | null,
     selectedTicket: null as string | null,
     selectedLane: null as 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed' | null,

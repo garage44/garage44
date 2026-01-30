@@ -57,16 +57,25 @@
         margin-top: var(--spacer-1);
 
         .label-badge {
-            background: var(--info-2);
+            border: 1px solid;
             border-radius: var(--border-radius-xs);
-            color: var(--info-8);
+            color: white;
             font-size: var(--font-xs);
+            font-weight: 500;
             padding: var(--spacer-05) var(--spacer-1);
+            transition: all 0.15s ease;
+
+            &:hover {
+                filter: brightness(1.1);
+            }
         }
 
         .label-more {
-            color: var(--surface-5);
+            align-items: center;
+            color: var(--surface-6);
+            display: inline-flex;
             font-size: var(--font-xs);
+            font-weight: 500;
             padding: var(--spacer-05) var(--spacer-1);
         }
     }

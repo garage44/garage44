@@ -7,6 +7,7 @@ import {
     addTicketAssignee,
     addTicketLabel,
     db,
+    getLabelDefinition,
     getTicketAssignees,
     getTicketLabels,
     removeTicketAssignee,
@@ -25,12 +26,20 @@ function enrichTicket(ticket: {
     id: string
 }): typeof ticket & {
     assignees: Array<{assignee_id: string; assignee_type: 'agent' | 'human'}>
+    labelDefinitions?: Array<{color: string; name: string}>
     labels: string[]
 } {
+    const labels = getTicketLabels(ticket.id)
+    const labelDefinitions = labels.map((label) => {
+        const def = getLabelDefinition(label)
+        return def ? {color: def.color, name: def.name} : null
+    }).filter((def): def is {color: string; name: string} => def !== null)
+
     return {
         ...ticket,
         assignees: getTicketAssignees(ticket.id),
-        labels: getTicketLabels(ticket.id),
+        labelDefinitions,
+        labels,
     }
 }
 

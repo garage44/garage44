@@ -89,21 +89,38 @@
 
         .label-badge {
             align-items: center;
-            background: var(--info-2);
+            border: 1px solid;
             border-radius: var(--border-radius-d);
-            color: var(--info-8);
-            display: flex;
+            color: white;
+            display: inline-flex;
             font-size: var(--font-s);
-            gap: var(--spacer-05);
-            padding: var(--spacer-05) var(--spacer-1);
+            font-weight: 500;
+            gap: var(--spacer-1);
+            padding: var(--spacer-1) var(--spacer-2);
+            transition: all 0.15s ease;
+
+            &:hover {
+                filter: brightness(1.1);
+                transform: translateY(-1px);
+            }
 
             svg {
+                align-items: center;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
                 cursor: pointer;
-                opacity: 0.7;
-                transition: opacity 0.15s ease;
+                display: flex;
+                flex-shrink: 0;
+                height: 16px;
+                justify-content: center;
+                opacity: 0.9;
+                transition: all 0.15s ease;
+                width: 16px;
 
                 &:hover {
+                    background: rgba(255, 255, 255, 0.3);
                     opacity: 1;
+                    transform: scale(1.1);
                 }
             }
         }
@@ -119,25 +136,119 @@
             color: var(--surface-8);
             font-size: var(--font-l);
             font-weight: 600;
-            margin: 0 0 var(--spacer-2) 0;
+            margin: 0 0 var(--spacer-3) 0;
         }
 
         .labels-fields {
             display: flex;
             flex-direction: column;
-            gap: var(--spacer-2);
+            gap: var(--spacer-3);
         }
 
         .labels-list {
             display: flex;
             flex-wrap: wrap;
             gap: var(--spacer-1);
+            min-height: 32px;
+            padding: var(--spacer-1) 0;
+
+            &:empty {
+                min-height: 0;
+                padding: 0;
+            }
+
+            .label-badge {
+                align-items: center;
+                border: 1px solid;
+                border-radius: var(--border-radius-d);
+                color: white;
+                display: inline-flex;
+                font-size: var(--font-s);
+                font-weight: 500;
+                gap: var(--spacer-1);
+                padding: var(--spacer-1) var(--spacer-2);
+                transition: all 0.15s ease;
+
+                &:hover {
+                    filter: brightness(1.1);
+                    transform: translateY(-1px);
+                }
+
+                svg {
+                    align-items: center;
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 50%;
+                    cursor: pointer;
+                    display: flex;
+                    flex-shrink: 0;
+                    height: 16px;
+                    justify-content: center;
+                    opacity: 0.9;
+                    transition: all 0.15s ease;
+                    width: 16px;
+
+                    &:hover {
+                        background: rgba(255, 255, 255, 0.3);
+                        opacity: 1;
+                        transform: scale(1.1);
+                    }
+                }
+            }
         }
 
         .add-label {
-            align-items: center;
+            align-items: flex-start;
             display: flex;
-            gap: var(--spacer-1);
+            gap: var(--spacer-2);
+
+            .label-input-wrapper {
+                flex: 1;
+                position: relative;
+            }
+
+            .label-suggestions {
+                background: var(--surface-2);
+                border: 1px solid var(--surface-3);
+                border-radius: var(--border-radius-d);
+                display: flex;
+                flex-direction: column;
+                gap: var(--spacer-05);
+                margin-top: var(--spacer-1);
+                max-height: 200px;
+                overflow-y: auto;
+                padding: var(--spacer-1);
+                position: absolute;
+                width: 100%;
+                z-index: 10;
+
+                .suggestion-item {
+                    background: transparent;
+                    border: none;
+                    cursor: pointer;
+                    padding: var(--spacer-05);
+                    text-align: left;
+                    transition: background 0.15s ease;
+
+                    &:hover {
+                        background: var(--surface-3);
+                    }
+
+                    .suggestion-badge {
+                        border: 1px solid;
+                        border-radius: var(--border-radius-xs);
+                        color: white;
+                        display: inline-block;
+                        font-size: var(--font-s);
+                        font-weight: 500;
+                        padding: var(--spacer-05) var(--spacer-1);
+                    }
+                }
+            }
+
+            .c-button {
+                flex-shrink: 0;
+                margin-top: 0;
+            }
         }
     }
 

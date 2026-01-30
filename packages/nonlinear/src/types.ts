@@ -9,6 +9,13 @@ export interface NonlinearState extends CommonState {
         name: string
         type: 'prioritizer' | 'developer' | 'reviewer'
     }>
+    labelDefinitions: Array<{
+        color: string
+        created_at: number
+        id: string
+        name: string
+        updated_at: number
+    }>
     repositories: Array<{
         config: string
         created_at: number

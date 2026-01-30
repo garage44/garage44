@@ -63,6 +63,39 @@ export const Main = () => {
 
                 const agentsResult = await ws.get('/api/agents')
                 if (agentsResult.agents) {
+                    $s.agents = agentsResult.agents.map((agent: {
+                        avatar: string | null
+                        created_at: number
+                        currentTicketId: string | null
+                        display_name: string | null
+                        enabled: number
+                        id: string
+                        lastActivity: number
+                        name: string
+                        status: string
+                        type: 'prioritizer' | 'developer' | 'reviewer'
+                    }) => ({
+                        id: agent.id,
+                        name: agent.name,
+                        username: agent.name,
+                        displayName: agent.display_name || `${agent.name} Agent`,
+                        avatar: agent.avatar || 'placeholder-2.png',
+                        status: (agent.status || 'idle') as 'idle' | 'working' | 'error' | 'offline',
+                        type: agent.type,
+                        config: '',
+                        enabled: agent.enabled,
+                        created_at: agent.created_at,
+                        isAgent: true as const,
+                        currentTicketId: agent.currentTicketId || null,
+                        lastActivity: agent.lastActivity || agent.created_at,
+                    }))
+                }
+
+                // Load label definitions
+                const labelsResult = await ws.get('/api/labels')
+                if (labelsResult.labels) {
+                    $s.labelDefinitions = labelsResult.labels
+                } {
                     // Transform agents into user-like objects
                     $s.agents = agentsResult.agents.map((agent: {
                         avatar: string | null

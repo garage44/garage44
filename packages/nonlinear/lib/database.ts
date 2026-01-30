@@ -89,6 +89,14 @@ export interface CIRun {
     ticket_id: string
 }
 
+export interface LabelDefinition {
+    color: string
+    created_at: number
+    id: string
+    name: string
+    updated_at: number
+}
+
 /**
  * Initialize the database connection and create tables if needed
  * Uses common database initialization for users table
@@ -256,8 +264,25 @@ function createNonlinearTables() {
     db.exec('CREATE INDEX IF NOT EXISTS idx_ticket_assignees_ticket_id ON ticket_assignees(ticket_id)')
     db.exec('CREATE INDEX IF NOT EXISTS idx_ticket_assignees_assignee ON ticket_assignees(assignee_type, assignee_id)')
 
+    // Label definitions table
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS label_definitions (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL UNIQUE,
+            color TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL
+        )
+    `)
+
+    // Create index on name for faster lookups
+    db.exec('CREATE INDEX IF NOT EXISTS idx_label_definitions_name ON label_definitions(name)')
+
     // Migrate existing assignee data from tickets table to ticket_assignees
     migrateAssigneeData()
+
+    // Migrate existing labels to label definitions
+    migrateLabelsToDefinitions()
 
     logger.info('[Database] Nonlinear tables initialized')
 }
@@ -301,6 +326,57 @@ function migrateAssigneeData() {
         }
     } catch (error) {
         logger.warn(`[Database] Error migrating assignee data: ${error}`)
+        // Don't throw - migration failure shouldn't block initialization
+    }
+}
+
+/**
+ * Migrate existing labels from ticket_labels to label_definitions
+ * Creates label definitions for any labels that don't exist yet
+ */
+function migrateLabelsToDefinitions() {
+    if (!db) throw new Error('Database not initialized')
+
+    try {
+        // Get all unique labels from ticket_labels
+        const existingLabels = db.prepare(`
+            SELECT DISTINCT label FROM ticket_labels
+        `).all() as Array<{label: string}>
+
+        // Default color palette for labels
+        const defaultColors = [
+            'var(--info-6)',
+            'var(--success-6)',
+            'var(--warning-6)',
+            'var(--danger-6)',
+            'var(--primary-6)',
+        ]
+
+        const insertStmt = db.prepare(`
+            INSERT OR IGNORE INTO label_definitions (id, name, color, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+        `)
+
+        let migratedCount = 0
+        const now = Date.now()
+        for (let i = 0; i < existingLabels.length; i++) {
+            const label = existingLabels[i].label
+            const color = defaultColors[i % defaultColors.length]
+            const labelId = `label-${label.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
+
+            try {
+                insertStmt.run(labelId, label, color, now, now)
+                migratedCount++
+            } catch {
+                // Already exists, skip
+            }
+        }
+
+        if (migratedCount > 0) {
+            logger.info(`[Database] Migrated ${migratedCount} existing labels to label_definitions table`)
+        }
+    } catch (error) {
+        logger.warn(`[Database] Error migrating labels: ${error}`)
         // Don't throw - migration failure shouldn't block initialization
     }
 }
@@ -414,6 +490,55 @@ export function hasTicketAssignee(ticketId: string, assignee_type: 'agent' | 'hu
         LIMIT 1
     `).get(ticketId, assignee_type, assignee_id) as {1?: number} | undefined
     return !!result
+}
+
+/**
+ * Get all label definitions
+ */
+export function getLabelDefinitions(): Array<LabelDefinition> {
+    if (!db) throw new Error('Database not initialized')
+    return db.prepare(`
+        SELECT * FROM label_definitions
+        ORDER BY name ASC
+    `).all() as Array<LabelDefinition>
+}
+
+/**
+ * Get a label definition by name
+ */
+export function getLabelDefinition(name: string): LabelDefinition | undefined {
+    if (!db) throw new Error('Database not initialized')
+    return db.prepare(`
+        SELECT * FROM label_definitions
+        WHERE name = ?
+    `).get(name) as LabelDefinition | undefined
+}
+
+/**
+ * Create or update a label definition
+ */
+export function upsertLabelDefinition(id: string, name: string, color: string): void {
+    if (!db) throw new Error('Database not initialized')
+    const now = Date.now()
+    db.prepare(`
+        INSERT INTO label_definitions (id, name, color, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            name = excluded.name,
+            color = excluded.color,
+            updated_at = excluded.updated_at
+    `).run(id, name, color, now, now)
+}
+
+/**
+ * Delete a label definition
+ */
+export function deleteLabelDefinition(id: string): void {
+    if (!db) throw new Error('Database not initialized')
+    db.prepare(`
+        DELETE FROM label_definitions
+        WHERE id = ?
+    `).run(id)
 }
 
 export {

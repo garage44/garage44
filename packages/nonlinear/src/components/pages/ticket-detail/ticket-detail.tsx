@@ -66,6 +66,11 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
     const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
     useEffect(() => {
+        // Load label definitions if not already loaded
+        if ($s.labelDefinitions.length === 0) {
+            loadLabelDefinitions()
+        }
+
         if (!ticketId) {
             const id = $s.selectedTicket || route().split('/').pop()
             if (!id) {
@@ -381,13 +386,47 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
         return []
     }
 
-    const handleAddLabel = async() => {
-        if (!ticket || !labelsState.newLabel.trim()) return
+    const getLabelSuggestions = () => {
+        const query = labelsState.newLabel.trim().toLowerCase()
+        if (!query) return $s.labelDefinitions
 
-        const newLabel = labelsState.newLabel.trim().toLowerCase()
-        if (labelsState.labels.includes(newLabel)) {
+        return $s.labelDefinitions.filter((def) =>
+            def.name.toLowerCase().includes(query) && !labelsState.labels.includes(def.name),
+        )
+    }
+
+    const handleAddLabel = async(labelName?: string) => {
+        if (!ticket) return
+
+        const labelToAdd = (labelName || labelsState.newLabel.trim()).toLowerCase()
+        if (!labelToAdd) return
+
+        // Check if label definition exists, if not create it
+        let labelDef = $s.labelDefinitions.find((def) => def.name.toLowerCase() === labelToAdd)
+        if (!labelDef) {
+            // Create new label definition with default color
+            try {
+                const result = await ws.post('/api/labels', {
+                    color: 'var(--info-6)',
+                    name: labelToAdd,
+                })
+                if (result.label) {
+                    $s.labelDefinitions = [...$s.labelDefinitions, result.label]
+                    labelDef = result.label
+                }
+            } catch(error) {
+                notifier.notify({
+                    message: `Failed to create label definition: ${error instanceof Error ? error.message : String(error)}`,
+                    type: 'error',
+                })
+                return
+            }
+        }
+
+        const labelNameToAdd = labelDef.name
+        if (labelsState.labels.includes(labelNameToAdd)) {
             notifier.notify({
-                message: 'Label already exists',
+                message: 'Label already added',
                 type: 'warn',
             })
             labelsState.newLabel = ''
@@ -395,7 +434,7 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
         }
 
         try {
-            const updatedLabels = [...labelsState.labels, newLabel]
+            const updatedLabels = [...labelsState.labels, labelNameToAdd]
             await ws.put(`/api/tickets/${ticket.id}`, {
                 labels: updatedLabels,
             })
@@ -590,27 +629,18 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                 </div>
                 {ticket.labels && ticket.labels.length > 0 &&
                     <div class='labels'>
-                        {ticket.labels.map((label) => (
-                            <span key={label} class='label-badge'>
-                                {label}
-                                <Icon
-                                    name='close'
-                                    onClick={() => handleRemoveLabel(label)}
-                                    size='c'
-                                    type='info'
-                                />
-                            </span>
-                        ))}
-                    </div>}
-            </div>
-
-            <div class='content'>
-                <div class='labels-section'>
-                    <h2>Labels</h2>
-                    <div class='labels-fields'>
-                        <div class='labels-list'>
-                            {labelsState.labels.map((label) => (
-                                <span key={label} class='label-badge'>
+                        {ticket.labels.map((label) => {
+                            const labelDef = $s.labelDefinitions.find((def) => def.name === label)
+                            const labelColor = labelDef?.color || 'var(--info-6)'
+                            return (
+                                <span
+                                    key={label}
+                                    class='label-badge'
+                                    style={{
+                                        backgroundColor: labelColor,
+                                        borderColor: labelColor,
+                                    }}
+                                >
                                     {label}
                                     <Icon
                                         name='close'
@@ -619,19 +649,73 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                                         type='info'
                                     />
                                 </span>
-                            ))}
+                            )
+                        })}
+                    </div>}
+            </div>
+
+            <div class='content'>
+                <div class='labels-section'>
+                    <h2>Labels</h2>
+                    <div class='labels-fields'>
+                        <div class='labels-list'>
+                            {labelsState.labels.map((label) => {
+                                const labelDef = $s.labelDefinitions.find((def) => def.name === label)
+                                const labelColor = labelDef?.color || 'var(--info-6)'
+                                return (
+                                    <span
+                                        key={label}
+                                        class='label-badge'
+                                        style={{
+                                            backgroundColor: labelColor,
+                                            borderColor: labelColor,
+                                        }}
+                                    >
+                                        {label}
+                                        <Icon
+                                            name='close'
+                                            onClick={() => handleRemoveLabel(label)}
+                                            size='c'
+                                            type='info'
+                                        />
+                                    </span>
+                                )
+                            })}
                         </div>
                         <div class='add-label'>
-                            <FieldText
-                                model={labelsState.$newLabel}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        handleAddLabel()
-                                    }
-                                }}
-                                placeholder='Add label (press Enter)'
-                            />
-                            <Button onClick={handleAddLabel} variant='secondary'>
+                            <div class='label-input-wrapper'>
+                                <FieldText
+                                    model={labelsState.$newLabel}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleAddLabel()
+                                        }
+                                    }}
+                                    placeholder='Type to search or add new label'
+                                />
+                                {labelsState.newLabel.trim() && getLabelSuggestions().length > 0 &&
+                                    <div class='label-suggestions'>
+                                        {getLabelSuggestions().slice(0, 5).map((def) => (
+                                            <button
+                                                class='suggestion-item'
+                                                key={def.id}
+                                                onClick={() => handleAddLabel(def.name)}
+                                                type='button'
+                                            >
+                                                <span
+                                                    class='suggestion-badge'
+                                                    style={{
+                                                        backgroundColor: def.color,
+                                                        borderColor: def.color,
+                                                    }}
+                                                >
+                                                    {def.name}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>}
+                            </div>
+                            <Button onClick={() => handleAddLabel()} variant='secondary'>
                                 Add
                             </Button>
                         </div>

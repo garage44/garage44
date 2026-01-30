@@ -2,6 +2,7 @@ import {$s} from '@/app'
 import {Settings as CommonSettings} from '@garage44/common/components/ui/settings/settings'
 import {Profile} from '@garage44/common/components/ui/settings/tabs/profile'
 import {Agents} from './tabs/agents'
+import {Labels} from './tabs/labels'
 import {Repositories} from './tabs/repositories'
 
 interface SettingsProps {
@@ -44,6 +45,13 @@ export function Settings({tabId}: SettingsProps) {
                         id: 'agents',
                         label: 'Agents',
                         tip: 'AI Agents',
+                    },
+                    {
+                        component: <Labels />,
+                        icon: 'label',
+                        id: 'labels',
+                        label: 'Labels',
+                        tip: 'Label Definitions',
                     },
                 ] :
                 [],
