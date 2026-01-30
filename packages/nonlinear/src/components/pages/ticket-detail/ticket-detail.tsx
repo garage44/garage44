@@ -1,10 +1,13 @@
 import {$s} from '@/app'
 import {ws, notifier} from '@garage44/common/app'
 import {AgentBadge} from '@/components/elements'
+import {MentionAutocomplete} from '@/components/elements/mention-autocomplete/mention-autocomplete'
 import {Button, FieldSelect, FieldText, FieldTextarea, Icon} from '@garage44/common/components'
 import {deepSignal} from 'deepsignal'
 import {useEffect, useRef, useState} from 'preact/hooks'
 import {route} from 'preact-router'
+import {renderMarkdown} from '@/lib/markdown.ts'
+import mermaid from 'mermaid'
 
 const commentState = deepSignal({
     content: '',
@@ -50,6 +53,7 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
     const editState = editStateRef.current
     const assigneeStateRef = useRef(createAssigneeState())
     const assigneeState = assigneeStateRef.current
+    const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
     useEffect(() => {
         if (!ticketId) {
@@ -63,23 +67,49 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
             loadTicket(ticketId)
         }
 
-        // Listen for comment updates
-        const handleCommentUpdate = (data: {type: string; comment?: Comment; ticketId?: string}) => {
-            if (data.type === 'comment:created' && data.comment) {
-                const currentTicketId = ticketId || $s.selectedTicket || route().split('/').pop()
-                if (data.ticketId === currentTicketId) {
+        // Listen for comment updates and ticket updates
+        const handleUpdate = (data: {type: string; comment?: Comment; ticket?: Ticket; ticketId?: string}) => {
+            const currentTicketId = ticketId || $s.selectedTicket || route().split('/').pop()
+            if (data.ticketId === currentTicketId || (data.ticket && data.ticket.id === currentTicketId)) {
+                if (data.type === 'comment:created' && data.comment) {
                     // Reload ticket to get updated comments
                     loadTicket(currentTicketId || '')
+                } else if (data.type === 'ticket:updated' && data.ticket) {
+                    // Update ticket in state
+                    setTicket(data.ticket)
+                    editState.title = data.ticket.title
+                    editState.description = data.ticket.description || ''
+                    assigneeState.assignee_type = data.ticket.assignee_type || ''
+                    assigneeState.assignee_id = data.ticket.assignee_id || ''
                 }
             }
         }
 
-        ws.on('/tickets', handleCommentUpdate)
+        ws.on('/tickets', handleUpdate)
 
         return () => {
-            ws.off('/tickets', handleCommentUpdate)
+            ws.off('/tickets', handleUpdate)
         }
     }, [ticketId])
+
+    // Render Mermaid diagrams when comments or description change
+    useEffect(() => {
+        // Small delay to ensure DOM is updated
+        const timeoutId = setTimeout(() => {
+            const mermaidElements = document.querySelectorAll('.c-ticket-detail .mermaid')
+            if (mermaidElements && mermaidElements.length > 0) {
+                mermaid.run({
+                    nodes: Array.from(mermaidElements) as HTMLElement[],
+                }).catch((err) => {
+                    console.error('Error rendering mermaid diagrams:', err)
+                })
+            }
+        }, 100)
+
+        return () => {
+            clearTimeout(timeoutId)
+        }
+    }, [comments, ticket])
 
     const loadTicket = async(id: string) => {
         setLoading(true)
@@ -269,6 +299,37 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
         }
     }
 
+    const handleRequestRefinement = async() => {
+        if (!ticket) return
+
+        // Find PrioritizerAgent
+        const prioritizerAgent = $s.agents.find((a) => a.type === 'prioritizer' && a.enabled === 1)
+
+        if (!prioritizerAgent) {
+            notifier.notify({
+                message: 'No enabled PrioritizerAgent found',
+                type: 'error',
+            })
+            return
+        }
+
+        try {
+            await ws.post(`/api/agents/${prioritizerAgent.id}/trigger`, {
+                ticket_id: ticket.id,
+            })
+
+            notifier.notify({
+                message: 'Refinement requested. The PrioritizerAgent will analyze and update the ticket shortly.',
+                type: 'success',
+            })
+        } catch(error) {
+            notifier.notify({
+                message: `Failed to trigger refinement: ${error instanceof Error ? error.message : String(error)}`,
+                type: 'error',
+            })
+        }
+    }
+
     const getAssigneeOptions = () => {
         if (assigneeState.assignee_type === 'agent') {
             return $s.agents
@@ -326,28 +387,6 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
         return <div class='c-ticket-detail'>Ticket not found</div>
     }
 
-    // Parse mentions from comments
-    const parseMentions = (content: string) => {
-        const parts: Array<{isMention: boolean; mention?: string; text: string}> = []
-        const mentionRegex = /@(\w+)/g
-        let lastIndex = 0
-        let match
-
-        while ((match = mentionRegex.exec(content)) !== null) {
-            if (match.index > lastIndex) {
-                parts.push({isMention: false, text: content.substring(lastIndex, match.index)})
-            }
-            parts.push({isMention: true, mention: match[1], text: `@${match[1]}`})
-            lastIndex = match.index + match[0].length
-        }
-
-        if (lastIndex < content.length) {
-            parts.push({isMention: false, text: content.substring(lastIndex)})
-        }
-
-        return parts.length > 0 ? parts : [{isMention: false, text: content}]
-    }
-
     return (
         <div class='c-ticket-detail'>
             <div class='header'>
@@ -367,10 +406,16 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                     </div> :
                     <div class='title-row'>
                         <h1>{ticket.title}</h1>
-                        <Button onClick={() => setIsEditing(true)} variant='ghost'>
-                            <Icon name='edit' size='c' type='info' />
-                            Edit
-                        </Button>
+                        <div class='header-actions'>
+                            <Button onClick={handleRequestRefinement} variant='secondary'>
+                                <Icon name='refresh' size='c' type='info' />
+                                Request Refinement
+                            </Button>
+                            <Button onClick={() => setIsEditing(true)} variant='ghost'>
+                                <Icon name='edit' size='c' type='info' />
+                                Edit
+                            </Button>
+                        </div>
                     </div>}
                 <div class='status'>
                     <span class={`status-badge status-${ticket.status}`}>{ticket.status}</span>
@@ -427,7 +472,7 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                                 onChange={(value) => {
                                     editState.description = value
                                 }}
-                                placeholder='Enter ticket description'
+                                placeholder='Enter ticket description (markdown supported)'
                                 value={editState.description}
                             />
                             <div class='edit-actions'>
@@ -439,7 +484,14 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                                 </Button>
                             </div>
                         </div> :
-                        <p>{ticket.description || 'No description provided'}</p>}
+                        ticket.description ?
+                            <div
+                                class='description-content'
+                                dangerouslySetInnerHTML={{
+                                    __html: renderMarkdown(ticket.description),
+                                }}
+                            /> :
+                            <p class='no-description'>No description provided</p>}
                 </div>
 
                 {ticket.status === 'closed' &&
@@ -459,51 +511,51 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                             <p class='no-comments'>No comments yet</p> :
 
                             <div class='comments-list'>
-                                {comments.map((comment) => {
-                                    const parts = parseMentions(comment.content)
-                                    return (
-                                        <div class='comment' key={comment.id}>
-                                            <div class='comment-header'>
-                                                {comment.author_type === 'agent' ?
-                                                    (() => {
-                                                        const agent = $s.agents.find((a) => a.id === comment.author_id || a.name === comment.author_id)
-                                                        return agent ?
-                                                            <AgentBadge agent={agent} size='d' /> :
-                                                            <strong>🤖 {comment.author_id}</strong>
-                                                    })() :
-                                                    <strong>👤 {comment.author_id}</strong>}
-                                                <span class='comment-time'>
-                                                    {new Date(comment.created_at).toLocaleString()}
-                                                </span>
-                                            </div>
-                                            <div class='comment-content'>
-                                                {parts.map((part, idx) => {
-                                                    return part.isMention ?
-                                                        <span
-                                                            class='mention'
-                                                            key={idx}
-                                                            onClick={() => handleAssignAgent(part.mention!)}
-                                                        >
-                                                            {part.text}
-                                                        </span> :
-                                                        <span key={idx}>{part.text}</span>
-                                                })}
-                                            </div>
+                                {comments.map((comment) => (
+                                    <div class='comment' key={comment.id}>
+                                        <div class='comment-header'>
+                                            {comment.author_type === 'agent' ?
+                                                (() => {
+                                                    const agent = $s.agents.find((a) => a.id === comment.author_id || a.name === comment.author_id)
+                                                    return agent ?
+                                                        <AgentBadge agent={agent} size='d' /> :
+                                                        <strong>🤖 {comment.author_id}</strong>
+                                                })() :
+                                                <strong>👤 {comment.author_id}</strong>}
+                                            <span class='comment-time'>
+                                                {new Date(comment.created_at).toLocaleString()}
+                                            </span>
                                         </div>
-                                    )
-                                })}
+                                        <div
+                                            class='comment-content'
+                                            dangerouslySetInnerHTML={{
+                                                __html: renderMarkdown(comment.content),
+                                            }}
+                                        />
+                                    </div>
+                                ))}
                             </div>}
 
                     <div class='add-comment'>
-                        <textarea
-                            class='comment-input'
-                            onInput={(e) => {
-                                commentState.content = (e.target as HTMLTextAreaElement).value
-                            }}
-                            placeholder='Type your comment... Use @agent-name or @human to mention'
-                            rows={4}
-                            value={commentState.content}
-                        />
+                        <div class='comment-input-wrapper'>
+                            <textarea
+                                ref={commentTextareaRef}
+                                class='comment-input'
+                                onInput={(e) => {
+                                    commentState.content = (e.target as HTMLTextAreaElement).value
+                                }}
+                                placeholder='Type your comment... Use @ to mention agents or users'
+                                rows={4}
+                                value={commentState.content}
+                            />
+                            <MentionAutocomplete
+                                content={commentState.content}
+                                onContentChange={(newContent) => {
+                                    commentState.content = newContent
+                                }}
+                                textareaRef={commentTextareaRef}
+                            />
+                        </div>
                         <Button disabled={!commentState.content.trim()} onClick={handleAddComment}>
                             Add Comment
                         </Button>

@@ -10,6 +10,8 @@ export {FieldText} from './components/field/text/text.tsx'
 export {FieldTextarea} from './components/field/textarea/textarea.tsx'
 export {FieldUpload} from './components/field/upload/upload.tsx'
 // UI
+export {Autocomplete} from './components/ui/autocomplete/autocomplete.tsx'
+export type {AutocompleteItem, AutocompleteProps} from './components/ui/autocomplete/autocomplete.tsx'
 export {AppLayout} from './components/ui/app-layout/app-layout.tsx'
 export {Button} from './components/ui/button/button.tsx'
 export {ButtonGroup} from './components/ui/button-group/button-group.tsx'

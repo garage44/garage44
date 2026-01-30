@@ -341,11 +341,11 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
         // Trigger mentioned agents
         for (const mention of validMentions) {
             if (mention.type === 'agent') {
-                // Find agent by name
+                // Find agent by name (case-insensitive)
                 const agent = db.prepare(`
                     SELECT id, name, type, enabled
                     FROM agents
-                    WHERE name = ? OR id = ?
+                    WHERE LOWER(name) = LOWER(?) OR LOWER(id) = LOWER(?)
                 `).get(mention.name, mention.name) as {
                     enabled: number
                     id: string
@@ -353,12 +353,30 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
                     type: 'prioritizer' | 'developer' | 'reviewer'
                 } | undefined
 
-                if (agent && agent.enabled === 1) {
-                    logger.info(`[API] Triggering agent ${agent.name} via mention in comment`)
-                    triggerAgent(agent.id, {ticketId}).catch((error: unknown) => {
-                        logger.error(`[API] Failed to trigger agent ${agent.name}: ${error}`)
-                    })
+                if (!agent) {
+                    logger.warn(`[API] Agent "${mention.name}" not found when processing mention`)
+                    continue
                 }
+
+                if (agent.enabled === 0) {
+                    logger.warn(`[API] Agent "${agent.name}" is disabled, skipping mention trigger`)
+                    continue
+                }
+
+                logger.info(`[API] Triggering agent ${agent.name} (${agent.id}) via mention in comment for ticket ${ticketId}`)
+                // Pass ticket_id and comment content so agent can respond to the mention
+                triggerAgent(agent.id, {
+                    author_id: author_id,
+                    author_type: author_type,
+                    comment_content: content,
+                    comment_id: commentId,
+                    ticket_id: ticketId,
+                }).then(() => {
+                    logger.info(`[API] Successfully triggered agent ${agent.name} for ticket ${ticketId}`)
+                }).catch((error: unknown) => {
+                    logger.error(`[API] Failed to trigger agent ${agent.name}: ${error}`)
+                    logger.error(`[API] Error details: ${error instanceof Error ? error.stack : String(error)}`)
+                })
             }
         }
 

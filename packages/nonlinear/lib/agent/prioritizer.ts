@@ -7,6 +7,7 @@ import {BaseAgent, type AgentContext, type AgentResponse} from './base.ts'
 import {db} from '../database.ts'
 import {logger} from '../../service.ts'
 import {addAgentComment} from './comments.ts'
+import {updateTicketFromAgent} from './ticket-updates.ts'
 
 export class PrioritizerAgent extends BaseAgent {
     constructor() {
@@ -15,9 +16,11 @@ export class PrioritizerAgent extends BaseAgent {
 
     async process(context: AgentContext): Promise<AgentResponse> {
         try {
-            // If a specific ticket_id is provided, refine that ticket first
+            this.log(`Processing request with context: ${JSON.stringify(context)}`)
+            // If a specific ticket_id is provided, refine that ticket
             const ticketId = context.ticket_id as string | undefined
             if (ticketId) {
+                this.log(`Processing ticket ${ticketId}`)
                 const ticket = db.prepare(`
                     SELECT t.*, r.name as repository_name, r.path as repository_path
                     FROM tickets t
@@ -32,8 +35,37 @@ export class PrioritizerAgent extends BaseAgent {
                     repository_path: string | null
                 } | undefined
 
-                if (ticket && ticket.repository_path) {
-                    await this.refineTicket(ticket)
+                if (ticket) {
+                    // Check if this was triggered via mention (has comment_id and comment_content)
+                    const commentId = context.comment_id as string | undefined
+                    const commentContent = context.comment_content as string | undefined
+                    const authorId = context.author_id as string | undefined
+                    const authorType = context.author_type as string | undefined
+
+                    if (commentId && commentContent) {
+                        // Triggered via mention - respond to the comment
+                        this.log(`Detected mention trigger: comment_id=${commentId}, author=${authorId}`)
+                        await this.refineTicketFromMention(ticket, {
+                            commentId,
+                            commentContent,
+                            authorId: authorId || 'unknown',
+                            authorType: (authorType as 'agent' | 'human') || 'human',
+                        })
+                        return {
+                            success: true,
+                            message: `Refined ticket ${ticketId} in response to mention`,
+                        }
+                    } else {
+                        // Regular refinement (automatic or manual trigger)
+                        this.log(`Regular refinement trigger (no mention)`)
+                        if (ticket.repository_path) {
+                            await this.refineTicket(ticket)
+                        } else {
+                            this.log(`Skipping refinement - no repository_path for ticket ${ticketId}`)
+                        }
+                    }
+                } else {
+                    this.log(`Ticket ${ticketId} not found`)
                 }
             }
 
@@ -213,14 +245,31 @@ ${JSON.stringify(ticketsContext, null, 2)}`
 Your task is to:
 1. Analyze the ticket title and description
 2. Identify any ambiguities, missing details, or unclear requirements
-3. Suggest improvements to make the ticket clearer and more actionable
-4. Provide a refined analysis that helps developers understand what needs to be done
+3. Provide a refined, clear description that makes the ticket actionable
+4. Suggest improvements and considerations
+5. If architectural changes are involved, include Mermaid diagrams to visualize them
 
-Be concise but thorough. Focus on:
-- Clarifying vague requirements
-- Identifying missing technical details
-- Suggesting acceptance criteria if none exist
-- Highlighting potential edge cases or considerations`
+Respond with a JSON object containing:
+- refined_description: A clear, detailed description that improves upon the original (use markdown formatting, code blocks for examples, Mermaid diagrams for architecture)
+- analysis: Your analysis of issues found and suggestions for improvement (use markdown formatting)
+- should_update_description: boolean indicating if the refined_description is significantly better than the original (only true if substantial improvements were made)
+
+The refined_description should:
+- Be clear and actionable
+- Include technical details if missing
+- Use markdown formatting (headers, lists, code blocks)
+- Include Mermaid diagrams (using \`\`\`mermaid code blocks) for architectural changes, component relationships, or workflows
+- Be ready to use as the ticket description
+
+The analysis should:
+- Identify specific issues with the original ticket
+- Provide actionable suggestions
+- Use markdown formatting for readability
+
+Mermaid diagram examples:
+- For architecture: \`\`\`mermaid\ngraph TD\n    A[Component A] --> B[Component B]\n\`\`\`
+- For workflows: \`\`\`mermaid\nsequenceDiagram\n    User->>API: Request\n    API->>DB: Query\n\`\`\`
+- For component relationships: \`\`\`mermaid\nclassDiagram\n    ClassA --> ClassB\n\`\`\``
 
             const userMessage = `Refine this ticket:
 
@@ -228,17 +277,209 @@ Be concise but thorough. Focus on:
 **Description:** ${ticket.description || '(No description provided)'}
 **Repository:** ${ticket.repository_name || 'Unknown'}${repositoryContext}
 
-Provide a refined analysis and suggestions for improving this ticket.`
+Provide a refined description and analysis.`
 
             const response = await this.respond(systemPrompt, userMessage)
 
-            // Add comment with refinement and broadcast via WebSocket
-            await addAgentComment(ticket.id, this.name, `## Ticket Refinement\n\n${response}`)
+            // Parse the response
+            let refinement: {
+                refined_description: string
+                analysis: string
+                should_update_description?: boolean
+            }
+
+            try {
+                // Try to extract JSON from response (might have markdown code blocks)
+                const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/) || response.match(/```\n([\s\S]*?)\n```/)
+                const jsonStr = jsonMatch ? jsonMatch[1] : response
+                refinement = JSON.parse(jsonStr)
+            } catch (error) {
+                // If parsing fails, use the response as analysis and keep original description
+                this.log(`Failed to parse refinement response, using as analysis: ${error}`)
+                refinement = {
+                    refined_description: ticket.description || '',
+                    analysis: response,
+                    should_update_description: false,
+                }
+            }
+
+            // Update ticket description with refined version only if agent indicates it should be updated
+            // or if the original description is empty/null
+            const shouldUpdate = refinement.should_update_description !== false && (
+                refinement.should_update_description === true ||
+                !ticket.description ||
+                ticket.description.trim() === ''
+            )
+
+            if (shouldUpdate && refinement.refined_description && refinement.refined_description.trim()) {
+                await updateTicketFromAgent(ticket.id, {
+                    description: refinement.refined_description.trim(),
+                })
+                this.log(`Updated ticket ${ticket.id} description with refined version`)
+            } else {
+                this.log(`Skipping description update for ticket ${ticket.id} - agent indicated no update needed or no refined description provided`)
+            }
+
+            // Add comment with analysis and broadcast via WebSocket
+            await addAgentComment(ticket.id, this.name, `## Ticket Refinement Analysis\n\n${refinement.analysis}`)
 
             this.log(`Refined ticket ${ticket.id}`)
         } catch (error) {
             this.log(`Error refining ticket ${ticket.id}: ${error}`, 'error')
             // Don't throw - refinement failure shouldn't block prioritization
+        }
+    }
+
+    /**
+     * Refine a ticket when triggered via mention in a comment
+     * Responds to the user's request in the comment
+     */
+    private async refineTicketFromMention(
+        ticket: {
+            id: string
+            repository_id: string
+            title: string
+            description: string | null
+            repository_name: string | null
+            repository_path: string | null
+        },
+        mention: {
+            commentId: string
+            commentContent: string
+            authorId: string
+            authorType: 'agent' | 'human'
+        },
+    ): Promise<void> {
+        try {
+            this.log(`Refining ticket ${ticket.id} in response to mention from ${mention.authorId}`)
+
+            // Get repository context if available
+            let repositoryContext = ''
+            if (ticket.repository_path) {
+                try {
+                    const fs = await import('fs/promises')
+                    const readmePath = `${ticket.repository_path}/README.md`
+                    try {
+                        const readme = await fs.readFile(readmePath, 'utf-8')
+                        repositoryContext = `\n\nRepository README:\n${readme.substring(0, 1000)}`
+                    } catch {
+                        // README doesn't exist, that's okay
+                    }
+                } catch {
+                    // Can't read repository, that's okay
+                }
+            }
+
+            // Get recent comments for context
+            const recentComments = db.prepare(`
+                SELECT author_type, author_id, content, created_at
+                FROM comments
+                WHERE ticket_id = ?
+                ORDER BY created_at DESC
+                LIMIT 10
+            `).all(ticket.id) as Array<{
+                author_type: string
+                author_id: string
+                content: string
+                created_at: number
+            }>
+
+            const systemPrompt = `You are a project management AI agent that refines and clarifies software development tickets.
+
+You have been mentioned in a comment by ${mention.authorType === 'human' ? 'a human user' : 'another agent'} who asked you to refine this ticket.
+
+Your task is to:
+1. Read and understand what the user requested in their comment
+2. Analyze the ticket title and description
+3. Provide a refined, clear description that addresses the user's request
+4. Respond directly to the user's comment in a conversational way
+5. If architectural changes are involved, include Mermaid diagrams to visualize them
+
+IMPORTANT: The user mentioned you and asked you to do something. You MUST:
+- Acknowledge the mention and respond to their request
+- Be concise and direct (especially if they asked you to be brief)
+- Update the description if they asked for refinement
+- Always add a comment responding to their request
+
+Respond with a JSON object containing:
+- refined_description: A clear, detailed description that improves upon the original (use markdown formatting, code blocks for examples, Mermaid diagrams for architecture). Only update if the user requested refinement or if significant improvements are needed.
+- response_comment: A conversational comment responding to the user's request. Acknowledge what they asked and explain what you did.
+- should_update_description: boolean indicating if the refined_description should replace the current description
+
+The refined_description should:
+- Be clear and actionable
+- Address any specific concerns mentioned in the user's comment
+- Use markdown formatting (headers, lists, code blocks)
+- Include Mermaid diagrams (using \`\`\`mermaid code blocks) for architectural changes, component relationships, or workflows
+- Be ready to use as the ticket description
+
+The response_comment should:
+- Acknowledge the mention (@${mention.authorId} or similar)
+- Address what the user asked for
+- Be conversational and helpful
+- If they asked you to be brief, keep it concise
+- Use markdown formatting for readability`
+
+            const userMessage = `You were mentioned in this comment:
+
+**Comment from ${mention.authorType} ${mention.authorId}:**
+${mention.commentContent}
+
+**Ticket to refine:**
+**Title:** ${ticket.title}
+**Description:** ${ticket.description || '(No description provided)'}
+**Repository:** ${ticket.repository_name || 'Unknown'}${repositoryContext}
+
+**Recent comments on this ticket:**
+${recentComments.map(c => `- ${c.author_type} (${c.author_id}): ${c.content}`).join('\n')}
+
+Please respond to the user's request and refine the ticket as requested.`
+
+            const response = await this.respond(systemPrompt, userMessage)
+
+            // Parse the response
+            let refinement: {
+                refined_description: string
+                response_comment: string
+                should_update_description?: boolean
+            }
+
+            try {
+                // Try to extract JSON from response (might have markdown code blocks)
+                const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/) || response.match(/```\n([\s\S]*?)\n```/)
+                const jsonStr = jsonMatch ? jsonMatch[1] : response
+                refinement = JSON.parse(jsonStr)
+            } catch (error) {
+                // If parsing fails, create a response comment and keep original description
+                this.log(`Failed to parse refinement response, creating simple response: ${error}`)
+                refinement = {
+                    refined_description: ticket.description || '',
+                    response_comment: `I received your mention. ${response.substring(0, 500)}`,
+                    should_update_description: false,
+                }
+            }
+
+            // Update ticket description if requested and appropriate
+            const shouldUpdate = refinement.should_update_description === true ||
+                (!ticket.description || ticket.description.trim() === '')
+
+            if (shouldUpdate && refinement.refined_description && refinement.refined_description.trim()) {
+                await updateTicketFromAgent(ticket.id, {
+                    description: refinement.refined_description.trim(),
+                })
+                this.log(`Updated ticket ${ticket.id} description in response to mention`)
+            }
+
+            // Add comment responding to the mention
+            await addAgentComment(ticket.id, this.name, refinement.response_comment || 'I received your mention and will refine the ticket.')
+
+            this.log(`Responded to mention for ticket ${ticket.id}`)
+        } catch (error) {
+            this.log(`Error responding to mention for ticket ${ticket.id}: ${error}`, 'error')
+            // Add error comment so user knows something went wrong
+            await addAgentComment(ticket.id, this.name, `I encountered an error while processing your request: ${error instanceof Error ? error.message : String(error)}`).catch(() => {
+                // Ignore errors adding error comment
+            })
         }
     }
 }

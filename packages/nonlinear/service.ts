@@ -107,11 +107,13 @@ void cli.usage('Usage: $0 [task]')
         const {initAgentAvatars} = await import('./lib/agent/avatars.ts')
         const {initTokenUsageTracking} = await import('./lib/agent/token-usage.ts')
         const {initAgentCommentBroadcasting} = await import('./lib/agent/comments.ts')
+        const {initAgentTicketUpdateBroadcasting} = await import('./lib/agent/ticket-updates.ts')
 
         initAgentStatusTracking(wsManager)
         initAgentAvatars()
         initTokenUsageTracking(wsManager)
         initAgentCommentBroadcasting(wsManager)
+        initAgentTicketUpdateBroadcasting(wsManager)
         await initAgentScheduler()
 
         // Start Bun server

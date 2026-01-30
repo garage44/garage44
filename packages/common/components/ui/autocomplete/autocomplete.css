@@ -1,0 +1,43 @@
+.c-autocomplete {
+    background: var(--surface-2);
+    border: 1px solid var(--surface-4);
+    border-radius: var(--border-radius-d);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    min-width: 200px;
+    max-width: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.autocomplete-item {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    padding: var(--spacer-1) var(--spacer-2);
+    transition: background-color 0.15s ease;
+
+    * {
+        color: var(--surface-7);
+    }
+
+    &:hover,
+    &.selected {
+        background: var(--surface-3);
+
+        * {
+            color: var(--surface-8);
+        }
+    }
+
+    &:first-child {
+        border-radius: var(--border-radius-d) var(--border-radius-d) 0 0;
+    }
+
+    &:last-child {
+        border-radius: 0 0 var(--border-radius-d) var(--border-radius-d);
+    }
+
+    &:only-child {
+        border-radius: var(--border-radius-d);
+    }
+}

@@ -24,11 +24,11 @@ export function parseMentions(content: string): ParsedMention[] {
         const name = match[1]
         const original = match[0]
 
-        // Check if it's an agent
+        // Check if it's an agent (case-insensitive match)
         const agent = db.prepare(`
             SELECT id, name, enabled
             FROM agents
-            WHERE name = ? OR id = ?
+            WHERE LOWER(name) = LOWER(?) OR LOWER(id) = LOWER(?)
         `).get(name, name) as {
             enabled: number
             id: string
