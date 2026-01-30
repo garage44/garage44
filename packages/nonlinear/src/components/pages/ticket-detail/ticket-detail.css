@@ -8,7 +8,11 @@
         margin-bottom: var(--spacer-4);
         padding-bottom: var(--spacer-3);
 
-        .back-button {
+        .header-top {
+            align-items: center;
+            display: flex;
+            gap: var(--spacer-2);
+            justify-content: space-between;
             margin-bottom: var(--spacer-3);
         }
 
@@ -20,22 +24,9 @@
             margin: 0 0 var(--spacer-2) 0;
         }
 
-        .title-row {
-            align-items: center;
+        .header-actions {
             display: flex;
-            gap: var(--spacer-2);
-            justify-content: space-between;
-            margin-bottom: var(--spacer-2);
-
-            h1 {
-                flex: 1;
-                margin: 0;
-            }
-
-            .header-actions {
-                display: flex;
-                gap: var(--spacer-1);
-            }
+            gap: var(--spacer-1);
         }
 
         .edit-title {

@@ -391,22 +391,12 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
     return (
         <div class='c-ticket-detail'>
             <div class='header'>
-                <div class='back-button'>
+                <div class='header-top'>
                     <Button onClick={() => route('/board')} variant='ghost'>
-                        <Icon name='arrow_back' size='c' type='info' />
+                        <Icon name='chevron_left' size='c' type='info' />
                         Back to Board
                     </Button>
-                </div>
-                {isEditing ?
-                    <div class='edit-title'>
-                        <FieldText
-                            autofocus
-                            model={editState.$title}
-                            placeholder='Enter ticket title'
-                        />
-                    </div> :
-                    <div class='title-row'>
-                        <h1>{ticket.title}</h1>
+                    {!isEditing &&
                         <div class='header-actions'>
                             <Button onClick={handleRequestRefinement} variant='secondary'>
                                 <Icon name='refresh' size='c' type='info' />
@@ -416,8 +406,17 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                                 <Icon name='edit' size='c' type='info' />
                                 Edit
                             </Button>
-                        </div>
-                    </div>}
+                        </div>}
+                </div>
+                {isEditing ?
+                    <div class='edit-title'>
+                        <FieldText
+                            autofocus
+                            model={editState.$title}
+                            placeholder='Enter ticket title'
+                        />
+                    </div> :
+                    <h1>{ticket.title}</h1>}
                 <div class='status'>
                     <span class={`status-badge status-${ticket.status}`}>{ticket.status}</span>
                 </div>
