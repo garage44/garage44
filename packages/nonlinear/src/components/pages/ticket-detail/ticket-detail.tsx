@@ -202,13 +202,15 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
     return (
         <div class='c-ticket-detail'>
             <div class='header'>
-                <Button onClick={() => route('/board')} variant='ghost'>
-                    <Icon name='arrow_back' size='c' type='info' />
-                    Back to Board
-                </Button>
+                <div class='back-button'>
+                    <Button onClick={() => route('/board')} variant='ghost'>
+                        <Icon name='arrow_back' size='c' type='info' />
+                        Back to Board
+                    </Button>
+                </div>
                 <h1>{ticket.title}</h1>
                 <div class='status'>
-                    Status: <span class={`status-${ticket.status}`}>{ticket.status}</span>
+                    <span class={`status-badge status-${ticket.status}`}>{ticket.status}</span>
                 </div>
             </div>
 

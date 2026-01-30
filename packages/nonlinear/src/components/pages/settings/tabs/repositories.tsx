@@ -152,7 +152,7 @@ export function Repositories() {
                         onInput={(e) => {
                             setSearchPath((e.target as HTMLInputElement).value)
                         }}
-                        placeholder={process.cwd() || '/path/to/search'}
+                        placeholder='/path/to/search'
                         value={searchPath}
                     />
                     <div class='actions'>
