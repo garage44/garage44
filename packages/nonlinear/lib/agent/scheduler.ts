@@ -194,8 +194,11 @@ async function runAgent(agentId: string, agentType: 'prioritizer' | 'developer' 
         return
     }
 
-    // Check if agent is already running
-    if (runningAgents.has(agentId)) {
+    // Check if this is a mention trigger (has comment_id) - allow it even if agent is running
+    const isMentionTrigger = !!context.comment_id
+
+    // Check if agent is already running (skip unless it's a mention)
+    if (runningAgents.has(agentId) && !isMentionTrigger) {
         logger.debug(`[Agent Scheduler] Agent ${agent.name} is already running, skipping`)
         return
     }
@@ -215,11 +218,15 @@ async function runAgent(agentId: string, agentType: 'prioritizer' | 'developer' 
         return
     }
 
-    // Check agent status
+    // Check agent status (skip unless it's a mention trigger)
     const status = getAgentStatus(agentId)
-    if (status && status.status === 'working') {
-        logger.debug(`[Agent Scheduler] Agent ${agent.name} is already working`)
+    if (status && status.status === 'working' && !isMentionTrigger) {
+        logger.debug(`[Agent Scheduler] Agent ${agent.name} is already working, skipping`)
         return
+    }
+
+    if (isMentionTrigger) {
+        logger.info(`[Agent Scheduler] Mention trigger detected - forcing agent ${agent.name} to run even if working`)
     }
 
     // Run agent

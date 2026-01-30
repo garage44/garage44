@@ -352,6 +352,8 @@ Provide a refined description and analysis.`
     ): Promise<void> {
         try {
             this.log(`Refining ticket ${ticket.id} in response to mention from ${mention.authorId}`)
+            this.log(`Comment content: ${mention.commentContent.substring(0, 200)}...`)
+            this.log(`Ticket title: ${ticket.title}`)
 
             // Get repository context if available
             let repositoryContext = ''
@@ -435,7 +437,9 @@ ${recentComments.map(c => `- ${c.author_type} (${c.author_id}): ${c.content}`).j
 
 Please respond to the user's request and refine the ticket as requested.`
 
+            this.log(`Calling LLM to generate refinement response...`)
             const response = await this.respond(systemPrompt, userMessage)
+            this.log(`Received LLM response (${response.length} chars)`)
 
             // Parse the response
             let refinement: {
@@ -449,9 +453,11 @@ Please respond to the user's request and refine the ticket as requested.`
                 const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/) || response.match(/```\n([\s\S]*?)\n```/)
                 const jsonStr = jsonMatch ? jsonMatch[1] : response
                 refinement = JSON.parse(jsonStr)
+                this.log(`Successfully parsed refinement JSON`)
             } catch (error) {
                 // If parsing fails, create a response comment and keep original description
-                this.log(`Failed to parse refinement response, creating simple response: ${error}`)
+                this.log(`Failed to parse refinement response, creating simple response: ${error}`, 'error')
+                this.log(`Raw response: ${response.substring(0, 500)}`)
                 refinement = {
                     refined_description: ticket.description || '',
                     response_comment: `I received your mention. ${response.substring(0, 500)}`,
@@ -463,7 +469,10 @@ Please respond to the user's request and refine the ticket as requested.`
             const shouldUpdate = refinement.should_update_description === true ||
                 (!ticket.description || ticket.description.trim() === '')
 
+            this.log(`Should update description: ${shouldUpdate}, has refined_description: ${!!refinement.refined_description}`)
+
             if (shouldUpdate && refinement.refined_description && refinement.refined_description.trim()) {
+                this.log(`Updating ticket ${ticket.id} description...`)
                 await updateTicketFromAgent(ticket.id, {
                     description: refinement.refined_description.trim(),
                 })
@@ -471,9 +480,12 @@ Please respond to the user's request and refine the ticket as requested.`
             }
 
             // Add comment responding to the mention
-            await addAgentComment(ticket.id, this.name, refinement.response_comment || 'I received your mention and will refine the ticket.')
+            const commentContent = refinement.response_comment || 'I received your mention and will refine the ticket.'
+            this.log(`Adding response comment: ${commentContent.substring(0, 100)}...`)
+            await addAgentComment(ticket.id, this.name, commentContent)
+            this.log(`Successfully added comment to ticket ${ticket.id}`)
 
-            this.log(`Responded to mention for ticket ${ticket.id}`)
+            this.log(`Completed mention response for ticket ${ticket.id}`)
         } catch (error) {
             this.log(`Error responding to mention for ticket ${ticket.id}: ${error}`, 'error')
             // Add error comment so user knows something went wrong

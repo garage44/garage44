@@ -69,7 +69,7 @@ export function validateMentions(mentions: ParsedMention[]): {
             const agent = db.prepare(`
                 SELECT id, name, enabled
                 FROM agents
-                WHERE name = ? OR id = ?
+                WHERE LOWER(name) = LOWER(?) OR LOWER(id) = LOWER(?)
             `).get(mention.name, mention.name) as {
                 enabled: number
                 id: string

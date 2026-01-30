@@ -69,6 +69,10 @@ export function updateAgentStatus(
 
     agentStatuses.set(agentId, newState)
 
+    // Get agent name for logging
+    const agent = db.prepare('SELECT name FROM agents WHERE id = ?').get(agentId) as {name: string} | undefined
+    const agentName = agent?.name || agentId
+
     // Update database
     db.prepare(`
         UPDATE agents
@@ -88,7 +92,7 @@ export function updateAgentStatus(
         })
     }
 
-    logger.debug(`[Agent Status] Agent ${agentId} status: ${status}`)
+    logger.debug(`[Agent Status] Agent ${agentName} (${agentId}) status: ${status}`)
 }
 
 /**

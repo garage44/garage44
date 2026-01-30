@@ -312,6 +312,11 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
                 parseMentions(content)
         const {invalid: invalidMentions, valid: validMentions} = validateMentions(parsedMentions)
 
+        // Log parsing results
+        const mentionOriginals = parsedMentions.map((m) => m.original).join(', ')
+        logger.info(`[API] Parsed ${parsedMentions.length} mentions from comment: ${mentionOriginals}`)
+        logger.info(`[API] Valid mentions: ${validMentions.length}, Invalid: ${invalidMentions.length}`)
+
         // Log invalid mentions
         if (invalidMentions.length > 0) {
             logger.warn(`[API] Invalid mentions in comment: ${invalidMentions.map((m) => m.original).join(', ')}`)

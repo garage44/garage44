@@ -1,6 +1,7 @@
 import {$s} from '@/app'
 import {ws, notifier} from '@garage44/common/app'
 import {AgentBadge} from '@/components/elements'
+import {UserBadge} from '@/components/elements/user-badge/user-badge'
 import {MentionAutocomplete} from '@/components/elements/mention-autocomplete/mention-autocomplete'
 import {Button, FieldSelect, FieldText, FieldTextarea, Icon} from '@garage44/common/components'
 import {deepSignal} from 'deepsignal'
@@ -519,9 +520,9 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                                                     const agent = $s.agents.find((a) => a.id === comment.author_id || a.name === comment.author_id)
                                                     return agent ?
                                                         <AgentBadge agent={agent} size='d' /> :
-                                                        <strong>🤖 {comment.author_id}</strong>
+                                                        <UserBadge userId={comment.author_id} displayName={comment.author_id} />
                                                 })() :
-                                                <strong>👤 {comment.author_id}</strong>}
+                                                <UserBadge userId={comment.author_id} displayName={comment.author_id === $s.profile.username ? $s.profile.displayName : comment.author_id} avatar={comment.author_id === $s.profile.username ? $s.profile.avatar : undefined} />}
                                             <span class='comment-time'>
                                                 {new Date(comment.created_at).toLocaleString()}
                                             </span>
