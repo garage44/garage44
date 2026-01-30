@@ -7,8 +7,8 @@ import {logger} from '../../service.ts'
 import {config} from '../config.ts'
 import {db} from '../database.ts'
 import {randomId} from '@garage44/common/lib/utils'
+import {updateUsageFromHeaders} from '../agent/token-usage.ts'
 import {$} from 'bun'
-import Anthropic from '@anthropic-ai/sdk'
 
 export interface CIRunResult {
     success: boolean
@@ -18,7 +18,7 @@ export interface CIRunResult {
 }
 
 export class CIRunner {
-    private client: Anthropic
+    private apiKey: string
     private maxAttempts: number
     private timeout: number
 
@@ -28,10 +28,7 @@ export class CIRunner {
             throw new Error('Anthropic API key not configured for CI runner')
         }
 
-        this.client = new Anthropic({
-            apiKey,
-        })
-
+        this.apiKey = apiKey
         this.maxAttempts = config.ci.maxFixAttempts || 3
         this.timeout = config.ci.timeout || 600000 // 10 minutes
     }
@@ -164,19 +161,62 @@ ${errorOutput}
 
 Generate a command to fix this issue.`
 
-            const response = await this.client.messages.create({
-                model: config.anthropic.model || 'claude-3-5-sonnet-20241022',
-                max_tokens: 1024,
-                system: systemPrompt,
-                messages: [
-                    {
-                        role: 'user',
-                        content: userMessage,
-                    },
-                ],
+            // Use raw fetch to access rate limit headers
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'anthropic-version': '2023-06-01',
+                    'content-type': 'application/json',
+                    'x-api-key': this.apiKey,
+                },
+                body: JSON.stringify({
+                    model: config.anthropic.model || 'claude-3-5-sonnet-20241022',
+                    max_tokens: 1024,
+                    system: systemPrompt,
+                    messages: [
+                        {
+                            role: 'user',
+                            content: userMessage,
+                        },
+                    ],
+                }),
             })
 
-            const content = response.content[0]
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({error: {message: 'Unknown error'}}))
+                throw new Error(error.error?.message || `API error: ${response.status}`)
+            }
+
+            const data = await response.json()
+
+            // Extract rate limit headers
+            const limitHeader = response.headers.get('anthropic-ratelimit-tokens-limit')
+            const remainingHeader = response.headers.get('anthropic-ratelimit-tokens-remaining')
+            const resetHeader = response.headers.get('anthropic-ratelimit-tokens-reset')
+
+            logger.debug('[CI Runner] API Response Headers:')
+            logger.debug(`  anthropic-ratelimit-tokens-limit: ${limitHeader}`)
+            logger.debug(`  anthropic-ratelimit-tokens-remaining: ${remainingHeader}`)
+            logger.debug(`  anthropic-ratelimit-tokens-reset: ${resetHeader}`)
+            logger.debug(`  All headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`)
+
+            if (limitHeader && remainingHeader) {
+                const limit = parseInt(limitHeader, 10)
+                const remaining = parseInt(remainingHeader, 10)
+                const used = limit - remaining
+
+                logger.info(`[CI Runner] Token Usage: ${used}/${limit} (${remaining} remaining)`)
+
+                updateUsageFromHeaders({
+                    limit,
+                    remaining,
+                    reset: resetHeader || undefined,
+                })
+            } else {
+                logger.warn('[CI Runner] Rate limit headers not found in response')
+            }
+
+            const content = data.content[0]
             if (content.type !== 'text') {
                 return null
             }

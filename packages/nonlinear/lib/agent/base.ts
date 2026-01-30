@@ -6,6 +6,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import {logger} from '../../service.ts'
 import {config} from '../config.ts'
+import {updateUsageFromHeaders} from './token-usage.ts'
 
 export interface AgentContext {
     ticketId?: string
@@ -60,23 +61,72 @@ export abstract class BaseAgent {
 
     /**
      * Send a message to the LLM and get a response
+     * Uses raw fetch to access rate limit headers
      */
     protected async respond(systemPrompt: string, userMessage: string, maxTokens = 4096): Promise<string> {
         try {
-            const response = await this.client.messages.create({
-                model: this.model,
-                max_tokens: maxTokens,
-                system: systemPrompt,
-                messages: [
-                    {
-                        role: 'user',
-                        content: userMessage,
-                    },
-                ],
+            const apiKey = config.anthropic.apiKey || process.env.ANTHROPIC_API_KEY
+            if (!apiKey) {
+                throw new Error('Anthropic API key not configured')
+            }
+
+            // Use raw fetch to access response headers
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'anthropic-version': '2023-06-01',
+                    'content-type': 'application/json',
+                    'x-api-key': apiKey,
+                },
+                body: JSON.stringify({
+                    model: this.model,
+                    max_tokens: maxTokens,
+                    system: systemPrompt,
+                    messages: [
+                        {
+                            role: 'user',
+                            content: userMessage,
+                        },
+                    ],
+                }),
             })
 
-            const content = response.content[0]
-            if (content.type === 'text') {
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({error: {message: 'Unknown error'}}))
+                throw new Error(error.error?.message || `API error: ${response.status}`)
+            }
+
+            const data = await response.json()
+
+            // Extract rate limit headers
+            const limitHeader = response.headers.get('anthropic-ratelimit-tokens-limit')
+            const remainingHeader = response.headers.get('anthropic-ratelimit-tokens-remaining')
+            const resetHeader = response.headers.get('anthropic-ratelimit-tokens-reset')
+
+            logger.debug(`[Agent ${this.name}] API Response Headers:`)
+            logger.debug(`  anthropic-ratelimit-tokens-limit: ${limitHeader}`)
+            logger.debug(`  anthropic-ratelimit-tokens-remaining: ${remainingHeader}`)
+            logger.debug(`  anthropic-ratelimit-tokens-reset: ${resetHeader}`)
+            logger.debug(`  All headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`)
+
+            if (limitHeader && remainingHeader) {
+                const limit = parseInt(limitHeader, 10)
+                const remaining = parseInt(remainingHeader, 10)
+                const used = limit - remaining
+
+                logger.info(`[Agent ${this.name}] Token Usage: ${used}/${limit} (${remaining} remaining)`)
+
+                updateUsageFromHeaders({
+                    limit,
+                    remaining,
+                    reset: resetHeader || undefined,
+                })
+            } else {
+                logger.warn(`[Agent ${this.name}] Rate limit headers not found in response`)
+            }
+
+            const content = data.content[0]
+            if (content && content.type === 'text') {
                 return content.text
             }
 

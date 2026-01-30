@@ -24,6 +24,8 @@ const config = rc('nonlinear', {
     anthropic: {
         apiKey: process.env.ANTHROPIC_API_KEY || '',
         model: 'claude-3-5-sonnet-20241022',
+        tokenLimit: parseInt(process.env.ANTHROPIC_TOKEN_LIMIT || '1000000', 10),
+        // Default: 1M tokens per month
     },
     ci: {
         maxFixAttempts: 3,

@@ -8,6 +8,7 @@ import {
     Notifications,
     PanelContext,
     PanelMenu,
+    Progress,
     UserMenu,
 } from '@garage44/common/components'
 import {TicketForm} from '@/components/elements/ticket-form/ticket-form'
@@ -48,6 +49,16 @@ export const Main = () => {
                 const reposResult = await ws.get('/api/repositories')
                 if (reposResult.repositories) {
                     $s.repositories = reposResult.repositories
+                }
+
+                // Load Anthropic token usage
+                const usageResult = await ws.get('/api/anthropic/usage')
+                if (usageResult.usage) {
+                    $s.anthropic.usage = {
+                        count: usageResult.usage.count || 0,
+                        limit: usageResult.usage.limit || 1000000,
+                        loading: false,
+                    }
                 }
 
                 const agentsResult = await ws.get('/api/agents')
@@ -151,6 +162,16 @@ export const Main = () => {
                         }
                     }
                 })
+
+                ws.on('/anthropic', (data) => {
+                    if (data.type === 'usage:updated' && data.usage) {
+                        $s.anthropic.usage = {
+                            count: data.usage.count || 0,
+                            limit: data.usage.limit || 1000000,
+                            loading: false,
+                        }
+                    }
+                })
             } else {
                 route('/login')
             }
@@ -242,6 +263,17 @@ export const Main = () => {
                         />
                       )}
                     collapsed={$s.panels.menu.collapsed}
+                    footer={
+                        <div class='anthropic-usage'>
+                            <span>Anthropic API Usage</span>
+                            <Progress
+                                boundaries={[$s.anthropic.usage.count, $s.anthropic.usage.limit]}
+                                iso6391='en-gb'
+                                loading={$s.anthropic.usage.loading}
+                                percentage={$s.anthropic.usage.limit > 0 ? $s.anthropic.usage.count / $s.anthropic.usage.limit : 0}
+                            />
+                        </div>
+                    }
                     LinkComponent={Link}
                     logoCommitHash={process.env.APP_COMMIT_HASH || ''}
                     logoHref='/board'

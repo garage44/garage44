@@ -11,6 +11,7 @@ import {ReviewerAgent} from '../lib/agent/reviewer.ts'
 import {randomId} from '@garage44/common/lib/utils'
 import {getAgentStatus} from '../lib/agent/status.ts'
 import {DEFAULT_AVATARS} from '../lib/agent/avatars.ts'
+import {getTokenUsage} from '../lib/agent/token-usage.ts'
 
 // Agent instances (singletons)
 let prioritizerAgent: PrioritizerAgent | null = null
@@ -260,5 +261,18 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
     // Subscribe to agent updates
     wsManager.on('/agents', (_ws) => {
         logger.debug('[API] Client subscribed to agent updates')
+    })
+
+    // Get Anthropic token usage
+    wsManager.api.get('/api/anthropic/usage', async(_ctx, _req) => {
+        const usage = getTokenUsage()
+        return {
+            usage,
+        }
+    })
+
+    // Subscribe to Anthropic usage updates
+    wsManager.on('/anthropic', (_ws) => {
+        logger.debug('[API] Client subscribed to Anthropic usage updates')
     })
 }

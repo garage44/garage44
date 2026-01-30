@@ -58,6 +58,14 @@ const volatileState = mergeDeep({
     selectedRepository: null as string | null,
     selectedTicket: null as string | null,
     selectedLane: null as 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed' | null,
+    anthropic: {
+        usage: {
+            count: 0,
+            limit: 1000000,
+            // Default limit: 1M tokens per month (typical Anthropic tier)
+            loading: false,
+        },
+    },
 }, commonVolatileState)
 
 export {
