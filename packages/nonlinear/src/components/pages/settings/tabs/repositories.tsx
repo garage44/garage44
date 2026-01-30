@@ -1,8 +1,8 @@
 import {$s} from '@/app'
-import {api, notifier} from '@garage44/common/app'
+import {api, notifier, ws} from '@garage44/common/app'
 import {Button, FieldSelect, FieldText} from '@garage44/common/components'
 import {deepSignal} from 'deepsignal'
-import {useRef} from 'preact/hooks'
+import {useRef, useState} from 'preact/hooks'
 
 // State defined outside component for stability
 const createFormState = () => deepSignal({
@@ -16,6 +16,9 @@ const createFormState = () => deepSignal({
 export function Repositories() {
     const formStateRef = useRef(createFormState())
     const formState = formStateRef.current
+    const [discovering, setDiscovering] = useState(false)
+    const [discoveredRepos, setDiscoveredRepos] = useState<Array<{name: string; path: string}>>([])
+    const [searchPath, setSearchPath] = useState('')
 
     const handleAddRepository = async() => {
         if (!formState.name || !formState.path) {
@@ -92,6 +95,46 @@ export function Repositories() {
         }
     }
 
+    const handleDiscoverRepositories = async() => {
+        setDiscovering(true)
+        setDiscoveredRepos([])
+
+        try {
+            const result = await ws.post('/api/repositories/discover', {
+                searchPath: searchPath || undefined,
+            })
+
+            if (result.discovered) {
+                setDiscoveredRepos(result.discovered)
+                notifier.notify({
+                    icon: 'check_circle',
+                    message: `Found ${result.discovered.length} repositories`,
+                    type: 'success',
+                })
+            }
+        } catch (error) {
+            notifier.notify({
+                icon: 'error',
+                message: error instanceof Error ? error.message : 'Failed to discover repositories',
+                type: 'error',
+            })
+        } finally {
+            setDiscovering(false)
+        }
+    }
+
+    const handleAddDiscoveredRepository = async(repo: {name: string; path: string}) => {
+        formState.name = repo.name
+        formState.path = repo.path
+        formState.platform = 'local'
+
+        // Auto-submit
+        await handleAddRepository()
+
+        // Remove from discovered list
+        setDiscoveredRepos(discoveredRepos.filter((r) => r.path !== repo.path))
+    }
+
     const platformOptions = [
         {id: 'local', name: 'Local'},
         {id: 'github', name: 'GitHub'},
@@ -100,6 +143,50 @@ export function Repositories() {
 
     return (
         <section class='c-repositories-tab'>
+            <div class='section'>
+                <h2 class='section-title'>Discover Repositories</h2>
+                <div class='form'>
+                    <FieldText
+                        help='Path to search for git repositories (leave empty to search current directory)'
+                        label='Search Path'
+                        onInput={(e) => {
+                            setSearchPath((e.target as HTMLInputElement).value)
+                        }}
+                        placeholder={process.cwd() || '/path/to/search'}
+                        value={searchPath}
+                    />
+                    <div class='actions'>
+                        <Button
+                            disabled={discovering}
+                            icon='search'
+                            label={discovering ? 'Discovering...' : 'Discover Repositories'}
+                            onClick={handleDiscoverRepositories}
+                            variant='menu'
+                        />
+                    </div>
+                    {discoveredRepos.length > 0 &&
+                        <div class='discovered-repos'>
+                            <h3>Discovered Repositories</h3>
+                            <div class='discovered-repos-list'>
+                                {discoveredRepos.map((repo) => (
+                                    <div class='discovered-repo-item' key={repo.path}>
+                                        <div class='discovered-repo-info'>
+                                            <strong>{repo.name}</strong>
+                                            <span class='discovered-repo-path'>{repo.path}</span>
+                                        </div>
+                                        <Button
+                                            icon='add'
+                                            onClick={() => handleAddDiscoveredRepository(repo)}
+                                            tip='Add repository'
+                                            variant='toggle'
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>}
+                </div>
+            </div>
+
             <div class='section'>
                 <h2 class='section-title'>Add Repository</h2>
                 <div class='form'>

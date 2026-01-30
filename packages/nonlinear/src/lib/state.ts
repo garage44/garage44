@@ -43,10 +43,17 @@ const volatileState = mergeDeep({
     agents: [] as Array<{
         id: string
         name: string
+        username: string
+        displayName: string
+        avatar: string
+        status: 'idle' | 'working' | 'error' | 'offline'
         type: 'prioritizer' | 'developer' | 'reviewer'
         config: string
         enabled: number
         created_at: number
+        isAgent: true
+        currentTicketId: string | null
+        lastActivity: number
     }>,
     selectedRepository: null as string | null,
     selectedTicket: null as string | null,

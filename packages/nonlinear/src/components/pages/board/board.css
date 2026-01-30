@@ -5,202 +5,193 @@
     height: 100%;
     overflow: hidden;
     padding: var(--spacer-3);
-}
 
-.c-board__header {
-    border-bottom: 1px solid var(--surface-3);
-    margin-bottom: var(--spacer-3);
-    padding-bottom: var(--spacer-2);
-}
+    .header {
+        border-bottom: 1px solid var(--surface-3);
+        margin-bottom: var(--spacer-3);
+        padding-bottom: var(--spacer-2);
 
-.c-board__header h1 {
-    color: var(--surface-8);
-    font-size: var(--font-xl);
-    font-weight: 600;
-    margin: 0;
-}
+        h1 {
+            color: var(--surface-8);
+            font-size: var(--font-xl);
+            font-weight: 600;
+            margin: 0;
+        }
+    }
 
-.c-board__lanes {
-    display: flex;
-    flex: 1;
-    flex-wrap: wrap;
-    gap: var(--spacer-2);
-    overflow-y: auto;
-    padding-bottom: var(--spacer-2);
+    .lanes {
+        display: flex;
+        flex: 1;
+        flex-wrap: wrap;
+        gap: var(--spacer-2);
+        overflow-y: auto;
+        padding-bottom: var(--spacer-2);
 
-    @media (max-width: 768px) {
+        @media (max-width: 768px) {
+            gap: var(--spacer-1);
+        }
+
+        &::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: var(--surface-1);
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: var(--surface-4);
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+            background: var(--surface-5);
+        }
+    }
+
+    .lane {
+        background: var(--surface-1);
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        display: flex;
+        flex: 1 1 280px;
+        flex-direction: column;
+        max-width: 100%;
+        min-width: 280px;
+        padding: var(--spacer-2);
+        transition: border-color 0.2s, box-shadow 0.2s;
+
+        @media (max-width: 768px) {
+            flex: 1 1 240px;
+            min-width: 240px;
+        }
+
+        @media (min-width: 1200px) {
+            flex: 1 1 360px;
+            max-width: 360px;
+        }
+
+        @media (min-width: 1600px) {
+            flex: 1 1 400px;
+            max-width: 400px;
+        }
+
+        &.drag-over {
+            background: var(--surface-2);
+            border-color: var(--primary-5);
+            box-shadow: 0 0 0 2px var(--primary-3);
+        }
+
+        &[data-lane='backlog'] {
+            border-left: 3px solid var(--surface-4);
+        }
+
+        &[data-lane='todo'] {
+            border-left: 3px solid var(--primary-5);
+        }
+
+        &[data-lane='in_progress'] {
+            border-left: 3px solid var(--warning-5);
+        }
+
+        &[data-lane='review'] {
+            border-left: 3px solid var(--info-5);
+        }
+
+        &[data-lane='closed'] {
+            border-left: 3px solid var(--success-5);
+            opacity: 0.7;
+        }
+    }
+
+    .lane-header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacer-2);
+        padding-bottom: var(--spacer-1);
+
+        h2 {
+            color: var(--surface-7);
+            font-size: var(--font-d);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+    }
+
+    .lane-header-right {
+        align-items: center;
+        display: flex;
         gap: var(--spacer-1);
     }
-}
 
-/* Custom scrollbar for lanes */
-
-.c-board__lanes::-webkit-scrollbar {
-    width: 8px;
-}
-
-.c-board__lanes::-webkit-scrollbar-track {
-    background: var(--surface-1);
-    border-radius: 4px;
-}
-
-.c-board__lanes::-webkit-scrollbar-thumb {
-    background: var(--surface-4);
-    border-radius: 4px;
-}
-
-.c-board__lanes::-webkit-scrollbar-thumb:hover {
-    background: var(--surface-5);
-}
-
-.c-board__lane {
-    background: var(--surface-1);
-    border: 1px solid var(--surface-3);
-    border-radius: 8px;
-    display: flex;
-    flex: 1 1 280px;
-    flex-direction: column;
-    max-width: 100%;
-    min-width: 280px;
-    padding: var(--spacer-2);
-    transition: border-color 0.2s, box-shadow 0.2s;
-
-    @media (max-width: 768px) {
-        flex: 1 1 240px;
-        min-width: 240px;
+    .lane-count {
+        background: var(--surface-3);
+        border-radius: 12px;
+        color: var(--surface-7);
+        font-size: var(--font-xs);
+        font-weight: 600;
+        min-width: 24px;
+        padding: var(--spacer-05) var(--spacer-1);
+        text-align: center;
     }
 
-    @media (min-width: 1200px) {
-        flex: 1 1 360px;
-        max-width: 360px;
+    .lane-content {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: var(--spacer-1);
+        margin: calc(var(--spacer-05) * -1);
+        min-height: 200px;
+        overflow-y: auto;
+        padding: var(--spacer-05);
+
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: var(--surface-4);
+            border-radius: 3px;
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+            background: var(--surface-5);
+        }
+
+        > div {
+            cursor: grab;
+            transition: transform 0.1s;
+
+            &:active {
+                cursor: grabbing;
+                transform: rotate(2deg);
+            }
+
+            &.dragging {
+                opacity: 0.5;
+                transform: rotate(2deg);
+            }
+        }
     }
 
-    @media (min-width: 1600px) {
-        flex: 1 1 400px;
-        max-width: 400px;
+    .lane-empty {
+        align-items: center;
+        border: 2px dashed var(--surface-3);
+        border-radius: 6px;
+        color: var(--surface-5);
+        display: flex;
+        font-size: var(--font-d);
+        justify-content: center;
+        margin-top: var(--spacer-1);
+        padding: var(--spacer-4);
+        text-align: center;
     }
-}
-
-.c-board__lane.drag-over {
-    background: var(--surface-2);
-    border-color: var(--primary-5);
-    box-shadow: 0 0 0 2px var(--primary-3);
-}
-
-/* Color-coded lanes */
-
-.c-board__lane[data-lane="backlog"] {
-    border-left: 3px solid var(--surface-4);
-}
-
-.c-board__lane[data-lane="todo"] {
-    border-left: 3px solid var(--primary-5);
-}
-
-.c-board__lane[data-lane="in_progress"] {
-    border-left: 3px solid var(--warning-5);
-}
-
-.c-board__lane[data-lane="review"] {
-    border-left: 3px solid var(--info-5);
-}
-
-.c-board__lane[data-lane="closed"] {
-    border-left: 3px solid var(--success-5);
-    opacity: 0.7;
-}
-
-.c-board__lane-header {
-    align-items: center;
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: var(--spacer-2);
-    padding-bottom: var(--spacer-1);
-}
-
-.c-board__lane-header-right {
-    align-items: center;
-    display: flex;
-    gap: var(--spacer-1);
-}
-
-.c-board__lane-header h2 {
-    color: var(--surface-7);
-    font-size: var(--font-l);
-    font-size: var(--font-d);
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    margin: 0;
-    text-transform: uppercase;
-}
-
-.c-board__lane-count {
-    background: var(--surface-3);
-    border-radius: 12px;
-    color: var(--surface-7);
-    font-size: var(--font-xs);
-    font-weight: 600;
-    min-width: 24px;
-    padding: var(--spacer-05) var(--spacer-1);
-    text-align: center;
-}
-
-.c-board__lane-content {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: var(--spacer-1);
-    margin: calc(var(--spacer-05) * -1);
-    min-height: 200px;
-    overflow-y: auto;
-    padding: var(--spacer-05);
-}
-
-/* Custom scrollbar for lane content */
-
-.c-board__lane-content::-webkit-scrollbar {
-    width: 6px;
-}
-
-.c-board__lane-content::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.c-board__lane-content::-webkit-scrollbar-thumb {
-    background: var(--surface-4);
-    border-radius: 3px;
-}
-
-.c-board__lane-content::-webkit-scrollbar-thumb:hover {
-    background: var(--surface-5);
-}
-
-.c-board__lane-content > div {
-    cursor: grab;
-    transition: transform 0.1s;
-}
-
-.c-board__lane-content > div:active {
-    cursor: grabbing;
-    transform: rotate(2deg);
-}
-
-.c-board__lane-content > div.dragging {
-    opacity: 0.5;
-    transform: rotate(2deg);
-}
-
-/* Empty state */
-
-.c-board__lane-empty {
-    align-items: center;
-    border: 2px dashed var(--surface-3);
-    border-radius: 6px;
-    color: var(--surface-5);
-    display: flex;
-    font-size: var(--font-d);
-    justify-content: center;
-    margin-top: var(--spacer-1);
-    padding: var(--spacer-4);
-    text-align: center;
 }

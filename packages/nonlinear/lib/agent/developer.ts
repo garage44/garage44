@@ -8,6 +8,8 @@ import {db} from '../database.ts'
 import {logger} from '../../service.ts'
 import {createGitPlatform} from '../git/index.ts'
 import {randomId} from '@garage44/common/lib/utils'
+import {CIRunner} from '../ci/runner.ts'
+import {applyFileModifications, validateModifications} from './file-editor.ts'
 import {$} from 'bun'
 import path from 'node:path'
 
@@ -159,11 +161,33 @@ Provide a detailed implementation plan and the code changes needed.`
                     }
                 }
 
-                // Modify files (simplified - in real implementation, would use AST or diff)
+                // Modify files
                 if (implementation.files_to_modify) {
-                    for (const file of implementation.files_to_modify) {
-                        this.log(`Would modify file: ${file.path}`)
-                        // TODO: Implement file modification logic
+                    const modifications = implementation.files_to_modify.map((file) => ({
+                        changes: file.changes,
+                        path: file.path,
+                    }))
+
+                    const {invalid, valid} = validateModifications(modifications)
+
+                    if (invalid.length > 0) {
+                        this.log(`Invalid file modifications: ${invalid.map(m => m.path).join(', ')}`, 'warn')
+                    }
+
+                    if (valid.length > 0) {
+                        this.log(`Applying ${valid.length} file modifications`)
+                        const results = await applyFileModifications(ticket.path, valid)
+
+                        const failed = results.filter((r) => !r.success)
+                        if (failed.length > 0) {
+                            this.log(`Failed to modify ${failed.length} files: ${failed.map(r => r.path).join(', ')}`, 'warn')
+                            await this.addComment(ticket.id, `Failed to modify some files:\n${failed.map(r => `- ${r.path}: ${r.error}`).join('\n')}`)
+                        }
+
+                        const succeeded = results.filter((r) => r.success)
+                        if (succeeded.length > 0) {
+                            this.log(`Successfully modified ${succeeded.length} files`)
+                        }
                     }
                 }
 
@@ -177,6 +201,43 @@ Provide a detailed implementation plan and the code changes needed.`
                         this.log(`Running: ${cmd}`)
                         // TODO: Execute commands safely
                     }
+                }
+
+                // Run CI before creating MR
+                this.log('Running CI checks...')
+                const ciRunner = new CIRunner()
+                const ciResult = await ciRunner.run(ticket.id, ticket.path)
+
+                if (!ciResult.success) {
+                    this.log(`CI failed: ${ciResult.error}`, 'warn')
+                    // Add comment about CI failure
+                    await this.addComment(ticket.id, `CI checks failed:\n\n${ciResult.output}\n\nFixes applied: ${ciResult.fixesApplied.length}`)
+
+                    // If CI fixed some issues, commit the fixes
+                    if (ciResult.fixesApplied.length > 0) {
+                        await $`git add -A`.quiet()
+                        await $`git commit -m "Fix: Apply CI auto-fixes"`.quiet()
+                        this.log(`Applied ${ciResult.fixesApplied.length} CI fixes`)
+                    } else {
+                        // CI failed and couldn't be auto-fixed, mark ticket as needing attention
+                        db.prepare(`
+                            UPDATE tickets
+                            SET status = 'todo',
+                                assignee_type = NULL,
+                                assignee_id = NULL,
+                                updated_at = ?
+                            WHERE id = ?
+                        `).run(Date.now(), ticket.id)
+
+                        return {
+                            success: false,
+                            message: 'CI checks failed and could not be auto-fixed',
+                            error: ciResult.error,
+                        }
+                    }
+                } else {
+                    this.log('CI checks passed')
+                    await this.addComment(ticket.id, `CI checks passed${ciResult.fixesApplied.length > 0 ? ` (${ciResult.fixesApplied.length} fixes applied)` : ''}`)
                 }
 
                 // Create merge request

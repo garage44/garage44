@@ -101,6 +101,15 @@ void cli.usage('Usage: $0 [task]')
         registerAgentsWebSocketApiRoutes(wsManager)
         registerCIWebSocketApiRoutes(wsManager)
 
+        // Initialize agent system
+        const {initAgentStatusTracking} = await import('./lib/agent/status.ts')
+        const {initAgentScheduler} = await import('./lib/agent/scheduler.ts')
+        const {initAgentAvatars} = await import('./lib/agent/avatars.ts')
+
+        initAgentStatusTracking(wsManager)
+        initAgentAvatars()
+        await initAgentScheduler()
+
         // Start Bun server
         const server = Bun.serve({
             fetch: (req, server) => {

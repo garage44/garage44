@@ -1,3 +1,5 @@
+import {$s} from '@/app'
+import {AgentBadge} from '../agent-badge/agent-badge'
 import {Icon} from '@garage44/common/components'
 import {route} from 'preact-router'
 import {useState} from 'preact/hooks'
@@ -33,37 +35,51 @@ export const TicketCard = ({ticket}: TicketCardProps) => {
 
     return (
         <div class='c-ticket-card' onClick={handleClick}>
-            <div class='c-ticket-card__header'>
-                <h3 class='c-ticket-card__title'>{ticket.title}</h3>
+            <div class='header'>
+                <h3 class='title'>{ticket.title}</h3>
                 {ticket.priority !== null &&
                     <div
-                        class='c-ticket-card__priority'
+                        class='priority'
                         style={{color: getPriorityColor(ticket.priority)}}
                     >
                         P{ticket.priority}
                     </div>}
             </div>
             {ticket.repository_name &&
-                <div class='c-ticket-card__repo'>
+                <div class='repo'>
                     <Icon name='folder' size='d' type='info' />
                     <span>{ticket.repository_name}</span>
                 </div>}
             {ticket.assignee_id &&
-                <div class='c-ticket-card__assignee'>
-                    <Icon name='person' size='d' type='info' />
-                    <span>{ticket.assignee_type === 'agent' ? '🤖' : '👤'} {ticket.assignee_id}</span>
-                </div>}
+                (() => {
+                    if (ticket.assignee_type === 'agent') {
+                        const agent = $s.agents.find((a) => a.id === ticket.assignee_id || a.name === ticket.assignee_id)
+                        if (agent) {
+                            return (
+                                <div class='assignee'>
+                                    <AgentBadge agent={agent} size='s' />
+                                </div>
+                            )
+                        }
+                    }
+                    return (
+                        <div class='assignee'>
+                            <Icon name='person' size='d' type='info' />
+                            <span>{ticket.assignee_type === 'agent' ? '🤖' : '👤'} {ticket.assignee_id}</span>
+                        </div>
+                    )
+                })()}
             {ticket.branch_name &&
-                <div class='c-ticket-card__branch'>
+                <div class='branch'>
                     <Icon name='code' size='d' type='info' />
                     <span>{ticket.branch_name}</span>
                 </div>}
             {expanded && ticket.description &&
-                <div class='c-ticket-card__description'>
+                <div class='description'>
                     {ticket.description}
                 </div>}
             {expanded && ticket.merge_request_id &&
-                <div class='c-ticket-card__mr'>
+                <div class='mr'>
                     <a href={`#mr-${ticket.merge_request_id}`} rel='noopener noreferrer' target='_blank'>
                         View MR #{ticket.merge_request_id}
                     </a>

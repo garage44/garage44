@@ -1,28 +1,14 @@
 import {api, ws} from '@garage44/common/app'
 import {$s} from '@/app'
-import {Button, FieldText} from '@garage44/common/components'
-import {deepSignal} from 'deepsignal'
+import {Login as SharedLogin} from '@garage44/common/components'
 import {route} from 'preact-router'
-import {useState} from 'preact/hooks'
-
-const state = deepSignal({
-    password: '',
-    username: '',
-})
 
 export const Login = () => {
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
-
-    const handleSubmit = async(e: Event) => {
-        e.preventDefault()
-        setLoading(true)
-        setError('')
-
+    const handleLogin = async(username: string, password: string) => {
         try {
             const result = await api.post('/api/login', {
-                password: state.password,
-                username: state.username,
+                password,
+                username,
             })
 
             /*
@@ -45,41 +31,14 @@ export const Login = () => {
 
                 ws.connect()
                 route('/board')
+                return null // Success
             } else {
-                setError(result.error || 'Invalid credentials')
+                return result.error || 'Invalid credentials'
             }
         } catch(err) {
-            setError(err instanceof Error ? err.message : 'Login failed')
-        } finally {
-            setLoading(false)
+            return err instanceof Error ? err.message : 'Login failed'
         }
     }
 
-    return (
-        <div class='c-login'>
-            <div class='c-login__card'>
-                <h1>Nonlinear</h1>
-                <p>AI-Powered Automated Project Management</p>
-                <form onSubmit={handleSubmit}>
-                    <FieldText
-                        label='Username'
-                        model={state.$username}
-                        placeholder='Enter username'
-                        required
-                    />
-                    <FieldText
-                        label='Password'
-                        model={state.$password}
-                        placeholder='Enter password'
-                        required
-                        type='password'
-                    />
-                    {error && <div class='c-login__error'>{error}</div>}
-                    <Button disabled={loading} type='submit'>
-                        {loading ? 'Logging in...' : 'Login'}
-                    </Button>
-                </form>
-            </div>
-        </div>
-    )
+    return <SharedLogin onLogin={handleLogin} title='Nonlinear' />
 }

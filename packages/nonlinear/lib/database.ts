@@ -51,13 +51,16 @@ export interface Comment {
 }
 
 export interface Agent {
+    avatar: string | null
     config: string
     // JSON string
     created_at: number
+    display_name: string | null
     enabled: number
     // SQLite boolean (0 or 1)
     id: string
     name: string
+    status: 'idle' | 'working' | 'error' | 'offline'
     type: 'prioritizer' | 'developer' | 'reviewer'
 }
 
@@ -163,9 +166,35 @@ function createNonlinearTables() {
             type TEXT NOT NULL,
             config TEXT NOT NULL DEFAULT '{}',
             enabled INTEGER NOT NULL DEFAULT 1,
+            avatar TEXT,
+            display_name TEXT,
+            status TEXT NOT NULL DEFAULT 'idle',
             created_at INTEGER NOT NULL
         )
     `)
+
+    // Migrate existing agents table if needed (add new columns)
+    try {
+        db.exec(`
+            ALTER TABLE agents ADD COLUMN avatar TEXT
+        `)
+    } catch {
+        // Column already exists, ignore
+    }
+    try {
+        db.exec(`
+            ALTER TABLE agents ADD COLUMN display_name TEXT
+        `)
+    } catch {
+        // Column already exists, ignore
+    }
+    try {
+        db.exec(`
+            ALTER TABLE agents ADD COLUMN status TEXT NOT NULL DEFAULT 'idle'
+        `)
+    } catch {
+        // Column already exists, ignore
+    }
 
     // CI runs table
     db.exec(`

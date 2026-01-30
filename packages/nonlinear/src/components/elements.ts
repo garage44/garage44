@@ -1,2 +1,4 @@
+export {AgentAvatar} from './elements/agent-avatar/agent-avatar'
+export {AgentBadge} from './elements/agent-badge/agent-badge'
 export {TicketCard} from './elements/ticket/ticket'
 export {TicketForm} from './elements/ticket-form/ticket-form'

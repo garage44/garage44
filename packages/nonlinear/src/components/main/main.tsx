@@ -52,7 +52,32 @@ export const Main = () => {
 
                 const agentsResult = await ws.get('/api/agents')
                 if (agentsResult.agents) {
-                    $s.agents = agentsResult.agents
+                    // Transform agents into user-like objects
+                    $s.agents = agentsResult.agents.map((agent: {
+                        avatar: string | null
+                        created_at: number
+                        currentTicketId: string | null
+                        display_name: string | null
+                        enabled: number
+                        id: string
+                        lastActivity: number
+                        name: string
+                        status: string
+                        type: 'prioritizer' | 'developer' | 'reviewer'
+                    }) => ({
+                        id: agent.id,
+                        username: agent.name,
+                        displayName: agent.display_name || `${agent.name} Agent`,
+                        avatar: agent.avatar || 'placeholder-2.png',
+                        status: (agent.status || 'idle') as 'idle' | 'working' | 'error' | 'offline',
+                        type: agent.type,
+                        config: '',
+                        enabled: agent.enabled,
+                        created_at: agent.created_at,
+                        isAgent: true as const,
+                        currentTicketId: agent.currentTicketId || null,
+                        lastActivity: agent.lastActivity || agent.created_at,
+                    }))
                 }
 
                 // Subscribe to real-time updates
@@ -82,6 +107,48 @@ export const Main = () => {
                         }
                     } else if (data.type === 'repository:deleted') {
                         $s.repositories = $s.repositories.filter((r) => r.id !== data.repositoryId)
+                    }
+                })
+
+                ws.on('/agents', (data) => {
+                    if (data.type === 'agent:created' || data.type === 'agent:updated') {
+                        const agent = data.agent
+                        const index = $s.agents.findIndex((a) => a.id === agent.id)
+                        const transformedAgent = {
+                            id: agent.id,
+                            username: agent.name,
+                            displayName: agent.display_name || `${agent.name} Agent`,
+                            avatar: agent.avatar || 'placeholder-2.png',
+                            status: (agent.status || 'idle') as 'idle' | 'working' | 'error' | 'offline',
+                            type: agent.type,
+                            config: agent.config || '',
+                            enabled: agent.enabled,
+                            created_at: agent.created_at,
+                            isAgent: true as const,
+                            currentTicketId: null,
+                            lastActivity: Date.now(),
+                        }
+                        if (index >= 0) {
+                            const updatedAgents = [...$s.agents]
+                            updatedAgents[index] = transformedAgent
+                            $s.agents = updatedAgents
+                        } else {
+                            $s.agents = [...$s.agents, transformedAgent]
+                        }
+                    } else if (data.type === 'agent:deleted') {
+                        $s.agents = $s.agents.filter((a) => a.id !== data.agentId)
+                    } else if (data.type === 'agent:status') {
+                        const index = $s.agents.findIndex((a) => a.id === data.agentId)
+                        if (index >= 0) {
+                            const updatedAgents = [...$s.agents]
+                            updatedAgents[index] = {
+                                ...updatedAgents[index],
+                                status: data.status,
+                                currentTicketId: data.currentTicketId || null,
+                                lastActivity: data.lastActivity || Date.now(),
+                            }
+                            $s.agents = updatedAgents
+                        }
                     }
                 })
             } else {

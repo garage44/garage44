@@ -1,5 +1,6 @@
 import {$s} from '@/app'
 import {ws, notifier} from '@garage44/common/app'
+import {AgentBadge} from '@/components/elements'
 import {Button, Icon} from '@garage44/common/components'
 import {deepSignal} from 'deepsignal'
 import {useEffect, useState} from 'preact/hooks'
@@ -104,16 +105,14 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
         if (!ticket) return
 
         try {
-            await ws.put(`/api/tickets/${ticket.id}`, {
-                status: 'closed',
-            })
+            await ws.post(`/api/tickets/${ticket.id}/approve`, {})
 
             notifier.notify({
-                message: 'Ticket approved and closed',
+                message: 'Ticket approved',
                 type: 'success',
             })
 
-            route('/board')
+            await loadTicket(ticket.id)
         } catch(error) {
             notifier.notify({
                 message: `Failed to approve ticket: ${error instanceof Error ? error.message : String(error)}`,
@@ -129,18 +128,8 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
         if (!reason) return
 
         try {
-            // Add comment explaining the reopen
-            await ws.post(`/api/tickets/${ticket.id}/comments`, {
-                author_id: $s.profile.username || 'user',
-                author_type: 'human',
-                content: `Reopening ticket: ${reason}`,
-            })
-
-            // Move back to in_progress
-            await ws.put(`/api/tickets/${ticket.id}`, {
-                assignee_id: null,
-                assignee_type: null,
-                status: 'in_progress',
+            await ws.post(`/api/tickets/${ticket.id}/reopen`, {
+                reason,
             })
 
             notifier.notify({
@@ -212,25 +201,25 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
 
     return (
         <div class='c-ticket-detail'>
-            <div class='c-ticket-detail__header'>
+            <div class='header'>
                 <Button onClick={() => route('/board')} variant='ghost'>
                     <Icon name='arrow_back' size='c' type='info' />
                     Back to Board
                 </Button>
                 <h1>{ticket.title}</h1>
-                <div class='c-ticket-detail__status'>
+                <div class='status'>
                     Status: <span class={`status-${ticket.status}`}>{ticket.status}</span>
                 </div>
             </div>
 
-            <div class='c-ticket-detail__content'>
-                <div class='c-ticket-detail__description'>
+            <div class='content'>
+                <div class='description'>
                     <h2>Description</h2>
                     <p>{ticket.description || 'No description provided'}</p>
                 </div>
 
                 {ticket.status === 'closed' &&
-                    <div class='c-ticket-detail__actions'>
+                    <div class='actions'>
                         <Button onClick={handleApprove} variant='primary'>
                             Approve & Close
                         </Button>
@@ -239,30 +228,35 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                         </Button>
                     </div>}
 
-                <div class='c-ticket-detail__comments'>
+                <div class='comments'>
                     <h2>Comments</h2>
                     {comments.length === 0 ?
 
-                            <p class='c-ticket-detail__no-comments'>No comments yet</p> :
+                            <p class='no-comments'>No comments yet</p> :
 
-                            <div class='c-ticket-detail__comments-list'>
+                            <div class='comments-list'>
                                 {comments.map((comment) => {
                                     const parts = parseMentions(comment.content)
                                     return (
-                                        <div class='c-ticket-detail__comment' key={comment.id}>
-                                            <div class='c-ticket-detail__comment-header'>
-                                                <strong>
-                                                    {comment.author_type === 'agent' ? '🤖' : '👤'} {comment.author_id}
-                                                </strong>
-                                                <span class='c-ticket-detail__comment-time'>
+                                        <div class='comment' key={comment.id}>
+                                            <div class='comment-header'>
+                                                {comment.author_type === 'agent' ?
+                                                    (() => {
+                                                        const agent = $s.agents.find((a) => a.id === comment.author_id || a.name === comment.author_id)
+                                                        return agent ?
+                                                            <AgentBadge agent={agent} size='d' /> :
+                                                            <strong>🤖 {comment.author_id}</strong>
+                                                    })() :
+                                                    <strong>👤 {comment.author_id}</strong>}
+                                                <span class='comment-time'>
                                                     {new Date(comment.created_at).toLocaleString()}
                                                 </span>
                                             </div>
-                                            <div class='c-ticket-detail__comment-content'>
+                                            <div class='comment-content'>
                                                 {parts.map((part, idx) => {
                                                     return part.isMention ?
                                                         <span
-                                                            class='c-ticket-detail__mention'
+                                                            class='mention'
                                                             key={idx}
                                                             onClick={() => handleAssignAgent(part.mention!)}
                                                         >
@@ -276,9 +270,9 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                                 })}
                             </div>}
 
-                    <div class='c-ticket-detail__add-comment'>
+                    <div class='add-comment'>
                         <textarea
-                            class='c-ticket-detail__comment-input'
+                            class='comment-input'
                             onInput={(e) => {
                                 commentState.content = (e.target as HTMLTextAreaElement).value
                             }}

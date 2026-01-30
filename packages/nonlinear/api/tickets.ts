@@ -6,6 +6,8 @@ import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
 import {db} from '../lib/database.ts'
 import {randomId} from '@garage44/common/lib/utils'
 import {logger} from '../service.ts'
+import {parseMentions, validateMentions} from '../lib/comments/mentions.ts'
+import {triggerAgent} from '../lib/agent/scheduler.ts'
 
 export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // Get all tickets
@@ -273,7 +275,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
     // Add comment to ticket
     wsManager.api.post('/api/tickets/:id/comments', async(_ctx, req) => {
         const ticketId = req.params.id
-        const {author_id, author_type, content, mentions} = req.data as {
+        const {author_id, author_type, content, mentions: providedMentions} = req.data as {
             author_id: string
             author_type: 'agent' | 'human'
             content: string
@@ -284,8 +286,20 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
             throw new Error('content, author_type, and author_id are required')
         }
 
+        // Parse mentions from content if not provided
+        const parsedMentions = providedMentions ?
+                providedMentions.map((name) => ({name, original: `@${name}`, type: 'agent' as const})) :
+                parseMentions(content)
+        const {invalid: invalidMentions, valid: validMentions} = validateMentions(parsedMentions)
+
+        // Log invalid mentions
+        if (invalidMentions.length > 0) {
+            logger.warn(`[API] Invalid mentions in comment: ${invalidMentions.map((m) => m.original).join(', ')}`)
+        }
+
         const commentId = randomId()
         const now = Date.now()
+        const mentionNames = validMentions.map((m) => m.name)
 
         db.prepare(`
             INSERT INTO comments (
@@ -298,11 +312,35 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
             author_type,
             author_id,
             content,
-            mentions ? JSON.stringify(mentions) : null,
+            mentionNames.length > 0 ? JSON.stringify(mentionNames) : null,
             now,
         )
 
         const comment = db.prepare('SELECT * FROM comments WHERE id = ?').get(commentId)
+
+        // Trigger mentioned agents
+        for (const mention of validMentions) {
+            if (mention.type === 'agent') {
+                // Find agent by name
+                const agent = db.prepare(`
+                    SELECT id, name, type, enabled
+                    FROM agents
+                    WHERE name = ? OR id = ?
+                `).get(mention.name, mention.name) as {
+                    enabled: number
+                    id: string
+                    name: string
+                    type: 'prioritizer' | 'developer' | 'reviewer'
+                } | undefined
+
+                if (agent && agent.enabled === 1) {
+                    logger.info(`[API] Triggering agent ${agent.name} via mention in comment`)
+                    triggerAgent(agent.id, {ticketId}).catch((error: unknown) => {
+                        logger.error(`[API] Failed to trigger agent ${agent.name}: ${error}`)
+                    })
+                }
+            }
+        }
 
         // Broadcast comment creation
         wsManager.broadcast('/tickets', {
@@ -315,6 +353,101 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
         return {
             comment,
+        }
+    })
+
+    // Approve ticket (human confirms closure)
+    wsManager.api.post('/api/tickets/:id/approve', async(_ctx, req) => {
+        const ticketId = req.params.id
+
+        const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticketId) as {
+            id: string
+            status: string
+        } | undefined
+
+        if (!ticket) {
+            throw new Error('Ticket not found')
+        }
+
+        if (ticket.status !== 'closed') {
+            throw new Error('Ticket must be in closed status to approve')
+        }
+
+        /*
+         * Ticket is already closed, approval just confirms it
+         * Could add an approval tracking field if needed in the future
+         */
+
+        logger.info(`[API] Ticket ${ticketId} approved by human`)
+
+        // Broadcast approval
+        wsManager.broadcast('/tickets', {
+            ticketId,
+            type: 'ticket:approved',
+        })
+
+        return {
+            message: 'Ticket approved',
+            success: true,
+        }
+    })
+
+    // Reopen ticket
+    wsManager.api.post('/api/tickets/:id/reopen', async(_ctx, req) => {
+        const ticketId = req.params.id
+        const {reason} = req.data as {reason?: string}
+
+        const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticketId) as {
+            id: string
+            status: string
+        } | undefined
+
+        if (!ticket) {
+            throw new Error('Ticket not found')
+        }
+
+        // Add comment explaining reopen
+        if (reason) {
+            const commentId = randomId()
+            db.prepare(`
+                INSERT INTO comments (id, ticket_id, author_type, author_id, content, created_at)
+                VALUES (?, ?, 'human', ?, ?, ?)
+            `).run(
+                commentId,
+                ticketId,
+                'system',
+                `Reopening ticket: ${reason}`,
+                Date.now(),
+            )
+        }
+
+        // Move back to in_progress
+        db.prepare(`
+            UPDATE tickets
+            SET status = 'in_progress',
+                assignee_type = NULL,
+                assignee_id = NULL,
+                updated_at = ?
+            WHERE id = ?
+        `).run(Date.now(), ticketId)
+
+        const updatedTicket = db.prepare(`
+            SELECT t.*, r.name as repository_name
+            FROM tickets t
+            LEFT JOIN repositories r ON t.repository_id = r.id
+            WHERE t.id = ?
+        `).get(ticketId)
+
+        // Broadcast ticket update
+        wsManager.broadcast('/tickets', {
+            ticket: updatedTicket,
+            type: 'ticket:updated',
+        })
+
+        logger.info(`[API] Ticket ${ticketId} reopened`)
+
+        return {
+            ticket: updatedTicket,
         }
     })
 

@@ -9,6 +9,8 @@ import {PrioritizerAgent} from '../lib/agent/prioritizer.ts'
 import {DeveloperAgent} from '../lib/agent/developer.ts'
 import {ReviewerAgent} from '../lib/agent/reviewer.ts'
 import {randomId} from '@garage44/common/lib/utils'
+import {getAgentStatus} from '../lib/agent/status.ts'
+import {DEFAULT_AVATARS} from '../lib/agent/avatars.ts'
 
 // Agent instances (singletons)
 let prioritizerAgent: PrioritizerAgent | null = null
@@ -41,10 +43,33 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
         const agents = db.prepare(`
             SELECT * FROM agents
             ORDER BY type, name
-        `).all()
+        `).all() as Array<{
+            avatar: string | null
+            config: string
+            created_at: number
+            display_name: string | null
+            enabled: number
+            id: string
+            name: string
+            status: string
+            type: 'prioritizer' | 'developer' | 'reviewer'
+        }>
+
+        // Enrich with status information
+        const enrichedAgents = agents.map((agent) => {
+            const status = getAgentStatus(agent.id)
+            return {
+                ...agent,
+                avatar: agent.avatar || DEFAULT_AVATARS[agent.type],
+                display_name: agent.display_name || `${agent.name} Agent`,
+                status: status?.status || (agent.status as 'idle' | 'working' | 'error' | 'offline') || 'idle',
+                currentTicketId: status?.currentTicketId || null,
+                lastActivity: status?.lastActivity || agent.created_at,
+            }
+        })
 
         return {
-            agents,
+            agents: enrichedAgents,
         }
     })
 
@@ -79,15 +104,21 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
         const agentId = randomId()
         const now = Date.now()
 
+        const defaultAvatar = DEFAULT_AVATARS[type]
+        const defaultDisplayName = `${name} Agent`
+
         db.prepare(`
-            INSERT INTO agents (id, name, type, config, enabled, created_at)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO agents (id, name, type, config, enabled, avatar, display_name, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
             agentId,
             name,
             type,
             JSON.stringify(config || {}),
             enabled === false ? 0 : 1,
+            defaultAvatar,
+            defaultDisplayName,
+            'idle',
             now,
         )
 

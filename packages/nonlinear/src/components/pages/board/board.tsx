@@ -99,25 +99,25 @@ export const Board = () => {
 
     return (
         <div class='c-board'>
-            <div class='c-board__header'>
+            <div class='header'>
                 <h1>Kanban Board</h1>
             </div>
-            <div class='c-board__lanes'>
+            <div class='lanes'>
                 {LANES.map((lane) => {
                     const tickets = getTicketsForLane(lane.id)
                     return (
                         <div
-                            class='c-board__lane'
+                            class='lane'
                             data-lane={lane.id}
                             key={lane.id}
                             onDragLeave={handleDragLeave}
                             onDragOver={handleDragOver}
                             onDrop={(e) => handleDrop(e, lane.id)}
                         >
-                            <div class='c-board__lane-header'>
+                            <div class='lane-header'>
                                 <h2>{lane.label}</h2>
-                                <div class='c-board__lane-header-right'>
-                                    <span class='c-board__lane-count'>{tickets.length}</span>
+                                <div class='lane-header-right'>
+                                    <span class='lane-count'>{tickets.length}</span>
                                     <Button
                                         icon='add'
                                         onClick={() => handleAddTicket(lane.id)}
@@ -128,10 +128,10 @@ export const Board = () => {
                                     />
                                 </div>
                             </div>
-                            <div class='c-board__lane-content'>
+                            <div class='lane-content'>
                                 {tickets.length === 0 ?
 
-                                            <div class='c-board__lane-empty'>
+                                            <div class='lane-empty'>
                                                 No tickets
                                             </div> :
 
