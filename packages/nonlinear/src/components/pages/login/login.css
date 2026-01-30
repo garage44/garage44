@@ -1,6 +1,6 @@
 .c-login {
-    display: flex;
     align-items: center;
+    display: flex;
     justify-content: center;
     min-height: 100vh;
     padding: var(--spacer-2);
@@ -9,10 +9,10 @@
 .c-login__card {
     background: var(--surface-1);
     border-radius: var(--radius-2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
     padding: var(--spacer-4);
     width: 100%;
-    max-width: 400px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .c-login__card h1 {
@@ -21,9 +21,9 @@
 }
 
 .c-login__card p {
-    text-align: center;
     color: var(--text-2);
     margin-bottom: var(--spacer-3);
+    text-align: center;
 }
 
 .c-login__card form {
@@ -33,9 +33,9 @@
 }
 
 .c-login__error {
+    background: var(--surface-2);
+    border-radius: var(--radius-1);
     color: var(--error);
     font-size: var(--font-d);
     padding: var(--spacer-1);
-    background: var(--surface-2);
-    border-radius: var(--radius-1);
 }

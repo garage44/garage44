@@ -225,3 +225,194 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
         logger.debug('[API] Client subscribed to repository updates')
     })
 }
+
+export default function apiRepositories(router: unknown) {
+    const routerTyped = router as {
+        get: (
+            path: string,
+            handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
+        ) => void
+        post: (
+            path: string,
+            handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
+        ) => void
+        put: (
+            path: string,
+            handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
+        ) => void
+        delete: (
+            path: string,
+            handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
+        ) => void
+    }
+
+    routerTyped.get('/api/repositories', async(_req: Request, _params: Record<string, string>, _session: unknown) => {
+        const repositories = db.prepare(`
+            SELECT * FROM repositories
+            ORDER BY name ASC
+        `).all()
+
+        return new Response(JSON.stringify({repositories}), {
+            headers: {'Content-Type': 'application/json'},
+        })
+    })
+
+    routerTyped.get('/api/repositories/:id', async(_req: Request, params: Record<string, string>, _session: unknown) => {
+        const repoId = params.param0
+
+        const repo = db.prepare('SELECT * FROM repositories WHERE id = ?').get(repoId)
+
+        if (!repo) {
+            return new Response(JSON.stringify({error: 'Repository not found'}), {
+                headers: {'Content-Type': 'application/json'},
+                status: 404,
+            })
+        }
+
+        return new Response(JSON.stringify({repository: repo}), {
+            headers: {'Content-Type': 'application/json'},
+        })
+    })
+
+    routerTyped.post('/api/repositories', async(req: Request, _params: Record<string, string>, _session: unknown) => {
+        try {
+            const body = await req.json() as {
+                config?: Record<string, unknown>
+                name: string
+                path: string
+                platform?: 'github' | 'gitlab' | 'local'
+                remote_url?: string
+            }
+
+            const {config, name, path: repoPath, platform, remote_url} = body
+
+            if (!name || !repoPath) {
+                return new Response(JSON.stringify({error: 'name and path are required'}), {
+                    headers: {'Content-Type': 'application/json'},
+                    status: 400,
+                })
+            }
+
+            // Verify path exists and is a git repository
+            const gitPath = path.join(repoPath, '.git')
+            if (!await fs.pathExists(gitPath)) {
+                return new Response(JSON.stringify({error: 'Path is not a git repository'}), {
+                    headers: {'Content-Type': 'application/json'},
+                    status: 400,
+                })
+            }
+
+            const repoId = randomId()
+            const now = Date.now()
+            const repoPlatform = platform || getDefaultPlatform()
+
+            db.prepare(`
+                INSERT INTO repositories (
+                    id, name, path, platform, remote_url, config, created_at, updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `).run(
+                repoId,
+                name,
+                repoPath,
+                repoPlatform,
+                remote_url || null,
+                JSON.stringify(config || {}),
+                now,
+                now,
+            )
+
+            const repository = db.prepare('SELECT * FROM repositories WHERE id = ?').get(repoId)
+
+            logger.info(`[API] Added repository ${repoId}: ${name}`)
+
+            return new Response(JSON.stringify({repository}), {
+                headers: {'Content-Type': 'application/json'},
+            })
+        } catch (error) {
+            logger.error(`[API] Error adding repository: ${error}`)
+            return new Response(JSON.stringify({error: error instanceof Error ? error.message : 'Failed to add repository'}), {
+                headers: {'Content-Type': 'application/json'},
+                status: 500,
+            })
+        }
+    })
+
+    routerTyped.put('/api/repositories/:id', async(req: Request, params: Record<string, string>, _session: unknown) => {
+        try {
+            const repoId = params.param0
+            const body = await req.json() as Partial<{
+                config: Record<string, unknown>
+                name: string
+                path: string
+                platform: string
+                remote_url: string
+            }>
+
+            const fields: string[] = []
+            const values: unknown[] = []
+
+            if (body.name !== undefined) {
+                fields.push('name = ?')
+                values.push(body.name)
+            }
+            if (body.path !== undefined) {
+                fields.push('path = ?')
+                values.push(body.path)
+            }
+            if (body.platform !== undefined) {
+                fields.push('platform = ?')
+                values.push(body.platform)
+            }
+            if (body.remote_url !== undefined) {
+                fields.push('remote_url = ?')
+                values.push(body.remote_url)
+            }
+            if (body.config !== undefined) {
+                fields.push('config = ?')
+                values.push(JSON.stringify(body.config))
+            }
+
+            if (fields.length === 0) {
+                return new Response(JSON.stringify({error: 'No fields to update'}), {
+                    headers: {'Content-Type': 'application/json'},
+                    status: 400,
+                })
+            }
+
+            fields.push('updated_at = ?')
+            values.push(Date.now())
+            values.push(repoId)
+
+            db.prepare(`
+                UPDATE repositories
+                SET ${fields.join(', ')}
+                WHERE id = ?
+            `).run(...values)
+
+            const repository = db.prepare('SELECT * FROM repositories WHERE id = ?').get(repoId)
+
+            return new Response(JSON.stringify({repository}), {
+                headers: {'Content-Type': 'application/json'},
+            })
+        } catch (error) {
+            logger.error(`[API] Error updating repository: ${error}`)
+            return new Response(JSON.stringify({error: error instanceof Error ? error.message : 'Failed to update repository'}), {
+                headers: {'Content-Type': 'application/json'},
+                status: 500,
+            })
+        }
+    })
+
+    routerTyped.delete('/api/repositories/:id', async(_req: Request, params: Record<string, string>, _session: unknown) => {
+        const repoId = params.param0
+
+        db.prepare('DELETE FROM repositories WHERE id = ?').run(repoId)
+
+        logger.info(`[API] Deleted repository ${repoId}`)
+
+        return new Response(JSON.stringify({success: true}), {
+            headers: {'Content-Type': 'application/json'},
+        })
+    })
+}

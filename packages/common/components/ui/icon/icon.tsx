@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/max-len */
 import {computed, signal} from '@preact/signals'
 import {useEffect, useRef} from 'preact/hooks'
 import classnames from 'classnames'
@@ -137,16 +138,18 @@ function Icon({className = '', disabled = false, name, onClick = null, size = 'd
         className={classnames(
             'c-icon',
             `icon-${size ? size : 'd'}`,
-            `type-${type ? type : 'default'}`, {
+            `type-${type ? type : 'default'}`,
+            {
                 click: !!onClick,
                 disabled: disabled ? disabled : false,
-            }, className,
+            },
+            className,
         )}
-        height="40"
+        height='40'
         onClick={onClick}
         ref={iconRef}
-        viewBox="0 0 24 24"
-        width="40"
+        viewBox='0 0 24 24'
+        width='40'
     >
         <path d={svg[name]} />
     </svg>

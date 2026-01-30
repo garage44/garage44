@@ -9,7 +9,7 @@ import {logger} from '../service.ts'
 
 export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // Get all tickets
-    wsManager.api.get('/api/tickets', async(_ctx, _req) => {
+    wsManager.api.get('/api/tickets', async(_ctx, req) => {
         const tickets = db.prepare(`
             SELECT t.*, r.name as repository_name
             FROM tickets t
@@ -37,7 +37,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
     })
 
     // Get ticket by ID
-    wsManager.api.get('/api/tickets/:id', async(_ctx, _req) => {
+    wsManager.api.get('/api/tickets/:id', async(_ctx, req) => {
         const ticketId = req.params.param0
 
         const ticket = db.prepare(`
@@ -80,7 +80,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
     })
 
     // Create ticket
-    wsManager.api.post('/api/tickets', async(_ctx, _req) => {
+    wsManager.api.post('/api/tickets', async(_ctx, req) => {
         const {
             assignee_id,
             assignee_type,
@@ -126,7 +126,26 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
             now,
         )
 
-        const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticketId)
+        const ticket = db.prepare(`
+            SELECT t.*, r.name as repository_name
+            FROM tickets t
+            LEFT JOIN repositories r ON t.repository_id = r.id
+            WHERE t.id = ?
+        `).get(ticketId) as {
+            assignee_id: string | null
+            assignee_type: string | null
+            branch_name: string | null
+            created_at: number
+            description: string | null
+            id: string
+            merge_request_id: string | null
+            priority: number | null
+            repository_id: string
+            repository_name: string | null
+            status: string
+            title: string
+            updated_at: number
+        }
 
         // Broadcast ticket creation
         wsManager.broadcast('/tickets', {
@@ -142,7 +161,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
     })
 
     // Update ticket
-    wsManager.api.put('/api/tickets/:id', async(_ctx, _req) => {
+    wsManager.api.put('/api/tickets/:id', async(_ctx, req) => {
         const ticketId = req.params.param0
         const updates = req.data as Partial<{
             assignee_id: string
@@ -196,7 +215,26 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
             WHERE id = ?
         `).run(...values)
 
-        const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticketId)
+        const ticket = db.prepare(`
+            SELECT t.*, r.name as repository_name
+            FROM tickets t
+            LEFT JOIN repositories r ON t.repository_id = r.id
+            WHERE t.id = ?
+        `).get(ticketId) as {
+            assignee_id: string | null
+            assignee_type: string | null
+            branch_name: string | null
+            created_at: number
+            description: string | null
+            id: string
+            merge_request_id: string | null
+            priority: number | null
+            repository_id: string
+            repository_name: string | null
+            status: string
+            title: string
+            updated_at: number
+        }
 
         // Broadcast ticket update
         wsManager.broadcast('/tickets', {
@@ -210,7 +248,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
     })
 
     // Delete ticket
-    wsManager.api.delete('/api/tickets/:id', async(_ctx, _req) => {
+    wsManager.api.delete('/api/tickets/:id', async(_ctx, req) => {
         const ticketId = req.params.param0
 
         db.prepare('DELETE FROM tickets WHERE id = ?').run(ticketId)
@@ -229,7 +267,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
     })
 
     // Add comment to ticket
-    wsManager.api.post('/api/tickets/:id/comments', async(_ctx, _req) => {
+    wsManager.api.post('/api/tickets/:id/comments', async(_ctx, req) => {
         const ticketId = req.params.param0
         const {author_id, author_type, content, mentions} = req.data as {
             author_id: string

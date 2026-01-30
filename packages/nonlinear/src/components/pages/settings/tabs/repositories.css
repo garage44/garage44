@@ -1,0 +1,84 @@
+.c-repositories-tab {
+    .section {
+        margin-bottom: var(--spacer-4);
+
+        .section-title {
+            color: var(--surface-8);
+            font-size: var(--font-l);
+            font-weight: 600;
+            margin-bottom: var(--spacer-2);
+        }
+    }
+
+    .form {
+        .actions {
+            margin-top: var(--spacer-2);
+        }
+    }
+
+    .empty-state {
+        color: var(--surface-6);
+        padding: var(--spacer-4);
+        text-align: center;
+    }
+
+    .repositories-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacer-2);
+    }
+
+    .repository-item {
+        align-items: center;
+        background: var(--surface-1);
+        border: 1px solid var(--surface-3);
+        border-radius: var(--border-radius-m);
+        display: flex;
+        justify-content: space-between;
+        padding: var(--spacer-2);
+
+        .repository-info {
+            flex: 1;
+
+            .repository-name {
+                color: var(--surface-8);
+                font-size: var(--font-d);
+                font-weight: 600;
+                margin: 0 0 var(--spacer-05);
+            }
+
+            .repository-path {
+                color: var(--surface-6);
+                font-family: monospace;
+                font-size: var(--font-s);
+                margin: 0 0 var(--spacer-1);
+            }
+
+            .repository-meta {
+                align-items: center;
+                display: flex;
+                gap: var(--spacer-1);
+
+                .platform-badge {
+                    background: var(--surface-2);
+                    border-radius: var(--border-radius-s);
+                    color: var(--surface-7);
+                    font-size: var(--font-xs);
+                    font-weight: 600;
+                    padding: var(--spacer-05) var(--spacer-1);
+                    text-transform: uppercase;
+                }
+
+                .remote-url {
+                    color: var(--surface-6);
+                    font-size: var(--font-xs);
+                }
+            }
+        }
+
+        .repository-actions {
+            display: flex;
+            gap: var(--spacer-1);
+        }
+    }
+}

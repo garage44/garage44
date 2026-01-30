@@ -1,7 +1,7 @@
 .c-ticket-detail {
-    padding: var(--spacer-3);
-    max-width: 800px;
     margin: 0 auto;
+    max-width: 800px;
+    padding: var(--spacer-3);
 }
 
 .c-ticket-detail__header {
@@ -13,8 +13,8 @@
 }
 
 .c-ticket-detail__status {
-    font-size: var(--font-c);
     color: var(--text-2);
+    font-size: var(--font-c);
 }
 
 .c-ticket-detail__status .status-backlog {
@@ -50,8 +50,8 @@
 }
 
 .c-ticket-detail__description h2 {
-    margin: 0 0 var(--spacer-1) 0;
     font-size: var(--font-c);
+    margin: 0 0 var(--spacer-1) 0;
 }
 
 .c-ticket-detail__actions {
@@ -66,8 +66,8 @@
 }
 
 .c-ticket-detail__comments h2 {
-    margin: 0 0 var(--spacer-2) 0;
     font-size: var(--font-c);
+    margin: 0 0 var(--spacer-2) 0;
 }
 
 .c-ticket-detail__no-comments {
@@ -91,11 +91,11 @@
 }
 
 .c-ticket-detail__comment-header {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacer-1);
+    display: flex;
     font-size: var(--font-d);
+    justify-content: space-between;
+    margin-bottom: var(--spacer-1);
 }
 
 .c-ticket-detail__comment-time {
@@ -109,8 +109,8 @@
 
 .c-ticket-detail__mention {
     color: var(--info);
-    font-weight: 600;
     cursor: pointer;
+    font-weight: 600;
     text-decoration: underline;
 }
 
@@ -119,27 +119,27 @@
 }
 
 .c-ticket-detail__add-comment {
+    border-top: 1px solid var(--border-1);
     display: flex;
     flex-direction: column;
     gap: var(--spacer-1);
     padding-top: var(--spacer-2);
-    border-top: 1px solid var(--border-1);
 }
 
 .c-ticket-detail__comment-input {
-    width: 100%;
-    padding: var(--spacer-1);
+    background: var(--surface-2);
     border: 1px solid var(--border-1);
     border-radius: var(--radius-1);
-    background: var(--surface-2);
     color: var(--text-primary);
     font-family: var(--font-family);
     font-size: var(--font-d);
-    resize: vertical;
     min-height: 100px;
+    padding: var(--spacer-1);
+    resize: vertical;
+    width: 100%;
 }
 
 .c-ticket-detail__comment-input:focus {
-    outline: none;
     border-color: var(--info);
+    outline: none;
 }

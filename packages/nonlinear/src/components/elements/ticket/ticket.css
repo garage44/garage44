@@ -2,65 +2,65 @@
     background: var(--surface-2);
     border: 1px solid var(--surface-3);
     border-radius: 8px;
-    padding: var(--spacer-2);
-    cursor: pointer;
-    transition: all 0.2s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
     margin-bottom: var(--spacer-1);
+    padding: var(--spacer-2);
+    transition: all 0.2s ease;
 }
 
 .c-ticket-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-color: var(--surface-4);
     background: var(--surface-2);
+    border-color: var(--surface-4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
 }
 
 .c-ticket-card:active {
-    transform: translateY(0);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
 }
 
 .c-ticket-card__header {
-    display: flex;
-    justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: var(--spacer-1);
+    display: flex;
     gap: var(--spacer-1);
+    justify-content: space-between;
+    margin-bottom: var(--spacer-1);
 }
 
 .c-ticket-card__title {
+    color: var(--surface-8);
+    flex: 1;
     font-size: var(--font-d);
     font-weight: 600;
-    margin: 0;
-    flex: 1;
-    color: var(--surface-8);
     line-height: 1.4;
+    margin: 0;
     word-break: break-word;
 }
 
 .c-ticket-card__priority {
+    background: var(--surface-3);
+    border-radius: 4px;
+    color: var(--surface-7);
+    flex-shrink: 0;
     font-size: var(--font-xs);
     font-weight: 700;
     margin-left: var(--spacer-1);
     padding: var(--spacer-05) var(--spacer-1);
-    border-radius: 4px;
-    background: var(--surface-3);
-    color: var(--surface-7);
     white-space: nowrap;
-    flex-shrink: 0;
 }
 
 .c-ticket-card__repo,
 .c-ticket-card__assignee,
 .c-ticket-card__branch {
-    display: flex;
     align-items: center;
-    gap: var(--spacer-05);
-    font-size: var(--font-xs);
     color: var(--surface-6);
-    margin-top: var(--spacer-1);
+    display: flex;
+    font-size: var(--font-xs);
+    gap: var(--spacer-05);
     line-height: 1.4;
+    margin-top: var(--spacer-1);
 }
 
 .c-ticket-card__repo svg,
@@ -71,26 +71,26 @@
 }
 
 .c-ticket-card__description {
+    border-top: 1px solid var(--surface-3);
+    color: var(--surface-6);
+    font-size: var(--font-xs);
+    line-height: 1.5;
     margin-top: var(--spacer-1);
     padding-top: var(--spacer-1);
-    border-top: 1px solid var(--surface-3);
-    font-size: var(--font-xs);
-    color: var(--surface-6);
-    line-height: 1.5;
     word-break: break-word;
 }
 
 .c-ticket-card__mr {
+    border-top: 1px solid var(--surface-3);
     margin-top: var(--spacer-1);
     padding-top: var(--spacer-1);
-    border-top: 1px solid var(--surface-3);
 }
 
 .c-ticket-card__mr a {
     color: var(--primary-6);
-    text-decoration: none;
     font-size: var(--font-xs);
     font-weight: 500;
+    text-decoration: none;
     transition: color 0.2s;
 }
 

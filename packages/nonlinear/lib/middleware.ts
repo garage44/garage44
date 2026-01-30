@@ -74,13 +74,9 @@ const requireAdmin = async(ctx, next) => {
 async function initMiddleware(_bunchyConfig) {
     const router = new Router()
 
-    /*
-     * TODO: Register HTTP API endpoints
-     * await apiTickets(router)
-     * await apiAgents(router)
-     * await apiRepositories(router)
-     * await apiCI(router)
-     */
+    // Register HTTP API endpoints
+    const apiRepositories = (await import('../api/repositories.ts')).default
+    await apiRepositories(router)
 
     const publicPath = path.join(runtime.service_dir, 'public')
 

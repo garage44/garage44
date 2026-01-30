@@ -70,11 +70,17 @@ export const TicketForm = ({initialStatus, onClose, onSuccess}: TicketFormProps)
 
             await ws.post('/api/tickets', ticketData)
 
-            notifier.success('Ticket created successfully')
+            notifier.notify({
+                message: 'Ticket created successfully',
+                type: 'success',
+            })
             onSuccess()
             onClose()
         } catch(error) {
-            notifier.error(`Failed to create ticket: ${error instanceof Error ? error.message : 'Unknown error'}`)
+            notifier.notify({
+                message: `Failed to create ticket: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                type: 'error',
+            })
         }
     }
 

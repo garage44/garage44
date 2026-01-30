@@ -1,6 +1,6 @@
 import {$s} from '@/app'
 import {api, store, ws} from '@garage44/common/app'
-import {Board, TicketDetail} from '@/components/pages'
+import {Board, Settings, TicketDetail} from '@/components/pages'
 import {
     AppLayout,
     MenuGroup,
@@ -202,6 +202,7 @@ export const Main = () => {
                     <Board default path='/board' />
                     <Board path='/' />
                     <TicketDetail path='/tickets/:ticketId' />
+                    <Settings path='/settings' />
                 </Router>
             </div>
         </AppLayout>
