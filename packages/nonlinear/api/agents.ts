@@ -49,8 +49,8 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
     })
 
     // Get agent by ID
-    wsManager.api.get('/api/agents/:id', async(_ctx, _req) => {
-        const agentId = req.params.param0
+    wsManager.api.get('/api/agents/:id', async(_ctx, req) => {
+        const agentId = req.params.id
 
         const agent = db.prepare('SELECT * FROM agents WHERE id = ?').get(agentId)
 
@@ -108,7 +108,7 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
 
     // Trigger agent to process work
     wsManager.api.post('/api/agents/:id/trigger', async(ctx, req) => {
-        const agentId = req.params.param0
+        const agentId = req.params.id
         const context = req.data as Record<string, unknown> || {}
 
         const agent = db.prepare('SELECT * FROM agents WHERE id = ?').get(agentId) as {
@@ -159,7 +159,7 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
 
     // Update agent
     wsManager.api.put('/api/agents/:id', async(ctx, req) => {
-        const agentId = req.params.param0
+        const agentId = req.params.id
         const updates = req.data as Partial<{
             config: Record<string, unknown>
             enabled: boolean
@@ -208,8 +208,8 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
     })
 
     // Delete agent
-    wsManager.api.delete('/api/agents/:id', async(_ctx, _req) => {
-        const agentId = req.params.param0
+    wsManager.api.delete('/api/agents/:id', async(_ctx, req) => {
+        const agentId = req.params.id
 
         db.prepare('DELETE FROM agents WHERE id = ?').run(agentId)
 

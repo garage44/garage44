@@ -12,6 +12,32 @@ const LANES = [
     {id: 'closed', label: 'Closed'},
 ] as const
 
+const handleDragStart = (e: DragEvent, ticketId: string) => {
+    if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move'
+        e.dataTransfer.setData('text/plain', ticketId)
+    }
+}
+
+const handleDragOver = (e: DragEvent) => {
+    e.preventDefault()
+    if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'move'
+    }
+    // Add visual feedback for drag over
+    const target = e.currentTarget as HTMLElement
+    if (target) {
+        target.classList.add('drag-over')
+    }
+}
+
+const handleDragLeave = (e: DragEvent) => {
+    const target = e.currentTarget as HTMLElement
+    if (target) {
+        target.classList.remove('drag-over')
+    }
+}
+
 export const Board = () => {
     useEffect(() => {
         // Load tickets on mount
@@ -34,32 +60,6 @@ export const Board = () => {
         return $s.tickets.filter((ticket) => ticket.status === status)
     }
 
-    const handleDragStart = (e: DragEvent, ticketId: string) => {
-        if (e.dataTransfer) {
-            e.dataTransfer.effectAllowed = 'move'
-            e.dataTransfer.setData('text/plain', ticketId)
-        }
-    }
-
-    const handleDragOver = (e: DragEvent) => {
-        e.preventDefault()
-        if (e.dataTransfer) {
-            e.dataTransfer.dropEffect = 'move'
-        }
-        // Add visual feedback for drag over
-        const target = e.currentTarget as HTMLElement
-        if (target) {
-            target.classList.add('drag-over')
-        }
-    }
-
-    const handleDragLeave = (e: DragEvent) => {
-        const target = e.currentTarget as HTMLElement
-        if (target) {
-            target.classList.remove('drag-over')
-        }
-    }
-
     const handleDrop = async(e: DragEvent, targetStatus: string) => {
         e.preventDefault()
         const target = e.currentTarget as HTMLElement
@@ -69,10 +69,32 @@ export const Board = () => {
         const ticketId = e.dataTransfer?.getData('text/plain')
         if (!ticketId) return
 
-        // Update ticket status
-        await ws.put(`/api/tickets/${ticketId}`, {
-            status: targetStatus,
-        })
+        try {
+            // Update ticket status optimistically for immediate UI feedback
+            const ticketIndex = $s.tickets.findIndex((t) => t.id === ticketId)
+            if (ticketIndex >= 0) {
+                // Create new array for DeepSignal reactivity
+                const updatedTickets = [...$s.tickets]
+                updatedTickets[ticketIndex] = {
+                    ...updatedTickets[ticketIndex],
+                    status: targetStatus as typeof updatedTickets[number]['status'],
+                }
+                $s.tickets = updatedTickets
+            }
+
+            // Update ticket status via API
+            await ws.put(`/api/tickets/${ticketId}`, {
+                status: targetStatus,
+            })
+            // WebSocket broadcast will update state with server response
+        } catch(error) {
+            // Revert optimistic update on error
+            const result = await ws.get('/api/tickets')
+            if (result.tickets) {
+                $s.tickets = result.tickets
+            }
+            console.error('Failed to update ticket status:', error)
+        }
     }
 
     return (

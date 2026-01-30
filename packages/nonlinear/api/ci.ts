@@ -9,8 +9,8 @@ import {CIRunner} from '../lib/ci/runner.ts'
 
 export function registerCIWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // Get CI runs for a ticket
-    wsManager.api.get('/api/ci/runs/:ticketId', async(_ctx, _req) => {
-        const ticketId = req.params.param0
+    wsManager.api.get('/api/ci/runs/:ticketId', async(_ctx, req) => {
+        const ticketId = req.params.ticketId
 
         const runs = db.prepare(`
             SELECT * FROM ci_runs
@@ -24,8 +24,8 @@ export function registerCIWebSocketApiRoutes(wsManager: WebSocketServerManager) 
     })
 
     // Get CI run by ID
-    wsManager.api.get('/api/ci/runs/id/:id', async(_ctx, _req) => {
-        const runId = req.params.param0
+    wsManager.api.get('/api/ci/runs/id/:id', async(_ctx, req) => {
+        const runId = req.params.id
 
         const run = db.prepare('SELECT * FROM ci_runs WHERE id = ?').get(runId)
 
@@ -39,7 +39,7 @@ export function registerCIWebSocketApiRoutes(wsManager: WebSocketServerManager) 
     })
 
     // Trigger CI run for a ticket
-    wsManager.api.post('/api/ci/run', async(_ctx, _req) => {
+    wsManager.api.post('/api/ci/run', async(_ctx, req) => {
         const {repository_path, ticket_id} = req.data as {
             repository_path: string
             ticket_id: string

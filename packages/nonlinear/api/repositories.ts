@@ -24,8 +24,8 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
     })
 
     // Get repository by ID
-    wsManager.api.get('/api/repositories/:id', async(_ctx, _req) => {
-        const repoId = req.params.param0
+    wsManager.api.get('/api/repositories/:id', async(_ctx, req) => {
+        const repoId = req.params.id
 
         const repo = db.prepare('SELECT * FROM repositories WHERE id = ?').get(repoId)
 
@@ -39,7 +39,7 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
     })
 
     // Discover local git repositories
-    wsManager.api.post('/api/repositories/discover', async(_ctx, _req) => {
+    wsManager.api.post('/api/repositories/discover', async(_ctx, req) => {
         const {searchPath} = req.data as {searchPath?: string}
 
         const searchDir = searchPath || process.cwd()
@@ -85,7 +85,7 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
     })
 
     // Add repository
-    wsManager.api.post('/api/repositories', async(_ctx, _req) => {
+    wsManager.api.post('/api/repositories', async(_ctx, req) => {
         const {config, name, path: repoPath, platform, remote_url} = req.data as {
             config?: Record<string, unknown>
             name: string
@@ -140,8 +140,8 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
     })
 
     // Update repository
-    wsManager.api.put('/api/repositories/:id', async(_ctx, _req) => {
-        const repoId = req.params.param0
+    wsManager.api.put('/api/repositories/:id', async(_ctx, req) => {
+        const repoId = req.params.id
         const updates = req.data as Partial<{
             config: Record<string, unknown>
             name: string
@@ -202,8 +202,8 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
     })
 
     // Delete repository
-    wsManager.api.delete('/api/repositories/:id', async(_ctx, _req) => {
-        const repoId = req.params.param0
+    wsManager.api.delete('/api/repositories/:id', async(_ctx, req) => {
+        const repoId = req.params.id
 
         db.prepare('DELETE FROM repositories WHERE id = ?').run(repoId)
 
@@ -228,6 +228,10 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
 
 export default function apiRepositories(router: unknown) {
     const routerTyped = router as {
+        delete: (
+            path: string,
+            handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
+        ) => void
         get: (
             path: string,
             handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
@@ -237,10 +241,6 @@ export default function apiRepositories(router: unknown) {
             handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
         ) => void
         put: (
-            path: string,
-            handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
-        ) => void
-        delete: (
             path: string,
             handler: (req: Request, params: Record<string, string>, session: unknown) => Promise<Response>,
         ) => void
@@ -258,7 +258,7 @@ export default function apiRepositories(router: unknown) {
     })
 
     routerTyped.get('/api/repositories/:id', async(_req: Request, params: Record<string, string>, _session: unknown) => {
-        const repoId = params.param0
+        const repoId = params.id
 
         const repo = db.prepare('SELECT * FROM repositories WHERE id = ?').get(repoId)
 
@@ -329,7 +329,7 @@ export default function apiRepositories(router: unknown) {
             return new Response(JSON.stringify({repository}), {
                 headers: {'Content-Type': 'application/json'},
             })
-        } catch (error) {
+        } catch(error) {
             logger.error(`[API] Error adding repository: ${error}`)
             return new Response(JSON.stringify({error: error instanceof Error ? error.message : 'Failed to add repository'}), {
                 headers: {'Content-Type': 'application/json'},
@@ -340,7 +340,7 @@ export default function apiRepositories(router: unknown) {
 
     routerTyped.put('/api/repositories/:id', async(req: Request, params: Record<string, string>, _session: unknown) => {
         try {
-            const repoId = params.param0
+            const repoId = params.id
             const body = await req.json() as Partial<{
                 config: Record<string, unknown>
                 name: string
@@ -395,7 +395,7 @@ export default function apiRepositories(router: unknown) {
             return new Response(JSON.stringify({repository}), {
                 headers: {'Content-Type': 'application/json'},
             })
-        } catch (error) {
+        } catch(error) {
             logger.error(`[API] Error updating repository: ${error}`)
             return new Response(JSON.stringify({error: error instanceof Error ? error.message : 'Failed to update repository'}), {
                 headers: {'Content-Type': 'application/json'},
@@ -405,7 +405,7 @@ export default function apiRepositories(router: unknown) {
     })
 
     routerTyped.delete('/api/repositories/:id', async(_req: Request, params: Record<string, string>, _session: unknown) => {
-        const repoId = params.param0
+        const repoId = params.id
 
         db.prepare('DELETE FROM repositories WHERE id = ?').run(repoId)
 

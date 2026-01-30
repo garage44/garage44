@@ -9,7 +9,7 @@ import {logger} from '../service.ts'
 
 export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // Get all tickets
-    wsManager.api.get('/api/tickets', async(_ctx, req) => {
+    wsManager.api.get('/api/tickets', async(_ctx, _req) => {
         const tickets = db.prepare(`
             SELECT t.*, r.name as repository_name
             FROM tickets t
@@ -38,7 +38,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
     // Get ticket by ID
     wsManager.api.get('/api/tickets/:id', async(_ctx, req) => {
-        const ticketId = req.params.param0
+        const ticketId = req.params.id
 
         const ticket = db.prepare(`
             SELECT t.*, r.name as repository_name, r.path as repository_path
@@ -162,7 +162,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
     // Update ticket
     wsManager.api.put('/api/tickets/:id', async(_ctx, req) => {
-        const ticketId = req.params.param0
+        const ticketId = req.params.id
         const updates = req.data as Partial<{
             assignee_id: string
             assignee_type: string
@@ -174,7 +174,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
         // Build update query dynamically
         const fields: string[] = []
-        const values: unknown[] = []
+        const values: (string | number | null)[] = []
 
         if (updates.title !== undefined) {
             fields.push('title = ?')
@@ -209,11 +209,15 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
         values.push(Date.now())
         values.push(ticketId)
 
-        db.prepare(`
+        const result = db.prepare(`
             UPDATE tickets
             SET ${fields.join(', ')}
             WHERE id = ?
         `).run(...values)
+
+        if (result.changes === 0) {
+            throw new Error(`Ticket ${ticketId} not found`)
+        }
 
         const ticket = db.prepare(`
             SELECT t.*, r.name as repository_name
@@ -249,7 +253,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
     // Delete ticket
     wsManager.api.delete('/api/tickets/:id', async(_ctx, req) => {
-        const ticketId = req.params.param0
+        const ticketId = req.params.id
 
         db.prepare('DELETE FROM tickets WHERE id = ?').run(ticketId)
 
@@ -268,7 +272,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
     // Add comment to ticket
     wsManager.api.post('/api/tickets/:id/comments', async(_ctx, req) => {
-        const ticketId = req.params.param0
+        const ticketId = req.params.id
         const {author_id, author_type, content, mentions} = req.data as {
             author_id: string
             author_type: 'agent' | 'human'

@@ -58,10 +58,12 @@ export const Main = () => {
                 // Subscribe to real-time updates
                 ws.on('/tickets', (data) => {
                     if (data.type === 'ticket:created' || data.type === 'ticket:updated') {
-                        // Update ticket in state
+                        // Update ticket in state - create new array for DeepSignal reactivity
                         const index = $s.tickets.findIndex((t) => t.id === data.ticket.id)
                         if (index >= 0) {
-                            $s.tickets[index] = data.ticket
+                            const updatedTickets = [...$s.tickets]
+                            updatedTickets[index] = data.ticket
+                            $s.tickets = updatedTickets
                         } else {
                             $s.tickets = [...$s.tickets, data.ticket]
                         }
@@ -88,6 +90,14 @@ export const Main = () => {
         })()
     }, [])
 
+    useEffect(() => {
+        // Migrate old default width (200px) to new default (600px)
+        if ($s.panels.context.width === 200) {
+            $s.panels.context.width = 600
+            store.save()
+        }
+    }, [])
+
     if ($s.profile.authenticated === null) {
         return null
     }
@@ -104,14 +114,6 @@ export const Main = () => {
             route('/board', true)
         }
     }
-
-    useEffect(() => {
-        // Migrate old default width (200px) to new default (600px)
-        if ($s.panels.context.width === 200) {
-            $s.panels.context.width = 600
-            store.save()
-        }
-    }, [])
 
     const handleClosePanel = () => {
         $s.selectedLane = null
