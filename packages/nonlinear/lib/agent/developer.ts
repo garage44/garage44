@@ -7,7 +7,7 @@ import {BaseAgent, type AgentContext, type AgentResponse} from './base.ts'
 import {db} from '../database.ts'
 import {logger} from '../../service.ts'
 import {createGitPlatform} from '../git/index.ts'
-import {randomId} from '@garage44/common/lib/utils'
+import {addAgentComment} from './comments.ts'
 import {CIRunner} from '../ci/runner.ts'
 import {applyFileModifications, validateModifications} from './file-editor.ts'
 import {$} from 'bun'
@@ -139,7 +139,7 @@ Provide a detailed implementation plan and the code changes needed.`
             } catch (error) {
                 this.log(`Failed to parse implementation plan: ${error}`, 'error')
                 // Fallback: save the response as a comment and mark ticket as needing review
-                await this.addComment(ticket.id, `Implementation plan generated but could not be parsed:\n\n${response}`)
+                await addAgentComment(ticket.id, this.name, `Implementation plan generated but could not be parsed:\n\n${response}`)
                 return {
                     success: false,
                     message: 'Failed to parse implementation plan',
@@ -181,7 +181,7 @@ Provide a detailed implementation plan and the code changes needed.`
                         const failed = results.filter((r) => !r.success)
                         if (failed.length > 0) {
                             this.log(`Failed to modify ${failed.length} files: ${failed.map(r => r.path).join(', ')}`, 'warn')
-                            await this.addComment(ticket.id, `Failed to modify some files:\n${failed.map(r => `- ${r.path}: ${r.error}`).join('\n')}`)
+                            await addAgentComment(ticket.id, this.name, `Failed to modify some files:\n${failed.map(r => `- ${r.path}: ${r.error}`).join('\n')}`)
                         }
 
                         const succeeded = results.filter((r) => r.success)
@@ -211,7 +211,7 @@ Provide a detailed implementation plan and the code changes needed.`
                 if (!ciResult.success) {
                     this.log(`CI failed: ${ciResult.error}`, 'warn')
                     // Add comment about CI failure
-                    await this.addComment(ticket.id, `CI checks failed:\n\n${ciResult.output}\n\nFixes applied: ${ciResult.fixesApplied.length}`)
+                    await addAgentComment(ticket.id, this.name, `CI checks failed:\n\n${ciResult.output}\n\nFixes applied: ${ciResult.fixesApplied.length}`)
 
                     // If CI fixed some issues, commit the fixes
                     if (ciResult.fixesApplied.length > 0) {
@@ -237,7 +237,7 @@ Provide a detailed implementation plan and the code changes needed.`
                     }
                 } else {
                     this.log('CI checks passed')
-                    await this.addComment(ticket.id, `CI checks passed${ciResult.fixesApplied.length > 0 ? ` (${ciResult.fixesApplied.length} fixes applied)` : ''}`)
+                    await addAgentComment(ticket.id, this.name, `CI checks passed${ciResult.fixesApplied.length > 0 ? ` (${ciResult.fixesApplied.length} fixes applied)` : ''}`)
                 }
 
                 // Create merge request
@@ -309,11 +309,4 @@ Provide a detailed implementation plan and the code changes needed.`
         }
     }
 
-    private async addComment(ticketId: string, content: string): Promise<void> {
-        const commentId = randomId()
-        db.prepare(`
-            INSERT INTO comments (id, ticket_id, author_type, author_id, content, created_at)
-            VALUES (?, ?, 'agent', ?, ?, ?)
-        `).run(commentId, ticketId, this.name, content, Date.now())
-    }
 }

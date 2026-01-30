@@ -10,6 +10,7 @@ import {PrioritizerAgent} from './prioritizer.ts'
 import {DeveloperAgent} from './developer.ts'
 import {ReviewerAgent} from './reviewer.ts'
 import {updateAgentStatus, getAgentStatus, type AgentStatus} from './status.ts'
+import {type AgentContext} from './base.ts'
 import {randomId} from '@garage44/common/lib/utils'
 
 interface AgentInstance {
@@ -187,7 +188,7 @@ function startAgentScheduler(agentId: string, agentType: 'prioritizer' | 'develo
 /**
  * Run an agent
  */
-async function runAgent(agentId: string, agentType: 'prioritizer' | 'developer' | 'reviewer') {
+async function runAgent(agentId: string, agentType: 'prioritizer' | 'developer' | 'reviewer', context: Record<string, unknown> = {}) {
     const agent = agentInstances.get(agentId)
     if (!agent || !agent.enabled) {
         return
@@ -227,7 +228,7 @@ async function runAgent(agentId: string, agentType: 'prioritizer' | 'developer' 
             updateAgentStatus(agentId, 'working')
 
             logger.info(`[Agent Scheduler] Running agent ${agent.name} (${agentType})`)
-            const result = await agent.instance.process({})
+            const result = await agent.instance.process(context as AgentContext)
 
             if (result.success) {
                 updateAgentStatus(agentId, 'idle')
@@ -273,5 +274,5 @@ export async function triggerAgent(agentId: string, context: Record<string, unkn
         throw new Error(`Agent ${agent.name} is disabled`)
     }
 
-    return runAgent(agentId, agent.type)
+    return runAgent(agentId, agent.type, context)
 }

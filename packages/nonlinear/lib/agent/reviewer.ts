@@ -7,7 +7,7 @@ import {BaseAgent, type AgentContext, type AgentResponse} from './base.ts'
 import {db} from '../database.ts'
 import {logger} from '../../service.ts'
 import {createGitPlatform} from '../git/index.ts'
-import {randomId} from '@garage44/common/lib/utils'
+import {addAgentComment} from './comments.ts'
 
 export class ReviewerAgent extends BaseAgent {
     constructor() {
@@ -139,7 +139,7 @@ Please review the changes and provide feedback.`
             await gitPlatform.addComment(repo, ticket.merge_request_id, reviewComment)
 
             // Add comment to ticket
-            await this.addComment(ticket.id, reviewComment)
+            await addAgentComment(ticket.id, this.name, reviewComment)
 
             // Update ticket status
             if (review.approved) {
@@ -226,11 +226,4 @@ Please review the changes and provide feedback.`
         return lines.join('\n')
     }
 
-    private async addComment(ticketId: string, content: string): Promise<void> {
-        const commentId = randomId()
-        db.prepare(`
-            INSERT INTO comments (id, ticket_id, author_type, author_id, content, created_at)
-            VALUES (?, ?, 'agent', ?, ?, ?)
-        `).run(commentId, ticketId, this.name, content, Date.now())
-    }
 }

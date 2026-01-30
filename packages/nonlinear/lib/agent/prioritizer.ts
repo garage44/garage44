@@ -6,7 +6,7 @@
 import {BaseAgent, type AgentContext, type AgentResponse} from './base.ts'
 import {db} from '../database.ts'
 import {logger} from '../../service.ts'
-import {randomId} from '@garage44/common/lib/utils'
+import {addAgentComment} from './comments.ts'
 
 export class PrioritizerAgent extends BaseAgent {
     constructor() {
@@ -232,21 +232,13 @@ Provide a refined analysis and suggestions for improving this ticket.`
 
             const response = await this.respond(systemPrompt, userMessage)
 
-            // Add comment with refinement
-            await this.addComment(ticket.id, `## Ticket Refinement\n\n${response}`)
+            // Add comment with refinement and broadcast via WebSocket
+            await addAgentComment(ticket.id, this.name, `## Ticket Refinement\n\n${response}`)
 
             this.log(`Refined ticket ${ticket.id}`)
         } catch (error) {
             this.log(`Error refining ticket ${ticket.id}: ${error}`, 'error')
             // Don't throw - refinement failure shouldn't block prioritization
         }
-    }
-
-    private async addComment(ticketId: string, content: string): Promise<void> {
-        const commentId = randomId()
-        db.prepare(`
-            INSERT INTO comments (id, ticket_id, author_type, author_id, content, created_at)
-            VALUES (?, ?, 'agent', ?, ?, ?)
-        `).run(commentId, ticketId, this.name, content, Date.now())
     }
 }
