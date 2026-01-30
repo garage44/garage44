@@ -1,40 +1,40 @@
 import type {CommonState} from '@garage44/common/types'
 
 export interface NonlinearState extends CommonState {
-    tickets: Array<{
-        id: string
-        repository_id: string
-        title: string
-        description: string | null
-        status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed'
-        priority: number | null
-        assignee_type: 'agent' | 'human' | null
-        assignee_id: string | null
-        branch_name: string | null
-        merge_request_id: string | null
+    agents: Array<{
+        config: string
         created_at: number
-        updated_at: number
-        repository_name: string | null
+        enabled: number
+        id: string
+        name: string
+        type: 'prioritizer' | 'developer' | 'reviewer'
     }>
     repositories: Array<{
+        config: string
+        created_at: number
         id: string
         name: string
         path: string
         platform: 'github' | 'gitlab' | 'local'
         remote_url: string | null
-        config: string
-        created_at: number
         updated_at: number
     }>
-    agents: Array<{
-        id: string
-        name: string
-        type: 'prioritizer' | 'developer' | 'reviewer'
-        config: string
-        enabled: number
-        created_at: number
-    }>
+    selectedLane: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed' | null
     selectedRepository: string | null
     selectedTicket: string | null
-    selectedLane: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed' | null
+    tickets: Array<{
+        assignee_id: string | null
+        assignee_type: 'agent' | 'human' | null
+        branch_name: string | null
+        created_at: number
+        description: string | null
+        id: string
+        merge_request_id: string | null
+        priority: number | null
+        repository_id: string
+        repository_name: string | null
+        status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed'
+        title: string
+        updated_at: number
+    }>
 }

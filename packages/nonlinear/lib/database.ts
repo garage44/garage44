@@ -13,58 +13,63 @@ import {homedir} from 'node:os'
 let db: Database | null = null
 
 export interface Repository {
+    config: string
+    // JSON string
+    created_at: number
     id: string
     name: string
     path: string
     platform: 'github' | 'gitlab' | 'local'
     remote_url: string | null
-    config: string // JSON string
-    created_at: number
     updated_at: number
 }
 
 export interface Ticket {
-    id: string
-    repository_id: string
-    title: string
-    description: string | null
-    status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed'
-    priority: number | null
-    assignee_type: 'agent' | 'human' | null
     assignee_id: string | null
+    assignee_type: 'agent' | 'human' | null
     branch_name: string | null
-    merge_request_id: string | null
     created_at: number
+    description: string | null
+    id: string
+    merge_request_id: string | null
+    priority: number | null
+    repository_id: string
+    status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed'
+    title: string
     updated_at: number
 }
 
 export interface Comment {
-    id: string
-    ticket_id: string
-    author_type: 'agent' | 'human'
     author_id: string
+    author_type: 'agent' | 'human'
     content: string
-    mentions: string | null // JSON array string
     created_at: number
+    id: string
+    mentions: string | null
+    // JSON array string
+    ticket_id: string
 }
 
 export interface Agent {
+    config: string
+    // JSON string
+    created_at: number
+    enabled: number
+    // SQLite boolean (0 or 1)
     id: string
     name: string
     type: 'prioritizer' | 'developer' | 'reviewer'
-    config: string // JSON string
-    enabled: number // SQLite boolean (0 or 1)
-    created_at: number
 }
 
 export interface CIRun {
-    id: string
-    ticket_id: string
-    status: 'running' | 'success' | 'failed' | 'fixed'
-    output: string | null
-    fixes_applied: string | null // JSON array string
-    started_at: number
     completed_at: number | null
+    fixes_applied: string | null
+    // JSON array string
+    id: string
+    output: string | null
+    started_at: number
+    status: 'running' | 'success' | 'failed' | 'fixed'
+    ticket_id: string
 }
 
 /**

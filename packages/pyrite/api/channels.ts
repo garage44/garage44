@@ -154,7 +154,7 @@ export default async function apiChannels(router: Router) {
             }
 
             const body = await req.json()
-            const {description, name, slug, is_default} = body
+            const {description, is_default, name, slug} = body
 
             if (!name || !slug) {
                 return new Response(JSON.stringify({

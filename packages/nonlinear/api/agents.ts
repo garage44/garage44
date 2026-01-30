@@ -37,7 +37,7 @@ function getAgent(type: 'prioritizer' | 'developer' | 'reviewer') {
 
 export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // Get all agents
-    wsManager.api.get('/api/agents', async(ctx, req) => {
+    wsManager.api.get('/api/agents', async(_ctx, _req) => {
         const agents = db.prepare(`
             SELECT * FROM agents
             ORDER BY type, name
@@ -49,7 +49,7 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
     })
 
     // Get agent by ID
-    wsManager.api.get('/api/agents/:id', async(ctx, req) => {
+    wsManager.api.get('/api/agents/:id', async(_ctx, _req) => {
         const agentId = req.params.param0
 
         const agent = db.prepare('SELECT * FROM agents WHERE id = ?').get(agentId)
@@ -65,11 +65,11 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
 
     // Register/create agent
     wsManager.api.post('/api/agents', async(ctx, req) => {
-        const {name, type, config, enabled} = req.data as {
-            name: string
-            type: 'prioritizer' | 'developer' | 'reviewer'
+        const {config, enabled, name, type} = req.data as {
             config?: Record<string, unknown>
             enabled?: boolean
+            name: string
+            type: 'prioritizer' | 'developer' | 'reviewer'
         }
 
         if (!name || !type) {
@@ -87,7 +87,7 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
             name,
             type,
             JSON.stringify(config || {}),
-            enabled !== false ? 1 : 0,
+            enabled === false ? 0 : 1,
             now,
         )
 
@@ -95,8 +95,8 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
 
         // Broadcast agent creation
         wsManager.broadcast('/agents', {
-            type: 'agent:created',
             agent,
+            type: 'agent:created',
         })
 
         logger.info(`[API] Registered agent ${agentId}: ${name} (${type})`)
@@ -112,10 +112,10 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
         const context = req.data as Record<string, unknown> || {}
 
         const agent = db.prepare('SELECT * FROM agents WHERE id = ?').get(agentId) as {
+            enabled: number
             id: string
             name: string
             type: 'prioritizer' | 'developer' | 'reviewer'
-            enabled: number
         } | undefined
 
         if (!agent) {
@@ -134,26 +134,26 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
         agentInstance.process(context).then((result) => {
             // Broadcast agent completion
             wsManager.broadcast('/agents', {
-                type: 'agent:completed',
                 agentId: agent.id,
                 result,
+                type: 'agent:completed',
             })
 
             logger.info(`[API] Agent ${agent.name} completed: ${result.message}`)
         }).catch((error) => {
             // Broadcast agent error
             wsManager.broadcast('/agents', {
-                type: 'agent:error',
                 agentId: agent.id,
                 error: error.message,
+                type: 'agent:error',
             })
 
             logger.error(`[API] Agent ${agent.name} error: ${error}`)
         })
 
         return {
-            success: true,
             message: `Agent ${agent.name} triggered`,
+            success: true,
         }
     })
 
@@ -161,9 +161,9 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
     wsManager.api.put('/api/agents/:id', async(ctx, req) => {
         const agentId = req.params.param0
         const updates = req.data as Partial<{
-            name: string
             config: Record<string, unknown>
             enabled: boolean
+            name: string
         }>
 
         const fields: string[] = []
@@ -198,8 +198,8 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
 
         // Broadcast agent update
         wsManager.broadcast('/agents', {
-            type: 'agent:updated',
             agent,
+            type: 'agent:updated',
         })
 
         return {
@@ -208,15 +208,15 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
     })
 
     // Delete agent
-    wsManager.api.delete('/api/agents/:id', async(ctx, req) => {
+    wsManager.api.delete('/api/agents/:id', async(_ctx, _req) => {
         const agentId = req.params.param0
 
         db.prepare('DELETE FROM agents WHERE id = ?').run(agentId)
 
         // Broadcast agent deletion
         wsManager.broadcast('/agents', {
-            type: 'agent:deleted',
             agentId,
+            type: 'agent:deleted',
         })
 
         logger.info(`[API] Deleted agent ${agentId}`)
@@ -227,7 +227,7 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
     })
 
     // Subscribe to agent updates
-    wsManager.on('/agents', (ws) => {
+    wsManager.on('/agents', (_ws) => {
         logger.debug('[API] Client subscribed to agent updates')
     })
 }

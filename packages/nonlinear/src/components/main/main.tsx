@@ -1,5 +1,5 @@
 import {$s} from '@/app'
-import {api, notifier, ws, store} from '@garage44/common/app'
+import {api, store, ws} from '@garage44/common/app'
 import {Board, TicketDetail} from '@/components/pages'
 import {
     AppLayout,
@@ -11,10 +11,9 @@ import {
     UserMenu,
 } from '@garage44/common/components'
 import {TicketForm} from '@/components/elements/ticket-form/ticket-form'
-import {Link, Router, getCurrentUrl, route} from 'preact-router'
+import {Link, Router, route} from 'preact-router'
 import {Login} from '@/components/pages/login/login'
 import {useEffect} from 'preact/hooks'
-import {effect} from '@preact/signals'
 
 export const Main = () => {
     useEffect(() => {
@@ -131,25 +130,27 @@ export const Main = () => {
     return <>
         <AppLayout
             context={
-                $s.selectedLane ? (
-                    <PanelContext
-                        collapsed={false}
-                        defaultWidth={600}
-                        maxWidth={1000}
-                        minWidth={64}
-                        onWidthChange={(width) => {
-                            $s.panels.context.width = width
-                            store.save()
-                        }}
-                        width={$s.panels.context.width === 200 ? undefined : $s.panels.context.width}
-                    >
-                        <TicketForm
-                            initialStatus={$s.selectedLane}
-                            onClose={handleClosePanel}
-                            onSuccess={handleTicketCreated}
-                        />
-                    </PanelContext>
-                ) : null
+                $s.selectedLane ?
+                    (
+                        <PanelContext
+                            collapsed={false}
+                            defaultWidth={600}
+                            maxWidth={1000}
+                            minWidth={64}
+                            onWidthChange={(width) => {
+                                $s.panels.context.width = width
+                                store.save()
+                            }}
+                            width={$s.panels.context.width === 200 ? undefined : $s.panels.context.width}
+                        >
+                            <TicketForm
+                                initialStatus={$s.selectedLane}
+                                onClose={handleClosePanel}
+                                onSuccess={handleTicketCreated}
+                            />
+                        </PanelContext>
+                      )
+                    : null
             }
             menu={(
                 <PanelMenu
@@ -199,7 +200,7 @@ export const Main = () => {
         >
             <div class='view'>
                 <Router onChange={handleRoute}>
-                    <Board path='/board' default />
+                    <Board default path='/board' />
                     <Board path='/' />
                     <TicketDetail path='/tickets/:ticketId' />
                 </Router>

@@ -136,7 +136,7 @@ export default function TabChannels() {
                                     placeholder='Enter channel description'
                                 />
                                 <FieldCheckbox
-                                    help='Only one channel can be set as default. Setting this will unset any other default channel.'
+                                    help='Only one channel can be set as default. Setting this unsets any other default channel.'
                                     label='Set as default channel'
                                     model={state.formData.$is_default}
                                 />
@@ -169,7 +169,7 @@ export default function TabChannels() {
                                             model={state.formData.$description}
                                         />
                                         <FieldCheckbox
-                                            help='Only one channel can be set as default. Setting this will unset any other default channel.'
+                                            help='Only one channel can be set as default. Setting this unsets any other default.'
                                             label='Set as default channel'
                                             model={state.formData.$is_default}
                                         />

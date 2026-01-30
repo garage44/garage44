@@ -85,13 +85,12 @@ function createPyriteTables() {
 
     // Create index on slug for performance
     db.exec('CREATE INDEX IF NOT EXISTS idx_channels_slug ON channels(slug)')
-    
+
     // Add is_default column if it doesn't exist (migration for existing databases)
     try {
         // Check if column exists by querying table info
-        const tableInfo = db.prepare("PRAGMA table_info(channels)").all() as Array<{name: string}>
+        const tableInfo = db.prepare('PRAGMA table_info(channels)').all() as Array<{name: string}>
         const hasIsDefaultColumn = tableInfo.some((col) => col.name === 'is_default')
-        
         if (!hasIsDefaultColumn) {
             db.exec('ALTER TABLE channels ADD COLUMN is_default INTEGER NOT NULL DEFAULT 0')
             logger.info('[Database] Added is_default column to channels table')

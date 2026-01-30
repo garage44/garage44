@@ -372,10 +372,12 @@ export async function deployPR(pr: PRMetadata): Promise<{
             console.log(`[pr-deploy]   ${packageName}: https://${subdomain} (port ${port})`)
         }
 
-        // Note: We do NOT restart the main malkovich service here because:
-        // 1. PR deployments don't affect the main malkovich service
-        // 2. Restarting during a webhook request would kill the connection
-        // 3. The main service only needs restart on main branch deployments
+        /*
+         * Note: We do NOT restart the main malkovich service here because:
+         * 1. PR deployments don't affect the main malkovich service
+         * 2. Restarting during a webhook request would kill the connection
+         * 3. The main service only needs restart on main branch deployments
+         */
 
         return {
             deployment: {
@@ -389,10 +391,12 @@ export async function deployPR(pr: PRMetadata): Promise<{
         const message = error instanceof Error ? error.message : String(error)
         console.error(`[pr-deploy] Deployment failed: ${message}`)
 
-        // Note: We do NOT restart the main malkovich service here because:
-        // 1. PR deployments don't affect the main malkovich service
-        // 2. Restarting during a webhook request would kill the connection
-        // 3. The main service only needs restart on main branch deployments
+        /*
+         * Note: We do NOT restart the main malkovich service here because:
+         * 1. PR deployments don't affect the main malkovich service
+         * 2. Restarting during a webhook request would kill the connection
+         * 3. The main service only needs restart on main branch deployments
+         */
 
         return {
             deployment: null,
@@ -562,10 +566,12 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
 
         console.log(`[pr-deploy] PR #${pr.number} updated successfully`)
 
-        // Note: We do NOT restart the main malkovich service here because:
-        // 1. PR deployments don't affect the main malkovich service
-        // 2. Restarting during a webhook request would kill the connection
-        // 3. The main service only needs restart on main branch deployments
+        /*
+         * Note: We do NOT restart the main malkovich service here because:
+         * 1. PR deployments don't affect the main malkovich service
+         * 2. Restarting during a webhook request would kill the connection
+         * 3. The main service only needs restart on main branch deployments
+         */
 
         return {
             deployment: existing,
@@ -583,10 +589,12 @@ async function updateExistingPRDeployment(pr: PRMetadata): Promise<{
             console.error('[pr-deploy] Failed to update deployment status:', statusError)
         }
 
-        // Note: We do NOT restart the main malkovich service here because:
-        // 1. PR deployments don't affect the main malkovich service
-        // 2. Restarting during a webhook request would kill the connection
-        // 3. The main service only needs restart on main branch deployments
+        /*
+         * Note: We do NOT restart the main malkovich service here because:
+         * 1. PR deployments don't affect the main malkovich service
+         * 2. Restarting during a webhook request would kill the connection
+         * 3. The main service only needs restart on main branch deployments
+         */
 
         return {
             deployment: null,

@@ -41,7 +41,13 @@ export class ChannelManager {
      * Create a new channel
      * slug directly matches Galene group name (1:1 mapping)
      */
-    async createChannel(name: string, slug: string, description: string, creatorId: string, isDefault: boolean = false): Promise<Channel> {
+    async createChannel(
+        name: string,
+        slug: string,
+        description: string,
+        creatorId: string,
+        isDefault: boolean = false,
+    ): Promise<Channel> {
         const now = Date.now()
 
         // If setting as default, unset all other defaults first
@@ -145,7 +151,10 @@ export class ChannelManager {
     /**
      * Update a channel
      */
-    async updateChannel(id: number, updates: Partial<Pick<Channel, 'name' | 'slug' | 'description' | 'is_default'>>): Promise<Channel | null> {
+    async updateChannel(
+        id: number,
+        updates: Partial<Pick<Channel, 'name' | 'slug' | 'description' | 'is_default'>>,
+    ): Promise<Channel | null> {
         const channel = this.getChannel(id)
         if (!channel) return null
 

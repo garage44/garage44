@@ -2,10 +2,9 @@ import {createFinalHandler, createMiddleware} from '@garage44/common/lib/middlew
 import {devContext} from '@garage44/common/lib/dev-context'
 import {userManager} from '@garage44/common/service'
 import {logger, runtime} from '../service.ts'
-import {config} from '../lib/config.ts'
 import path from 'node:path'
 
-const BUN_ENV = process.env.BUN_ENV || 'production'
+const _BUN_ENV = process.env.BUN_ENV || 'production'
 
 // Simple HTTP router for Bun.serve that mimics Express pattern
 class Router {
@@ -75,11 +74,13 @@ const requireAdmin = async(ctx, next) => {
 async function initMiddleware(_bunchyConfig) {
     const router = new Router()
 
-    // TODO: Register HTTP API endpoints
-    // await apiTickets(router)
-    // await apiAgents(router)
-    // await apiRepositories(router)
-    // await apiCI(router)
+    /*
+     * TODO: Register HTTP API endpoints
+     * await apiTickets(router)
+     * await apiAgents(router)
+     * await apiRepositories(router)
+     * await apiCI(router)
+     */
 
     const publicPath = path.join(runtime.service_dir, 'public')
 

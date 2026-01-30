@@ -9,7 +9,7 @@ import {CIRunner} from '../lib/ci/runner.ts'
 
 export function registerCIWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // Get CI runs for a ticket
-    wsManager.api.get('/api/ci/runs/:ticketId', async(ctx, req) => {
+    wsManager.api.get('/api/ci/runs/:ticketId', async(_ctx, _req) => {
         const ticketId = req.params.param0
 
         const runs = db.prepare(`
@@ -24,7 +24,7 @@ export function registerCIWebSocketApiRoutes(wsManager: WebSocketServerManager) 
     })
 
     // Get CI run by ID
-    wsManager.api.get('/api/ci/runs/id/:id', async(ctx, req) => {
+    wsManager.api.get('/api/ci/runs/id/:id', async(_ctx, _req) => {
         const runId = req.params.param0
 
         const run = db.prepare('SELECT * FROM ci_runs WHERE id = ?').get(runId)
@@ -39,10 +39,10 @@ export function registerCIWebSocketApiRoutes(wsManager: WebSocketServerManager) 
     })
 
     // Trigger CI run for a ticket
-    wsManager.api.post('/api/ci/run', async(ctx, req) => {
-        const {ticket_id, repository_path} = req.data as {
-            ticket_id: string
+    wsManager.api.post('/api/ci/run', async(_ctx, _req) => {
+        const {repository_path, ticket_id} = req.data as {
             repository_path: string
+            ticket_id: string
         }
 
         if (!ticket_id || !repository_path) {
@@ -62,31 +62,31 @@ export function registerCIWebSocketApiRoutes(wsManager: WebSocketServerManager) 
         runner.run(ticket_id, repository_path).then((result) => {
             // Broadcast CI completion
             wsManager.broadcast('/ci', {
-                type: 'ci:completed',
-                ticketId: ticket_id,
                 result,
+                ticketId: ticket_id,
+                type: 'ci:completed',
             })
 
             logger.info(`[API] CI run completed for ticket ${ticket_id}: ${result.success ? 'success' : 'failed'}`)
         }).catch((error) => {
             // Broadcast CI error
             wsManager.broadcast('/ci', {
-                type: 'ci:error',
-                ticketId: ticket_id,
                 error: error.message,
+                ticketId: ticket_id,
+                type: 'ci:error',
             })
 
             logger.error(`[API] CI run error for ticket ${ticket_id}: ${error}`)
         })
 
         return {
-            success: true,
             message: 'CI run started',
+            success: true,
         }
     })
 
     // Subscribe to CI updates
-    wsManager.on('/ci', (ws) => {
+    wsManager.on('/ci', (_ws) => {
         logger.debug('[API] Client subscribed to CI updates')
     })
 }

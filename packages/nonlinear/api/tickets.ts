@@ -9,26 +9,26 @@ import {logger} from '../service.ts'
 
 export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // Get all tickets
-    wsManager.api.get('/api/tickets', async(ctx, req) => {
+    wsManager.api.get('/api/tickets', async(_ctx, _req) => {
         const tickets = db.prepare(`
             SELECT t.*, r.name as repository_name
             FROM tickets t
             LEFT JOIN repositories r ON t.repository_id = r.id
             ORDER BY t.created_at DESC
         `).all() as Array<{
-            id: string
-            repository_id: string
-            title: string
-            description: string | null
-            status: string
-            priority: number | null
-            assignee_type: string | null
             assignee_id: string | null
+            assignee_type: string | null
             branch_name: string | null
-            merge_request_id: string | null
             created_at: number
-            updated_at: number
+            description: string | null
+            id: string
+            merge_request_id: string | null
+            priority: number | null
+            repository_id: string
             repository_name: string | null
+            status: string
+            title: string
+            updated_at: number
         }>
 
         return {
@@ -37,7 +37,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
     })
 
     // Get ticket by ID
-    wsManager.api.get('/api/tickets/:id', async(ctx, req) => {
+    wsManager.api.get('/api/tickets/:id', async(_ctx, _req) => {
         const ticketId = req.params.param0
 
         const ticket = db.prepare(`
@@ -46,20 +46,20 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
             LEFT JOIN repositories r ON t.repository_id = r.id
             WHERE t.id = ?
         `).get(ticketId) as {
-            id: string
-            repository_id: string
-            title: string
-            description: string | null
-            status: string
-            priority: number | null
-            assignee_type: string | null
             assignee_id: string | null
+            assignee_type: string | null
             branch_name: string | null
-            merge_request_id: string | null
             created_at: number
-            updated_at: number
+            description: string | null
+            id: string
+            merge_request_id: string | null
+            priority: number | null
+            repository_id: string
             repository_name: string | null
             repository_path: string | null
+            status: string
+            title: string
+            updated_at: number
         } | undefined
 
         if (!ticket) {
@@ -74,29 +74,29 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
         `).all(ticketId)
 
         return {
-            ticket,
             comments,
+            ticket,
         }
     })
 
     // Create ticket
-    wsManager.api.post('/api/tickets', async(ctx, req) => {
+    wsManager.api.post('/api/tickets', async(_ctx, _req) => {
         const {
-            repository_id,
-            title,
-            description,
-            status = 'backlog',
-            priority,
-            assignee_type,
             assignee_id,
+            assignee_type,
+            description,
+            priority,
+            repository_id,
+            status = 'backlog',
+            title,
         } = req.data as {
-            repository_id: string
-            title: string
-            description?: string
-            status?: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed'
-            priority?: number
-            assignee_type?: 'agent' | 'human' | null
             assignee_id?: string | null
+            assignee_type?: 'agent' | 'human' | null
+            description?: string
+            priority?: number
+            repository_id: string
+            status?: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed'
+            title: string
         }
 
         if (!repository_id || !title) {
@@ -130,8 +130,8 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
         // Broadcast ticket creation
         wsManager.broadcast('/tickets', {
-            type: 'ticket:created',
             ticket,
+            type: 'ticket:created',
         })
 
         logger.info(`[API] Created ticket ${ticketId}: ${title}`)
@@ -142,15 +142,15 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
     })
 
     // Update ticket
-    wsManager.api.put('/api/tickets/:id', async(ctx, req) => {
+    wsManager.api.put('/api/tickets/:id', async(_ctx, _req) => {
         const ticketId = req.params.param0
         const updates = req.data as Partial<{
-            title: string
-            description: string
-            status: string
-            priority: number
-            assignee_type: string
             assignee_id: string
+            assignee_type: string
+            description: string
+            priority: number
+            status: string
+            title: string
         }>
 
         // Build update query dynamically
@@ -200,8 +200,8 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
         // Broadcast ticket update
         wsManager.broadcast('/tickets', {
-            type: 'ticket:updated',
             ticket,
+            type: 'ticket:updated',
         })
 
         return {
@@ -210,15 +210,15 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
     })
 
     // Delete ticket
-    wsManager.api.delete('/api/tickets/:id', async(ctx, req) => {
+    wsManager.api.delete('/api/tickets/:id', async(_ctx, _req) => {
         const ticketId = req.params.param0
 
         db.prepare('DELETE FROM tickets WHERE id = ?').run(ticketId)
 
         // Broadcast ticket deletion
         wsManager.broadcast('/tickets', {
-            type: 'ticket:deleted',
             ticketId,
+            type: 'ticket:deleted',
         })
 
         logger.info(`[API] Deleted ticket ${ticketId}`)
@@ -229,12 +229,12 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
     })
 
     // Add comment to ticket
-    wsManager.api.post('/api/tickets/:id/comments', async(ctx, req) => {
+    wsManager.api.post('/api/tickets/:id/comments', async(_ctx, _req) => {
         const ticketId = req.params.param0
-        const {content, author_type, author_id, mentions} = req.data as {
-            content: string
-            author_type: 'agent' | 'human'
+        const {author_id, author_type, content, mentions} = req.data as {
             author_id: string
+            author_type: 'agent' | 'human'
+            content: string
             mentions?: string[]
         }
 
@@ -264,9 +264,9 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
         // Broadcast comment creation
         wsManager.broadcast('/tickets', {
-            type: 'comment:created',
-            ticketId,
             comment,
+            ticketId,
+            type: 'comment:created',
         })
 
         logger.info(`[API] Added comment to ticket ${ticketId}`)
@@ -277,7 +277,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
     })
 
     // Subscribe to ticket updates
-    wsManager.on('/tickets', (ws) => {
+    wsManager.on('/tickets', (_ws) => {
         logger.debug('[API] Client subscribed to ticket updates')
     })
 }

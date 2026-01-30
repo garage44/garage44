@@ -11,11 +11,12 @@ store.load(persistantState, volatileState)
 
 const app = new App()
 
+// No i18n for now
 app.init(
     Main,
     render,
     h,
-    {}, // No i18n for now
+    {},
     {enableBunchy: process.env.NODE_ENV !== 'production'},
 )
 

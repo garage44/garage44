@@ -12,7 +12,7 @@ import path from 'node:path'
 
 export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // Get all repositories
-    wsManager.api.get('/api/repositories', async(ctx, req) => {
+    wsManager.api.get('/api/repositories', async(_ctx, _req) => {
         const repositories = db.prepare(`
             SELECT * FROM repositories
             ORDER BY name ASC
@@ -24,7 +24,7 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
     })
 
     // Get repository by ID
-    wsManager.api.get('/api/repositories/:id', async(ctx, req) => {
+    wsManager.api.get('/api/repositories/:id', async(_ctx, _req) => {
         const repoId = req.params.param0
 
         const repo = db.prepare('SELECT * FROM repositories WHERE id = ?').get(repoId)
@@ -39,14 +39,15 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
     })
 
     // Discover local git repositories
-    wsManager.api.post('/api/repositories/discover', async(ctx, req) => {
+    wsManager.api.post('/api/repositories/discover', async(_ctx, _req) => {
         const {searchPath} = req.data as {searchPath?: string}
 
         const searchDir = searchPath || process.cwd()
-        const discovered: Array<{path: string; name: string}> = []
+        const discovered: Array<{name: string; path: string}> = []
 
+        // Limit depth to avoid scanning too deep
         async function scanDirectory(dir: string, depth = 0) {
-            if (depth > 3) return // Limit depth to avoid scanning too deep
+            if (depth > 3) return
 
             try {
                 const entries = await fs.readdir(dir, {withFileTypes: true})
@@ -59,8 +60,8 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
                         const repoPath = path.dirname(fullPath)
                         const repoName = path.basename(repoPath)
                         discovered.push({
-                            path: repoPath,
                             name: repoName,
+                            path: repoPath,
                         })
                         continue
                     }
@@ -84,13 +85,13 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
     })
 
     // Add repository
-    wsManager.api.post('/api/repositories', async(ctx, req) => {
-        const {name, path: repoPath, platform, remote_url, config} = req.data as {
+    wsManager.api.post('/api/repositories', async(_ctx, _req) => {
+        const {config, name, path: repoPath, platform, remote_url} = req.data as {
+            config?: Record<string, unknown>
             name: string
             path: string
             platform?: 'github' | 'gitlab' | 'local'
             remote_url?: string
-            config?: Record<string, unknown>
         }
 
         if (!name || !repoPath) {
@@ -127,8 +128,8 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
 
         // Broadcast repository creation
         wsManager.broadcast('/repositories', {
-            type: 'repository:created',
             repository,
+            type: 'repository:created',
         })
 
         logger.info(`[API] Added repository ${repoId}: ${name}`)
@@ -139,14 +140,14 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
     })
 
     // Update repository
-    wsManager.api.put('/api/repositories/:id', async(ctx, req) => {
+    wsManager.api.put('/api/repositories/:id', async(_ctx, _req) => {
         const repoId = req.params.param0
         const updates = req.data as Partial<{
+            config: Record<string, unknown>
             name: string
             path: string
             platform: string
             remote_url: string
-            config: Record<string, unknown>
         }>
 
         const fields: string[] = []
@@ -191,8 +192,8 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
 
         // Broadcast repository update
         wsManager.broadcast('/repositories', {
-            type: 'repository:updated',
             repository,
+            type: 'repository:updated',
         })
 
         return {
@@ -201,15 +202,15 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
     })
 
     // Delete repository
-    wsManager.api.delete('/api/repositories/:id', async(ctx, req) => {
+    wsManager.api.delete('/api/repositories/:id', async(_ctx, _req) => {
         const repoId = req.params.param0
 
         db.prepare('DELETE FROM repositories WHERE id = ?').run(repoId)
 
         // Broadcast repository deletion
         wsManager.broadcast('/repositories', {
-            type: 'repository:deleted',
             repositoryId: repoId,
+            type: 'repository:deleted',
         })
 
         logger.info(`[API] Deleted repository ${repoId}`)
@@ -220,7 +221,7 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
     })
 
     // Subscribe to repository updates
-    wsManager.on('/repositories', (ws) => {
+    wsManager.on('/repositories', (_ws) => {
         logger.debug('[API] Client subscribed to repository updates')
     })
 }

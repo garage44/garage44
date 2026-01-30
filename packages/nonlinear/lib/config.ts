@@ -6,9 +6,29 @@ import path from 'node:path'
 import rc from 'rc'
 
 const config = rc('nonlinear', {
+    agents: {
+        developer: {
+            enabled: true,
+            maxConcurrent: 3,
+        },
+        prioritizer: {
+            checkInterval: 300000,
+            // 5 minutes
+            enabled: true,
+        },
+        reviewer: {
+            enabled: true,
+            maxConcurrent: 2,
+        },
+    },
     anthropic: {
         apiKey: process.env.ANTHROPIC_API_KEY || '',
         model: 'claude-3-5-sonnet-20241022',
+    },
+    ci: {
+        maxFixAttempts: 3,
+        // 10 minutes
+        timeout: 600000,
     },
     git: {
         defaultPlatform: 'github',
@@ -19,24 +39,6 @@ const config = rc('nonlinear', {
             token: process.env.GITLAB_TOKEN || '',
             url: 'https://gitlab.com',
         },
-    },
-    agents: {
-        prioritizer: {
-            enabled: true,
-            checkInterval: 300000, // 5 minutes
-        },
-        developer: {
-            enabled: true,
-            maxConcurrent: 3,
-        },
-        reviewer: {
-            enabled: true,
-            maxConcurrent: 2,
-        },
-    },
-    ci: {
-        maxFixAttempts: 3,
-        timeout: 600000, // 10 minutes
     },
     logger: {
         file: 'nonlinear.log',
@@ -72,7 +74,7 @@ async function initConfig(config) {
     const envConfigPath = process.env.CONFIG_PATH
     const configPath = envConfigPath || path.join(homedir(), '.nonlinearrc')
     // Check if the config file exists
-    if (!await fs.pathExists(configPath)) {
+    if (!(await fs.pathExists(configPath))) {
         await saveConfig()
     }
     return config
