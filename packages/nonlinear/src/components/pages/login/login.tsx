@@ -1,4 +1,4 @@
-import {api, notifier, ws} from '@garage44/common/app'
+import {api, ws} from '@garage44/common/app'
 import {$s} from '@/app'
 import {Button, FieldText} from '@garage44/common/components'
 import {deepSignal} from 'deepsignal'
@@ -6,8 +6,8 @@ import {route} from 'preact-router'
 import {useState} from 'preact/hooks'
 
 const state = deepSignal({
-    username: '',
     password: '',
+    username: '',
 })
 
 export const Login = () => {
@@ -21,8 +21,8 @@ export const Login = () => {
 
         try {
             const result = await api.post('/api/login', {
-                username: state.username,
                 password: state.password,
+                username: state.username,
             })
 
             /*
@@ -48,7 +48,7 @@ export const Login = () => {
             } else {
                 setError(result.error || 'Invalid credentials')
             }
-        } catch (err) {
+        } catch(err) {
             setError(err instanceof Error ? err.message : 'Login failed')
         } finally {
             setLoading(false)
@@ -71,8 +71,8 @@ export const Login = () => {
                         label='Password'
                         model={state.$password}
                         placeholder='Enter password'
-                        type='password'
                         required
+                        type='password'
                     />
                     {error && <div class='c-login__error'>{error}</div>}
                     <Button disabled={loading} type='submit'>

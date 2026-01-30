@@ -13,19 +13,19 @@ interface TicketFormProps {
 
 // State defined outside component for stability
 const createFormState = () => deepSignal({
-    repository_id: '',
-    title: '',
+    assignee_id: '',
+    assignee_type: '' as '' | 'agent' | 'human',
     description: '',
     priority: '',
-    assignee_type: '' as '' | 'agent' | 'human',
-    assignee_id: '',
+    repository_id: '',
+    title: '',
 })
 
 export const TicketForm = ({initialStatus, onClose, onSuccess}: TicketFormProps) => {
     const stateRef = useRef(createFormState())
     const state = stateRef.current
 
-    const {validation, isValid} = createValidator({
+    const {isValid, validation} = createValidator({
         repository_id: [state.$repository_id, required('Repository is required')],
         title: [state.$title, required('Title is required')],
     })
@@ -37,17 +37,17 @@ export const TicketForm = ({initialStatus, onClose, onSuccess}: TicketFormProps)
 
         try {
             const ticketData: {
-                repository_id: string
-                title: string
-                description?: string
-                status: string
-                priority?: number
-                assignee_type?: 'agent' | 'human' | null
                 assignee_id?: string | null
+                assignee_type?: 'agent' | 'human' | null
+                description?: string
+                priority?: number
+                repository_id: string
+                status: string
+                title: string
             } = {
                 repository_id: state.repository_id,
-                title: state.title,
                 status: initialStatus,
+                title: state.title,
             }
 
             if (state.description) {
@@ -73,7 +73,7 @@ export const TicketForm = ({initialStatus, onClose, onSuccess}: TicketFormProps)
             notifier.success('Ticket created successfully')
             onSuccess()
             onClose()
-        } catch (error) {
+        } catch(error) {
             notifier.error(`Failed to create ticket: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
     }
@@ -158,15 +158,14 @@ export const TicketForm = ({initialStatus, onClose, onSuccess}: TicketFormProps)
                         ]}
                         placeholder='Select assignee type'
                     />
-                    {state.assignee_type && (
+                    {state.assignee_type &&
                         <FieldSelect
                             help='Select specific assignee'
                             label='Assignee'
                             model={state.$assignee_id}
                             options={getAssigneeOptions()}
                             placeholder='Select assignee'
-                        />
-                    )}
+                        />}
                 </div>
             </div>
             <div class='actions'>

@@ -131,26 +131,25 @@ export const Main = () => {
         <AppLayout
             context={
                 $s.selectedLane ?
-                    (
-                        <PanelContext
-                            collapsed={false}
-                            defaultWidth={600}
-                            maxWidth={1000}
-                            minWidth={64}
-                            onWidthChange={(width) => {
-                                $s.panels.context.width = width
-                                store.save()
-                            }}
-                            width={$s.panels.context.width === 200 ? undefined : $s.panels.context.width}
-                        >
-                            <TicketForm
-                                initialStatus={$s.selectedLane}
-                                onClose={handleClosePanel}
-                                onSuccess={handleTicketCreated}
-                            />
-                        </PanelContext>
-                      )
-                    : null
+
+                            <PanelContext
+                                collapsed={false}
+                                defaultWidth={600}
+                                maxWidth={1000}
+                                minWidth={64}
+                                onWidthChange={(width) => {
+                                    $s.panels.context.width = width
+                                    store.save()
+                                }}
+                                width={$s.panels.context.width === 200 ? undefined : $s.panels.context.width}
+                            >
+                                <TicketForm
+                                    initialStatus={$s.selectedLane}
+                                    onClose={handleClosePanel}
+                                    onSuccess={handleTicketCreated}
+                                />
+                            </PanelContext> :
+                    null
             }
             menu={(
                 <PanelMenu

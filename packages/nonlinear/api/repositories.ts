@@ -71,7 +71,7 @@ export function registerRepositoriesWebSocketApiRoutes(wsManager: WebSocketServe
                         await scanDirectory(fullPath, depth + 1)
                     }
                 }
-            } catch (error) {
+            } catch(error) {
                 // Skip directories we can't read
                 logger.debug(`[API] Could not scan directory ${dir}: ${error}`)
             }

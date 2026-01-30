@@ -1,6 +1,6 @@
 import {$s} from '@/app'
 import {ws, notifier} from '@garage44/common/app'
-import {Button, FieldText, Icon} from '@garage44/common/components'
+import {Button, Icon} from '@garage44/common/components'
 import {deepSignal} from 'deepsignal'
 import {useEffect, useState} from 'preact/hooks'
 import {route} from 'preact-router'
@@ -13,9 +13,24 @@ interface TicketDetailProps {
     ticketId?: string
 }
 
+interface Ticket {
+    description: string | null
+    id: string
+    status: string
+    title: string
+}
+
+interface Comment {
+    author_id: string
+    author_type: 'agent' | 'human'
+    content: string
+    created_at: number
+    id: string
+}
+
 export const TicketDetail = ({ticketId}: TicketDetailProps) => {
-    const [ticket, setTicket] = useState<any>(null)
-    const [comments, setComments] = useState<any[]>([])
+    const [ticket, setTicket] = useState<Ticket | null>(null)
+    const [comments, setComments] = useState<Comment[]>([])
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
@@ -41,7 +56,7 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
             if (result.comments) {
                 setComments(result.comments)
             }
-        } catch (error) {
+        } catch(error) {
             notifier.notify({
                 message: `Failed to load ticket: ${error instanceof Error ? error.message : String(error)}`,
                 type: 'error',
@@ -64,9 +79,9 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
 
         try {
             await ws.post(`/api/tickets/${ticket.id}/comments`, {
-                content: commentState.content,
-                author_type: 'human',
                 author_id: $s.profile.username || 'user',
+                author_type: 'human',
+                content: commentState.content,
                 mentions: mentions.length > 0 ? mentions : undefined,
             })
 
@@ -77,7 +92,7 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                 message: 'Comment added',
                 type: 'success',
             })
-        } catch (error) {
+        } catch(error) {
             notifier.notify({
                 message: `Failed to add comment: ${error instanceof Error ? error.message : String(error)}`,
                 type: 'error',
@@ -99,7 +114,7 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
             })
 
             route('/board')
-        } catch (error) {
+        } catch(error) {
             notifier.notify({
                 message: `Failed to approve ticket: ${error instanceof Error ? error.message : String(error)}`,
                 type: 'error',
@@ -116,16 +131,16 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
         try {
             // Add comment explaining the reopen
             await ws.post(`/api/tickets/${ticket.id}/comments`, {
-                content: `Reopening ticket: ${reason}`,
-                author_type: 'human',
                 author_id: $s.profile.username || 'user',
+                author_type: 'human',
+                content: `Reopening ticket: ${reason}`,
             })
 
             // Move back to in_progress
             await ws.put(`/api/tickets/${ticket.id}`, {
-                status: 'in_progress',
-                assignee_type: null,
                 assignee_id: null,
+                assignee_type: null,
+                status: 'in_progress',
             })
 
             notifier.notify({
@@ -134,7 +149,7 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
             })
 
             await loadTicket(ticket.id)
-        } catch (error) {
+        } catch(error) {
             notifier.notify({
                 message: `Failed to reopen ticket: ${error instanceof Error ? error.message : String(error)}`,
                 type: 'error',
@@ -147,8 +162,8 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
 
         try {
             await ws.put(`/api/tickets/${ticket.id}`, {
-                assignee_type: 'agent',
                 assignee_id: agentName,
+                assignee_type: 'agent',
             })
 
             notifier.notify({
@@ -157,7 +172,7 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
             })
 
             await loadTicket(ticket.id)
-        } catch (error) {
+        } catch(error) {
             notifier.notify({
                 message: `Failed to assign agent: ${error instanceof Error ? error.message : String(error)}`,
                 type: 'error',
@@ -175,24 +190,24 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
 
     // Parse mentions from comments
     const parseMentions = (content: string) => {
-        const parts: Array<{text: string; isMention: boolean; mention?: string}> = []
+        const parts: Array<{isMention: boolean; mention?: string; text: string}> = []
         const mentionRegex = /@(\w+)/g
         let lastIndex = 0
         let match
 
         while ((match = mentionRegex.exec(content)) !== null) {
             if (match.index > lastIndex) {
-                parts.push({text: content.substring(lastIndex, match.index), isMention: false})
+                parts.push({isMention: false, text: content.substring(lastIndex, match.index)})
             }
-            parts.push({text: `@${match[1]}`, isMention: true, mention: match[1]})
+            parts.push({isMention: true, mention: match[1], text: `@${match[1]}`})
             lastIndex = match.index + match[0].length
         }
 
         if (lastIndex < content.length) {
-            parts.push({text: content.substring(lastIndex), isMention: false})
+            parts.push({isMention: false, text: content.substring(lastIndex)})
         }
 
-        return parts.length > 0 ? parts : [{text: content, isMention: false}]
+        return parts.length > 0 ? parts : [{isMention: false, text: content}]
     }
 
     return (
@@ -214,7 +229,7 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                     <p>{ticket.description || 'No description provided'}</p>
                 </div>
 
-                {ticket.status === 'closed' && (
+                {ticket.status === 'closed' &&
                     <div class='c-ticket-detail__actions'>
                         <Button onClick={handleApprove} variant='primary'>
                             Approve & Close
@@ -222,59 +237,56 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                         <Button onClick={handleReopen} variant='secondary'>
                             Reopen
                         </Button>
-                    </div>
-                )}
+                    </div>}
 
                 <div class='c-ticket-detail__comments'>
                     <h2>Comments</h2>
-                    {comments.length === 0 ? (
-                        <p class='c-ticket-detail__no-comments'>No comments yet</p>
-                    ) : (
-                        <div class='c-ticket-detail__comments-list'>
-                            {comments.map((comment) => {
-                                const parts = parseMentions(comment.content)
-                                return (
-                                    <div key={comment.id} class='c-ticket-detail__comment'>
-                                        <div class='c-ticket-detail__comment-header'>
-                                            <strong>
-                                                {comment.author_type === 'agent' ? '🤖' : '👤'} {comment.author_id}
-                                            </strong>
-                                            <span class='c-ticket-detail__comment-time'>
-                                                {new Date(comment.created_at).toLocaleString()}
-                                            </span>
+                    {comments.length === 0 ?
+
+                            <p class='c-ticket-detail__no-comments'>No comments yet</p> :
+
+                            <div class='c-ticket-detail__comments-list'>
+                                {comments.map((comment) => {
+                                    const parts = parseMentions(comment.content)
+                                    return (
+                                        <div class='c-ticket-detail__comment' key={comment.id}>
+                                            <div class='c-ticket-detail__comment-header'>
+                                                <strong>
+                                                    {comment.author_type === 'agent' ? '🤖' : '👤'} {comment.author_id}
+                                                </strong>
+                                                <span class='c-ticket-detail__comment-time'>
+                                                    {new Date(comment.created_at).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div class='c-ticket-detail__comment-content'>
+                                                {parts.map((part, idx) => {
+                                                    return part.isMention ?
+                                                        <span
+                                                            class='c-ticket-detail__mention'
+                                                            key={idx}
+                                                            onClick={() => handleAssignAgent(part.mention!)}
+                                                        >
+                                                            {part.text}
+                                                        </span> :
+                                                        <span key={idx}>{part.text}</span>
+                                                })}
+                                            </div>
                                         </div>
-                                        <div class='c-ticket-detail__comment-content'>
-                                            {parts.map((part, idx) => (
-                                                part.isMention ? (
-                                                    <span
-                                                        key={idx}
-                                                        class='c-ticket-detail__mention'
-                                                        onClick={() => handleAssignAgent(part.mention!)}
-                                                    >
-                                                        {part.text}
-                                                    </span>
-                                                ) : (
-                                                    <span key={idx}>{part.text}</span>
-                                                )
-                                            ))}
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    )}
+                                    )
+                                })}
+                            </div>}
 
                     <div class='c-ticket-detail__add-comment'>
                         <textarea
                             class='c-ticket-detail__comment-input'
-                            value={commentState.content}
                             onInput={(e) => {
                                 commentState.content = (e.target as HTMLTextAreaElement).value
                             }}
                             placeholder='Type your comment... Use @agent-name or @human to mention'
                             rows={4}
+                            value={commentState.content}
                         />
-                        <Button onClick={handleAddComment} disabled={!commentState.content.trim()}>
+                        <Button disabled={!commentState.content.trim()} onClick={handleAddComment}>
                             Add Comment
                         </Button>
                     </div>

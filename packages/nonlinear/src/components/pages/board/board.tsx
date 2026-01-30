@@ -85,11 +85,11 @@ export const Board = () => {
                     const tickets = getTicketsForLane(lane.id)
                     return (
                         <div
-                            key={lane.id}
                             class='c-board__lane'
                             data-lane={lane.id}
-                            onDragOver={handleDragOver}
+                            key={lane.id}
                             onDragLeave={handleDragLeave}
+                            onDragOver={handleDragOver}
                             onDrop={(e) => handleDrop(e, lane.id)}
                         >
                             <div class='c-board__lane-header'>
@@ -107,21 +107,19 @@ export const Board = () => {
                                 </div>
                             </div>
                             <div class='c-board__lane-content'>
-                                {tickets.length === 0 ? (
-                                    <div class='c-board__lane-empty'>
-                                        No tickets
-                                    </div>
-                                ) : (
-                                    tickets.map((ticket) => (
-                                        <div
-                                            key={ticket.id}
+                                {tickets.length === 0 ?
+
+                                            <div class='c-board__lane-empty'>
+                                                No tickets
+                                            </div> :
+
+                                        tickets.map((ticket) => <div
                                             draggable
+                                            key={ticket.id}
                                             onDragStart={(e) => handleDragStart(e, ticket.id)}
                                         >
-                                            <TicketCard ticket={ticket} />
-                                        </div>
-                                    ))
-                                )}
+                                                <TicketCard ticket={ticket} />
+                                        </div>)}
                             </div>
                         </div>
                     )
