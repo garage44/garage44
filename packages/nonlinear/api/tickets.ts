@@ -157,6 +157,26 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
         logger.info(`[API] Created ticket ${ticketId}: ${title}`)
 
+        // If ticket is in backlog, trigger PrioritizerAgent immediately to refine it
+        if (status === 'backlog') {
+            // Find PrioritizerAgent ID
+            const prioritizerAgent = db.prepare(`
+                SELECT id FROM agents
+                WHERE type = 'prioritizer' AND enabled = 1
+                LIMIT 1
+            `).get() as {id: string} | undefined
+
+            if (prioritizerAgent) {
+                logger.info(`[API] Triggering PrioritizerAgent to refine new backlog ticket ${ticketId}`)
+                // Trigger asynchronously so it doesn't block the response
+                triggerAgent(prioritizerAgent.id, {ticket_id: ticketId}).catch((error) => {
+                    logger.error(`[API] Failed to trigger PrioritizerAgent: ${error}`)
+                })
+            } else {
+                logger.warn('[API] No enabled PrioritizerAgent found to refine new ticket')
+            }
+        }
+
         return {
             ticket,
         }

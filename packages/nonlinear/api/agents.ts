@@ -12,6 +12,7 @@ import {randomId} from '@garage44/common/lib/utils'
 import {getAgentStatus} from '../lib/agent/status.ts'
 import {DEFAULT_AVATARS} from '../lib/agent/avatars.ts'
 import {getTokenUsage} from '../lib/agent/token-usage.ts'
+import {config} from '../lib/config.ts'
 
 // Agent instances (singletons)
 let prioritizerAgent: PrioritizerAgent | null = null
@@ -266,8 +267,88 @@ export function registerAgentsWebSocketApiRoutes(wsManager: WebSocketServerManag
     // Get Anthropic token usage
     wsManager.api.get('/api/anthropic/usage', async(_ctx, _req) => {
         const usage = getTokenUsage()
+        logger.debug(`[API] Token usage requested: ${JSON.stringify(usage)}`)
         return {
             usage,
+        }
+    })
+
+    // Test Anthropic API call to fetch usage
+    wsManager.api.post('/api/anthropic/test', async(_ctx, _req) => {
+        const apiKey = config.anthropic.apiKey || process.env.ANTHROPIC_API_KEY
+        if (!apiKey) {
+            throw new Error('Anthropic API key not configured')
+        }
+
+        logger.info('[API] Making test Anthropic API call to fetch usage headers')
+
+        try {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'anthropic-version': '2023-06-01',
+                    'content-type': 'application/json',
+                    'x-api-key': apiKey,
+                },
+                body: JSON.stringify({
+                    model: config.anthropic.model || 'claude-3-5-sonnet-20241022',
+                    max_tokens: 10,
+                    messages: [
+                        {
+                            role: 'user',
+                            content: 'Say "test"',
+                        },
+                    ],
+                }),
+            })
+
+            logger.info(`[API] Test API call response status: ${response.status}`)
+
+            // Log all headers
+            const allHeaders: Record<string, string> = {}
+            response.headers.forEach((value, key) => {
+                allHeaders[key] = value
+            })
+            logger.info(`[API] All response headers: ${JSON.stringify(allHeaders, null, 2)}`)
+
+            const limitHeader = response.headers.get('anthropic-ratelimit-tokens-limit')
+            const remainingHeader = response.headers.get('anthropic-ratelimit-tokens-remaining')
+            const resetHeader = response.headers.get('anthropic-ratelimit-tokens-reset')
+
+            logger.info(`[API] Rate limit headers:`)
+            logger.info(`  limit: ${limitHeader}`)
+            logger.info(`  remaining: ${remainingHeader}`)
+            logger.info(`  reset: ${resetHeader}`)
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({error: {message: 'Unknown error'}}))
+                throw new Error(error.error?.message || `API error: ${response.status}`)
+            }
+
+            const data = await response.json()
+
+            if (limitHeader && remainingHeader) {
+                const {updateUsageFromHeaders} = await import('../lib/agent/token-usage.ts')
+                updateUsageFromHeaders({
+                    limit: parseInt(limitHeader, 10),
+                    remaining: parseInt(remainingHeader, 10),
+                    reset: resetHeader || undefined,
+                })
+            }
+
+            return {
+                success: true,
+                message: 'Test API call completed',
+                headers: {
+                    limit: limitHeader,
+                    remaining: remainingHeader,
+                    reset: resetHeader,
+                },
+                usage: getTokenUsage(),
+            }
+        } catch (error) {
+            logger.error(`[API] Test API call failed: ${error}`)
+            throw error
         }
     })
 

@@ -15,6 +15,28 @@ export class PrioritizerAgent extends BaseAgent {
 
     async process(context: AgentContext): Promise<AgentResponse> {
         try {
+            // If a specific ticket_id is provided, refine that ticket first
+            const ticketId = context.ticket_id as string | undefined
+            if (ticketId) {
+                const ticket = db.prepare(`
+                    SELECT t.*, r.name as repository_name, r.path as repository_path
+                    FROM tickets t
+                    LEFT JOIN repositories r ON t.repository_id = r.id
+                    WHERE t.id = ?
+                `).get(ticketId) as {
+                    id: string
+                    repository_id: string
+                    title: string
+                    description: string | null
+                    repository_name: string | null
+                    repository_path: string | null
+                } | undefined
+
+                if (ticket && ticket.repository_path) {
+                    await this.refineTicket(ticket)
+                }
+            }
+
             // Get all backlog tickets
             const backlogTickets = db.prepare(`
                 SELECT * FROM tickets
@@ -153,5 +175,78 @@ ${JSON.stringify(ticketsContext, null, 2)}`
                 error: error instanceof Error ? error.message : String(error),
             }
         }
+    }
+
+    /**
+     * Refine a newly created ticket by analyzing it and adding a clarifying comment
+     */
+    private async refineTicket(ticket: {
+        id: string
+        repository_id: string
+        title: string
+        description: string | null
+        repository_name: string | null
+        repository_path: string | null
+    }): Promise<void> {
+        try {
+            this.log(`Refining ticket ${ticket.id}: ${ticket.title}`)
+
+            // Get repository context if available
+            let repositoryContext = ''
+            if (ticket.repository_path) {
+                try {
+                    const fs = await import('fs/promises')
+                    const readmePath = `${ticket.repository_path}/README.md`
+                    try {
+                        const readme = await fs.readFile(readmePath, 'utf-8')
+                        repositoryContext = `\n\nRepository README:\n${readme.substring(0, 1000)}`
+                    } catch {
+                        // README doesn't exist, that's okay
+                    }
+                } catch {
+                    // Can't read repository, that's okay
+                }
+            }
+
+            const systemPrompt = `You are a project management AI agent that refines and clarifies software development tickets.
+
+Your task is to:
+1. Analyze the ticket title and description
+2. Identify any ambiguities, missing details, or unclear requirements
+3. Suggest improvements to make the ticket clearer and more actionable
+4. Provide a refined analysis that helps developers understand what needs to be done
+
+Be concise but thorough. Focus on:
+- Clarifying vague requirements
+- Identifying missing technical details
+- Suggesting acceptance criteria if none exist
+- Highlighting potential edge cases or considerations`
+
+            const userMessage = `Refine this ticket:
+
+**Title:** ${ticket.title}
+**Description:** ${ticket.description || '(No description provided)'}
+**Repository:** ${ticket.repository_name || 'Unknown'}${repositoryContext}
+
+Provide a refined analysis and suggestions for improving this ticket.`
+
+            const response = await this.respond(systemPrompt, userMessage)
+
+            // Add comment with refinement
+            await this.addComment(ticket.id, `## Ticket Refinement\n\n${response}`)
+
+            this.log(`Refined ticket ${ticket.id}`)
+        } catch (error) {
+            this.log(`Error refining ticket ${ticket.id}: ${error}`, 'error')
+            // Don't throw - refinement failure shouldn't block prioritization
+        }
+    }
+
+    private async addComment(ticketId: string, content: string): Promise<void> {
+        const commentId = randomId()
+        db.prepare(`
+            INSERT INTO comments (id, ticket_id, author_type, author_id, content, created_at)
+            VALUES (?, ?, 'agent', ?, ?, ?)
+        `).run(commentId, ticketId, this.name, content, Date.now())
     }
 }
