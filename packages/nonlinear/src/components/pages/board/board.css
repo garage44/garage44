@@ -2,28 +2,90 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: var(--spacer-2);
+    padding: var(--spacer-3);
+    background: var(--surface-0);
+    overflow: hidden;
 }
 
 .c-board__header {
-    margin-bottom: var(--spacer-2);
+    margin-bottom: var(--spacer-3);
+    padding-bottom: var(--spacer-2);
+    border-bottom: 1px solid var(--surface-3);
+}
+
+.c-board__header h1 {
+    font-size: var(--font-xl);
+    font-weight: 600;
+    margin: 0;
+    color: var(--surface-8);
 }
 
 .c-board__lanes {
     display: flex;
     gap: var(--spacer-2);
     overflow-x: auto;
+    overflow-y: hidden;
     flex: 1;
+    padding-bottom: var(--spacer-2);
+}
+
+/* Custom scrollbar for lanes */
+.c-board__lanes::-webkit-scrollbar {
+    height: 8px;
+}
+
+.c-board__lanes::-webkit-scrollbar-track {
+    background: var(--surface-1);
+    border-radius: 4px;
+}
+
+.c-board__lanes::-webkit-scrollbar-thumb {
+    background: var(--surface-4);
+    border-radius: 4px;
+}
+
+.c-board__lanes::-webkit-scrollbar-thumb:hover {
+    background: var(--surface-5);
 }
 
 .c-board__lane {
     background: var(--surface-1);
-    border-radius: var(--radius-1);
+    border: 1px solid var(--surface-3);
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
-    min-width: 300px;
-    max-width: 300px;
+    min-width: 320px;
+    max-width: 320px;
     padding: var(--spacer-2);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.c-board__lane.drag-over {
+    border-color: var(--primary-5);
+    box-shadow: 0 0 0 2px var(--primary-3);
+    background: var(--surface-2);
+}
+
+/* Color-coded lanes */
+.c-board__lane[data-lane="backlog"] {
+    border-left: 3px solid var(--surface-4);
+}
+
+.c-board__lane[data-lane="todo"] {
+    border-left: 3px solid var(--primary-5);
+}
+
+.c-board__lane[data-lane="in_progress"] {
+    border-left: 3px solid var(--warning-5);
+}
+
+.c-board__lane[data-lane="review"] {
+    border-left: 3px solid var(--info-5);
+}
+
+.c-board__lane[data-lane="closed"] {
+    border-left: 3px solid var(--success-5);
+    opacity: 0.7;
 }
 
 .c-board__lane-header {
@@ -32,14 +94,27 @@
     align-items: center;
     margin-bottom: var(--spacer-2);
     padding-bottom: var(--spacer-1);
-    border-bottom: 1px solid var(--border-1);
+}
+
+.c-board__lane-header h2 {
+    font-size: var(--font-l);
+    font-weight: 600;
+    margin: 0;
+    color: var(--surface-7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: var(--font-d);
 }
 
 .c-board__lane-count {
-    background: var(--surface-2);
-    border-radius: var(--radius-1);
-    padding: var(--spacer-0) var(--spacer-1);
-    font-size: var(--font-d);
+    background: var(--surface-3);
+    border-radius: 12px;
+    padding: var(--spacer-05) var(--spacer-1);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    color: var(--surface-7);
+    min-width: 24px;
+    text-align: center;
 }
 
 .c-board__lane-content {
@@ -48,12 +123,54 @@
     gap: var(--spacer-1);
     flex: 1;
     overflow-y: auto;
+    min-height: 200px;
+    padding: var(--spacer-05);
+    margin: calc(var(--spacer-05) * -1);
+}
+
+/* Custom scrollbar for lane content */
+.c-board__lane-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.c-board__lane-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.c-board__lane-content::-webkit-scrollbar-thumb {
+    background: var(--surface-4);
+    border-radius: 3px;
+}
+
+.c-board__lane-content::-webkit-scrollbar-thumb:hover {
+    background: var(--surface-5);
 }
 
 .c-board__lane-content > div {
     cursor: grab;
+    transition: transform 0.1s;
 }
 
 .c-board__lane-content > div:active {
     cursor: grabbing;
+    transform: rotate(2deg);
+}
+
+.c-board__lane-content > div.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+}
+
+/* Empty state */
+.c-board__lane-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacer-4);
+    color: var(--surface-5);
+    font-size: var(--font-d);
+    text-align: center;
+    border: 2px dashed var(--surface-3);
+    border-radius: 6px;
+    margin-top: var(--spacer-1);
 }

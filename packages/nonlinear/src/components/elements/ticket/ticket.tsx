@@ -1,6 +1,7 @@
 import {$s} from '@/app'
 import {ws} from '@garage44/common/app'
 import {Icon} from '@garage44/common/components'
+import {route} from 'preact-router'
 import {useState} from 'preact/hooks'
 
 interface TicketCardProps {
@@ -22,10 +23,10 @@ export const TicketCard = ({ticket}: TicketCardProps) => {
     const [expanded, setExpanded] = useState(false)
 
     const getPriorityColor = (priority: number | null) => {
-        if (!priority) return 'var(--text-2)'
-        if (priority >= 80) return 'var(--error)'
-        if (priority >= 60) return 'var(--warning)'
-        return 'var(--info)'
+        if (!priority) return 'var(--surface-6)'
+        if (priority >= 80) return 'var(--danger-6)'
+        if (priority >= 60) return 'var(--warning-6)'
+        return 'var(--primary-6)'
     }
 
     const handleClick = () => {

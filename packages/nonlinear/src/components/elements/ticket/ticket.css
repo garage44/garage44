@@ -1,14 +1,24 @@
 .c-ticket-card {
     background: var(--surface-2);
-    border-radius: var(--radius-1);
+    border: 1px solid var(--surface-3);
+    border-radius: 8px;
     padding: var(--spacer-2);
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: var(--spacer-1);
 }
 
 .c-ticket-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: var(--surface-4);
+    background: var(--surface-2);
+}
+
+.c-ticket-card:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .c-ticket-card__header {
@@ -16,19 +26,29 @@
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: var(--spacer-1);
+    gap: var(--spacer-1);
 }
 
 .c-ticket-card__title {
-    font-size: var(--font-c);
+    font-size: var(--font-d);
     font-weight: 600;
     margin: 0;
     flex: 1;
+    color: var(--surface-8);
+    line-height: 1.4;
+    word-break: break-word;
 }
 
 .c-ticket-card__priority {
-    font-size: var(--font-d);
-    font-weight: 600;
+    font-size: var(--font-xs);
+    font-weight: 700;
     margin-left: var(--spacer-1);
+    padding: var(--spacer-05) var(--spacer-1);
+    border-radius: 4px;
+    background: var(--surface-3);
+    color: var(--surface-7);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .c-ticket-card__repo,
@@ -36,33 +56,45 @@
 .c-ticket-card__branch {
     display: flex;
     align-items: center;
-    gap: var(--spacer-0);
-    font-size: var(--font-d);
-    color: var(--text-2);
-    margin-top: var(--spacer-0);
+    gap: var(--spacer-05);
+    font-size: var(--font-xs);
+    color: var(--surface-6);
+    margin-top: var(--spacer-1);
+    line-height: 1.4;
+}
+
+.c-ticket-card__repo svg,
+.c-ticket-card__assignee svg,
+.c-ticket-card__branch svg {
+    flex-shrink: 0;
+    opacity: 0.7;
 }
 
 .c-ticket-card__description {
     margin-top: var(--spacer-1);
     padding-top: var(--spacer-1);
-    border-top: 1px solid var(--border-1);
-    font-size: var(--font-d);
-    color: var(--text-2);
+    border-top: 1px solid var(--surface-3);
+    font-size: var(--font-xs);
+    color: var(--surface-6);
     line-height: 1.5;
+    word-break: break-word;
 }
 
 .c-ticket-card__mr {
     margin-top: var(--spacer-1);
     padding-top: var(--spacer-1);
-    border-top: 1px solid var(--border-1);
+    border-top: 1px solid var(--surface-3);
 }
 
 .c-ticket-card__mr a {
-    color: var(--info);
+    color: var(--primary-6);
     text-decoration: none;
-    font-size: var(--font-d);
+    font-size: var(--font-xs);
+    font-weight: 500;
+    transition: color 0.2s;
 }
 
 .c-ticket-card__mr a:hover {
+    color: var(--primary-7);
     text-decoration: underline;
 }

@@ -38,10 +38,26 @@ export const Board = () => {
         if (e.dataTransfer) {
             e.dataTransfer.dropEffect = 'move'
         }
+        // Add visual feedback for drag over
+        const target = e.currentTarget as HTMLElement
+        if (target) {
+            target.classList.add('drag-over')
+        }
+    }
+
+    const handleDragLeave = (e: DragEvent) => {
+        const target = e.currentTarget as HTMLElement
+        if (target) {
+            target.classList.remove('drag-over')
+        }
     }
 
     const handleDrop = async(e: DragEvent, targetStatus: string) => {
         e.preventDefault()
+        const target = e.currentTarget as HTMLElement
+        if (target) {
+            target.classList.remove('drag-over')
+        }
         const ticketId = e.dataTransfer?.getData('text/plain')
         if (!ticketId) return
 
@@ -63,7 +79,9 @@ export const Board = () => {
                         <div
                             key={lane.id}
                             class='c-board__lane'
+                            data-lane={lane.id}
                             onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
                             onDrop={(e) => handleDrop(e, lane.id)}
                         >
                             <div class='c-board__lane-header'>
@@ -71,15 +89,21 @@ export const Board = () => {
                                 <span class='c-board__lane-count'>{tickets.length}</span>
                             </div>
                             <div class='c-board__lane-content'>
-                                {tickets.map((ticket) => (
-                                    <div
-                                        key={ticket.id}
-                                        draggable
-                                        onDragStart={(e) => handleDragStart(e, ticket.id)}
-                                    >
-                                        <TicketCard ticket={ticket} />
+                                {tickets.length === 0 ? (
+                                    <div class='c-board__lane-empty'>
+                                        No tickets
                                     </div>
-                                ))}
+                                ) : (
+                                    tickets.map((ticket) => (
+                                        <div
+                                            key={ticket.id}
+                                            draggable
+                                            onDragStart={(e) => handleDragStart(e, ticket.id)}
+                                        >
+                                            <TicketCard ticket={ticket} />
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     )

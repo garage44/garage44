@@ -71,6 +71,24 @@ Create a `.nonlinearrc` file in your home directory or set environment variables
 }
 ```
 
+### Development Mode (No Authentication)
+
+For development, you can bypass authentication by setting the `GARAGE44_NO_SECURITY` environment variable:
+
+```bash
+# Auto-login as admin user
+GARAGE44_NO_SECURITY=1 bun run dev
+
+# Auto-login as specific user
+GARAGE44_NO_SECURITY=admin bun run dev
+```
+
+You can also override per-session using:
+- Cookie: `GARAGE44_DEBUG_USER=username`
+- Query parameter: `?debug_user=username`
+
+This automatically authenticates requests and WebSocket connections without requiring login.
+
 ## Usage
 
 ### Start the service

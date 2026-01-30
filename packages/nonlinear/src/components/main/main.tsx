@@ -19,8 +19,15 @@ export const Main = () => {
         (async() => {
             const context = await api.get('/api/context')
 
+            /*
+             * Check if user was authenticated - the response should have authenticated: true
+             * Also check if we have user data (id, username) as an alternative indicator
+             * This handles cases where authenticated might not be set but user data is present
+             */
+            const isAuthenticated = context.authenticated || (context.id && context.username)
+
             $s.profile.admin = context.admin || false
-            $s.profile.authenticated = context.authenticated || false
+            $s.profile.authenticated = isAuthenticated || false
             if (context.id) $s.profile.id = context.id
             if (context.username) $s.profile.username = context.username
             if (context.profile) {
@@ -28,7 +35,7 @@ export const Main = () => {
                 $s.profile.displayName = context.profile.displayName || context.username || 'User'
             }
 
-            if (context.authenticated) {
+            if (isAuthenticated) {
                 ws.connect()
 
                 // Load initial data

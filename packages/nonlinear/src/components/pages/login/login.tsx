@@ -25,9 +25,24 @@ export const Login = () => {
                 password: state.password,
             })
 
-            if (result.authenticated) {
+            /*
+             * Check if user was authenticated - the response should have authenticated: true
+             * Also check if we have user data (id, username) as an alternative indicator
+             * This handles cases where authenticated might not be set but user data is present
+             */
+            const isAuthenticated = result.authenticated || (result.id && result.username)
+
+            if (isAuthenticated) {
+                // Set profile data from result
                 $s.profile.authenticated = true
-                $s.profile.username = result.username || state.username
+                $s.profile.admin = result.admin || false
+                if (result.id) $s.profile.id = result.id
+                if (result.username) $s.profile.username = result.username
+                if (result.profile) {
+                    $s.profile.avatar = result.profile.avatar || 'placeholder-1.png'
+                    $s.profile.displayName = result.profile.displayName || result.username || 'User'
+                }
+
                 ws.connect()
                 route('/board')
             } else {
