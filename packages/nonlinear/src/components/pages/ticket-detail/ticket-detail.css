@@ -488,7 +488,12 @@
         align-items: center;
         display: flex;
         gap: var(--spacer-1);
+        pointer-events: none;
         width: 100%;
+
+        * {
+            pointer-events: none;
+        }
 
         .agent-name {
             color: inherit;

@@ -77,6 +77,7 @@ export const Main = () => {
                         type: 'prioritizer' | 'developer' | 'reviewer'
                     }) => ({
                         id: agent.id,
+                        name: agent.name,
                         username: agent.name,
                         displayName: agent.display_name || `${agent.name} Agent`,
                         avatar: agent.avatar || 'placeholder-2.png',
@@ -127,6 +128,7 @@ export const Main = () => {
                         const index = $s.agents.findIndex((a) => a.id === agent.id)
                         const transformedAgent = {
                             id: agent.id,
+                            name: agent.name,
                             username: agent.name,
                             displayName: agent.display_name || `${agent.name} Agent`,
                             avatar: agent.avatar || 'placeholder-2.png',

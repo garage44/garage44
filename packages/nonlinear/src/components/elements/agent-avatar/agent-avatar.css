@@ -2,7 +2,12 @@
     display: inline-flex;
     align-items: center;
     gap: var(--spacer-1);
+    pointer-events: none;
     position: relative;
+
+    * {
+        pointer-events: none;
+    }
 
     .avatar-container {
         position: relative;

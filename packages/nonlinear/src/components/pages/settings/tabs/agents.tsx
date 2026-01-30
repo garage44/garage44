@@ -25,6 +25,7 @@ export function Agents() {
                             type: 'prioritizer' | 'developer' | 'reviewer'
                         }) => ({
                             id: agent.id,
+                            name: agent.name,
                             username: agent.name,
                             displayName: agent.display_name || `${agent.name} Agent`,
                             avatar: agent.avatar || 'placeholder-2.png',

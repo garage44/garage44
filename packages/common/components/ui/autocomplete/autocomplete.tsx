@@ -299,8 +299,33 @@ export function Autocomplete<T = unknown>({
                         insertItem(item)
                     }}
                     onMouseEnter={() => setSelectedIndex(index)}
+                    style={{position: 'relative'}}
                 >
-                    {renderItem(item, index === selectedIndex)}
+                    <div
+                        style={{
+                            height: '100%',
+                            left: 0,
+                            pointerEvents: 'auto',
+                            position: 'absolute',
+                            top: 0,
+                            width: '100%',
+                            zIndex: 1,
+                        }}
+                        onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            insertItem(item)
+                        }}
+                        onMouseDown={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            insertItem(item)
+                        }}
+                        onMouseEnter={() => setSelectedIndex(index)}
+                    />
+                    <div style={{pointerEvents: 'none', position: 'relative', zIndex: 2}}>
+                        {renderItem(item, index === selectedIndex)}
+                    </div>
                 </div>
             ))}
         </div>

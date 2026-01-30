@@ -90,14 +90,14 @@ export function MentionAutocomplete({content, onContentChange, textareaRef}: Men
             renderItem={(item, isSelected) => {
                 if (item.data?.type === 'agent' && item.data?.agent) {
                     return (
-                        <div class='mention-agent'>
+                        <div class='mention-agent' style={{pointerEvents: 'none'}}>
                             <AgentAvatar agent={item.data.agent} size='d' />
                             <span class='agent-name'>{item.data.agent.displayName || item.data.agent.name}</span>
                         </div>
                     )
                 }
                 return (
-                    <div class='mention-user'>
+                    <div class='mention-user' style={{pointerEvents: 'none'}}>
                         <Icon name='user' size='d' type='info' />
                         <span>{item.data?.displayName || item.data?.name || 'Unknown'}</span>
                     </div>
