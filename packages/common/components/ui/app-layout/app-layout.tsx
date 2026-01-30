@@ -120,7 +120,15 @@ export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
     }
 
     const handleBackdropClick = () => {
-        handleClosePanel()
+        if (isMobile) {
+            handleClosePanel()
+        } else if (context && !contextCollapsed) {
+            // On small screens, collapse context panel when backdrop is clicked
+            if (store.state?.panels?.context) {
+                store.state.panels.context.collapsed = true
+                store.save()
+            }
+        }
     }
 
     // Access store state directly in render for reactivity
@@ -130,6 +138,8 @@ export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
     const contextCollapsed = store.state?.panels?.context?.collapsed ?? true // Default to collapsed on mobile
     const hasAnyPanel = menu || context
     const isAnyPanelOpen = !menuCollapsed || !contextCollapsed
+    // Check if context panel is expanded (for small screen overlay)
+    const isContextExpanded = context && !contextCollapsed
 
     return (
         <div class="c-app-layout">
@@ -137,6 +147,9 @@ export const AppLayout = ({children, context, menu}: AppLayoutProps) => {
             {menu}
             {isMobile && isAnyPanelOpen && (
                 <div class="c-panel-backdrop" onClick={handleBackdropClick} aria-hidden="true" />
+            )}
+            {isContextExpanded && (
+                <div class="c-panel-backdrop c-panel-backdrop--context" onClick={handleBackdropClick} aria-hidden="true" />
             )}
             <main class="content">
                 {/* Unified toggle button - positioned top-left */}

@@ -31,6 +31,17 @@
         }
     }
 
+    /* Small screen - context overlays when expanded */
+    @media (max-width: 1024px) {
+        &:has(.c-panel-context:not(.collapsed)) {
+            grid-template-columns: [content] 1fr;
+        }
+
+        &:has(.c-panel-context.collapsed) {
+            grid-template-columns: [content] 1fr [context] minmax(64px, auto);
+        }
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
         grid-template-columns: [content] 1fr;
@@ -39,7 +50,7 @@
             grid-column: 1 / -1;
         }
 
-        &:has(.c-panel-context) {
+        &:has(.c-panel-context.collapsed) {
             grid-template-columns: [content] 1fr [context] minmax(64px, auto);
         }
     }
@@ -194,6 +205,19 @@
     right: 0;
     top: 0;
     z-index: 999;
+}
+
+/* Small screen backdrop for context panel overlay */
+@media (max-width: 1024px) {
+    .c-panel-backdrop--context {
+        display: block;
+    }
+}
+
+@media (min-width: 1025px) {
+    .c-panel-backdrop--context {
+        display: none;
+    }
 }
 
 @keyframes fade-in {

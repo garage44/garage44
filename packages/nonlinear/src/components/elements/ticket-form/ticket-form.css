@@ -1,0 +1,69 @@
+.c-ticket-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    padding: var(--spacer-4);
+
+    .header {
+        align-items: center;
+        border-bottom: 1px solid var(--surface-3);
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacer-3);
+        padding-bottom: var(--spacer-2);
+
+        h2 {
+            color: var(--surface-8);
+            font-size: var(--font-l);
+            font-weight: 600;
+            margin: 0;
+        }
+    }
+
+    .content {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        gap: var(--spacer-2);
+        min-height: 0;
+        overflow-y: auto;
+        padding-bottom: var(--spacer-2);
+
+        .field {
+            flex: 0 0 auto;
+            margin-bottom: 0;
+
+            .help,
+            .validation {
+                margin-top: var(--spacer-05);
+            }
+        }
+
+        .field-group {
+            display: flex;
+            flex: 0 0 auto;
+            flex-direction: column;
+            gap: var(--spacer-2);
+
+            .field {
+                flex: 0 0 auto;
+                margin-bottom: 0;
+
+                .help,
+                .validation {
+                    margin-top: var(--spacer-05);
+                }
+            }
+        }
+    }
+
+    .actions {
+        border-top: 1px solid var(--surface-3);
+        display: flex;
+        gap: var(--spacer-1);
+        justify-content: flex-end;
+        margin-top: var(--spacer-3);
+        padding-top: var(--spacer-2);
+    }
+}

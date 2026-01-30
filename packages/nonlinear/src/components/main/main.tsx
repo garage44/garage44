@@ -1,14 +1,16 @@
 import {$s} from '@/app'
-import {api, notifier, ws} from '@garage44/common/app'
+import {api, notifier, ws, store} from '@garage44/common/app'
 import {Board, TicketDetail} from '@/components/pages'
 import {
     AppLayout,
     MenuGroup,
     MenuItem,
     Notifications,
+    PanelContext,
     PanelMenu,
     UserMenu,
 } from '@garage44/common/components'
+import {TicketForm} from '@/components/elements/ticket-form/ticket-form'
 import {Link, Router, getCurrentUrl, route} from 'preact-router'
 import {Login} from '@/components/pages/login/login'
 import {useEffect} from 'preact/hooks'
@@ -104,8 +106,51 @@ export const Main = () => {
         }
     }
 
+    useEffect(() => {
+        // Migrate old default width (200px) to new default (600px)
+        if ($s.panels.context.width === 200) {
+            $s.panels.context.width = 600
+            store.save()
+        }
+    }, [])
+
+    const handleClosePanel = () => {
+        $s.selectedLane = null
+        $s.panels.context.collapsed = true
+        store.save()
+    }
+
+    const handleTicketCreated = async() => {
+        // Reload tickets to get the new one
+        const result = await ws.get('/api/tickets')
+        if (result.tickets) {
+            $s.tickets = result.tickets
+        }
+    }
+
     return <>
         <AppLayout
+            context={
+                $s.selectedLane ? (
+                    <PanelContext
+                        collapsed={false}
+                        defaultWidth={600}
+                        maxWidth={1000}
+                        minWidth={64}
+                        onWidthChange={(width) => {
+                            $s.panels.context.width = width
+                            store.save()
+                        }}
+                        width={$s.panels.context.width === 200 ? undefined : $s.panels.context.width}
+                    >
+                        <TicketForm
+                            initialStatus={$s.selectedLane}
+                            onClose={handleClosePanel}
+                            onSuccess={handleTicketCreated}
+                        />
+                    </PanelContext>
+                ) : null
+            }
             menu={(
                 <PanelMenu
                     actions={(

@@ -1,5 +1,6 @@
 import {$s} from '@/app'
 import {ws} from '@garage44/common/app'
+import {Button} from '@garage44/common/components'
 import {TicketCard} from '@/components/elements/ticket/ticket'
 import {useEffect} from 'preact/hooks'
 
@@ -21,6 +22,13 @@ export const Board = () => {
             }
         })()
     }, [])
+
+    const handleAddTicket = (laneId: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed') => {
+        $s.selectedLane = laneId
+        if ($s.panels.context.collapsed) {
+            $s.panels.context.collapsed = false
+        }
+    }
 
     const getTicketsForLane = (status: string) => {
         return $s.tickets.filter((ticket) => ticket.status === status)
@@ -86,7 +94,17 @@ export const Board = () => {
                         >
                             <div class='c-board__lane-header'>
                                 <h2>{lane.label}</h2>
-                                <span class='c-board__lane-count'>{tickets.length}</span>
+                                <div class='c-board__lane-header-right'>
+                                    <span class='c-board__lane-count'>{tickets.length}</span>
+                                    <Button
+                                        icon='add'
+                                        onClick={() => handleAddTicket(lane.id)}
+                                        size='s'
+                                        tip={`Add ticket to ${lane.label}`}
+                                        type='info'
+                                        variant='toggle'
+                                    />
+                                </div>
                             </div>
                             <div class='c-board__lane-content'>
                                 {tickets.length === 0 ? (

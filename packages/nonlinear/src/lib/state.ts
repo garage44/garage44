@@ -5,7 +5,14 @@ import {
 import {mergeDeep} from '@garage44/common/lib/utils'
 
 // Use const assertions for the state objects
-const persistantState = mergeDeep({}, commonPersistantState)
+const persistantState = mergeDeep({
+    panels: {
+        context: {
+            collapsed: false,
+            width: 600,
+        },
+    },
+}, commonPersistantState)
 
 const volatileState = mergeDeep({
     tickets: [] as Array<{
@@ -43,6 +50,7 @@ const volatileState = mergeDeep({
     }>,
     selectedRepository: null as string | null,
     selectedTicket: null as string | null,
+    selectedLane: null as 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed' | null,
 }, commonVolatileState)
 
 export {

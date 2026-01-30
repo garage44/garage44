@@ -81,10 +81,22 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
     // Create ticket
     wsManager.api.post('/api/tickets', async(ctx, req) => {
-        const {repository_id, title, description} = req.data as {
+        const {
+            repository_id,
+            title,
+            description,
+            status = 'backlog',
+            priority,
+            assignee_type,
+            assignee_id,
+        } = req.data as {
             repository_id: string
             title: string
             description?: string
+            status?: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed'
+            priority?: number
+            assignee_type?: 'agent' | 'human' | null
+            assignee_id?: string | null
         }
 
         if (!repository_id || !title) {
@@ -97,10 +109,22 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
         db.prepare(`
             INSERT INTO tickets (
                 id, repository_id, title, description, status,
+                priority, assignee_type, assignee_id,
                 created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, 'backlog', ?, ?)
-        `).run(ticketId, repository_id, title, description || null, now, now)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+            ticketId,
+            repository_id,
+            title,
+            description || null,
+            status,
+            priority || null,
+            assignee_type || null,
+            assignee_id || null,
+            now,
+            now,
+        )
 
         const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(ticketId)
 

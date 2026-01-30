@@ -306,6 +306,35 @@ class Store {
 
 ## CSS Guidelines
 
+**🚨 CRITICAL: NEVER use BEM (Block Element Modifier) naming convention. ALWAYS use modern CSS nesting instead.**
+
+### NO BEM Naming Convention
+
+**❌ NEVER use BEM (Block Element Modifier) naming:**
+- No double underscores `__` for elements (e.g., `.c-button__icon`)
+- No double dashes `--` for modifiers (e.g., `.c-button--disabled`)
+- No BEM-style class names anywhere in the codebase
+
+**✅ ALWAYS use modern CSS nesting instead:**
+```css
+/* ✅ Correct: Use nesting */
+.c-button {
+    display: flex;
+
+    .icon {
+        width: 16px;
+    }
+
+    &.disabled {
+        opacity: 0.5;
+    }
+}
+
+/* ❌ Wrong: BEM naming */
+.c-button__icon { }
+.c-button--disabled { }
+```
+
 ### NO CSS Imports in Components
 
 **❌ NEVER import CSS files in component code:**
@@ -336,33 +365,6 @@ import './my-component.css'  // Wrong! Bunchy handles this automatically
 - Bundles all component CSS into `components.<buildId>.css`
 - Hot-reloads CSS changes without page refresh
 - See `packages/bunchy/tasks.ts` for implementation details
-
-### NO BEM Naming Convention
-
-**❌ NEVER use BEM (Block Element Modifier) naming:**
-- No double underscores `__` for elements (e.g., `.c-button__icon`)
-- No double dashes `--` for modifiers (e.g., `.c-button--disabled`)
-- No BEM-style class names anywhere in the codebase
-
-**✅ ALWAYS use modern CSS nesting instead:**
-```css
-/* ✅ Correct: Use nesting */
-.c-button {
-    display: flex;
-
-    .icon {
-        width: 16px;
-    }
-
-    &.disabled {
-        opacity: 0.5;
-    }
-}
-
-/* ❌ Wrong: BEM naming */
-.c-button__icon { }
-.c-button--disabled { }
-```
 
 ### Use Existing Variables
 ```css

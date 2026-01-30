@@ -90,41 +90,26 @@
         }
     }
 
+    /* Small screen styles - overlay when expanded, stay in flow when collapsed */
+    @media (max-width: 1024px) {
+        &:not(.collapsed) {
+            position: fixed;
+            right: 0;
+            top: 0;
+            z-index: 1001;
+            box-shadow: -4px 0 12px oklch(0 0 0 / 0.15);
+        }
+
+        &.collapsed {
+            /* Stay in grid flow when collapsed */
+            position: relative;
+        }
+    }
+
     /* Hide collapse toggle on mobile - mobile controls handle this */
     @media (max-width: 768px) {
         .c-button.variant-toggle {
             display: none;
         }
-    }
-
-    /* Mobile styles - overlay panel (slides from left like PanelMenu) */
-    @media (max-width: 768px) {
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 1001;
-        width: 280px;
-        max-width: 85vw;
-        transition: transform 0.3s ease-in-out;
-
-        /* Always hide panel by default on mobile */
-        transform: translateX(-100%);
-        visibility: hidden;
-    }
-}
-
-/* Show panel when not collapsed on mobile - explicit selector outside nesting for production */
-@media (max-width: 768px) {
-    .c-panel-context:not(.collapsed) {
-        transform: translateX(0);
-        visibility: visible;
-    }
-}
-
-/* Ensure collapsed panel is always hidden on mobile - explicit selector outside nesting for production */
-@media (max-width: 768px) {
-    .c-panel-context.collapsed {
-        transform: translateX(-100%);
-        visibility: hidden;
     }
 }

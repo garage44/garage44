@@ -36,4 +36,5 @@ export interface NonlinearState extends CommonState {
     }>
     selectedRepository: string | null
     selectedTicket: string | null
+    selectedLane: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed' | null
 }
