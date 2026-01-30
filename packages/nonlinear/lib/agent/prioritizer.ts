@@ -4,7 +4,7 @@
  */
 
 import {BaseAgent, type AgentContext, type AgentResponse} from './base.ts'
-import {db} from '../database.ts'
+import {db, addTicketLabel} from '../database.ts'
 import {logger} from '../../service.ts'
 import {addAgentComment} from './comments.ts'
 import {updateTicketFromAgent} from './ticket-updates.ts'
@@ -323,6 +323,10 @@ Provide a refined description and analysis.`
             // Add comment with analysis and broadcast via WebSocket
             await addAgentComment(ticket.id, this.name, `## Ticket Refinement Analysis\n\n${refinement.analysis}`)
 
+            // Add "refined" label to mark ticket as ready for development
+            addTicketLabel(ticket.id, 'refined')
+            this.log(`Added "refined" label to ticket ${ticket.id}`)
+
             this.log(`Refined ticket ${ticket.id}`)
         } catch (error) {
             this.log(`Error refining ticket ${ticket.id}: ${error}`, 'error')
@@ -484,6 +488,10 @@ Please respond to the user's request and refine the ticket as requested.`
             this.log(`Adding response comment: ${commentContent.substring(0, 100)}...`)
             await addAgentComment(ticket.id, this.name, commentContent)
             this.log(`Successfully added comment to ticket ${ticket.id}`)
+
+            // Add "refined" label to mark ticket as ready for development
+            addTicketLabel(ticket.id, 'refined')
+            this.log(`Added "refined" label to ticket ${ticket.id}`)
 
             this.log(`Completed mention response for ticket ${ticket.id}`)
         } catch (error) {

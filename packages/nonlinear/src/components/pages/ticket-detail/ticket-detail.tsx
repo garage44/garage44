@@ -24,6 +24,11 @@ const createAssigneeState = () => deepSignal({
     assignee_type: '' as '' | 'agent' | 'human',
 })
 
+const createLabelsState = () => deepSignal({
+    labels: [] as string[],
+    newLabel: '',
+})
+
 interface TicketDetailProps {
     ticketId?: string
 }
@@ -31,8 +36,10 @@ interface TicketDetailProps {
 interface Ticket {
     assignee_id: string | null
     assignee_type: 'agent' | 'human' | null
+    assignees: Array<{assignee_id: string, assignee_type: 'agent' | 'human'}>
     description: string | null
     id: string
+    labels: string[]
     status: string
     title: string
 }
@@ -54,6 +61,8 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
     const editState = editStateRef.current
     const assigneeStateRef = useRef(createAssigneeState())
     const assigneeState = assigneeStateRef.current
+    const labelsStateRef = useRef(createLabelsState())
+    const labelsState = labelsStateRef.current
     const commentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
     useEffect(() => {
@@ -82,6 +91,7 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                     editState.description = data.ticket.description || ''
                     assigneeState.assignee_type = data.ticket.assignee_type || ''
                     assigneeState.assignee_id = data.ticket.assignee_id || ''
+                    labelsState.labels = data.ticket.labels || []
                 }
             }
         }
@@ -124,6 +134,8 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                 // Update assignee state
                 assigneeState.assignee_type = result.ticket.assignee_type || ''
                 assigneeState.assignee_id = result.ticket.assignee_id || ''
+                // Update labels state
+                labelsState.labels = result.ticket.labels || []
             }
             if (result.comments) {
                 setComments(result.comments)
@@ -244,20 +256,29 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
         if (!ticket) return
 
         try {
-            const updates: {
-                assignee_id?: string | null
-                assignee_type?: 'agent' | 'human' | null
-            } = {}
+            // Get current assignees from ticket
+            const currentAssignees = ticket.assignees || []
+            let newAssignees = [...currentAssignees]
 
-            if (assigneeState.assignee_type) {
-                updates.assignee_type = assigneeState.assignee_type
-                updates.assignee_id = assigneeState.assignee_id || null
+            if (assigneeState.assignee_type && assigneeState.assignee_id) {
+                // Add or update single assignee (backward compatibility)
+                const existingIndex = newAssignees.findIndex(
+                    (a) => a.assignee_type === assigneeState.assignee_type && a.assignee_id === assigneeState.assignee_id,
+                )
+                if (existingIndex === -1) {
+                    newAssignees.push({
+                        assignee_id: assigneeState.assignee_id,
+                        assignee_type: assigneeState.assignee_type,
+                    })
+                }
             } else {
-                updates.assignee_type = null
-                updates.assignee_id = null
+                // Clear all assignees if type is empty
+                newAssignees = []
             }
 
-            await ws.put(`/api/tickets/${ticket.id}`, updates)
+            await ws.put(`/api/tickets/${ticket.id}`, {
+                assignees: newAssignees,
+            })
 
             // If assigned to PrioritizerAgent, trigger refinement
             if (assigneeState.assignee_type === 'agent' && assigneeState.assignee_id) {
@@ -332,11 +353,24 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
     }
 
     const getAssigneeOptions = () => {
+        if (!ticket) return []
+
+        // Get currently assigned IDs to filter them out
+        const currentAssigneeIds = new Set(
+            (ticket.assignees || []).map((a) => a.assignee_id),
+        )
+
         if (assigneeState.assignee_type === 'agent') {
             return $s.agents
-                .filter((agent) => agent.enabled === 1)
+                .filter((agent) => {
+                    // Filter out disabled agents
+                    if (agent.enabled !== 1) return false
+                    // Filter out already assigned agents (agents use their name as assignee_id)
+                    return !currentAssigneeIds.has(agent.name) && !currentAssigneeIds.has(agent.id)
+                })
                 .map((agent) => ({
-                    id: agent.id,
+                    // Use agent.name as id since that's what agents use when assigning themselves
+                    id: agent.name,
                     name: `${agent.displayName || agent.name || 'Unknown'} (${agent.type})`,
                 }))
         }
@@ -345,6 +379,140 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
             return []
         }
         return []
+    }
+
+    const handleAddLabel = async() => {
+        if (!ticket || !labelsState.newLabel.trim()) return
+
+        const newLabel = labelsState.newLabel.trim().toLowerCase()
+        if (labelsState.labels.includes(newLabel)) {
+            notifier.notify({
+                message: 'Label already exists',
+                type: 'warn',
+            })
+            labelsState.newLabel = ''
+            return
+        }
+
+        try {
+            const updatedLabels = [...labelsState.labels, newLabel]
+            await ws.put(`/api/tickets/${ticket.id}`, {
+                labels: updatedLabels,
+            })
+
+            labelsState.labels = updatedLabels
+            labelsState.newLabel = ''
+
+            notifier.notify({
+                message: 'Label added',
+                type: 'success',
+            })
+        } catch(error) {
+            notifier.notify({
+                message: `Failed to add label: ${error instanceof Error ? error.message : String(error)}`,
+                type: 'error',
+            })
+        }
+    }
+
+    const handleRemoveLabel = async(label: string) => {
+        if (!ticket) return
+
+        try {
+            const updatedLabels = labelsState.labels.filter((l) => l !== label)
+            await ws.put(`/api/tickets/${ticket.id}`, {
+                labels: updatedLabels,
+            })
+
+            labelsState.labels = updatedLabels
+
+            notifier.notify({
+                message: 'Label removed',
+                type: 'success',
+            })
+        } catch(error) {
+            notifier.notify({
+                message: `Failed to remove label: ${error instanceof Error ? error.message : String(error)}`,
+                type: 'error',
+            })
+        }
+    }
+
+    const handleAddAssignee = async(assigneeType: 'agent' | 'human', assigneeId: string) => {
+        if (!ticket) return
+
+        try {
+            const currentAssignees = ticket.assignees || []
+            const exists = currentAssignees.some(
+                (a) => a.assignee_type === assigneeType && a.assignee_id === assigneeId,
+            )
+
+            if (exists) {
+                notifier.notify({
+                    message: 'Assignee already added',
+                    type: 'warn',
+                })
+                return
+            }
+
+            const updatedAssignees = [
+                ...currentAssignees,
+                {
+                    assignee_id: assigneeId,
+                    assignee_type: assigneeType,
+                },
+            ]
+
+            const result = await ws.put(`/api/tickets/${ticket.id}`, {
+                assignees: updatedAssignees,
+            })
+
+            // Update local state immediately from response
+            if (result && result.ticket) {
+                setTicket(result.ticket)
+                labelsState.labels = result.ticket.labels || []
+            } else {
+                // If response doesn't have ticket, reload from server
+                await loadTicket(ticket.id)
+            }
+
+            notifier.notify({
+                message: 'Assignee added',
+                type: 'success',
+            })
+        } catch(error) {
+            notifier.notify({
+                message: `Failed to add assignee: ${error instanceof Error ? error.message : String(error)}`,
+                type: 'error',
+            })
+        }
+    }
+
+    const handleRemoveAssignee = async(assigneeType: 'agent' | 'human', assigneeId: string) => {
+        if (!ticket) return
+
+        try {
+            const currentAssignees = ticket.assignees || []
+            const updatedAssignees = currentAssignees.filter(
+                (a) => !(a.assignee_type === assigneeType && a.assignee_id === assigneeId),
+            )
+
+            await ws.put(`/api/tickets/${ticket.id}`, {
+                assignees: updatedAssignees,
+            })
+
+            await loadTicket(ticket.id)
+
+            notifier.notify({
+                message: 'Assignee removed',
+                type: 'success',
+            })
+        } catch(error) {
+            notifier.notify({
+                message: `Failed to remove assignee: ${error instanceof Error ? error.message : String(error)}`,
+                type: 'error',
+            })
+        }
     }
 
     const handleSaveEdit = async() => {
@@ -420,47 +588,133 @@ export const TicketDetail = ({ticketId}: TicketDetailProps) => {
                 <div class='status'>
                     <span class={`status-badge status-${ticket.status}`}>{ticket.status}</span>
                 </div>
+                {ticket.labels && ticket.labels.length > 0 &&
+                    <div class='labels'>
+                        {ticket.labels.map((label) => (
+                            <span key={label} class='label-badge'>
+                                {label}
+                                <Icon
+                                    name='close'
+                                    onClick={() => handleRemoveLabel(label)}
+                                    size='c'
+                                    type='info'
+                                />
+                            </span>
+                        ))}
+                    </div>}
             </div>
 
             <div class='content'>
+                <div class='labels-section'>
+                    <h2>Labels</h2>
+                    <div class='labels-fields'>
+                        <div class='labels-list'>
+                            {labelsState.labels.map((label) => (
+                                <span key={label} class='label-badge'>
+                                    {label}
+                                    <Icon
+                                        name='close'
+                                        onClick={() => handleRemoveLabel(label)}
+                                        size='c'
+                                        type='info'
+                                    />
+                                </span>
+                            ))}
+                        </div>
+                        <div class='add-label'>
+                            <FieldText
+                                model={labelsState.$newLabel}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleAddLabel()
+                                    }
+                                }}
+                                placeholder='Add label (press Enter)'
+                            />
+                            <Button onClick={handleAddLabel} variant='secondary'>
+                                Add
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class='assignee-section'>
-                    <h2>Assignee</h2>
-                    <div class='assignee-fields'>
-                        <FieldSelect
-                            label='Assignee Type'
-                            model={assigneeState.$assignee_type}
-                            onChange={() => {
-                                // Reset assignee_id when type changes
-                                assigneeState.assignee_id = ''
-                                // If set to None, immediately save
-                                if (!assigneeState.assignee_type) {
-                                    handleAssigneeChange()
-                                }
-                            }}
-                            options={[
-                                {id: '', name: 'None'},
-                                {id: 'agent', name: 'Agent'},
-                                {id: 'human', name: 'Human'},
-                            ]}
-                            placeholder='Select assignee type'
-                        />
-                        {assigneeState.assignee_type &&
-                            <FieldSelect
-                                label='Assignee'
-                                model={assigneeState.$assignee_id}
-                                onChange={handleAssigneeChange}
-                                options={getAssigneeOptions()}
-                                placeholder='Select assignee'
-                            />}
-                        {ticket.assignee_id && ticket.assignee_type === 'agent' &&
-                            (() => {
-                                const agent = $s.agents.find((a) => a.id === ticket.assignee_id || a.name === ticket.assignee_id)
+                    <h2>Assignees</h2>
+                    <div class='assignees-list'>
+                        {(ticket.assignees || []).map((assignee) => {
+                            if (assignee.assignee_type === 'agent') {
+                                const agent = $s.agents.find((a) => a.id === assignee.assignee_id || a.name === assignee.assignee_id)
                                 return agent ?
-                                    <div class='current-assignee'>
+                                    <div key={`${assignee.assignee_type}-${assignee.assignee_id}`} class='assignee-item'>
                                         <AgentBadge agent={agent} size='d' />
+                                        <Icon
+                                            name='close'
+                                            onClick={() => handleRemoveAssignee(assignee.assignee_type, assignee.assignee_id)}
+                                            size='c'
+                                            type='info'
+                                        />
                                     </div> :
-                                    null
-                            })()}
+                                    <div key={`${assignee.assignee_type}-${assignee.assignee_id}`} class='assignee-item'>
+                                        <span>{assignee.assignee_id}</span>
+                                        <Icon
+                                            name='close'
+                                            onClick={() => handleRemoveAssignee(assignee.assignee_type, assignee.assignee_id)}
+                                            size='c'
+                                            type='info'
+                                        />
+                                    </div>
+                            }
+                            return (
+                                <div key={`${assignee.assignee_type}-${assignee.assignee_id}`} class='assignee-item'>
+                                    <UserBadge userId={assignee.assignee_id} />
+                                    <Icon
+                                        name='close'
+                                        onClick={() => handleRemoveAssignee(assignee.assignee_type, assignee.assignee_id)}
+                                        size='c'
+                                        type='info'
+                                    />
+                                </div>
+                            )
+                        })}
+                    </div>
+                    <div class='assignee-fields'>
+                        <div class='add-assignee'>
+                            <FieldSelect
+                                label='Add Assignee Type'
+                                model={assigneeState.$assignee_type}
+                                onChange={() => {
+                                    assigneeState.assignee_id = ''
+                                }}
+                                options={[
+                                    {id: '', name: 'Select type'},
+                                    {id: 'agent', name: 'Agent'},
+                                    {id: 'human', name: 'Human'},
+                                ]}
+                                placeholder='Select assignee type'
+                            />
+                            {assigneeState.assignee_type &&
+                                <>
+                                    <FieldSelect
+                                        label='Select Assignee'
+                                        model={assigneeState.$assignee_id}
+                                        options={getAssigneeOptions()}
+                                        placeholder={getAssigneeOptions().length === 0 ? 'No available assignees' : 'Select assignee'}
+                                    />
+                                    {assigneeState.assignee_id &&
+                                        <Button
+                                            onClick={() => {
+                                                if (assigneeState.assignee_id) {
+                                                    handleAddAssignee(assigneeState.assignee_type as 'agent' | 'human', assigneeState.assignee_id)
+                                                    assigneeState.assignee_id = ''
+                                                    assigneeState.assignee_type = ''
+                                                }
+                                            }}
+                                            variant='secondary'
+                                        >
+                                            Add Assignee
+                                        </Button>}
+                                </>}
+                        </div>
                     </div>
                 </div>
 

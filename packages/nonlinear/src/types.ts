@@ -25,10 +25,12 @@ export interface NonlinearState extends CommonState {
     tickets: Array<{
         assignee_id: string | null
         assignee_type: 'agent' | 'human' | null
+        assignees: Array<{assignee_type: 'agent' | 'human', assignee_id: string}>
         branch_name: string | null
         created_at: number
         description: string | null
         id: string
+        labels: string[]
         merge_request_id: string | null
         priority: number | null
         repository_id: string

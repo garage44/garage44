@@ -4,7 +4,7 @@
  */
 
 import {BaseAgent, type AgentContext, type AgentResponse} from './base.ts'
-import {db} from '../database.ts'
+import {db, addTicketAssignee} from '../database.ts'
 import {logger} from '../../service.ts'
 import {createGitPlatform} from '../git/index.ts'
 import {addAgentComment} from './comments.ts'
@@ -20,16 +20,22 @@ export class DeveloperAgent extends BaseAgent {
 
     async process(context: AgentContext): Promise<AgentResponse> {
         try {
-            // Get a "todo" ticket that's not assigned
+            // Get a "todo" ticket that:
+            // 1. Has "refined" label
+            // 2. Is assigned to this DeveloperAgent
             const ticket = db.prepare(`
-                SELECT t.*, r.path, r.platform, r.remote_url, r.config
+                SELECT DISTINCT t.*, r.path, r.platform, r.remote_url, r.config
                 FROM tickets t
                 JOIN repositories r ON t.repository_id = r.id
+                JOIN ticket_labels tl ON t.id = tl.ticket_id
+                JOIN ticket_assignees ta ON t.id = ta.ticket_id
                 WHERE t.status = 'todo'
-                  AND t.assignee_type IS NULL
+                  AND tl.label = 'refined'
+                  AND ta.assignee_type = 'agent'
+                  AND ta.assignee_id = ?
                 ORDER BY t.priority DESC, t.created_at ASC
                 LIMIT 1
-            `).get() as {
+            `).get(this.name) as {
                 id: string
                 repository_id: string
                 title: string
@@ -41,7 +47,7 @@ export class DeveloperAgent extends BaseAgent {
             } | undefined
 
             if (!ticket) {
-                this.log('No unassigned todo tickets found')
+                this.log('No refined tickets assigned to DeveloperAgent found')
                 return {
                     success: true,
                     message: 'No tickets to work on',
@@ -50,15 +56,16 @@ export class DeveloperAgent extends BaseAgent {
 
             this.log(`Picking up ticket ${ticket.id}: ${ticket.title}`)
 
-            // Assign ticket to this agent
+            // Update ticket status to in_progress
             db.prepare(`
                 UPDATE tickets
                 SET status = 'in_progress',
-                    assignee_type = 'agent',
-                    assignee_id = ?,
                     updated_at = ?
                 WHERE id = ?
-            `).run(this.name, Date.now(), ticket.id)
+            `).run(Date.now(), ticket.id)
+
+            // Ensure this agent is in assignees (may already be there)
+            addTicketAssignee(ticket.id, 'agent', this.name)
 
             // Create branch name
             const branchName = `ticket-${ticket.id}-${Date.now()}`

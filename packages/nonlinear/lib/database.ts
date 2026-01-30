@@ -37,6 +37,20 @@ export interface Ticket {
     status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed'
     title: string
     updated_at: number
+    // Populated via JOINs for API responses
+    labels?: string[]
+    assignees?: Array<{assignee_type: 'agent' | 'human', assignee_id: string}>
+}
+
+export interface TicketLabel {
+    ticket_id: string
+    label: string
+}
+
+export interface TicketAssignee {
+    ticket_id: string
+    assignee_type: 'agent' | 'human'
+    assignee_id: string
 }
 
 export interface Comment {
@@ -213,7 +227,193 @@ function createNonlinearTables() {
     // Create index on ticket_id for faster CI run queries
     db.exec('CREATE INDEX IF NOT EXISTS idx_ci_runs_ticket_id ON ci_runs(ticket_id)')
 
+    // Ticket labels junction table
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS ticket_labels (
+            ticket_id TEXT NOT NULL,
+            label TEXT NOT NULL,
+            PRIMARY KEY (ticket_id, label),
+            FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE
+        )
+    `)
+
+    // Create indexes on ticket_labels
+    db.exec('CREATE INDEX IF NOT EXISTS idx_ticket_labels_ticket_id ON ticket_labels(ticket_id)')
+    db.exec('CREATE INDEX IF NOT EXISTS idx_ticket_labels_label ON ticket_labels(label)')
+
+    // Ticket assignees junction table
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS ticket_assignees (
+            ticket_id TEXT NOT NULL,
+            assignee_type TEXT NOT NULL,
+            assignee_id TEXT NOT NULL,
+            PRIMARY KEY (ticket_id, assignee_type, assignee_id),
+            FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE
+        )
+    `)
+
+    // Create indexes on ticket_assignees
+    db.exec('CREATE INDEX IF NOT EXISTS idx_ticket_assignees_ticket_id ON ticket_assignees(ticket_id)')
+    db.exec('CREATE INDEX IF NOT EXISTS idx_ticket_assignees_assignee ON ticket_assignees(assignee_type, assignee_id)')
+
+    // Migrate existing assignee data from tickets table to ticket_assignees
+    migrateAssigneeData()
+
     logger.info('[Database] Nonlinear tables initialized')
+}
+
+/**
+ * Migrate existing assignee data from tickets table to ticket_assignees junction table
+ * This maintains backward compatibility while transitioning to multiple assignees
+ */
+function migrateAssigneeData() {
+    if (!db) throw new Error('Database not initialized')
+
+    try {
+        // Get all tickets with assignees
+        const ticketsWithAssignees = db.prepare(`
+            SELECT id, assignee_type, assignee_id
+            FROM tickets
+            WHERE assignee_type IS NOT NULL AND assignee_id IS NOT NULL
+        `).all() as Array<{
+            id: string
+            assignee_type: string
+            assignee_id: string
+        }>
+
+        const insertStmt = db.prepare(`
+            INSERT OR IGNORE INTO ticket_assignees (ticket_id, assignee_type, assignee_id)
+            VALUES (?, ?, ?)
+        `)
+
+        let migratedCount = 0
+        for (const ticket of ticketsWithAssignees) {
+            try {
+                insertStmt.run(ticket.id, ticket.assignee_type, ticket.assignee_id)
+                migratedCount++
+            } catch {
+                // Already exists, skip
+            }
+        }
+
+        if (migratedCount > 0) {
+            logger.info(`[Database] Migrated ${migratedCount} existing assignees to ticket_assignees table`)
+        }
+    } catch (error) {
+        logger.warn(`[Database] Error migrating assignee data: ${error}`)
+        // Don't throw - migration failure shouldn't block initialization
+    }
+}
+
+/**
+ * Get all labels for a ticket
+ */
+export function getTicketLabels(ticketId: string): string[] {
+    if (!db) throw new Error('Database not initialized')
+    const labels = db.prepare(`
+        SELECT label FROM ticket_labels WHERE ticket_id = ?
+    `).all(ticketId) as Array<{label: string}>
+    return labels.map(l => l.label)
+}
+
+/**
+ * Add a label to a ticket
+ */
+export function addTicketLabel(ticketId: string, label: string): void {
+    if (!db) throw new Error('Database not initialized')
+    try {
+        db.prepare(`
+            INSERT INTO ticket_labels (ticket_id, label)
+            VALUES (?, ?)
+        `).run(ticketId, label)
+    } catch (error) {
+        // Label already exists, ignore
+        if (!String(error).includes('UNIQUE constraint')) {
+            throw error
+        }
+    }
+}
+
+/**
+ * Remove a label from a ticket
+ */
+export function removeTicketLabel(ticketId: string, label: string): void {
+    if (!db) throw new Error('Database not initialized')
+    db.prepare(`
+        DELETE FROM ticket_labels
+        WHERE ticket_id = ? AND label = ?
+    `).run(ticketId, label)
+}
+
+/**
+ * Check if a ticket has a specific label
+ */
+export function hasTicketLabel(ticketId: string, label: string): boolean {
+    if (!db) throw new Error('Database not initialized')
+    const result = db.prepare(`
+        SELECT 1 FROM ticket_labels
+        WHERE ticket_id = ? AND label = ?
+        LIMIT 1
+    `).get(ticketId, label) as {1?: number} | undefined
+    return !!result
+}
+
+/**
+ * Get all assignees for a ticket
+ */
+export function getTicketAssignees(ticketId: string): Array<{assignee_type: 'agent' | 'human', assignee_id: string}> {
+    if (!db) throw new Error('Database not initialized')
+    const assignees = db.prepare(`
+        SELECT assignee_type, assignee_id
+        FROM ticket_assignees
+        WHERE ticket_id = ?
+    `).all(ticketId) as Array<{assignee_type: string, assignee_id: string}>
+    return assignees.map(a => ({
+        assignee_type: a.assignee_type as 'agent' | 'human',
+        assignee_id: a.assignee_id,
+    }))
+}
+
+/**
+ * Add an assignee to a ticket
+ */
+export function addTicketAssignee(ticketId: string, assignee_type: 'agent' | 'human', assignee_id: string): void {
+    if (!db) throw new Error('Database not initialized')
+    try {
+        db.prepare(`
+            INSERT INTO ticket_assignees (ticket_id, assignee_type, assignee_id)
+            VALUES (?, ?, ?)
+        `).run(ticketId, assignee_type, assignee_id)
+    } catch (error) {
+        // Assignee already exists, ignore
+        if (!String(error).includes('UNIQUE constraint')) {
+            throw error
+        }
+    }
+}
+
+/**
+ * Remove an assignee from a ticket
+ */
+export function removeTicketAssignee(ticketId: string, assignee_type: 'agent' | 'human', assignee_id: string): void {
+    if (!db) throw new Error('Database not initialized')
+    db.prepare(`
+        DELETE FROM ticket_assignees
+        WHERE ticket_id = ? AND assignee_type = ? AND assignee_id = ?
+    `).run(ticketId, assignee_type, assignee_id)
+}
+
+/**
+ * Check if a ticket has a specific assignee
+ */
+export function hasTicketAssignee(ticketId: string, assignee_type: 'agent' | 'human', assignee_id: string): boolean {
+    if (!db) throw new Error('Database not initialized')
+    const result = db.prepare(`
+        SELECT 1 FROM ticket_assignees
+        WHERE ticket_id = ? AND assignee_type = ? AND assignee_id = ?
+        LIMIT 1
+    `).get(ticketId, assignee_type, assignee_id) as {1?: number} | undefined
+    return !!result
 }
 
 export {

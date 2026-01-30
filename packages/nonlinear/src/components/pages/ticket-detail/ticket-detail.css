@@ -81,6 +81,66 @@
         }
     }
 
+    .labels {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacer-1);
+        margin-top: var(--spacer-2);
+
+        .label-badge {
+            align-items: center;
+            background: var(--info-2);
+            border-radius: var(--border-radius-d);
+            color: var(--info-8);
+            display: flex;
+            font-size: var(--font-s);
+            gap: var(--spacer-05);
+            padding: var(--spacer-05) var(--spacer-1);
+
+            svg {
+                cursor: pointer;
+                opacity: 0.7;
+                transition: opacity 0.15s ease;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+        }
+    }
+
+    .labels-section {
+        background: var(--surface-1);
+        border: 1px solid var(--surface-3);
+        border-radius: var(--border-radius-d);
+        padding: var(--spacer-3);
+
+        h2 {
+            color: var(--surface-8);
+            font-size: var(--font-l);
+            font-weight: 600;
+            margin: 0 0 var(--spacer-2) 0;
+        }
+
+        .labels-fields {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacer-2);
+        }
+
+        .labels-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacer-1);
+        }
+
+        .add-label {
+            align-items: center;
+            display: flex;
+            gap: var(--spacer-1);
+        }
+    }
+
     .content {
         display: flex;
         flex-direction: column;
@@ -106,8 +166,38 @@
             gap: var(--spacer-2);
         }
 
+        .add-assignee {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacer-2);
+        }
+
         .current-assignee {
             margin-top: var(--spacer-1);
+        }
+
+        .assignees-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacer-1);
+            margin-bottom: var(--spacer-2);
+        }
+
+        .assignee-item {
+            align-items: center;
+            display: flex;
+            gap: var(--spacer-1);
+            justify-content: space-between;
+
+            svg {
+                cursor: pointer;
+                opacity: 0.7;
+                transition: opacity 0.15s ease;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
         }
     }
 

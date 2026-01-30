@@ -24,6 +24,8 @@ const volatileState = mergeDeep({
         priority: number | null
         assignee_type: 'agent' | 'human' | null
         assignee_id: string | null
+        assignees: Array<{assignee_type: 'agent' | 'human', assignee_id: string}>
+        labels: string[]
         branch_name: string | null
         merge_request_id: string | null
         created_at: number

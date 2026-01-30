@@ -8,9 +8,11 @@ interface TicketCardProps {
     ticket: {
         assignee_id: string | null
         assignee_type: string | null
+        assignees: Array<{assignee_id: string, assignee_type: 'agent' | 'human'}>
         branch_name: string | null
         description: string | null
         id: string
+        labels: string[]
         merge_request_id: string | null
         priority: number | null
         repository_name: string | null
@@ -50,25 +52,60 @@ export const TicketCard = ({ticket}: TicketCardProps) => {
                     <Icon name='folder' size='d' type='info' />
                     <span>{ticket.repository_name}</span>
                 </div>}
-            {ticket.assignee_id &&
-                (() => {
-                    if (ticket.assignee_type === 'agent') {
-                        const agent = $s.agents.find((a) => a.id === ticket.assignee_id || a.name === ticket.assignee_id)
-                        if (agent) {
+            {ticket.labels && ticket.labels.length > 0 &&
+                <div class='labels'>
+                    {ticket.labels.slice(0, 3).map((label) => (
+                        <span key={label} class='label-badge'>
+                            {label}
+                        </span>
+                    ))}
+                    {ticket.labels.length > 3 &&
+                        <span class='label-more'>+{ticket.labels.length - 3}</span>}
+                </div>}
+            {(ticket.assignees && ticket.assignees.length > 0) || ticket.assignee_id ?
+                <div class='assignees'>
+                    {(ticket.assignees || []).slice(0, 2).map((assignee) => {
+                        if (assignee.assignee_type === 'agent') {
+                            const agent = $s.agents.find((a) => a.id === assignee.assignee_id || a.name === assignee.assignee_id)
+                            if (agent) {
+                                return (
+                                    <div key={`${assignee.assignee_type}-${assignee.assignee_id}`} class='assignee'>
+                                        <AgentBadge agent={agent} size='s' />
+                                    </div>
+                                )
+                            }
+                        }
+                        return (
+                            <div key={`${assignee.assignee_type}-${assignee.assignee_id}`} class='assignee'>
+                                <Icon name='person' size='d' type='info' />
+                                <span>{assignee.assignee_id}</span>
+                            </div>
+                        )
+                    })}
+                    {/* Backward compatibility: show single assignee if assignees array is empty */}
+                    {(!ticket.assignees || ticket.assignees.length === 0) && ticket.assignee_id &&
+                        (() => {
+                            if (ticket.assignee_type === 'agent') {
+                                const agent = $s.agents.find((a) => a.id === ticket.assignee_id || a.name === ticket.assignee_id)
+                                if (agent) {
+                                    return (
+                                        <div class='assignee'>
+                                            <AgentBadge agent={agent} size='s' />
+                                        </div>
+                                    )
+                                }
+                            }
                             return (
                                 <div class='assignee'>
-                                    <AgentBadge agent={agent} size='s' />
+                                    <Icon name='person' size='d' type='info' />
+                                    <span>{ticket.assignee_type === 'agent' ? '🤖' : '👤'} {ticket.assignee_id}</span>
                                 </div>
                             )
-                        }
-                    }
-                    return (
-                        <div class='assignee'>
-                            <Icon name='person' size='d' type='info' />
-                            <span>{ticket.assignee_type === 'agent' ? '🤖' : '👤'} {ticket.assignee_id}</span>
-                        </div>
-                    )
-                })()}
+                        })()}
+                    {ticket.assignees && ticket.assignees.length > 2 &&
+                        <span class='assignee-more'>+{ticket.assignees.length - 2}</span>}
+                </div> :
+                null}
             {ticket.branch_name &&
                 <div class='branch'>
                     <Icon name='code' size='d' type='info' />

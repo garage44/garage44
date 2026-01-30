@@ -3,11 +3,36 @@
  */
 
 import type {WebSocketServerManager} from '@garage44/common/lib/ws-server'
-import {db} from '../lib/database.ts'
+import {
+    addTicketAssignee,
+    addTicketLabel,
+    db,
+    getTicketAssignees,
+    getTicketLabels,
+    removeTicketAssignee,
+    removeTicketLabel,
+} from '../lib/database.ts'
 import {randomId} from '@garage44/common/lib/utils'
 import {logger} from '../service.ts'
 import {parseMentions, validateMentions} from '../lib/comments/mentions.ts'
 import {triggerAgent} from '../lib/agent/scheduler.ts'
+
+/**
+ * Enrich ticket with labels and assignees
+ */
+function enrichTicket(ticket: {
+    [key: string]: unknown
+    id: string
+}): typeof ticket & {
+    assignees: Array<{assignee_id: string; assignee_type: 'agent' | 'human'}>
+    labels: string[]
+} {
+    return {
+        ...ticket,
+        assignees: getTicketAssignees(ticket.id),
+        labels: getTicketLabels(ticket.id),
+    }
+}
 
 export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerManager) {
     // Get all tickets
@@ -34,7 +59,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
         }>
 
         return {
-            tickets,
+            tickets: tickets.map(enrichTicket),
         }
     })
 
@@ -77,7 +102,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
         return {
             comments,
-            ticket,
+            ticket: enrichTicket(ticket),
         }
     })
 
@@ -86,7 +111,9 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
         const {
             assignee_id,
             assignee_type,
+            assignees,
             description,
+            labels,
             priority,
             repository_id,
             status = 'backlog',
@@ -94,7 +121,9 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
         } = req.data as {
             assignee_id?: string | null
             assignee_type?: 'agent' | 'human' | null
+            assignees?: Array<{assignee_id: string; assignee_type: 'agent' | 'human'}>
             description?: string
+            labels?: string[]
             priority?: number
             repository_id: string
             status?: 'backlog' | 'todo' | 'in_progress' | 'review' | 'closed'
@@ -128,6 +157,23 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
             now,
         )
 
+        // Add labels if provided
+        if (labels && Array.isArray(labels)) {
+            for (const label of labels) {
+                addTicketLabel(ticketId, label)
+            }
+        }
+
+        // Add assignees if provided
+        if (assignees && Array.isArray(assignees)) {
+            for (const assignee of assignees) {
+                addTicketAssignee(ticketId, assignee.assignee_type, assignee.assignee_id)
+            }
+        } else if (assignee_type && assignee_id) {
+            // Backward compatibility: add single assignee
+            addTicketAssignee(ticketId, assignee_type, assignee_id)
+        }
+
         const ticket = db.prepare(`
             SELECT t.*, r.name as repository_name
             FROM tickets t
@@ -151,7 +197,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
 
         // Broadcast ticket creation
         wsManager.broadcast('/tickets', {
-            ticket,
+            ticket: enrichTicket(ticket),
             type: 'ticket:created',
         })
 
@@ -178,7 +224,7 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
         }
 
         return {
-            ticket,
+            ticket: enrichTicket(ticket),
         }
     })
 
@@ -188,7 +234,9 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
         const updates = req.data as Partial<{
             assignee_id: string
             assignee_type: string
+            assignees: Array<{assignee_id: string; assignee_type: 'agent' | 'human'}>
             description: string
+            labels: string[]
             priority: number
             status: string
             title: string
@@ -223,22 +271,81 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
             values.push(updates.assignee_id)
         }
 
-        if (fields.length === 0) {
+        // Allow updates even if only labels or assignees are being updated
+        if (fields.length === 0 && updates.labels === undefined && updates.assignees === undefined) {
             throw new Error('No fields to update')
         }
 
-        fields.push('updated_at = ?')
-        values.push(Date.now())
-        values.push(ticketId)
+        // Only run UPDATE query if there are fields to update
+        if (fields.length > 0) {
+            fields.push('updated_at = ?')
+            values.push(Date.now())
+            values.push(ticketId)
 
-        const result = db.prepare(`
-            UPDATE tickets
-            SET ${fields.join(', ')}
-            WHERE id = ?
-        `).run(...values)
+            const result = db.prepare(`
+                UPDATE tickets
+                SET ${fields.join(', ')}
+                WHERE id = ?
+            `).run(...values)
 
-        if (result.changes === 0) {
-            throw new Error(`Ticket ${ticketId} not found`)
+            if (result.changes === 0) {
+                throw new Error(`Ticket ${ticketId} not found`)
+            }
+        } else {
+            // If only labels/assignees are being updated, still update the timestamp
+            db.prepare(`
+                UPDATE tickets
+                SET updated_at = ?
+                WHERE id = ?
+            `).run(Date.now(), ticketId)
+        }
+
+        // Handle labels update
+        if (updates.labels !== undefined) {
+            // Get current labels
+            const currentLabels = getTicketLabels(ticketId)
+            const newLabels = updates.labels
+
+            // Remove labels that are no longer present
+            for (const label of currentLabels) {
+                if (!newLabels.includes(label)) {
+                    removeTicketLabel(ticketId, label)
+                }
+            }
+
+            // Add new labels
+            for (const label of newLabels) {
+                if (!currentLabels.includes(label)) {
+                    addTicketLabel(ticketId, label)
+                }
+            }
+        }
+
+        // Handle assignees update
+        if (updates.assignees !== undefined) {
+            // Get current assignees
+            const currentAssignees = getTicketAssignees(ticketId)
+            const newAssignees = updates.assignees
+
+            // Create sets for comparison
+            const currentSet = new Set(currentAssignees.map((a) => `${a.assignee_type}:${a.assignee_id}`))
+            const newSet = new Set(newAssignees.map((a) => `${a.assignee_type}:${a.assignee_id}`))
+
+            // Remove assignees that are no longer present
+            for (const assignee of currentAssignees) {
+                const key = `${assignee.assignee_type}:${assignee.assignee_id}`
+                if (!newSet.has(key)) {
+                    removeTicketAssignee(ticketId, assignee.assignee_type, assignee.assignee_id)
+                }
+            }
+
+            // Add new assignees
+            for (const assignee of newAssignees) {
+                const key = `${assignee.assignee_type}:${assignee.assignee_id}`
+                if (!currentSet.has(key)) {
+                    addTicketAssignee(ticketId, assignee.assignee_type, assignee.assignee_id)
+                }
+            }
         }
 
         const ticket = db.prepare(`
@@ -262,14 +369,18 @@ export function registerTicketsWebSocketApiRoutes(wsManager: WebSocketServerMana
             updated_at: number
         }
 
+        if (!ticket) {
+            throw new Error(`Ticket ${ticketId} not found`)
+        }
+
         // Broadcast ticket update
         wsManager.broadcast('/tickets', {
-            ticket,
+            ticket: enrichTicket(ticket),
             type: 'ticket:updated',
         })
 
         return {
-            ticket,
+            ticket: enrichTicket(ticket),
         }
     })
 

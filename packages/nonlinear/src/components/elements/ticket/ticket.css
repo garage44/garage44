@@ -50,6 +50,35 @@
         white-space: nowrap;
     }
 
+    .labels {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacer-05);
+        margin-top: var(--spacer-1);
+
+        .label-badge {
+            background: var(--info-2);
+            border-radius: var(--border-radius-xs);
+            color: var(--info-8);
+            font-size: var(--font-xs);
+            padding: var(--spacer-05) var(--spacer-1);
+        }
+
+        .label-more {
+            color: var(--surface-5);
+            font-size: var(--font-xs);
+            padding: var(--spacer-05) var(--spacer-1);
+        }
+    }
+
+    .assignees {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacer-05);
+        margin-top: var(--spacer-1);
+    }
+
     .repo,
     .assignee,
     .branch {
@@ -65,6 +94,12 @@
             flex-shrink: 0;
             opacity: 0.7;
         }
+    }
+
+    .assignee-more {
+        color: var(--surface-5);
+        font-size: var(--font-xs);
+        padding: var(--spacer-05) var(--spacer-1);
     }
 
     .description {
