@@ -5,7 +5,7 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     margin-bottom: var(--spacer-1);
-    padding: var(--spacer-2);
+    padding: calc(var(--spacer-1) * 1.5);
     transition: all 0.2s ease;
 
     &:hover {
@@ -25,7 +25,7 @@
         display: flex;
         gap: var(--spacer-1);
         justify-content: space-between;
-        margin-bottom: var(--spacer-1);
+        margin-bottom: var(--spacer-05);
     }
 
     .title {
@@ -46,23 +46,50 @@
         font-size: var(--font-xs);
         font-weight: 700;
         margin-left: var(--spacer-1);
-        padding: var(--spacer-05) var(--spacer-1);
+        padding: 2px 6px;
         white-space: nowrap;
     }
 
     .labels {
         display: flex;
         flex-wrap: wrap;
-        gap: var(--spacer-05);
-        margin-top: var(--spacer-1);
+        gap: 4px;
+        margin-top: var(--spacer-05);
+
+        .repo-badge {
+            align-items: center;
+            background: var(--surface-3);
+            border-radius: 3px;
+            color: var(--surface-7);
+            display: inline-flex;
+            font-size: 10px;
+            font-weight: 500;
+            gap: 4px;
+            line-height: 1.2;
+            padding: 2px 6px;
+            transition: all 0.15s ease;
+
+            svg {
+                flex-shrink: 0;
+                opacity: 1;
+            }
+
+            &:hover {
+                background: var(--surface-4);
+            }
+        }
 
         .label-badge {
+            align-items: center;
             border: 1px solid;
-            border-radius: var(--border-radius-xs);
+            border-radius: 3px;
             color: white;
-            font-size: var(--font-xs);
+            display: inline-flex;
+            font-size: 10px;
             font-weight: 500;
-            padding: var(--spacer-05) var(--spacer-1);
+            justify-content: center;
+            line-height: 1.2;
+            padding: 2px 6px;
             transition: all 0.15s ease;
 
             &:hover {
@@ -74,9 +101,9 @@
             align-items: center;
             color: var(--surface-6);
             display: inline-flex;
-            font-size: var(--font-xs);
+            font-size: 10px;
             font-weight: 500;
-            padding: var(--spacer-05) var(--spacer-1);
+            padding: 2px 6px;
         }
     }
 
@@ -84,20 +111,19 @@
         align-items: center;
         display: flex;
         flex-wrap: wrap;
-        gap: var(--spacer-05);
-        margin-top: var(--spacer-1);
+        gap: 4px;
+        margin-top: var(--spacer-05);
     }
 
-    .repo,
     .assignee,
     .branch {
         align-items: center;
         color: var(--surface-6);
         display: flex;
         font-size: var(--font-xs);
-        gap: var(--spacer-05);
-        line-height: 1.4;
-        margin-top: var(--spacer-1);
+        gap: 4px;
+        line-height: 1.3;
+        margin-top: var(--spacer-05);
 
         svg {
             flex-shrink: 0;
@@ -107,8 +133,8 @@
 
     .assignee-more {
         color: var(--surface-5);
-        font-size: var(--font-xs);
-        padding: var(--spacer-05) var(--spacer-1);
+        font-size: 10px;
+        padding: 2px 6px;
     }
 
     .description {

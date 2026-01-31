@@ -6,9 +6,9 @@
     width: 100%;
 
     .track {
-        background: var(--surface-2);
+        background: var(--surface-3);
         border-radius: var(--border-radius-xs);
-        height: 6px;
+        height: 8px;
         overflow: hidden;
         position: relative;
         width: 100%;
@@ -28,14 +28,14 @@
         justify-content: space-between;
 
         .percentage {
-            color: var(--surface-7);
+            color: var(--surface-8);
             font-size: var(--font-xs);
             font-variant-numeric: tabular-nums;
             font-weight: 600;
         }
 
         .boundaries {
-            color: var(--surface-5);
+            color: var(--surface-6);
             font-size: var(--font-xxs);
             font-variant-numeric: tabular-nums;
         }

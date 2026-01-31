@@ -47,14 +47,14 @@ export const TicketCard = ({ticket}: TicketCardProps) => {
                         P{ticket.priority}
                     </div>}
             </div>
-            {ticket.repository_name &&
-                <div class='repo'>
-                    <Icon name='folder' size='d' type='info' />
-                    <span>{ticket.repository_name}</span>
-                </div>}
-            {ticket.labels && ticket.labels.length > 0 &&
+            {(ticket.repository_name || (ticket.labels && ticket.labels.length > 0)) &&
                 <div class='labels'>
-                    {ticket.labels.slice(0, 3).map((label) => {
+                    {ticket.repository_name &&
+                        <span class='repo-badge'>
+                            <Icon name='folder_plus_outline' size='s' type='info' />
+                            <span>{ticket.repository_name}</span>
+                        </span>}
+                    {ticket.labels && ticket.labels.slice(0, 3).map((label) => {
                         const labelDef = $s.labelDefinitions.find((def) => def.name === label)
                         const labelColor = labelDef?.color || 'var(--info-6)'
                         return (
@@ -70,7 +70,7 @@ export const TicketCard = ({ticket}: TicketCardProps) => {
                             </span>
                         )
                     })}
-                    {ticket.labels.length > 3 &&
+                    {ticket.labels && ticket.labels.length > 3 &&
                         <span class='label-more'>+{ticket.labels.length - 3}</span>}
                 </div>}
             {(ticket.assignees && ticket.assignees.length > 0) || ticket.assignee_id ?
