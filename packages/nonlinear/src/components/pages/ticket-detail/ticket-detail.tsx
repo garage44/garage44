@@ -10,6 +10,18 @@ import {route} from 'preact-router'
 import {renderMarkdown} from '@/lib/markdown.ts'
 import mermaid from 'mermaid'
 
+// Load label definitions on component mount
+const loadLabelDefinitions = async() => {
+    try {
+        const result = await ws.get('/api/labels')
+        if (result.labels) {
+            $s.labelDefinitions = result.labels
+        }
+    } catch {
+        // Silently fail - labels will load on next attempt
+    }
+}
+
 const commentState = deepSignal({
     content: '',
 })
